@@ -1,0 +1,48 @@
+<div class="app-data-table">
+  <div v-if="loading" class="app-data-table__loading" aria-busy="true" aria-live="polite">
+    <div class="app-data-table__loading-header">
+      <span
+        v-for="columnIndex in loadingColumnIndexes"
+        :key="`header-${columnIndex}`"
+        class="app-data-table__shimmer app-data-table__shimmer--header"
+      />
+    </div>
+
+    <div
+      v-for="rowIndex in loadingRowIndexes"
+      :key="`row-${rowIndex}`"
+      class="app-data-table__loading-row"
+    >
+      <span
+        v-for="columnIndex in loadingColumnIndexes"
+        :key="`cell-${rowIndex}-${columnIndex}`"
+        class="app-data-table__shimmer app-data-table__shimmer--cell"
+      />
+    </div>
+  </div>
+
+  <PDataTable
+    v-else
+    v-bind="$attrs"
+    :value="value"
+    :dataKey="dataKey"
+    :paginator="paginator"
+    :alwaysShowPaginator="alwaysShowPaginator"
+    :rows="rows"
+    :rowsPerPageOptions="rowsPerPageOptions"
+    :size="size"
+    :sortMode="sortMode"
+    :removableSort="removableSort"
+    paginatorTemplate="CurrentPageReport RowsPerPageDropdown FirstPageLink PrevPageLink NextPageLink LastPageLink"
+    currentPageReportTemplate="{first}-{last} / {totalRecords}"
+  >
+    <slot />
+
+    <template v-if="$slots.empty" #empty>
+      <slot name="empty" />
+    </template>
+    <template v-else #empty>
+      {{ emptyMessage }}
+    </template>
+  </PDataTable>
+</div>

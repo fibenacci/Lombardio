@@ -49,6 +49,7 @@ public class AuctionPersistenceAdapter implements AuctionRepository {
         entity.setLiveStartedAt(auction.liveStartedAt());
         entity.setClosedAt(auction.closedAt());
         entity.setAnnouncementReference(auction.announcementReference());
+        entity.setRealtimeChannel(buildRealtimeChannel(auction));
         entity.setCreatedAt(auction.createdAt());
         entity.setUpdatedAt(auction.updatedAt());
 
@@ -95,6 +96,10 @@ public class AuctionPersistenceAdapter implements AuctionRepository {
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
+    }
+
+    private String buildRealtimeChannel(Auction auction) {
+        return "auction." + auction.tenantId() + "." + auction.id();
     }
 
     private AuctionLot toLot(AuctionLotEntity entity) {

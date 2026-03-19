@@ -1,7 +1,31 @@
+x-java-core-env: &java-core-env
+  JAVA_TOOL_OPTIONS: "${JAVA_CORE_TOOL_OPTIONS:--XX:ActiveProcessorCount=2 -XX:InitialRAMPercentage=10 -XX:MaxRAMPercentage=60 -XX:+UseG1GC -XX:+UseStringDeduplication -Djava.security.egd=file:/dev/./urandom}"
+
+x-java-default-env: &java-default-env
+  JAVA_TOOL_OPTIONS: "${JAVA_DEFAULT_TOOL_OPTIONS:--XX:ActiveProcessorCount=1 -XX:InitialRAMPercentage=10 -XX:MaxRAMPercentage=60 -XX:+UseG1GC -XX:+UseStringDeduplication -Djava.security.egd=file:/dev/./urandom}"
+
+x-java-light-env: &java-light-env
+  JAVA_TOOL_OPTIONS: "${JAVA_LIGHT_TOOL_OPTIONS:--XX:ActiveProcessorCount=1 -XX:InitialRAMPercentage=5 -XX:MaxRAMPercentage=50 -XX:+UseG1GC -Djava.security.egd=file:/dev/./urandom}"
+
+x-java-core-limits: &java-core-limits
+  cpus: 2.0
+  mem_limit: 768m
+
+x-java-default-limits: &java-default-limits
+  cpus: 1.25
+  mem_limit: 640m
+
+x-java-light-limits: &java-light-limits
+  cpus: 1.0
+  mem_limit: 512m
+
 services:
   postgres:
     image: postgres:16-alpine
     container_name: lombardio-postgres
+    restart: unless-stopped
+    cpus: 1.5
+    mem_limit: 768m
     environment:
       POSTGRES_DB: lombardio_identity
       POSTGRES_USER: lombardio
@@ -16,22 +40,68 @@ services:
       timeout: 5s
       retries: 10
 
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: lombardio-rabbitmq
+    restart: unless-stopped
+    cpus: 1.0
+    mem_limit: 512m
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: lombardio-redis
+    restart: unless-stopped
+    cpus: 0.5
+    mem_limit: 256m
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   identity-access:
+    <<: *java-core-limits
     build:
       context: .
       dockerfile: services/identity-access/build/package/Dockerfile
-      target: development
+      target: ${COMPOSE_BUILD_TARGET:-runtime}
     container_name: lombardio-identity-access
+    restart: unless-stopped
     environment:
+      <<: *java-core-env
       IDENTITY_ACCESS_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity
       IDENTITY_ACCESS_DB_USERNAME: lombardio
-      IDENTITY_ACCESS_DB_PASSWORD: ${IDENTITY_ACCESS_DB_PASSWORD}
+      IDENTITY_ACCESS_DB_PASSWORD: ${POSTGRES_PASSWORD}
       IDENTITY_SECURITY_ENCRYPTION_KEY: ${IDENTITY_SECURITY_ENCRYPTION_KEY}
+      RATE_LIMIT_BACKEND: redis
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
       APP_CORS_ALLOWED_METHODS: ${APP_CORS_ALLOWED_METHODS}
       APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
       APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
       APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+      DEMO_DATA_ENABLED: ${DEMO_DATA_ENABLED:-true}
+      DEMO_DATA_SCALE: ${DEMO_DATA_SCALE:-medium}
+      DEMO_DATA_SERVICE_SCALE: ${IDENTITY_ACCESS_DEMO_DATA_SCALE:-}
     ports:
       - "8081:8081"
     volumes:
@@ -40,23 +110,39 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
 
   platform:
+    <<: *java-core-limits
     build:
       context: .
       dockerfile: services/platform/build/package/Dockerfile
-      target: development
+      target: ${COMPOSE_BUILD_TARGET:-runtime}
     container_name: lombardio-platform
+    restart: unless-stopped
     environment:
+      <<: *java-core-env
       PLATFORM_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=platform
       PLATFORM_DB_USERNAME: lombardio
-      PLATFORM_DB_PASSWORD: ${PLATFORM_DB_PASSWORD}
+      PLATFORM_DB_PASSWORD: ${POSTGRES_PASSWORD}
       IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
+      PLATFORM_OUTBOX_ACCESS_TOKEN: ${PLATFORM_OUTBOX_ACCESS_TOKEN}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      INTEGRATION_RABBITMQ_EXCHANGE: ${INTEGRATION_RABBITMQ_EXCHANGE}
+      INTEGRATION_RABBITMQ_PUBLISHER_BATCH_SIZE: 25
+      INTEGRATION_RABBITMQ_PUBLISHER_ENABLED: true
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
       APP_CORS_ALLOWED_METHODS: ${APP_CORS_ALLOWED_METHODS}
       APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
       APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
       APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+      DEMO_DATA_ENABLED: ${DEMO_DATA_ENABLED:-true}
+      DEMO_DATA_SCALE: ${DEMO_DATA_SCALE:-medium}
+      DEMO_DATA_SERVICE_SCALE: ${PLATFORM_DEMO_DATA_SCALE:-}
     ports:
       - "8082:8082"
     volumes:
@@ -65,17 +151,23 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   loan-origination:
+    profiles: ["ops"]
+    <<: *java-default-limits
     build:
       context: .
       dockerfile: services/loan-origination/build/package/Dockerfile
-      target: development
+      target: ${COMPOSE_BUILD_TARGET:-runtime}
     container_name: lombardio-loan-origination
+    restart: unless-stopped
     environment:
+      <<: *java-default-env
       LOAN_ORIGINATION_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=loan_origination
       LOAN_ORIGINATION_DB_USERNAME: lombardio
-      LOAN_ORIGINATION_DB_PASSWORD: ${LOAN_ORIGINATION_DB_PASSWORD}
+      LOAN_ORIGINATION_DB_PASSWORD: ${POSTGRES_PASSWORD}
       IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
       CUSTOMER_BASE_URL: http://customer:8084
       PAWN_TICKET_BASE_URL: http://pawn-ticket:8085
@@ -86,6 +178,9 @@ services:
       APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
       APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
       APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+      DEMO_DATA_ENABLED: ${DEMO_DATA_ENABLED:-true}
+      DEMO_DATA_SCALE: ${DEMO_DATA_SCALE:-medium}
+      DEMO_DATA_SERVICE_SCALE: ${LOAN_ORIGINATION_DEMO_DATA_SCALE:-}
     ports:
       - "8083:8083"
     volumes:
@@ -102,22 +197,33 @@ services:
         condition: service_started
 
   customer:
+    profiles: ["ops"]
+    <<: *java-default-limits
     build:
       context: .
       dockerfile: services/customer/build/package/Dockerfile
-      target: development
+      target: ${COMPOSE_BUILD_TARGET:-runtime}
     container_name: lombardio-customer
+    restart: unless-stopped
     environment:
+      <<: *java-default-env
       CUSTOMER_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=customer
       CUSTOMER_DB_USERNAME: lombardio
-      CUSTOMER_DB_PASSWORD: ${CUSTOMER_DB_PASSWORD}
+      CUSTOMER_DB_PASSWORD: ${POSTGRES_PASSWORD}
       IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
       KYC_BASE_URL: http://kyc:8086
+      PAWN_TICKET_BASE_URL: http://pawn-ticket:8085
+      INTEGRATION_BASE_URL: http://integration:8092
+      CUSTOMER_INTERNAL_SERVICE_TOKEN: ${CUSTOMER_INTERNAL_SERVICE_TOKEN}
+      CUSTOMER_PORTAL_PUBLIC_BASE_URL: ${CUSTOMER_PORTAL_PUBLIC_BASE_URL}
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
       APP_CORS_ALLOWED_METHODS: ${APP_CORS_ALLOWED_METHODS}
       APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
       APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
       APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+      DEMO_DATA_ENABLED: ${DEMO_DATA_ENABLED:-true}
+      DEMO_DATA_SCALE: ${DEMO_DATA_SCALE:-medium}
+      DEMO_DATA_SERVICE_SCALE: ${CUSTOMER_DEMO_DATA_SCALE:-}
     ports:
       - "8084:8084"
     volumes:
@@ -128,21 +234,29 @@ services:
         condition: service_healthy
 
   pawn-ticket:
+    profiles: ["ops"]
+    <<: *java-default-limits
     build:
       context: .
       dockerfile: services/pawn-ticket/build/package/Dockerfile
-      target: development
+      target: ${COMPOSE_BUILD_TARGET:-runtime}
     container_name: lombardio-pawn-ticket
+    restart: unless-stopped
     environment:
+      <<: *java-default-env
       PAWN_TICKET_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=pawn_ticket
       PAWN_TICKET_DB_USERNAME: lombardio
-      PAWN_TICKET_DB_PASSWORD: ${PAWN_TICKET_DB_PASSWORD}
+      PAWN_TICKET_DB_PASSWORD: ${POSTGRES_PASSWORD}
       IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
+      CUSTOMER_INTERNAL_SERVICE_TOKEN: ${CUSTOMER_INTERNAL_SERVICE_TOKEN}
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
       APP_CORS_ALLOWED_METHODS: ${APP_CORS_ALLOWED_METHODS}
       APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
       APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
       APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+      DEMO_DATA_ENABLED: ${DEMO_DATA_ENABLED:-true}
+      DEMO_DATA_SCALE: ${DEMO_DATA_SCALE:-medium}
+      DEMO_DATA_SERVICE_SCALE: ${PAWN_TICKET_DEMO_DATA_SCALE:-}
     ports:
       - "8085:8085"
     volumes:
@@ -153,21 +267,28 @@ services:
         condition: service_healthy
 
   auction:
+    profiles: ["auction"]
+    <<: *java-default-limits
     build:
       context: .
       dockerfile: services/auction/build/package/Dockerfile
-      target: development
+      target: ${COMPOSE_BUILD_TARGET:-runtime}
     container_name: lombardio-auction
+    restart: unless-stopped
     environment:
+      <<: *java-default-env
       AUCTION_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=auction
       AUCTION_DB_USERNAME: lombardio
-      AUCTION_DB_PASSWORD: ${AUCTION_DB_PASSWORD}
+      AUCTION_DB_PASSWORD: ${POSTGRES_PASSWORD}
       IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
       APP_CORS_ALLOWED_METHODS: ${APP_CORS_ALLOWED_METHODS}
       APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
       APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
       APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+      DEMO_DATA_ENABLED: ${DEMO_DATA_ENABLED:-true}
+      DEMO_DATA_SCALE: ${DEMO_DATA_SCALE:-medium}
+      DEMO_DATA_SERVICE_SCALE: ${AUCTION_DEMO_DATA_SCALE:-}
     ports:
       - "8089:8089"
     volumes:
@@ -178,16 +299,22 @@ services:
         condition: service_healthy
 
   online-auction:
+    profiles: ["auction"]
+    <<: *java-default-limits
     build:
       context: .
       dockerfile: services/online-auction/build/package/Dockerfile
-      target: development
+      target: ${COMPOSE_BUILD_TARGET:-runtime}
     container_name: lombardio-online-auction
+    restart: unless-stopped
     environment:
+      <<: *java-default-env
       ONLINE_AUCTION_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=online_auction
       ONLINE_AUCTION_DB_USERNAME: lombardio
-      ONLINE_AUCTION_DB_PASSWORD: ${ONLINE_AUCTION_DB_PASSWORD}
+      ONLINE_AUCTION_DB_PASSWORD: ${POSTGRES_PASSWORD}
       IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
       CENTRIFUGO_BASE_URL: http://centrifugo:8000
       CENTRIFUGO_API_KEY: ${CENTRIFUGO_API_KEY}
       CENTRIFUGO_HMAC_SECRET: ${CENTRIFUGO_HMAC_SECRET}
@@ -197,6 +324,9 @@ services:
       APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
       APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
       APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+      DEMO_DATA_ENABLED: ${DEMO_DATA_ENABLED:-true}
+      DEMO_DATA_SCALE: ${DEMO_DATA_SCALE:-medium}
+      DEMO_DATA_SERVICE_SCALE: ${ONLINE_AUCTION_DEMO_DATA_SCALE:-}
     ports:
       - "8090:8090"
     volumes:
@@ -205,16 +335,22 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
       centrifugo:
         condition: service_started
 
   reporting:
+    profiles: ["ops"]
+    <<: *java-light-limits
     build:
       context: .
       dockerfile: services/reporting/build/package/Dockerfile
-      target: development
+      target: ${COMPOSE_BUILD_TARGET:-runtime}
     container_name: lombardio-reporting
+    restart: unless-stopped
     environment:
+      <<: *java-light-env
       IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
       LOAN_ORIGINATION_BASE_URL: http://loan-origination:8083
       PAWN_TICKET_BASE_URL: http://pawn-ticket:8085
@@ -223,6 +359,8 @@ services:
       APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
       APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
       APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+      DEMO_DATA_ENABLED: ${DEMO_DATA_ENABLED:-true}
+      DEMO_DATA_SCALE: ${DEMO_DATA_SCALE:-medium}
     ports:
       - "8091:8091"
     volumes:
@@ -237,15 +375,19 @@ services:
         condition: service_started
 
   kyc:
+    profiles: ["ops"]
+    <<: *java-light-limits
     build:
       context: .
       dockerfile: services/kyc/build/package/Dockerfile
-      target: development
+      target: ${COMPOSE_BUILD_TARGET:-runtime}
     container_name: lombardio-kyc
+    restart: unless-stopped
     environment:
+      <<: *java-light-env
       KYC_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=kyc
       KYC_DB_USERNAME: lombardio
-      KYC_DB_PASSWORD: ${KYC_DB_PASSWORD}
+      KYC_DB_PASSWORD: ${POSTGRES_PASSWORD}
       IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
       PLATFORM_BASE_URL: http://platform:8082
       DOCUMENT_OCR_BASE_URL: http://document-ocr:8087
@@ -254,6 +396,9 @@ services:
       APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
       APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
       APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+      DEMO_DATA_ENABLED: ${DEMO_DATA_ENABLED:-true}
+      DEMO_DATA_SCALE: ${DEMO_DATA_SCALE:-medium}
+      DEMO_DATA_SERVICE_SCALE: ${KYC_DEMO_DATA_SCALE:-}
     ports:
       - "8086:8086"
     volumes:
@@ -266,15 +411,19 @@ services:
         condition: service_started
 
   aml:
+    profiles: ["ops"]
+    <<: *java-light-limits
     build:
       context: .
       dockerfile: services/aml/build/package/Dockerfile
-      target: development
+      target: ${COMPOSE_BUILD_TARGET:-runtime}
     container_name: lombardio-aml
+    restart: unless-stopped
     environment:
+      <<: *java-light-env
       AML_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=aml
       AML_DB_USERNAME: lombardio
-      AML_DB_PASSWORD: ${AML_DB_PASSWORD}
+      AML_DB_PASSWORD: ${POSTGRES_PASSWORD}
       IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
       PLATFORM_BASE_URL: http://platform:8082
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
@@ -282,6 +431,9 @@ services:
       APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
       APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
       APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+      DEMO_DATA_ENABLED: ${DEMO_DATA_ENABLED:-true}
+      DEMO_DATA_SCALE: ${DEMO_DATA_SCALE:-medium}
+      DEMO_DATA_SERVICE_SCALE: ${AML_DEMO_DATA_SCALE:-}
     ports:
       - "8088:8088"
     volumes:
@@ -292,36 +444,84 @@ services:
         condition: service_healthy
 
   document-ocr:
+    profiles: ["ops"]
     build:
       context: .
       dockerfile: services/document-ocr/build/package/Dockerfile
-      target: development
+      target: ${COMPOSE_BUILD_TARGET:-runtime}
     container_name: lombardio-document-ocr
-    working_dir: /workspace
-    environment:
-      PYTHONPATH: /workspace
+    restart: unless-stopped
+    cpus: 1.0
+    mem_limit: 512m
     ports:
       - "8087:8087"
     volumes:
       - ./services/document-ocr:/workspace
-      - maven-cache:/root/.m2
+
+  integration:
+    profiles: ["aux"]
+    build:
+      context: .
+      dockerfile: services/integration/build/package/Dockerfile
+      target: ${COMPOSE_BUILD_TARGET:-runtime}
+    container_name: lombardio-integration
+    restart: unless-stopped
+    cpus: 0.75
+    mem_limit: 384m
+    environment:
+      GOMAXPROCS: ${INTEGRATION_GOMAXPROCS:-1}
+      GOMEMLIMIT: ${INTEGRATION_GOMEMLIMIT:-256MiB}
+      PORT: 8092
+      RABBITMQ_URL: amqp://${RABBITMQ_USERNAME}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+      RABBITMQ_EXCHANGE: ${INTEGRATION_RABBITMQ_EXCHANGE}
+      RABBITMQ_QUEUE: integration.platform.events
+      RABBITMQ_BINDING_KEY: platform.#
+      INTEGRATION_INTERNAL_SERVICE_TOKEN: ${CUSTOMER_INTERNAL_SERVICE_TOKEN}
+      INTEGRATION_EMAIL_DELIVERY_MODE: ${INTEGRATION_EMAIL_DELIVERY_MODE}
+      INTEGRATION_SMTP_ADDRESS: ${INTEGRATION_SMTP_ADDRESS}
+      INTEGRATION_SMTP_USERNAME: ${INTEGRATION_SMTP_USERNAME}
+      INTEGRATION_SMTP_PASSWORD: ${INTEGRATION_SMTP_PASSWORD}
+      INTEGRATION_SMTP_FROM_ADDRESS: ${INTEGRATION_SMTP_FROM_ADDRESS}
+      INTEGRATION_SMTP_FROM_NAME: ${INTEGRATION_SMTP_FROM_NAME}
+      INTEGRATION_WEBHOOK_DESTINATIONS: ${INTEGRATION_WEBHOOK_DESTINATIONS}
+    ports:
+      - "8092:8092"
+    volumes:
+      - ./services/integration:/workspace
+      - integration-go-mod-cache:/go/pkg/mod
+      - integration-go-build-cache:/root/.cache/go-build
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
   centrifugo:
+    profiles: ["auction"]
     image: centrifugo/centrifugo:v6
     container_name: lombardio-centrifugo
+    restart: unless-stopped
+    cpus: 0.75
+    mem_limit: 384m
     command: ["centrifugo", "-c", "/centrifugo/config.json"]
     ports:
       - "8000:8000"
     volumes:
-      - ./infra/centrifugo/config.json:/centrifugo/config.json:ro
+      - ./infra/centrifugo/config.json/config.json:/centrifugo/config.json:ro
+    depends_on:
+      redis:
+        condition: service_healthy
 
   frontend:
     build:
       context: .
       dockerfile: frontend/app/build/package/Dockerfile
-      target: development
+      target: ${FRONTEND_BUILD_TARGET:-development}
     container_name: lombardio-frontend
+    restart: unless-stopped
+    cpus: 0.5
+    mem_limit: 256m
     environment:
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "300"
       VITE_API_BASE_URL: http://localhost:8081
       VITE_PLATFORM_API_BASE_URL: http://localhost:8082
       VITE_ORIGINATION_API_BASE_URL: http://localhost:8083
@@ -334,7 +534,7 @@ services:
       VITE_REPORTING_API_BASE_URL: http://localhost:8091
       VITE_CENTRIFUGO_WS_URL: ws://localhost:8000/connection/websocket
     ports:
-      - "5173:5173"
+      - "5173:80"
     volumes:
       - ./frontend/app:/workspace
       - frontend-node-modules:/workspace/node_modules
@@ -343,28 +543,14 @@ services:
         condition: service_started
       platform:
         condition: service_started
-      loan-origination:
-        condition: service_started
-      customer:
-        condition: service_started
-      pawn-ticket:
-        condition: service_started
-      auction:
-        condition: service_started
-      online-auction:
-        condition: service_started
-      reporting:
-        condition: service_started
-      kyc:
-        condition: service_started
-      aml:
-        condition: service_started
-      centrifugo:
-        condition: service_started
 
   prometheus:
+    profiles: ["obs"]
     image: prom/prometheus:v2.54.1
     container_name: lombardio-prometheus
+    restart: unless-stopped
+    cpus: 1.0
+    mem_limit: 768m
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
@@ -398,8 +584,12 @@ services:
         condition: service_started
 
   grafana:
+    profiles: ["obs"]
     image: grafana/grafana:11.2.0
     container_name: lombardio-grafana
+    restart: unless-stopped
+    cpus: 0.75
+    mem_limit: 512m
     environment:
       GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER}
       GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
@@ -415,8 +605,12 @@ services:
         condition: service_started
 
   alertmanager:
+    profiles: ["obs"]
     image: prom/alertmanager:v0.27.0
     container_name: lombardio-alertmanager
+    restart: unless-stopped
+    cpus: 0.5
+    mem_limit: 256m
     command:
       - "--config.file=/etc/alertmanager/alertmanager.yml"
     ports:
@@ -425,8 +619,12 @@ services:
       - ./infra/observability/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
 
 volumes:
-  postgres-data:
-  maven-cache:
   frontend-node-modules:
+  integration-go-build-cache:
+  integration-go-mod-cache:
+  maven-cache:
+  postgres-data:
+  rabbitmq-data:
+  redis-data:
   prometheus-data:
   grafana-data:

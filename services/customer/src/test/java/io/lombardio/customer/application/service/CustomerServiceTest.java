@@ -4,7 +4,9 @@ import io.lombardio.customer.api.http.CreateCustomerRequest;
 import io.lombardio.customer.api.http.UpdateCustomerRequest;
 import io.lombardio.customer.domain.port.KycDirectory;
 import io.lombardio.customer.infrastructure.persistence.support.InMemoryCustomerRepository;
+import io.lombardio.customer.portal.application.CustomerPortalService;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.time.LocalDate;
 
@@ -15,7 +17,8 @@ class CustomerServiceTest {
     private final CustomerService customerService = new CustomerService(
             new InMemoryCustomerRepository(),
             (tenantId, customerId) -> new KycDirectory.KycProjection("APPROVED", true, "PERSONALAUSWEIS"),
-            java.util.List.of()
+            java.util.List.of(),
+            Mockito.mock(CustomerPortalService.class)
     );
 
     @Test
@@ -34,6 +37,8 @@ class CustomerServiceTest {
                 "Sommer",
                 LocalDate.parse("1991-05-18"),
                 "+49 170 333333",
+                null,
+                false,
                 "Beispielweg 3",
                 "10405",
                 "Berlin"
@@ -60,6 +65,8 @@ class CustomerServiceTest {
                 "Schneider",
                 LocalDate.parse("1988-04-12"),
                 "+49 170 999999",
+                "anna.schneider@example.test",
+                true,
                 "Neue Str. 9",
                 "10117",
                 "Berlin"

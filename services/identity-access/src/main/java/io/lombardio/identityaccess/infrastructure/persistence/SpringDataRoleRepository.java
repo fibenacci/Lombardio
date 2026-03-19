@@ -17,4 +17,7 @@ public interface SpringDataRoleRepository extends JpaRepository<RoleEntity, Stri
 
     @EntityGraph(attributePaths = "permissions")
     List<RoleEntity> findByKeyOrderByTenantIdAsc(String key);
+
+    @EntityGraph(attributePaths = "permissions")
+    Optional<RoleEntity> findFirstByTenantIdAndKey(String tenantId, String key);
 }

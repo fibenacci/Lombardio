@@ -16,6 +16,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAMESPACE: ${{ github.repository_owner }}/lombardio
+  TF_IN_AUTOMATION: "true"
 
 jobs:
   deploy:
@@ -28,12 +29,37 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
       - uses: imranismail/setup-kustomize@v2
       - uses: azure/setup-kubectl@v4
       - name: Configure kubeconfig
         run: |
           mkdir -p ~/.kube
           printf '%s' '${{ secrets.KUBE_CONFIG_STAGING }}' > ~/.kube/config
+      - name: Terraform init staging
+        working-directory: infra/terraform/environments/staging
+        env:
+          TF_VAR_kubeconfig_context: ${{ secrets.KUBE_CONTEXT_STAGING }}
+          TF_VAR_cluster_issuer_email: ${{ secrets.ACME_EMAIL_STAGING }}
+          TF_VAR_enable_cluster_issuer: ${{ secrets.TF_ENABLE_CLUSTER_ISSUER_STAGING || 'true' }}
+          TF_VAR_enable_vault_cluster_secret_store: ${{ secrets.TF_ENABLE_VAULT_CLUSTER_SECRET_STORE_STAGING || 'true' }}
+          TF_VAR_vault_server: ${{ secrets.VAULT_SERVER_STAGING }}
+          TF_VAR_vault_role: ${{ secrets.VAULT_ROLE_STAGING }}
+          TF_VAR_vault_token: ${{ secrets.VAULT_TOKEN_STAGING }}
+          TF_VAR_base_domain: ${{ secrets.BASE_DOMAIN_STAGING || 'staging.lombardio.example' }}
+        run: terraform init
+      - name: Terraform apply staging foundations
+        working-directory: infra/terraform/environments/staging
+        env:
+          TF_VAR_kubeconfig_context: ${{ secrets.KUBE_CONTEXT_STAGING }}
+          TF_VAR_cluster_issuer_email: ${{ secrets.ACME_EMAIL_STAGING }}
+          TF_VAR_enable_cluster_issuer: ${{ secrets.TF_ENABLE_CLUSTER_ISSUER_STAGING || 'true' }}
+          TF_VAR_enable_vault_cluster_secret_store: ${{ secrets.TF_ENABLE_VAULT_CLUSTER_SECRET_STORE_STAGING || 'true' }}
+          TF_VAR_vault_server: ${{ secrets.VAULT_SERVER_STAGING }}
+          TF_VAR_vault_role: ${{ secrets.VAULT_ROLE_STAGING }}
+          TF_VAR_vault_token: ${{ secrets.VAULT_TOKEN_STAGING }}
+          TF_VAR_base_domain: ${{ secrets.BASE_DOMAIN_STAGING || 'staging.lombardio.example' }}
+        run: terraform apply -auto-approve
       - name: Resolve image tag
         id: meta
         run: |

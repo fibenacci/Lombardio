@@ -90,9 +90,7 @@ describe("RolesView", () => {
     await textInputs[0].setValue("branch-manager");
     await textInputs[1].setValue("Branch Manager");
     await wrapper.find("textarea").setValue("Branch administration role");
-    const checkboxes = wrapper.findAll('input[type="checkbox"]');
-    await checkboxes[1].setValue(true);
-    await checkboxes[2].setValue(true);
+    wrapper.vm.form.permissionKeys = ["users.read", "roles.read"];
     await wrapper.find("form").trigger("submit.prevent");
     await flushPromises();
 

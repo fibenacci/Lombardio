@@ -6,19 +6,10 @@ data:
   ONLINE_AUCTION_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=online_auction
   ONLINE_AUCTION_DB_USERNAME: lombardio
   IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
   CENTRIFUGO_BASE_URL: http://centrifugo:8000
   CENTRIFUGO_WS_URL: ws://realtime.lombardio.local/connection/websocket
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: online-auction-secret
-type: Opaque
-stringData:
-  ONLINE_AUCTION_DB_PASSWORD: change-me
-  CENTRIFUGO_API_KEY: change-me
-  CENTRIFUGO_HMAC_SECRET: change-me
----
 apiVersion: v1
 kind: Service
 metadata:

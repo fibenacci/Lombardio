@@ -1,27 +1,21 @@
-<section class="view-shell auction-view">
-  <header class="section-header">
-    <div>
-      <p class="eyebrow">Verwertung</p>
-      <h2>Auktionen und Ueberschuesse</h2>
-    </div>
-    <p class="meta-copy">Backoffice-Versteigerung ohne Echtzeit-Bieterkanal</p>
-  </header>
+<section class="page auction-view">
+  <PageHeader eyebrow="Verwertung" title="Auktionen und Ueberschuesse" icon="pi pi-gavel" copy="Backoffice-Versteigerung ohne Echtzeit-Bieterkanal" />
 
-  <p v-if="errorMessage" class="error-banner">{{ errorMessage }}</p>
+  <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
 
   <div class="auction-grid">
-    <section class="panel">
-      <h3>Neue Auktion</h3>
-      <label>
-        <span>Titel</span>
-        <input v-model="createForm.title" type="text">
-      </label>
-      <label>
-        <span>Ort</span>
-        <input v-model="createForm.location" type="text">
-      </label>
+    <AdminPanel title="Neue Auktion" subtitle="Erfasse Auktion und Lose aus dem stationaeren Verwertungsprozess.">
+      <FormShell :errorMessage="errorMessage" @submit="submitCreate">
+        <label>
+          <span>Titel</span>
+          <PInputText v-model="createForm.title" type="text" />
+        </label>
+        <label>
+          <span>Ort</span>
+          <PInputText v-model="createForm.location" type="text" />
+        </label>
 
-      <div class="lot-editor">
+        <div class="lot-editor">
         <div class="lot-row header">
           <span>Vertrag</span>
           <span>Pfandnummer</span>
@@ -30,22 +24,22 @@
           <span>Forderung</span>
         </div>
         <div v-for="(lot, index) in createForm.lots" :key="index" class="lot-row">
-          <input v-model="lot.contractNumber" type="text" placeholder="PS-5001">
-          <input v-model="lot.itemNumber" type="text" placeholder="PS-5001-01">
-          <input v-model="lot.description" type="text" placeholder="Goldring 585">
-          <input v-model="lot.estimatedValue" type="number" min="0.01" step="0.01">
-          <input v-model="lot.outstandingClaim" type="number" min="0.01" step="0.01">
+          <PInputText v-model="lot.contractNumber" type="text" placeholder="PS-5001" />
+          <PInputText v-model="lot.itemNumber" type="text" placeholder="PS-5001-01" />
+          <PInputText v-model="lot.description" type="text" placeholder="Goldring 585" />
+          <PInputText v-model="lot.estimatedValue" type="number" min="0.01" step="0.01" />
+          <PInputText v-model="lot.outstandingClaim" type="number" min="0.01" step="0.01" />
         </div>
-      </div>
+        </div>
 
-      <div class="button-row">
-        <button class="secondary-button" type="button" @click="addLot">Los hinzufuegen</button>
-        <button type="button" @click="submitCreate">Auktion anlegen</button>
-      </div>
-    </section>
+        <template #actions>
+          <PButton icon="pi pi-plus" label="Los hinzufuegen" severity="secondary" outlined type="button" @click="addLot" />
+          <PButton icon="pi pi-save" label="Auktion anlegen" type="submit" />
+        </template>
+      </FormShell>
+    </AdminPanel>
 
-    <section class="panel">
-      <h3>Versteigerungen</h3>
+    <AdminPanel title="Versteigerungen" subtitle="Waehle eine Auktion fuer Bekanntmachung und Zuschlag.">
       <div class="auction-list">
         <button
           v-for="auction in auctions"
@@ -61,99 +55,69 @@
           <span v-if="auction.auctionDate">Termin: {{ auction.auctionDate }}</span>
         </button>
       </div>
-    </section>
+    </AdminPanel>
   </div>
 
-  <section v-if="selectedAuction" class="panel">
-    <header class="section-header compact">
-      <div>
-        <p class="eyebrow">Ausgewaehlte Auktion</p>
-        <h3>{{ selectedAuction.title }}</h3>
-      </div>
-      <div class="button-row">
-        <button class="secondary-button" type="button" @click="triggerOpen">Live starten</button>
-        <button class="secondary-button" type="button" @click="triggerClose">Auktion schliessen</button>
-      </div>
-    </header>
+  <AdminPanel v-if="selectedAuction" :title="selectedAuction.title" subtitle="Ausgewaehlte Auktion">
+    <template #actions>
+      <SectionActions>
+        <PButton icon="pi pi-play" label="Live starten" severity="secondary" outlined type="button" @click="triggerOpen" />
+        <PButton icon="pi pi-stop" label="Auktion schliessen" severity="secondary" outlined type="button" @click="triggerClose" />
+      </SectionActions>
+    </template>
 
-    <div class="panel nested">
-      <h4>Bekanntmachung</h4>
+    <AdminPanel title="Bekanntmachung" subtitle="Oeffentliche Bekanntmachung mindestens 1 Woche und hoechstens 2 Wochen vor Termin.">
       <label>
         <span>Auktionstermin</span>
-        <input v-model="announceForm.auctionDate" type="date">
+        <PInputText v-model="announceForm.auctionDate" type="date" />
       </label>
       <label>
         <span>Bekanntmachungsreferenz</span>
-        <input v-model="announceForm.announcementReference" type="text" placeholder="Amtsblatt 12/2026">
+        <PInputText v-model="announceForm.announcementReference" type="text" placeholder="Amtsblatt 12/2026" />
       </label>
-      <button type="button" @click="submitAnnouncement">Bekanntmachung speichern</button>
-      <p class="hint">
-        Oeffentliche Bekanntmachung mindestens 1 Woche und hoechstens 2 Wochen vor Termin.
-      </p>
-    </div>
+      <SectionActions>
+        <PButton icon="pi pi-save" label="Bekanntmachung speichern" type="button" @click="submitAnnouncement" />
+      </SectionActions>
+    </AdminPanel>
 
-    <div class="panel nested">
-      <h4>Lose</h4>
-      <table class="lot-table">
-        <thead>
-          <tr>
-            <th>Los</th>
-            <th>Vertrag</th>
-            <th>Beschreibung</th>
-            <th>Aktuelles Gebot</th>
-            <th>Zuschlag</th>
-            <th>Ueberschuss</th>
-            <th>Aktionen</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="lot in selectedAuction.lots" :key="lot.id">
-            <td>{{ lot.lotNumber }}</td>
-            <td>{{ lot.contractNumber }}</td>
-            <td>{{ lot.description }}</td>
-            <td>{{ lot.latestBidAmount || "0.00" }}</td>
-            <td>{{ lot.hammerPrice || "-" }}</td>
-            <td>{{ lot.surplusAmount || "-" }}</td>
-            <td>
-              <div class="action-stack">
-                <input v-model="bidForms[lot.id].bidderDisplayName" type="text" placeholder="Bietername">
-                <input v-model="bidForms[lot.id].amount" type="number" min="0.01" step="0.01" placeholder="Gebot">
-                <button class="secondary-button" type="button" @click="submitBid(lot.id)">Gebot</button>
-                <input v-model="settleForms[lot.id].hammerPrice" type="number" min="0.01" step="0.01" placeholder="Zuschlag">
-                <button class="secondary-button" type="button" @click="submitSettlement(lot.id)">Zuschlag buchen</button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
+    <AdminPanel title="Lose">
+      <AppDataTable :value="selectedAuction.lots" dataKey="id">
+        <PColumn field="lotNumber" header="Los" sortable />
+        <PColumn field="contractNumber" header="Vertrag" sortable />
+        <PColumn field="description" header="Beschreibung" sortable />
+        <PColumn header="Aktuelles Gebot" field="latestBidAmount" sortable>
+          <template #body="{ data }">{{ data.latestBidAmount || "0.00" }}</template>
+        </PColumn>
+        <PColumn header="Zuschlag" field="hammerPrice" sortable>
+          <template #body="{ data }">{{ data.hammerPrice || "-" }}</template>
+        </PColumn>
+        <PColumn header="Ueberschuss" field="surplusAmount" sortable>
+          <template #body="{ data }">{{ data.surplusAmount || "-" }}</template>
+        </PColumn>
+        <PColumn header="Aktionen">
+          <template #body="{ data }">
+            <div class="action-stack">
+              <PInputText v-model="bidForms[data.id].bidderDisplayName" type="text" placeholder="Bietername" />
+              <PInputText v-model="bidForms[data.id].amount" type="number" min="0.01" step="0.01" placeholder="Gebot" />
+              <PButton label="Gebot" severity="secondary" outlined size="small" type="button" @click="submitBid(data.id)" />
+              <PInputText v-model="settleForms[data.id].hammerPrice" type="number" min="0.01" step="0.01" placeholder="Zuschlag" />
+              <PButton label="Zuschlag buchen" severity="secondary" outlined size="small" type="button" @click="submitSettlement(data.id)" />
+            </div>
+          </template>
+        </PColumn>
+      </AppDataTable>
+    </AdminPanel>
+  </AdminPanel>
 
-  <section class="panel">
-    <h3>Ueberschussfaelle</h3>
-    <table class="lot-table">
-      <thead>
-        <tr>
-          <th>Los</th>
-          <th>Vertrag</th>
-          <th>Zuschlag</th>
-          <th>Forderung</th>
-          <th>Ueberschuss</th>
-          <th>Behoerdenfrist</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in surplusCases" :key="item.lotId">
-          <td>{{ item.lotNumber }}</td>
-          <td>{{ item.contractNumber }}</td>
-          <td>{{ item.hammerPrice }}</td>
-          <td>{{ item.outstandingClaim }}</td>
-          <td>{{ item.surplusAmount }}</td>
-          <td>{{ item.authorityTransferDueDate }}</td>
-          <td>{{ item.authorityTransferStatus }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+  <AdminPanel title="Ueberschussfaelle">
+    <AppDataTable :value="surplusCases" dataKey="lotId">
+      <PColumn field="lotNumber" header="Los" sortable />
+      <PColumn field="contractNumber" header="Vertrag" sortable />
+      <PColumn field="hammerPrice" header="Zuschlag" sortable />
+      <PColumn field="outstandingClaim" header="Forderung" sortable />
+      <PColumn field="surplusAmount" header="Ueberschuss" sortable />
+      <PColumn field="authorityTransferDueDate" header="Behoerdenfrist" sortable />
+      <PColumn field="authorityTransferStatus" header="Status" sortable />
+    </AppDataTable>
+  </AdminPanel>
 </section>

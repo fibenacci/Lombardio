@@ -1,0 +1,22 @@
+<main class="portal-shell">
+  <section class="portal-card">
+    <p class="eyebrow">{{ t("customerPortalLogin.eyebrow") }}</p>
+    <h1>{{ t("customerPortalLogin.title") }}</h1>
+    <p class="intro">{{ t("customerPortalLogin.copy") }}</p>
+
+    <form class="portal-form" @submit.prevent="submit">
+      <label>
+        <span>{{ t("customerPortalLogin.email") }}</span>
+        <input v-model="form.email" type="email" autocomplete="username" />
+      </label>
+      <label>
+        <span>{{ t("customerPortalLogin.password") }}</span>
+        <input v-model="form.password" type="password" autocomplete="current-password" />
+      </label>
+      <p v-if="errorMessage" class="portal-error">{{ errorMessage }}</p>
+      <button :disabled="isSubmitting" type="submit">
+        {{ isSubmitting ? t("customerPortalLogin.submitting") : t("customerPortalLogin.submit") }}
+      </button>
+    </form>
+  </section>
+</main>

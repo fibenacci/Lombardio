@@ -9,5 +9,7 @@ public interface BranchRepository {
 
     Optional<Branch> findById(String id);
 
+    Optional<Branch> findByTenantIdAndKey(String tenantId, String key);
+
     Branch save(Branch branch);
 }

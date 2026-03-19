@@ -39,6 +39,15 @@ public final class InMemoryRepositories {
                     .sorted(Comparator.comparing(PawnTicket::createdAt).reversed())
                     .toList();
         }
+
+        @Override
+        public List<PawnTicket> findByTenantIdAndCustomerId(String tenantId, String customerId) {
+            return store.values().stream()
+                    .filter(pawnTicket -> pawnTicket.tenantId().equals(tenantId))
+                    .filter(pawnTicket -> pawnTicket.customerId().equals(customerId))
+                    .sorted(Comparator.comparing(PawnTicket::createdAt).reversed())
+                    .toList();
+        }
     }
 
     public static final class CashTransactions implements CashTransactionRepository {

@@ -1,0 +1,12 @@
+kubeconfig_context = "staging-cluster"
+base_domain        = "staging.lombardio.example"
+
+enable_cluster_issuer = true
+cluster_issuer_name   = "letsencrypt-staging"
+cluster_issuer_email  = "platform@example.com"
+
+enable_vault_cluster_secret_store = true
+vault_server                      = "https://vault.staging.lombardio.example"
+vault_path                        = "kv"
+vault_role                        = "external-secrets-staging"
+vault_token                       = "replace-me"

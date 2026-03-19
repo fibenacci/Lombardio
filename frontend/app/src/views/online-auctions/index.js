@@ -9,6 +9,7 @@ import {
   reviewOnlineAuctionRegistration,
   startOnlineAuction
 } from "../../services/api/onlineAuction";
+import { useAppToast } from "../../composables/use-app-toast";
 import template from "./template.html?raw";
 import "./styles.scss";
 
@@ -19,6 +20,7 @@ function emptyLot() {
 export default defineComponent({
   name: "OnlineAuctionsView",
   setup() {
+    const toast = useAppToast();
     const auctions = ref([]);
     const selectedAuctionId = ref("");
     const errorMessage = ref("");
@@ -80,6 +82,7 @@ export default defineComponent({
           authStore.token
         );
         createForm.lots = [emptyLot()];
+        toast.success("Online auction created", createForm.title || "Online auction draft created.");
         await reloadData();
       } catch (error) {
         errorMessage.value = error instanceof Error ? error.message : "Request failed";
@@ -103,6 +106,7 @@ export default defineComponent({
           },
           authStore.token
         );
+        toast.success(decision === "APPROVE" ? "Bidder approved" : "Bidder rejected", "Registration review was saved.");
         await reloadData();
       } catch (error) {
         errorMessage.value = error instanceof Error ? error.message : "Request failed";
@@ -118,12 +122,15 @@ export default defineComponent({
         const auctionId = selectedAuction.value.id;
         if (action === "publish") {
           await publishOnlineAuction(tenantId, auctionId, authStore.token);
+          toast.info("Auction published", `${selectedAuction.value.title} is now publicly visible.`);
         }
         if (action === "start") {
           await startOnlineAuction(tenantId, auctionId, authStore.token);
+          toast.info("Auction started", `${selectedAuction.value.title} is now live.`);
         }
         if (action === "close") {
           await closeOnlineAuction(tenantId, auctionId, authStore.token);
+          toast.info("Auction closed", `${selectedAuction.value.title} was closed.`);
         }
         await reloadData();
       } catch (error) {

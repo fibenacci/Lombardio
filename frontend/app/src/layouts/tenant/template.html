@@ -7,9 +7,14 @@
           <h1 v-if="!isSidebarCollapsed">{{ selectedTenant?.displayName ?? t("tenantLayout.fallbackTitle") }}</h1>
           <p v-if="!isSidebarCollapsed" class="meta-copy">{{ t("tenantLayout.subtitle") }}</p>
         </div>
-        <button class="sidebar-toggle" type="button" @click="toggleSidebar">
-          {{ isSidebarCollapsed ? "»" : "«" }}
-        </button>
+        <PButton
+          class="sidebar-toggle"
+          :icon="isSidebarCollapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'"
+          severity="secondary"
+          rounded
+          text
+          @click="toggleSidebar"
+        />
       </div>
     </div>
 
@@ -21,8 +26,11 @@
         :class="{ active: group.isActive, open: isGroupOpen(group.key), collapsed: isSidebarCollapsed }"
       >
         <button class="nav-group-trigger" type="button" @click="toggleGroup(group.key)">
-          <span class="nav-group-label">{{ isSidebarCollapsed ? group.label.slice(0, 1) : group.label }}</span>
-          <span v-if="!isSidebarCollapsed" class="nav-group-state">{{ isGroupOpen(group.key) ? "−" : "+" }}</span>
+          <span class="nav-group-copy">
+            <i :class="group.icon"></i>
+            <span class="nav-group-label">{{ isSidebarCollapsed ? groupInitial(group.label) : group.label }}</span>
+          </span>
+          <i v-if="!isSidebarCollapsed" :class="isGroupOpen(group.key) ? 'pi pi-angle-down' : 'pi pi-angle-right'" class="nav-group-state"></i>
         </button>
         <div class="nav-flyout">
           <RouterLink
@@ -31,7 +39,10 @@
             :class="{ active: route.name === item.name }"
             :to="item.to"
           >
-            {{ item.label }}
+            <span class="nav-item-copy">
+              <i :class="item.icon"></i>
+              <span>{{ item.label }}</span>
+            </span>
           </RouterLink>
         </div>
       </div>
@@ -41,7 +52,10 @@
         :class="{ active: route.name === 'platform-tenants' }"
         to="/platform/tenants"
       >
-        {{ isSidebarCollapsed ? "P" : t("tenantLayout.platform") }}
+        <span class="nav-item-copy">
+          <i class="pi pi-building"></i>
+          <span>{{ isSidebarCollapsed ? "P" : t("tenantLayout.platform") }}</span>
+        </span>
       </RouterLink>
     </nav>
 
@@ -49,14 +63,33 @@
       <div v-if="isImpersonating" class="support-banner">
         <p class="meta-label">{{ t("common.supportSession") }}</p>
         <strong v-if="!isSidebarCollapsed">{{ t("common.delegatedAccess") }}</strong>
-        <button v-if="!isSidebarCollapsed" class="secondary-button" type="button" @click="endDelegation">{{ t("common.returnToBaseSession") }}</button>
+        <PButton
+          v-if="!isSidebarCollapsed"
+          class="sidebar-action"
+          icon="pi pi-replay"
+          :label="t('common.returnToBaseSession')"
+          severity="secondary"
+          outlined
+          @click="endDelegation"
+        />
       </div>
-      <div v-if="!isSidebarCollapsed">
-        <p class="meta-label">{{ t("common.signedInAs") }}</p>
-        <strong>{{ user?.displayName }}</strong>
-        <p class="meta-copy">{{ user?.email }}</p>
+      <div v-if="!isSidebarCollapsed" class="identity-block">
+        <PAvatar :label="user?.displayName?.slice(0, 1) ?? 'U'" shape="circle" />
+        <div>
+          <p class="meta-label">{{ t("common.signedInAs") }}</p>
+          <strong>{{ user?.displayName }}</strong>
+          <p class="meta-copy">{{ user?.email }}</p>
+        </div>
       </div>
-      <button class="secondary-button" type="button" @click="logout">{{ isSidebarCollapsed ? "↩" : t("common.signOut") }}</button>
+      <PButton
+        class="sidebar-action"
+        icon="pi pi-sign-out"
+        :label="isSidebarCollapsed ? '' : t('common.signOut')"
+        severity="secondary"
+        outlined
+        :rounded="isSidebarCollapsed"
+        @click="logout"
+      />
     </div>
   </aside>
 

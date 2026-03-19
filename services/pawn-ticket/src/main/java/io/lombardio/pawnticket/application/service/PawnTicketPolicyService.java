@@ -202,6 +202,10 @@ public class PawnTicketPolicyService {
         return pawnTicketRepository.findByTenantId(tenantId);
     }
 
+    public List<PawnTicket> listIssuedTickets(String tenantId, String customerId) {
+        return pawnTicketRepository.findByTenantIdAndCustomerId(tenantId, customerId);
+    }
+
     private List<PawnTicketPosition> normalizePositions(String contractNumber, List<PawnTicketPosition> positions) {
         java.util.List<PawnTicketPosition> normalized = new java.util.ArrayList<>();
         for (int index = 0; index < positions.size(); index++) {

@@ -11,5 +11,7 @@ public interface UserRepository {
 
     Optional<User> findByEmail(String email);
 
+    Optional<User> findByTenantIdAndEmail(String tenantId, String email);
+
     User save(User user);
 }

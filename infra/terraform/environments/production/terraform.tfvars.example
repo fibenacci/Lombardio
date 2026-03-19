@@ -1,0 +1,9 @@
+kubeconfig_context = "production-cluster"
+base_domain        = "lombardio.example"
+
+cluster_issuer_email = "platform@example.com"
+
+vault_server = "https://vault.lombardio.example"
+vault_path   = "kv"
+vault_role   = "external-secrets-production"
+vault_token  = "replace-me"

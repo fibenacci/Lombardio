@@ -1,0 +1,20 @@
+<PCard class="panel admin-panel">
+  <template #content>
+    <header v-if="title || subtitle || $slots.actions || $slots.header" class="admin-panel__header">
+      <div class="admin-panel__copy">
+        <slot name="header">
+          <h3 v-if="title" class="admin-panel__title">{{ title }}</h3>
+          <p v-if="subtitle" class="admin-panel__subtitle">{{ subtitle }}</p>
+        </slot>
+      </div>
+
+      <div v-if="$slots.actions" class="admin-panel__actions">
+        <slot name="actions" />
+      </div>
+    </header>
+
+    <div class="admin-panel__body">
+      <slot />
+    </div>
+  </template>
+</PCard>

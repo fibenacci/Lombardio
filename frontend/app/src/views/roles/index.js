@@ -1,5 +1,6 @@
 import { computed, defineComponent, onMounted, reactive, ref } from "vue";
 import { createRole, fetchPermissions, fetchRoles } from "../../services/api/access";
+import { useAppToast } from "../../composables/use-app-toast";
 import { authStore } from "../../stores/auth";
 import { tenantStore } from "../../stores/tenant";
 import template from "./template.html?raw";
@@ -8,6 +9,7 @@ import "./styles.scss";
 export default defineComponent({
   name: "RolesView",
   setup() {
+    const toast = useAppToast();
     const roles = ref([]);
     const permissions = ref([]);
     const isLoading = ref(true);
@@ -81,6 +83,7 @@ export default defineComponent({
         );
 
         successMessage.value = "Role created";
+        toast.success("Role created", `${form.displayName || form.key} is now available for assignment.`);
         resetForm();
         await loadData();
       } catch (error) {

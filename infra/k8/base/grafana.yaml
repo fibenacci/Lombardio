@@ -162,9 +162,15 @@ spec:
           image: grafana/grafana:11.2.0
           env:
             - name: GF_SECURITY_ADMIN_USER
-              value: change-me
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: GF_SECURITY_ADMIN_USER
             - name: GF_SECURITY_ADMIN_PASSWORD
-              value: change-me
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: GF_SECURITY_ADMIN_PASSWORD
             - name: GF_USERS_ALLOW_SIGN_UP
               value: "false"
           ports:

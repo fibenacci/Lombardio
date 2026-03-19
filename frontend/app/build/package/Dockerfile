@@ -1,8 +1,8 @@
 FROM node:20-alpine AS development
 
 WORKDIR /workspace
-EXPOSE 5173
-CMD ["sh", "-lc", "npm install && npm run dev -- --host 0.0.0.0 --port 5173"]
+EXPOSE 80
+CMD ["sh", "-lc", "npm install && npm run dev -- --host 0.0.0.0 --port 80"]
 
 FROM node:20-alpine AS build
 

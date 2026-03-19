@@ -24,6 +24,18 @@ kyc:
 identity-access:
   base-url: ${IDENTITY_ACCESS_BASE_URL}
 
+pawn-ticket:
+  base-url: ${PAWN_TICKET_BASE_URL:http://localhost:8085}
+
+integration:
+  base-url: ${INTEGRATION_BASE_URL:http://localhost:8092}
+
+customer:
+  internal-service-token: ${CUSTOMER_INTERNAL_SERVICE_TOKEN:dev-internal-token}
+
+customer-portal:
+  public-base-url: ${CUSTOMER_PORTAL_PUBLIC_BASE_URL:http://localhost:5173/portal}
+
 app:
   cors:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}

@@ -68,6 +68,9 @@ export default defineComponent({
       lastName: "",
       birthDate: "",
       phone: "",
+      email: "",
+      wantsDigitalPawnTicket: false,
+      onlineAccessStatus: "NOT_REQUESTED",
       street: "",
       postalCode: "",
       city: ""
@@ -105,6 +108,29 @@ export default defineComponent({
     const documentOcrAvailable = computed(() => tenantStore.hasFeature("kyc-document-ocr"));
     const amlFeatureEnabled = computed(() => tenantStore.hasFeature("aml-compliance"));
     const dateTimeLocale = computed(() => (locale.value === "de" ? "de-DE" : "en-GB"));
+    const kycStatusOptions = computed(() => [
+      { label: t("customerDetail.statusOptions.kyc.NOT_STARTED"), value: "NOT_STARTED" },
+      { label: t("customerDetail.statusOptions.kyc.IN_PROGRESS"), value: "IN_PROGRESS" },
+      { label: t("customerDetail.statusOptions.kyc.APPROVED"), value: "APPROVED" },
+      { label: t("customerDetail.statusOptions.kyc.REJECTED"), value: "REJECTED" }
+    ]);
+    const kycDocumentTypeOptions = computed(() => [
+      { label: t("customerDetail.documentTypeOptions.PERSONALAUSWEIS"), value: "PERSONALAUSWEIS" },
+      { label: t("customerDetail.documentTypeOptions.REISEPASS"), value: "REISEPASS" },
+      { label: t("customerDetail.documentTypeOptions.AUFENTHALTSTITEL"), value: "AUFENTHALTSTITEL" }
+    ]);
+    const amlStatusOptions = computed(() => [
+      { label: t("customerDetail.statusOptions.aml.NOT_REVIEWED"), value: "NOT_REVIEWED" },
+      { label: t("customerDetail.statusOptions.aml.CLEAR"), value: "CLEAR" },
+      { label: t("customerDetail.statusOptions.aml.REVIEW_REQUIRED"), value: "REVIEW_REQUIRED" },
+      { label: t("customerDetail.statusOptions.aml.BLOCKED"), value: "BLOCKED" },
+      { label: t("customerDetail.statusOptions.aml.REPORTED"), value: "REPORTED" }
+    ]);
+    const amlRiskLevelOptions = computed(() => [
+      { label: t("customerDetail.riskLevels.LOW"), value: "LOW" },
+      { label: t("customerDetail.riskLevels.MEDIUM"), value: "MEDIUM" },
+      { label: t("customerDetail.riskLevels.HIGH"), value: "HIGH" }
+    ]);
 
     async function loadData() {
       if (!tenantStore.selectedTenantId || !customerId.value) {
@@ -181,6 +207,8 @@ export default defineComponent({
             lastName: customer.lastName,
             birthDate: customer.birthDate,
             phone: customer.phone,
+            email: customer.email,
+            wantsDigitalPawnTicket: customer.wantsDigitalPawnTicket,
             street: customer.street,
             postalCode: customer.postalCode,
             city: customer.city
@@ -380,6 +408,10 @@ export default defineComponent({
       documentOcrAvailable,
       aml,
       amlFeatureEnabled,
+      amlRiskLevelOptions,
+      amlStatusOptions,
+      kycDocumentTypeOptions,
+      kycStatusOptions,
       prefillDocument,
       saveCustomer,
       saveAml,

@@ -17,4 +17,7 @@ public interface SpringDataUserRepository extends JpaRepository<UserEntity, Stri
 
     @EntityGraph(attributePaths = {"roles", "branches"})
     List<UserEntity> findByEmailIgnoreCaseOrderByTenantIdAsc(String email);
+
+    @EntityGraph(attributePaths = {"roles", "branches"})
+    Optional<UserEntity> findFirstByTenantIdAndEmailIgnoreCase(String tenantId, String email);
 }

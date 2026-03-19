@@ -1,3 +1,6 @@
-.panel-subtitle {
-  margin: 0.35rem 0 0;
+.table-actions,
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }

@@ -1,0 +1,43 @@
+.page-header-toolbar .p-toolbar-start,
+.page-header-toolbar .p-toolbar-end {
+  align-items: center;
+}
+
+.page-header-main {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.page-header-main h2 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.page-header-icon {
+  width: 3rem;
+  height: 3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(16, 61, 99, 0.14), rgba(140, 109, 59, 0.18));
+  color: var(--app-primary);
+  font-size: 1.2rem;
+}
+
+@media (max-width: 960px) {
+  .page-header-toolbar .p-toolbar {
+    align-items: start;
+  }
+
+  .page-header-toolbar .p-toolbar-start,
+  .page-header-toolbar .p-toolbar-end {
+    width: 100%;
+  }
+
+  .page-header-toolbar .p-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

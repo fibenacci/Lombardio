@@ -1,84 +1,65 @@
 <section class="page">
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">{{ t("pawnTickets.eyebrow") }}</p>
-      <h2>{{ t("pawnTickets.title") }}</h2>
-    </div>
-    <p class="page-copy">
-      {{
-        tenantStore.selectedTenantId
-          ? t("pawnTickets.copyWithTenant", { tenant: tenantStore.selectedTenant()?.displayName ?? tenantStore.selectedTenantId })
-          : t("pawnTickets.copyWithoutTenant")
-      }}
-    </p>
-  </header>
+  <PageHeader
+    :eyebrow="t('pawnTickets.eyebrow')"
+    :title="t('pawnTickets.title')"
+    icon="pi pi-ticket"
+    :copy="
+      tenantStore.selectedTenantId
+        ? t('pawnTickets.copyWithTenant', { tenant: tenantStore.selectedTenant()?.displayName ?? tenantStore.selectedTenantId })
+        : t('pawnTickets.copyWithoutTenant')
+    "
+  />
 
-  <section class="panel">
-    <div class="panel-header">
-      <div>
-        <h3>{{ t("pawnTickets.overviewTitle") }}</h3>
-        <p class="panel-subtitle">{{ t("pawnTickets.overviewSubtitle") }}</p>
-      </div>
-      <span>{{ isLoading ? t("common.loading") : t("pawnTickets.count", { count: filteredTickets.length }) }}</span>
-    </div>
+  <AdminPanel :title="t('pawnTickets.overviewTitle')" :subtitle="isLoading ? t('common.loading') : t('pawnTickets.count', { count: filteredTickets.length })">
+    <template #actions>
+      <span class="muted-copy">{{ t("pawnTickets.overviewSubtitle") }}</span>
+    </template>
 
-    <div class="toolbar">
-      <input v-model="query" :placeholder="t('pawnTickets.searchPlaceholder')" type="text" />
-    </div>
+    <FilterBar>
+      <PInputText v-model="query" :placeholder="t('pawnTickets.searchPlaceholder')" type="text" />
+    </FilterBar>
 
-    <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
+    <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
 
-    <table v-if="!isLoading && tenantStore.selectedTenantId" class="data-table">
-      <thead>
-        <tr>
-          <th>{{ t("pawnTickets.columns.contract") }}</th>
-          <th>{{ t("pawnTickets.columns.ticket") }}</th>
-          <th>{{ t("pawnTickets.columns.customer") }}</th>
-          <th>{{ t("pawnTickets.columns.createdAt") }}</th>
-          <th>{{ t("pawnTickets.columns.dueDate") }}</th>
-          <th>{{ t("pawnTickets.columns.status") }}</th>
-          <th>{{ t("pawnTickets.columns.loan") }}</th>
-          <th>{{ t("pawnTickets.columns.repayment") }}</th>
-          <th>{{ t("pawnTickets.columns.positions") }}</th>
-          <th>{{ t("pawnTickets.columns.actions") }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="ticket in filteredTickets" :key="ticket.ticketNumber">
-          <td>
-            <strong>{{ ticket.contractNumber }}</strong>
-            <div class="muted-copy">{{ ticket.termsVersion }}</div>
-          </td>
-          <td>{{ ticket.ticketNumber }}</td>
-          <td>
-            <strong>{{ ticket.customerDisplayName }}</strong>
-            <div class="muted-copy">{{ ticket.customerNumber }}</div>
-          </td>
-          <td>{{ ticket.createdAt?.slice(0, 10) }}</td>
-          <td>{{ ticket.dueDate }}</td>
-          <td>
-            <span :class="['status-badge', { 'is-inactive': ticket.status !== 'ACTIVE' }]">
-              {{ ticket.status }}
-            </span>
-          </td>
-          <td>{{ ticket.totalLoanValue }} EUR</td>
-          <td>{{ ticket.totalRepaymentAmount }} EUR</td>
-          <td>{{ ticket.positionCount }}</td>
-          <td>
-            <div class="action-row">
-              <button :disabled="isDownloading" class="secondary-button" type="button" @click="openDocument(ticket.ticketNumber, false)">
-                PDF
-              </button>
-              <button :disabled="isDownloading" class="secondary-button" type="button" @click="openDocument(ticket.ticketNumber, true)">
-                {{ t("common.print") }}
-              </button>
-              <button :disabled="isDownloading" class="secondary-button" type="button" @click="openLabels(ticket.ticketNumber, false)">
-                {{ t("pawnTickets.labels") }}
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+    <AppDataTable v-if="tenantStore.selectedTenantId" :value="filteredTickets" dataKey="ticketNumber" :loading="isLoading">
+      <PColumn :header="t('pawnTickets.columns.contract')" field="contractNumber" sortable>
+        <template #body="{ data }">
+          <strong>{{ data.contractNumber }}</strong>
+          <div class="muted-copy">{{ data.termsVersion }}</div>
+        </template>
+      </PColumn>
+      <PColumn field="ticketNumber" :header="t('pawnTickets.columns.ticket')" sortable />
+      <PColumn :header="t('pawnTickets.columns.customer')" field="customerDisplayName" sortable>
+        <template #body="{ data }">
+          <strong>{{ data.customerDisplayName }}</strong>
+          <div class="muted-copy">{{ data.customerNumber }}</div>
+        </template>
+      </PColumn>
+      <PColumn :header="t('pawnTickets.columns.createdAt')" field="createdAt" sortable>
+        <template #body="{ data }">{{ data.createdAt?.slice(0, 10) }}</template>
+      </PColumn>
+      <PColumn field="dueDate" :header="t('pawnTickets.columns.dueDate')" sortable />
+      <PColumn :header="t('pawnTickets.columns.status')" field="status" sortable>
+        <template #body="{ data }">
+          <StatusTag :value="data.status" :activeValues="['ACTIVE']" :warnValues="['DUE']" />
+        </template>
+      </PColumn>
+      <PColumn :header="t('pawnTickets.columns.loan')" field="totalLoanValue" sortable>
+        <template #body="{ data }">{{ data.totalLoanValue }} EUR</template>
+      </PColumn>
+      <PColumn :header="t('pawnTickets.columns.repayment')" field="totalRepaymentAmount" sortable>
+        <template #body="{ data }">{{ data.totalRepaymentAmount }} EUR</template>
+      </PColumn>
+      <PColumn field="positionCount" :header="t('pawnTickets.columns.positions')" sortable />
+      <PColumn :header="t('pawnTickets.columns.actions')">
+        <template #body="{ data }">
+          <div class="action-row">
+            <PButton :disabled="isDownloading" label="PDF" severity="secondary" outlined size="small" type="button" @click="openDocument(data.ticketNumber, false)" />
+            <PButton :disabled="isDownloading" :label="t('common.print')" severity="secondary" outlined size="small" type="button" @click="openDocument(data.ticketNumber, true)" />
+            <PButton :disabled="isDownloading" :label="t('pawnTickets.labels')" severity="secondary" outlined size="small" type="button" @click="openLabels(data.ticketNumber, false)" />
+          </div>
+        </template>
+      </PColumn>
+    </AppDataTable>
+  </AdminPanel>
 </section>

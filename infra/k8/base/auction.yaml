@@ -6,15 +6,6 @@ data:
   AUCTION_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=auction
   AUCTION_DB_USERNAME: lombardio
   IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: auction-secret
-type: Opaque
-stringData:
-  AUCTION_DB_PASSWORD: change-me
----
 apiVersion: v1
 kind: Service
 metadata:

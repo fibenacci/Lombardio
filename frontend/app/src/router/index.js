@@ -1,22 +1,27 @@
 import { createRouter, createWebHistory } from "vue-router";
-import LoginView from "../views/login";
-import PlatformLayout from "../layouts/platform";
-import TenantLayout from "../layouts/tenant";
-import TenantsView from "../views/tenants";
-import UsersView from "../views/users";
-import RolesView from "../views/roles";
-import BranchesView from "../views/branches";
-import TenantHomeView from "../views/tenant-home";
-import SecurityView from "../views/security";
-import CustomersView from "../views/customers";
-import CustomerDetailView from "../views/customer-detail";
-import LoansView from "../views/loans";
-import PawnTicketsView from "../views/pawn-tickets";
-import CashdeskView from "../views/cashdesk";
-import AuctionsView from "../views/auctions";
-import OnlineAuctionsView from "../views/online-auctions";
-import PublicAuctionView from "../views/public-auction";
 import { authStore } from "../stores/auth";
+import { customerPortalStore } from "../stores/customerPortal";
+
+const LoginView = () => import("../views/login");
+const PlatformLayout = () => import("../layouts/platform");
+const TenantLayout = () => import("../layouts/tenant");
+const TenantsView = () => import("../views/tenants");
+const UsersView = () => import("../views/users");
+const RolesView = () => import("../views/roles");
+const BranchesView = () => import("../views/branches");
+const TenantHomeView = () => import("../views/tenant-home");
+const SecurityView = () => import("../views/security");
+const CustomersView = () => import("../views/customers");
+const CustomerDetailView = () => import("../views/customer-detail");
+const LoansView = () => import("../views/loans");
+const PawnTicketsView = () => import("../views/pawn-tickets");
+const CashdeskView = () => import("../views/cashdesk");
+const AuctionsView = () => import("../views/auctions");
+const OnlineAuctionsView = () => import("../views/online-auctions");
+const PublicAuctionView = () => import("../views/public-auction");
+const CustomerPortalLoginView = () => import("../views/customer-portal-login");
+const CustomerPortalActivateView = () => import("../views/customer-portal-activate");
+const CustomerPortalHomeView = () => import("../views/customer-portal-home");
 
 const routes = [
   {
@@ -28,6 +33,26 @@ const routes = [
     path: "/online-auctions/:tenantId/:auctionId",
     name: "public-online-auction",
     component: PublicAuctionView
+  },
+  {
+    path: "/portal/login",
+    name: "customer-portal-login",
+    component: CustomerPortalLoginView
+  },
+  {
+    path: "/portal/activate/:token",
+    name: "customer-portal-activate",
+    component: CustomerPortalActivateView
+  },
+  {
+    path: "/portal",
+    redirect: "/portal/home"
+  },
+  {
+    path: "/portal/home",
+    name: "customer-portal-home",
+    component: CustomerPortalHomeView,
+    meta: { requiresCustomerPortalAuth: true }
   },
   {
     path: "/platform",
@@ -137,8 +162,16 @@ function defaultRoute() {
 }
 
 export function routeGuard(to) {
-  if (!authStore.ready) {
+  if (!authStore.ready || !customerPortalStore.ready) {
     return true;
+  }
+
+  if (to.meta.requiresCustomerPortalAuth && !customerPortalStore.isAuthenticated()) {
+    return { name: "customer-portal-login" };
+  }
+
+  if ((to.name === "customer-portal-login" || to.name === "customer-portal-activate") && customerPortalStore.isAuthenticated()) {
+    return { name: "customer-portal-home" };
   }
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated()) {

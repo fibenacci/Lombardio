@@ -1,0 +1,10 @@
+<form class="stack-form" @submit.prevent="$emit('submit')">
+  <slot />
+
+  <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
+  <PMessage v-if="successMessage" severity="success" variant="simple">{{ successMessage }}</PMessage>
+
+  <SectionActions>
+    <slot name="actions" />
+  </SectionActions>
+</form>

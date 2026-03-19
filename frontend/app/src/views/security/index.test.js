@@ -52,7 +52,8 @@ describe("SecurityView", () => {
 
     const wrapper = mount(SecurityView);
 
-    await wrapper.find("select").setValue("de");
+    wrapper.vm.selectedLocale = "de";
+    wrapper.vm.updateLanguage();
     await flushPromises();
 
     expect(wrapper.text()).toContain("Sprache gespeichert");

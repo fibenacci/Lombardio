@@ -15,6 +15,11 @@ export default defineComponent({
     const { t } = useI18n();
     const user = computed(() => authStore.user);
     const isImpersonating = computed(() => authStore.isImpersonating());
+    const navigationItems = computed(() => [
+      { name: "platform-tenants", to: "/platform/tenants", label: t("platformLayout.tenants"), icon: "pi pi-building" },
+      { name: "platform-security", to: "/platform/security", label: t("platformLayout.security"), icon: "pi pi-shield" },
+      { name: "tenant-home", to: "/app/dashboard", label: t("platformLayout.tenantApp"), icon: "pi pi-th-large" }
+    ]);
 
     async function endDelegation() {
       await authStore.endDelegation();
@@ -31,6 +36,7 @@ export default defineComponent({
       endDelegation,
       isImpersonating,
       logout,
+      navigationItems,
       route,
       t,
       user

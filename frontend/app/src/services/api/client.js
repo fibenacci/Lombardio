@@ -133,6 +133,21 @@ export function customerGet(path, token) {
   });
 }
 
+export async function customerGetBlob(path, token) {
+  const response = await fetch(`${CUSTOMER_API_BASE_URL}${path}`, {
+    method: "GET",
+    headers: buildAuthHeaders(token)
+  });
+
+  if (!response.ok) {
+    const error = new Error(`Request failed with status ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
+
+  return response.blob();
+}
+
 export function customerPost(path, body, token) {
   return request(CUSTOMER_API_BASE_URL, path, {
     method: "POST",

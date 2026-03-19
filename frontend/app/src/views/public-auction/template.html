@@ -67,24 +67,14 @@
 
   <section class="panel">
     <h3>Lose</h3>
-    <table class="lot-table">
-      <thead>
-        <tr>
-          <th>Los</th>
-          <th>Titel</th>
-          <th>Aktuell</th>
-          <th>Fuehrend</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="lot in auction?.lots ?? []" :key="lot.id">
-          <td>{{ lot.lotNumber }}</td>
-          <td>{{ lot.title }}</td>
-          <td>{{ lot.currentBid }}</td>
-          <td>{{ lot.highestBidderAlias || "-" }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <AppDataTable :value="auction?.lots ?? []" dataKey="id">
+      <PColumn field="lotNumber" header="Los" sortable />
+      <PColumn field="title" header="Titel" sortable />
+      <PColumn field="currentBid" header="Aktuell" sortable />
+      <PColumn field="highestBidderAlias" header="Fuehrend" sortable>
+        <template #body="{ data }">{{ data.highestBidderAlias || "-" }}</template>
+      </PColumn>
+    </AppDataTable>
   </section>
 
   <section class="panel">

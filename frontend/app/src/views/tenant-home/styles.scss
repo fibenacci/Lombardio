@@ -16,6 +16,12 @@
   gap: 1rem;
 }
 
+.stack-form .form-field,
+.positions-table .form-field,
+.inline-row .form-field {
+  width: 100%;
+}
+
 .two-column-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }

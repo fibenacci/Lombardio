@@ -27,7 +27,8 @@ public class CustomerAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-        if (authorization != null && authorization.startsWith("Bearer ")) {
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -45,7 +46,6 @@ public class CustomerAuthenticationFilter extends OncePerRequestFilter {
                     new UsernamePasswordAuthenticationToken(principal, tokenValue, List.of())
             );
         });
-    
 
         filterChain.doFilter(request, response);
     }

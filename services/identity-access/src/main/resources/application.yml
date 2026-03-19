@@ -13,6 +13,10 @@ spring:
     hibernate:
       ddl-auto: none
     open-in-view: false
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
 server:
   port: 8081
@@ -33,6 +37,19 @@ management:
 identity:
   security:
     encryption-key: ${IDENTITY_SECURITY_ENCRYPTION_KEY}
+
+rate-limit:
+  backend: ${RATE_LIMIT_BACKEND:memory}
+  policies:
+    login:
+      max-attempts: 10
+      window: 1m
+    totp-verify:
+      max-attempts: 10
+      window: 5m
+    delegations:
+      max-attempts: 30
+      window: 1m
 
 app:
   cors:

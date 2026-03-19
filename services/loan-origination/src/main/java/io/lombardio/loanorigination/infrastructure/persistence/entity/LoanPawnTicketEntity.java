@@ -73,6 +73,9 @@ public class LoanPawnTicketEntity {
     @Column(name = "legal_text", nullable = false, columnDefinition = "text")
     private String legalText;
 
+    @Column(name = "sort_order", nullable = false)
+    private Integer sortOrder;
+
     public String getId() {
         return id;
     }
@@ -223,5 +226,13 @@ public class LoanPawnTicketEntity {
 
     public void setLegalText(String legalText) {
         this.legalText = legalText;
+    }
+
+    public Integer getSortOrder() {
+        return sortOrder;
+    }
+
+    public void setSortOrder(Integer sortOrder) {
+        this.sortOrder = sortOrder;
     }
 }

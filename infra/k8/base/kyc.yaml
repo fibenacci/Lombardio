@@ -8,15 +8,6 @@ data:
   IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
   PLATFORM_BASE_URL: http://platform:8082
   DOCUMENT_OCR_BASE_URL: http://document-ocr:8087
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: kyc-secret
-type: Opaque
-stringData:
-  KYC_DB_PASSWORD: change-me
----
 apiVersion: v1
 kind: Service
 metadata:

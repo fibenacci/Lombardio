@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SpringDataCustomerRepository extends JpaRepository<CustomerEntity, String> {
 
@@ -22,4 +23,6 @@ public interface SpringDataCustomerRepository extends JpaRepository<CustomerEnti
             order by customer.customerNumber
             """)
     List<CustomerEntity> search(String tenantId, String query);
+
+    Optional<CustomerEntity> findByEmailIgnoreCase(String email);
 }

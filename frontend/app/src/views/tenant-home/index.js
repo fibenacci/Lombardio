@@ -110,11 +110,42 @@ export default defineComponent({
     const selectedTenant = computed(() => tenantStore.selectedTenant());
     const customerQuery = ref("");
     const customers = ref([]);
+    const customerOptions = computed(() =>
+      customers.value.map((customer) => ({
+        value: customer.id,
+        label: `${customer.customerNumber ?? ""} - ${customer.displayName ?? `${customer.firstName ?? ""} ${customer.lastName ?? ""}`.trim()} - KYC ${
+          customer.kycStatus ?? "NOT_STARTED"
+        }`
+      }))
+    );
+    const selectedCustomerId = ref("");
     const selectedCustomer = computed(() =>
       customers.value.find((customer) => customer.id === selectedCustomerId.value) ?? null
     );
     const guidelines = ref([]);
-    const selectedCustomerId = ref("");
+    const guidelineOptions = computed(() =>
+      guidelines.value.map((guideline) => ({
+        value: guideline.id,
+        label: guideline.label
+      }))
+    );
+    const documentTypeOptions = computed(() => [
+      { value: "PERSONALAUSWEIS", label: t("customerDetail.documentTypeOptions.PERSONALAUSWEIS") },
+      { value: "REISEPASS", label: t("customerDetail.documentTypeOptions.REISEPASS") },
+      { value: "AUFENTHALTSTITEL", label: t("customerDetail.documentTypeOptions.AUFENTHALTSTITEL") }
+    ]);
+    const amlStatusOptions = computed(() => [
+      { value: "NOT_REVIEWED", label: t("customerDetail.statusOptions.aml.NOT_REVIEWED") },
+      { value: "CLEAR", label: t("customerDetail.statusOptions.aml.CLEAR") },
+      { value: "REVIEW_REQUIRED", label: t("customerDetail.statusOptions.aml.REVIEW_REQUIRED") },
+      { value: "BLOCKED", label: t("customerDetail.statusOptions.aml.BLOCKED") },
+      { value: "REPORTED", label: t("customerDetail.statusOptions.aml.REPORTED") }
+    ]);
+    const amlRiskLevelOptions = computed(() => [
+      { value: "LOW", label: t("customerDetail.riskLevels.LOW") },
+      { value: "MEDIUM", label: t("customerDetail.riskLevels.MEDIUM") },
+      { value: "HIGH", label: t("customerDetail.riskLevels.HIGH") }
+    ]);
     const useNewCustomer = ref(false);
     const createdLoan = ref(null);
     const loanQuotes = ref([]);
@@ -133,6 +164,8 @@ export default defineComponent({
       lastName: "",
       birthDate: "",
       phone: "",
+      email: "",
+      wantsDigitalPawnTicket: false,
       street: "",
       postalCode: "",
       city: ""
@@ -170,6 +203,7 @@ export default defineComponent({
             newCustomerKyc.documentBackImageDataUrl
           ]
             .every((value) => String(value ?? "").trim().length > 0)
+            && (!newCustomer.wantsDigitalPawnTicket || String(newCustomer.email ?? "").trim().length > 0)
             && (!pledgePresentation.thirdPartyPledgorPresentation
               || (
                 String(pledgePresentation.bearerName ?? "").trim().length > 0
@@ -715,10 +749,15 @@ export default defineComponent({
       createdLoan,
       customerQuery,
       customers,
+      customerOptions,
       amlFeatureEnabled,
       errorMessage,
       fieldErrors,
       guidelines,
+      guidelineOptions,
+      documentTypeOptions,
+      amlStatusOptions,
+      amlRiskLevelOptions,
       isLoading,
       isSubmitting,
       isDownloadingTicket,

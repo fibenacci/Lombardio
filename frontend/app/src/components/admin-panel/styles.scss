@@ -1,0 +1,41 @@
+.admin-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.15rem;
+}
+
+.admin-panel__copy {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.admin-panel__title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.admin-panel__subtitle {
+  margin: 0;
+  color: var(--app-muted);
+}
+
+.admin-panel__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.admin-panel__body {
+  display: grid;
+  gap: 1.15rem;
+}
+
+@media (max-width: 720px) {
+  .admin-panel__header {
+    flex-direction: column;
+  }
+}

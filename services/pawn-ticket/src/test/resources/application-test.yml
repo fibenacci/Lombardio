@@ -10,3 +10,28 @@ spring:
     table: pawn_ticket_flyway_schema_history
     default-schema: pawn_ticket
     create-schemas: true
+
+identity-access:
+  base-url: http://localhost:8081
+
+internal:
+  service-token: test-internal-token
+
+app:
+  cors:
+    allowed-origins:
+      - http://localhost:5173
+    allowed-methods:
+      - GET
+      - POST
+      - PUT
+      - PATCH
+      - DELETE
+      - OPTIONS
+    allowed-headers:
+      - Authorization
+      - Content-Type
+      - Accept
+    exposed-headers:
+      - Content-Disposition
+    max-age-seconds: 3600

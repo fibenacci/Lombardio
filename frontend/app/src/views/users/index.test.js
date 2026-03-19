@@ -103,9 +103,8 @@ describe("UsersView", () => {
     await inputs[1].setValue("ops@lombardio.local");
     await inputs[2].setValue("TempPass123!");
     await inputs[3].setValue("Operations");
-    const checkboxes = wrapper.findAll('input[type="checkbox"]');
-    await checkboxes[0].setValue(true);
-    await checkboxes[1].setValue(true);
+    wrapper.vm.form.branchIds = ["branch-1"];
+    wrapper.vm.form.roleIds = ["role-admin"];
     await wrapper.find("form").trigger("submit.prevent");
     await flushPromises();
 

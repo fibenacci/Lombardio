@@ -10,15 +10,6 @@ data:
   PAWN_TICKET_BASE_URL: http://pawn-ticket:8085
   KYC_BASE_URL: http://kyc:8086
   AML_BASE_URL: http://aml:8088
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: loan-origination-secret
-type: Opaque
-stringData:
-  LOAN_ORIGINATION_DB_PASSWORD: change-me
----
 apiVersion: v1
 kind: Service
 metadata:

@@ -1,5 +1,6 @@
 import { computed, defineComponent, onMounted, reactive, ref } from "vue";
 import { createTenant, upsertTenantFeature } from "../../services/api/platform";
+import { useAppToast } from "../../composables/use-app-toast";
 import { authStore } from "../../stores/auth";
 import { tenantStore } from "../../stores/tenant";
 import template from "./template.html?raw";
@@ -17,6 +18,7 @@ const FEATURE_CATALOG = [
 export default defineComponent({
   name: "TenantsView",
   setup() {
+    const toast = useAppToast();
     const isLoading = ref(true);
     const errorMessage = ref("");
     const successMessage = ref("");
@@ -35,6 +37,10 @@ export default defineComponent({
           tenantStore.features.find((feature) => feature.featureKey === catalogEntry.key)?.enabled ?? false
       }))
     );
+
+    function tenantStatusSeverity(status) {
+      return status === "ACTIVE" ? "success" : "contrast";
+    }
 
     async function loadData() {
       isLoading.value = true;
@@ -63,6 +69,7 @@ export default defineComponent({
         await tenantStore.refreshTenants();
         await tenantStore.selectTenant(tenant.id);
         successMessage.value = "Tenant created";
+        toast.success("Tenant created", `${tenant.displayName} is ready for configuration.`);
         form.key = "";
         form.displayName = "";
         form.status = "ACTIVE";
@@ -94,6 +101,7 @@ export default defineComponent({
         await upsertTenantFeature(tenantStore.selectedTenantId, featureKey, { enabled }, authStore.token);
         await tenantStore.refreshFeatures();
         successMessage.value = "Feature state updated";
+        toast.success("Feature state updated", `${featureKey} is now ${enabled ? "enabled" : "disabled"}.`);
       } catch (error) {
         errorMessage.value = error instanceof Error ? error.message : "Failed to update feature";
       }
@@ -109,6 +117,7 @@ export default defineComponent({
       selectedTenant,
       submit,
       successMessage,
+      tenantStatusSeverity,
       tenantFeatures,
       tenantStore,
       tenants,

@@ -41,6 +41,9 @@ public class LoanPositionEntity {
     @Column(name = "pledged_value", nullable = false)
     private BigDecimal pledgedValue;
 
+    @Column(name = "sort_order", nullable = false)
+    private Integer sortOrder;
+
     public String getId() {
         return id;
     }
@@ -111,5 +114,13 @@ public class LoanPositionEntity {
 
     public void setPledgedValue(BigDecimal pledgedValue) {
         this.pledgedValue = pledgedValue;
+    }
+
+    public Integer getSortOrder() {
+        return sortOrder;
+    }
+
+    public void setSortOrder(Integer sortOrder) {
+        this.sortOrder = sortOrder;
     }
 }

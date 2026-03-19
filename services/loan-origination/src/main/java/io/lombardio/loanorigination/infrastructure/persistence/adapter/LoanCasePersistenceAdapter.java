@@ -63,23 +63,25 @@ public class LoanCasePersistenceAdapter implements LoanCaseRepository {
         entity.setCustomerKycApproved(loanCase.customer().kycApproved());
         entity.setCustomerCheckedDocumentType(loanCase.customer().checkedDocumentType());
 
-        PledgeRecordEntity pledgeRecordEntity = toPledgeRecordEntity(entity, loanCase.pledgeRecord());
+        PledgeRecordEntity pledgeRecordEntity = toPledgeRecordEntity(entity, loanCase.pledgeRecord(), 0);
         entity.setPledgeRecords(new ArrayList<>(List.of(pledgeRecordEntity)));
 
-        List<LoanPositionEntity> positionEntities = loanCase.positions().stream()
-                .map(position -> toPositionEntity(entity, position))
-                .toList();
+        List<LoanPositionEntity> positionEntities = new ArrayList<>();
+        for (int index = 0; index < loanCase.positions().size(); index++) {
+            positionEntities.add(toPositionEntity(entity, loanCase.positions().get(index), index));
+        }
         entity.setPositions(new ArrayList<>(positionEntities));
 
-        List<LoanPawnTicketEntity> pawnTicketEntities = loanCase.pawnTickets().stream()
-                .map(ticket -> toPawnTicketEntity(entity, ticket))
-                .toList();
+        List<LoanPawnTicketEntity> pawnTicketEntities = new ArrayList<>();
+        for (int index = 0; index < loanCase.pawnTickets().size(); index++) {
+            pawnTicketEntities.add(toPawnTicketEntity(entity, loanCase.pawnTickets().get(index), index));
+        }
         entity.setPawnTickets(new ArrayList<>(pawnTicketEntities));
 
         return entity;
     }
 
-    private PledgeRecordEntity toPledgeRecordEntity(LoanCaseEntity loanCase, PledgeRecord pledgeRecord) {
+    private PledgeRecordEntity toPledgeRecordEntity(LoanCaseEntity loanCase, PledgeRecord pledgeRecord, int sortOrder) {
         PledgeRecordEntity entity = new PledgeRecordEntity();
         entity.setId(pledgeRecord.id());
         entity.setLoanCase(loanCase);
@@ -99,10 +101,11 @@ public class LoanCasePersistenceAdapter implements LoanCaseRepository {
         entity.setBearerPostalCode(pledgeRecord.bearerPostalCode());
         entity.setBearerCity(pledgeRecord.bearerCity());
         entity.setPowerOfAttorneyDocumentDataUrl(pledgeRecord.powerOfAttorneyDocumentDataUrl());
+        entity.setSortOrder(sortOrder);
         return entity;
     }
 
-    private LoanPositionEntity toPositionEntity(LoanCaseEntity loanCase, LoanPosition position) {
+    private LoanPositionEntity toPositionEntity(LoanCaseEntity loanCase, LoanPosition position, int sortOrder) {
         LoanPositionEntity entity = new LoanPositionEntity();
         entity.setId(position.id());
         entity.setLoanCase(loanCase);
@@ -113,10 +116,11 @@ public class LoanCasePersistenceAdapter implements LoanCaseRepository {
         entity.setGuidelineLabel(position.guidelineLabel());
         entity.setBaseLoanValue(position.baseLoanValue());
         entity.setPledgedValue(position.pledgedValue());
+        entity.setSortOrder(sortOrder);
         return entity;
     }
 
-    private LoanPawnTicketEntity toPawnTicketEntity(LoanCaseEntity loanCase, PawnTicket ticket) {
+    private LoanPawnTicketEntity toPawnTicketEntity(LoanCaseEntity loanCase, PawnTicket ticket, int sortOrder) {
         LoanPawnTicketEntity entity = new LoanPawnTicketEntity();
         entity.setId(ticket.id());
         entity.setLoanCase(loanCase);
@@ -137,6 +141,7 @@ public class LoanCasePersistenceAdapter implements LoanCaseRepository {
         entity.setTotalOperatingFeeAmount(ticket.totalOperatingFeeAmount());
         entity.setTotalRepaymentAmount(ticket.totalRepaymentAmount());
         entity.setLegalText(ticket.legalText());
+        entity.setSortOrder(sortOrder);
         return entity;
     }
 
@@ -158,7 +163,9 @@ public class LoanCasePersistenceAdapter implements LoanCaseRepository {
                         entity.isCustomerKycApproved(),
                         entity.getCustomerCheckedDocumentType()
                 ),
-                entity.getPledgeRecords().stream().findFirst()
+                entity.getPledgeRecords().stream()
+                        .sorted(Comparator.comparing(PledgeRecordEntity::getSortOrder))
+                        .findFirst()
                         .map(pledgeRecord -> new PledgeRecord(
                                 pledgeRecord.getId(),
                                 entity.getId(),
@@ -181,6 +188,7 @@ public class LoanCasePersistenceAdapter implements LoanCaseRepository {
                         ))
                         .orElse(null),
                 entity.getPositions().stream()
+                        .sorted(Comparator.comparing(LoanPositionEntity::getSortOrder))
                         .map(position -> new LoanPosition(
                                 position.getId(),
                                 position.getTicketGroup(),
@@ -193,6 +201,7 @@ public class LoanCasePersistenceAdapter implements LoanCaseRepository {
                         ))
                         .toList(),
                 entity.getPawnTickets().stream()
+                        .sorted(Comparator.comparing(LoanPawnTicketEntity::getSortOrder))
                         .map(ticket -> new PawnTicket(
                                 ticket.getId(),
                                 ticket.getContractNumber(),

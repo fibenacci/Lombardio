@@ -32,6 +32,11 @@ public class CustomerPersistenceAdapter implements CustomerRepository {
     }
 
     @Override
+    public Optional<Customer> findByEmail(String email) {
+        return repository.findByEmailIgnoreCase(email).map(this::toDomain);
+    }
+
+    @Override
     public Customer save(Customer customer) {
         return toDomain(repository.save(toEntity(customer)));
     }
@@ -45,6 +50,9 @@ public class CustomerPersistenceAdapter implements CustomerRepository {
         entity.setLastName(customer.lastName());
         entity.setBirthDate(customer.birthDate());
         entity.setPhone(customer.phone());
+        entity.setEmail(customer.email());
+        entity.setWantsDigitalPawnTicket(customer.wantsDigitalPawnTicket());
+        entity.setOnlineAccessStatus(customer.onlineAccessStatus());
         entity.setStreet(customer.street());
         entity.setPostalCode(customer.postalCode());
         entity.setCity(customer.city());
@@ -60,6 +68,9 @@ public class CustomerPersistenceAdapter implements CustomerRepository {
                 entity.getLastName(),
                 entity.getBirthDate(),
                 entity.getPhone(),
+                entity.getEmail(),
+                entity.isWantsDigitalPawnTicket(),
+                entity.getOnlineAccessStatus(),
                 entity.getStreet(),
                 entity.getPostalCode(),
                 entity.getCity()

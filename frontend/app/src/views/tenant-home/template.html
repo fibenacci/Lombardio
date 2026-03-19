@@ -119,8 +119,8 @@
           <div class="subpanel-header">
             <h4>Kunde</h4>
             <label class="toggle">
-              <input v-model="useNewCustomer" type="checkbox" />
               <span>Neukunde anlegen</span>
+              <PToggleSwitch v-model="useNewCustomer" />
             </label>
           </div>
 
@@ -128,19 +128,34 @@
             <label>
               <span>Bestandssuche</span>
               <div class="inline-row">
-                <input v-model="customerQuery" type="text" placeholder="Name, Telefon oder Kundennummer" />
-                <button class="secondary-button" type="button" @click="runCustomerSearch">Suchen</button>
+                <PInputText
+                  v-model="customerQuery"
+                  type="text"
+                  :placeholder="t('tenantHome.customerSearchPlaceholder')"
+                  class="form-field"
+                />
+                <PButton
+                  class="secondary-button"
+                  icon="pi pi-search"
+                  :label="t('common.search')"
+                  severity="secondary"
+                  outlined
+                  type="button"
+                  @click="runCustomerSearch"
+                />
               </div>
             </label>
 
             <label>
               <span>Kunde</span>
-              <select v-model="selectedCustomerId">
-                <option disabled value="">Kundenbestand waehlen</option>
-                <option v-for="customer in customers" :key="customer.id" :value="customer.id">
-                  {{ customer.customerNumber }} - {{ customer.displayName }} - KYC {{ customer.kycStatus ?? "NOT_STARTED" }}
-                </option>
-              </select>
+              <PSelect
+                v-model="selectedCustomerId"
+                :options="customerOptions"
+                optionLabel="label"
+                optionValue="value"
+                class="form-field"
+                :placeholder="t('tenantHome.selectCustomerPlaceholder')"
+              />
             </label>
 
             <div
@@ -166,27 +181,34 @@
                 </p>
               </div>
               <div class="inline-row">
-                <button
+                <PButton
                   v-if="!selectedCustomer.kycApproved"
                   class="secondary-button"
+                  severity="secondary"
+                  outlined
+                  :label="isUpdatingKyc ? t('tenantHome.updatingKyc') : t('tenantHome.approveKyc')"
                   :disabled="isUpdatingKyc"
                   type="button"
                   @click="approveSelectedCustomerKyc"
-                >
-                  {{ isUpdatingKyc ? t("tenantHome.updatingKyc") : t("tenantHome.approveKyc") }}
-                </button>
-                <button
+                />
+                <PButton
                   v-if="!selectedCustomer.kycApproved && providerVerificationAvailable"
                   class="secondary-button"
+                  severity="secondary"
+                  outlined
+                  :label="isUpdatingKyc ? t('tenantHome.startingProvider') : t('tenantHome.providerVerification')"
                   :disabled="isUpdatingKyc"
                   type="button"
                   @click="startProviderVerification"
-                >
-                  {{ isUpdatingKyc ? t("tenantHome.startingProvider") : t("tenantHome.providerVerification") }}
-                </button>
-                <button class="secondary-button" type="button" @click="openSelectedCustomerDetails">
-                  {{ t("tenantHome.customerProfile") }}
-                </button>
+                />
+                <PButton
+                  class="secondary-button"
+                  severity="secondary"
+                  outlined
+                  :label="t('tenantHome.customerProfile')"
+                  type="button"
+                  @click="openSelectedCustomerDetails"
+                />
               </div>
             </div>
             <p v-if="providerVerificationAvailable" class="legal-copy">
@@ -197,51 +219,64 @@
           <div v-else class="stack-form two-column-grid">
             <label>
               <span>Kundennummer</span>
-              <input v-model="newCustomer.customerNumber" required type="text" />
+              <PInputText v-model="newCustomer.customerNumber" required class="form-field" />
             </label>
             <label>
               <span>Telefon</span>
-              <input v-model="newCustomer.phone" required type="text" />
+              <PInputText v-model="newCustomer.phone" required class="form-field" />
+            </label>
+            <label>
+              <span>E-Mail</span>
+              <PInputText v-model="newCustomer.email" type="email" class="form-field" />
             </label>
             <label>
               <span>Vorname</span>
-              <input v-model="newCustomer.firstName" required type="text" />
+              <PInputText v-model="newCustomer.firstName" required class="form-field" />
             </label>
             <label>
               <span>Nachname</span>
-              <input v-model="newCustomer.lastName" required type="text" />
+              <PInputText v-model="newCustomer.lastName" required class="form-field" />
             </label>
             <label>
               <span>Geburtsdatum</span>
-              <input v-model="newCustomer.birthDate" required type="date" />
+              <PInputText v-model="newCustomer.birthDate" required type="date" class="form-field" />
             </label>
             <label>
               <span>Strasse</span>
-              <input v-model="newCustomer.street" type="text" />
+              <PInputText v-model="newCustomer.street" class="form-field" />
             </label>
             <label>
               <span>PLZ</span>
-              <input v-model="newCustomer.postalCode" type="text" />
+              <PInputText v-model="newCustomer.postalCode" class="form-field" />
             </label>
             <label class="full-span">
               <span>Ort</span>
-              <input v-model="newCustomer.city" type="text" />
+              <PInputText v-model="newCustomer.city" class="form-field" />
             </label>
+            <div class="checkbox-field full-span">
+              <span>Online-Pfandschein anbieten und Einladungs-E-Mail vorbereiten</span>
+              <PToggleSwitch v-model="newCustomer.wantsDigitalPawnTicket" />
+            </div>
+            <p class="legal-copy full-span">
+              Wird der Online-Pfandschein aktiviert, muss eine gueltige E-Mail-Adresse hinterlegt werden. Die spaetere Aktivierung erfolgt erst nach E-Mail-Bestaetigung und Passwortvergabe durch den Endkunden.
+            </p>
             <label>
               <span>Dokumenttyp</span>
-              <select v-model="newCustomerKyc.documentType" required>
-                <option value="PERSONALAUSWEIS">Personalausweis</option>
-                <option value="REISEPASS">Reisepass</option>
-                <option value="AUFENTHALTSTITEL">Aufenthaltstitel</option>
-              </select>
+              <PSelect
+                v-model="newCustomerKyc.documentType"
+                :options="documentTypeOptions"
+                optionLabel="label"
+                optionValue="value"
+                class="form-field"
+              />
             </label>
             <label>
               <span>Ausweisnummer</span>
-              <input v-model="newCustomerKyc.documentNumber" required type="text" />
+              <PInputText v-model="newCustomerKyc.documentNumber" required class="form-field" />
             </label>
             <label class="full-span">
               <span>Gueltig bis</span>
-              <input v-model="newCustomerKyc.documentValidUntil" required type="date" />
+              <PInputText v-model="newCustomerKyc.documentValidUntil" required type="date" class="form-field" />
             </label>
             <label>
               <span>Ausweis Vorderseite</span>
@@ -252,9 +287,14 @@
               <input accept="image/*" required type="file" @change="updateNewCustomerDocument('documentBackImageDataUrl', $event)" />
             </label>
             <div v-if="documentOcrAvailable" class="full-span inline-row">
-              <button class="secondary-button" type="button" @click="prefillNewCustomerDocumentData">
-                Ausweisdaten vorbefuellen
-              </button>
+              <PButton
+                class="secondary-button"
+                severity="secondary"
+                outlined
+                :label="t('tenantHome.prefillDocument')"
+                type="button"
+                @click="prefillNewCustomerDocumentData"
+              />
               <span class="muted-copy">Optionaler OCR-Pfad fuer Nummer und Gueltigkeit. Manuelle Pruefung bleibt verpflichtend.</span>
             </div>
             <p class="legal-copy full-span">
@@ -265,26 +305,26 @@
                 <h4>Verpfaender und Vollmacht</h4>
               </div>
               <div class="stack-form two-column-grid">
-                <label class="checkbox-field full-span">
-                  <input v-model="pledgePresentation.thirdPartyPledgorPresentation" type="checkbox" />
+                <div class="checkbox-field full-span">
                   <span>Ueberbringer und Verpfaender sind nicht identisch</span>
-                </label>
+                  <PToggleSwitch v-model="pledgePresentation.thirdPartyPledgorPresentation" />
+                </div>
                 <template v-if="pledgePresentation.thirdPartyPledgorPresentation">
                   <label>
                     <span>Name des Ueberbringers</span>
-                    <input v-model="pledgePresentation.bearerName" required type="text" />
+                    <PInputText v-model="pledgePresentation.bearerName" required class="form-field" />
                   </label>
                   <label>
                     <span>Strasse des Ueberbringers</span>
-                    <input v-model="pledgePresentation.bearerStreet" type="text" />
+                    <PInputText v-model="pledgePresentation.bearerStreet" class="form-field" />
                   </label>
                   <label>
                     <span>PLZ</span>
-                    <input v-model="pledgePresentation.bearerPostalCode" type="text" />
+                    <PInputText v-model="pledgePresentation.bearerPostalCode" class="form-field" />
                   </label>
                   <label>
                     <span>Ort</span>
-                    <input v-model="pledgePresentation.bearerCity" type="text" />
+                    <PInputText v-model="pledgePresentation.bearerCity" class="form-field" />
                   </label>
                   <label class="full-span">
                     <span>Schriftliche Vollmacht</span>
@@ -303,49 +343,51 @@
               <div class="stack-form two-column-grid">
                 <label>
                   <span>AML-Status</span>
-                  <select v-model="newCustomerAml.status">
-                    <option value="NOT_REVIEWED">NOT_REVIEWED</option>
-                    <option value="CLEAR">CLEAR</option>
-                    <option value="REVIEW_REQUIRED">REVIEW_REQUIRED</option>
-                    <option value="BLOCKED">BLOCKED</option>
-                    <option value="REPORTED">REPORTED</option>
-                  </select>
+                  <PSelect
+                    v-model="newCustomerAml.status"
+                    :options="amlStatusOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    class="form-field"
+                  />
                 </label>
                 <label>
                   <span>Risikolevel</span>
-                  <select v-model="newCustomerAml.riskLevel">
-                    <option value="LOW">LOW</option>
-                    <option value="MEDIUM">MEDIUM</option>
-                    <option value="HIGH">HIGH</option>
-                  </select>
+                  <PSelect
+                    v-model="newCustomerAml.riskLevel"
+                    :options="amlRiskLevelOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    class="form-field"
+                  />
                 </label>
-                <label class="checkbox-field">
-                  <input v-model="newCustomerAml.pepFlag" type="checkbox" />
+                <div class="checkbox-field">
                   <span>PEP-Treffer</span>
-                </label>
-                <label class="checkbox-field">
-                  <input v-model="newCustomerAml.sanctionsHit" type="checkbox" />
+                  <PToggleSwitch v-model="newCustomerAml.pepFlag" />
+                </div>
+                <div class="checkbox-field">
                   <span>Sanktions-Treffer</span>
-                </label>
-                <label class="checkbox-field">
-                  <input v-model="newCustomerAml.unusualTransactionFlag" type="checkbox" />
+                  <PToggleSwitch v-model="newCustomerAml.sanctionsHit" />
+                </div>
+                <div class="checkbox-field">
                   <span>Ungewoehnliche Transaktion</span>
-                </label>
-                <label class="checkbox-field">
-                  <input v-model="newCustomerAml.sourceOfFundsChecked" type="checkbox" />
+                  <PToggleSwitch v-model="newCustomerAml.unusualTransactionFlag" />
+                </div>
+                <div class="checkbox-field">
                   <span>Source of Funds geprueft</span>
-                </label>
-                <label class="checkbox-field full-span">
-                  <input v-model="newCustomerAml.suspiciousActivityReported" type="checkbox" />
+                  <PToggleSwitch v-model="newCustomerAml.sourceOfFundsChecked" />
+                </div>
+                <div class="checkbox-field full-span">
                   <span>Verdachtsmeldung erstellt</span>
-                </label>
+                  <PToggleSwitch v-model="newCustomerAml.suspiciousActivityReported" />
+                </div>
                 <label v-if="newCustomerAml.suspiciousActivityReported" class="full-span">
                   <span>goAML-Referenz</span>
-                  <input v-model="newCustomerAml.goamlReference" type="text" />
+                  <PInputText v-model="newCustomerAml.goamlReference" class="form-field" />
                 </label>
                 <label class="full-span">
                   <span>AML-Notiz</span>
-                  <textarea v-model="newCustomerAml.decisionNote" rows="3"></textarea>
+                  <PTextarea v-model="newCustomerAml.decisionNote" rows="3" class="form-field" />
                 </label>
               </div>
               <p class="legal-copy">
@@ -358,7 +400,14 @@
         <section class="subpanel">
           <div class="subpanel-header">
             <h4>{{ t("tenantHome.positionsTitle") }}</h4>
-            <button class="secondary-button" type="button" @click="addPosition">{{ t("tenantHome.addPosition") }}</button>
+            <PButton
+              class="secondary-button"
+              severity="secondary"
+              outlined
+              :label="t('tenantHome.addPosition')"
+              type="button"
+              @click="addPosition"
+            />
           </div>
 
           <div class="table-wrap">
@@ -376,27 +425,51 @@
               <tbody>
                 <tr v-for="(position, index) in positions" :key="index">
                   <td>
-                    <input v-model="position.ticketGroup" min="1" required step="1" type="number" />
+                    <PInputText
+                      v-model="position.ticketGroup"
+                      min="1"
+                      required
+                      step="1"
+                      type="number"
+                      class="form-field"
+                    />
                   </td>
                   <td>
-                    <select :value="position.guidelineId" @change="applyGuideline(index, $event.target.value)" required>
-                      <option disabled value="">Richtlinie waehlen</option>
-                      <option v-for="guideline in guidelines" :key="guideline.id" :value="guideline.id">
-                        {{ guideline.label }}
-                      </option>
-                    </select>
+                    <PSelect
+                      v-model="position.guidelineId"
+                      :options="guidelineOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                      class="form-field"
+                      :placeholder="t('tenantHome.selectGuidelinePlaceholder')"
+                      @change="(event) => applyGuideline(index, event.value)"
+                    />
                   </td>
                   <td>
-                    <input v-model="position.label" required type="text" />
+                    <PInputText v-model="position.label" required class="form-field" />
                   </td>
                   <td>
-                    <input v-model="position.description" required type="text" />
+                    <PInputText v-model="position.description" required class="form-field" />
                   </td>
                   <td>
-                    <input v-model="position.pledgedValue" min="0.01" required step="0.01" type="number" />
+                    <PInputText
+                      v-model="position.pledgedValue"
+                      min="0.01"
+                      required
+                      step="0.01"
+                      type="number"
+                      class="form-field"
+                    />
                   </td>
                   <td>
-                    <button class="secondary-button" type="button" @click="removePosition(index)">Entfernen</button>
+                    <PButton
+                      class="secondary-button"
+                      severity="secondary"
+                      outlined
+                      :label="t('tenantHome.removePosition')"
+                      type="button"
+                      @click="removePosition(index)"
+                    />
                   </td>
                 </tr>
               </tbody>
@@ -412,17 +485,17 @@
           <div class="stack-form two-column-grid">
             <label>
               <span>Laufzeit in Monaten</span>
-              <input v-model="terms.termMonths" min="3" step="1" type="number" />
+              <PInputText v-model="terms.termMonths" min="3" step="1" type="number" class="form-field" />
             </label>
 
             <label>
               <span>Beleihsumme</span>
-              <input :value="`${totalLoanValue} EUR`" readonly type="text" />
+              <PInputText :value="`${totalLoanValue} EUR`" readonly type="text" class="form-field" />
             </label>
 
             <label v-if="loanQuotes.some((quote) => quote.manualMonthlyOperatingFeeRequired)" class="full-span">
               <span>Monatliche Betriebsverguetung</span>
-              <input v-model="terms.manualMonthlyOperatingFee" min="0" step="0.01" type="number" />
+              <PInputText v-model="terms.manualMonthlyOperatingFee" min="0" step="0.01" type="number" class="form-field" />
             </label>
           </div>
 
@@ -436,9 +509,13 @@
             <p class="meta-label">{{ t("tenantHome.totalLoan") }}</p>
             <strong>{{ totalLoanValue }} EUR</strong>
           </div>
-          <button :disabled="isLoading || isSubmitting || !canSubmitLoan" type="button" @click="submitLoan">
-            {{ isSubmitting ? t("tenantHome.submitting") : t("tenantHome.submit") }}
-          </button>
+          <PButton
+            :disabled="isLoading || isSubmitting || !canSubmitLoan"
+            severity="primary"
+            :label="isSubmitting ? t('tenantHome.submitting') : t('tenantHome.submit')"
+            type="button"
+            @click="submitLoan"
+          />
         </section>
       </div>
     </section>
@@ -514,18 +591,40 @@
               </div>
             </div>
             <div class="inline-row">
-              <button :disabled="isDownloadingTicket" type="button" @click="openPawnTicketDocument(pawnTicket.ticketNumber, false)">
-                {{ isDownloadingTicket ? t("tenantHome.loadingTicket") : t("tenantHome.ticketPdf") }}
-              </button>
-              <button class="secondary-button" :disabled="isDownloadingTicket" type="button" @click="openPawnTicketDocument(pawnTicket.ticketNumber, true)">
-                {{ t("common.print") }}
-              </button>
-              <button class="secondary-button" :disabled="isDownloadingTicket" type="button" @click="openPawnTicketLabels(pawnTicket.ticketNumber, false)">
-                Pfandetiketten
-              </button>
-              <button class="secondary-button" :disabled="isDownloadingTicket" type="button" @click="openPawnTicketLabels(pawnTicket.ticketNumber, true)">
-                {{ t("tenantHome.printLabels") }}
-              </button>
+              <PButton
+                :disabled="isDownloadingTicket"
+                severity="secondary"
+                :label="isDownloadingTicket ? t('tenantHome.loadingTicket') : t('tenantHome.ticketPdf')"
+                type="button"
+                @click="openPawnTicketDocument(pawnTicket.ticketNumber, false)"
+              />
+              <PButton
+                class="secondary-button"
+                severity="secondary"
+                outlined
+                :disabled="isDownloadingTicket"
+                :label="t('common.print')"
+                type="button"
+                @click="openPawnTicketDocument(pawnTicket.ticketNumber, true)"
+              />
+              <PButton
+                class="secondary-button"
+                severity="secondary"
+                outlined
+                :disabled="isDownloadingTicket"
+                label="Pfandetiketten"
+                type="button"
+                @click="openPawnTicketLabels(pawnTicket.ticketNumber, false)"
+              />
+              <PButton
+                class="secondary-button"
+                severity="secondary"
+                outlined
+                :disabled="isDownloadingTicket"
+                :label="t('tenantHome.printLabels')"
+                type="button"
+                @click="openPawnTicketLabels(pawnTicket.ticketNumber, true)"
+              />
             </div>
           </article>
         </div>

@@ -32,6 +32,15 @@ public class CustomerEntity {
     @Column(name = "phone", nullable = false)
     private String phone;
 
+    @Column(name = "email")
+    private String email;
+
+    @Column(name = "wants_digital_pawn_ticket", nullable = false)
+    private boolean wantsDigitalPawnTicket;
+
+    @Column(name = "online_access_status", nullable = false)
+    private String onlineAccessStatus;
+
     @Column(name = "street")
     private String street;
 
@@ -95,6 +104,30 @@ public class CustomerEntity {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public boolean isWantsDigitalPawnTicket() {
+        return wantsDigitalPawnTicket;
+    }
+
+    public void setWantsDigitalPawnTicket(boolean wantsDigitalPawnTicket) {
+        this.wantsDigitalPawnTicket = wantsDigitalPawnTicket;
+    }
+
+    public String getOnlineAccessStatus() {
+        return onlineAccessStatus;
+    }
+
+    public void setOnlineAccessStatus(String onlineAccessStatus) {
+        this.onlineAccessStatus = onlineAccessStatus;
     }
 
     public String getStreet() {

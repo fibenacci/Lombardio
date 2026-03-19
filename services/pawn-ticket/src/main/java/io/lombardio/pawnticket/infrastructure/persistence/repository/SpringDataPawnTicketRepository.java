@@ -14,4 +14,7 @@ public interface SpringDataPawnTicketRepository extends JpaRepository<PawnTicket
 
     @EntityGraph(attributePaths = "positions")
     List<PawnTicketEntity> findByTenantIdOrderByCreatedAtDesc(String tenantId);
+
+    @EntityGraph(attributePaths = "positions")
+    List<PawnTicketEntity> findByTenantIdAndCustomerIdOrderByCreatedAtDesc(String tenantId, String customerId);
 }

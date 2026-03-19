@@ -1,24 +1,35 @@
-package io.lombardio.platform.bootstrap;
+package io.lombardio.platform.demo;
 
 import io.lombardio.platform.tenant.domain.TenantFeatureRepository;
 import io.lombardio.platform.tenant.domain.TenantRepository;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
-@Configuration
-public class DevelopmentSeeder {
+import java.time.Instant;
 
-    @Bean
-    ApplicationRunner seedPlatformData(TenantRepository tenantRepository, TenantFeatureRepository tenantFeatureRepository) {
-        return args -> {
-            var tenant = tenantRepository.findById("tenant-default")
-                    .orElseGet(() -> tenantRepository.save(PlatformSeedFixtures.defaultTenant()));
+@Component
+class ScenarioDataSeeder {
 
-            PlatformSeedFixtures.defaultTenantFeatures().forEach(feature ->
-                    tenantFeatureRepository.findByTenantIdAndFeatureKey(tenant.id(), feature.featureKey())
-                            .orElseGet(() -> tenantFeatureRepository.save(feature))
-            );
-        };
+    private final TenantRepository tenantRepository;
+    private final TenantFeatureRepository tenantFeatureRepository;
+    private final DemoDataProperties demoDataProperties;
+
+    ScenarioDataSeeder(
+            TenantRepository tenantRepository,
+            TenantFeatureRepository tenantFeatureRepository,
+            DemoDataProperties demoDataProperties
+    ) {
+        this.tenantRepository = tenantRepository;
+        this.tenantFeatureRepository = tenantFeatureRepository;
+        this.demoDataProperties = demoDataProperties;
+    }
+
+    void seed() {
+        Instant timestamp = Instant.now().minusSeconds(86_400);
+        for (var tenantDefinition : PlatformSeedFixtures.tenantsForScale(demoDataProperties.effectiveScale())) {
+            var tenant = tenantRepository.save(PlatformSeedFixtures.toTenant(tenantDefinition, timestamp));
+            for (var feature : PlatformSeedFixtures.tenantFeatures(tenantDefinition, timestamp)) {
+                tenantFeatureRepository.save(feature);
+            }
+        }
     }
 }

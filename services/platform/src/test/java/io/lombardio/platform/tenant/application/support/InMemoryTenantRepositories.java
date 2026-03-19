@@ -1,5 +1,7 @@
 package io.lombardio.platform.tenant.application.support;
 
+import io.lombardio.platform.integration.domain.IntegrationOutboxEvent;
+import io.lombardio.platform.integration.domain.IntegrationOutboxEventRepository;
 import io.lombardio.platform.tenant.domain.Tenant;
 import io.lombardio.platform.tenant.domain.TenantFeature;
 import io.lombardio.platform.tenant.domain.TenantFeatureRepository;
@@ -63,6 +65,34 @@ public final class InMemoryTenantRepositories {
 
         private String key(String tenantId, String featureKey) {
             return tenantId + ":" + featureKey;
+        }
+    }
+
+    public static final class OutboxEvents implements IntegrationOutboxEventRepository {
+        private final Map<String, IntegrationOutboxEvent> store = new LinkedHashMap<>();
+
+        @Override
+        public IntegrationOutboxEvent save(IntegrationOutboxEvent event) {
+            store.put(event.id(), event);
+            return event;
+        }
+
+        @Override
+        public Optional<IntegrationOutboxEvent> findById(String id) {
+            return Optional.ofNullable(store.get(id));
+        }
+
+        @Override
+        public List<IntegrationOutboxEvent> findClaimable(java.time.Instant now, int limit) {
+            return store.values().stream()
+                    .filter(event -> event.nextAttemptAt().equals(now) || event.nextAttemptAt().isBefore(now))
+                    .filter(event -> event.status() == io.lombardio.platform.integration.domain.OutboxEventStatus.PENDING)
+                    .limit(limit)
+                    .toList();
+        }
+
+        public List<IntegrationOutboxEvent> findAll() {
+            return store.values().stream().toList();
         }
     }
 }

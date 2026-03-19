@@ -70,6 +70,9 @@ public class PledgeRecordEntity {
     @Column(name = "power_of_attorney_document_data_url")
     private String powerOfAttorneyDocumentDataUrl;
 
+    @Column(name = "sort_order", nullable = false)
+    private Integer sortOrder;
+
     public String getId() {
         return id;
     }
@@ -212,5 +215,13 @@ public class PledgeRecordEntity {
 
     public void setPowerOfAttorneyDocumentDataUrl(String powerOfAttorneyDocumentDataUrl) {
         this.powerOfAttorneyDocumentDataUrl = powerOfAttorneyDocumentDataUrl;
+    }
+
+    public Integer getSortOrder() {
+        return sortOrder;
+    }
+
+    public void setSortOrder(Integer sortOrder) {
+        this.sortOrder = sortOrder;
     }
 }

@@ -1,75 +1,59 @@
 <section class="page">
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">Organization</p>
-      <h2>Branches</h2>
-    </div>
-    <p class="page-copy">
-      {{
-        tenantStore.selectedTenantId
-          ? `Manage branches for tenant ${tenantStore.selectedTenant()?.displayName ?? tenantStore.selectedTenantId}.`
-          : "Select a tenant before managing branches."
-      }}
-    </p>
-  </header>
+  <PageHeader
+    eyebrow="Organization"
+    title="Branches"
+    icon="pi pi-sitemap"
+    :copy="
+      tenantStore.selectedTenantId
+        ? `Manage branches for tenant ${tenantStore.selectedTenant()?.displayName ?? tenantStore.selectedTenantId}.`
+        : 'Select a tenant before managing branches.'
+    "
+  />
 
   <div class="panel-grid">
-    <section class="panel">
-      <div class="panel-header">
-        <h3>Branch Directory</h3>
-        <span>{{ isLoading ? "Loading..." : `${branches.length} branches` }}</span>
-      </div>
+    <AdminPanel title="Branch Directory" :subtitle="isLoading ? 'Loading...' : `${branches.length} branches`">
+      <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
 
-      <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
+      <AppDataTable v-if="tenantStore.selectedTenantId" :value="branches" dataKey="id" :loading="isLoading">
+        <PColumn field="key" header="Key" sortable />
+        <PColumn field="displayName" header="Name" sortable />
+        <PColumn header="Status" field="status" sortable>
+          <template #body="{ data }">
+            <StatusTag :value="data.status" />
+          </template>
+        </PColumn>
+      </AppDataTable>
+    </AdminPanel>
 
-      <table v-if="!isLoading && tenantStore.selectedTenantId" class="data-table">
-        <thead>
-          <tr>
-            <th>Key</th>
-            <th>Name</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="branch in branches" :key="branch.id">
-            <td>{{ branch.key }}</td>
-            <td>{{ branch.displayName }}</td>
-            <td>{{ branch.status }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
-    <section v-if="canManageBranches" class="panel">
-      <div class="panel-header">
-        <div>
-          <h3>Create Branch</h3>
-          <p class="panel-subtitle">Branches will become the scope anchor for staff and permissions.</p>
-        </div>
-      </div>
-
-      <form class="stack-form" @submit.prevent="submit">
+    <AdminPanel v-if="canManageBranches" title="Create Branch" subtitle="Branches will become the scope anchor for staff and permissions.">
+      <FormShell :errorMessage="errorMessage" :successMessage="successMessage" @submit="submit">
         <label>
           <span>Key</span>
-          <input v-model="form.key" type="text" />
+          <PInputText v-model="form.key" type="text" />
         </label>
 
         <label>
           <span>Display name</span>
-          <input v-model="form.displayName" type="text" />
+          <PInputText v-model="form.displayName" type="text" />
         </label>
 
         <label>
           <span>Status</span>
-          <select v-model="form.status">
-            <option value="ACTIVE">ACTIVE</option>
-            <option value="INACTIVE">INACTIVE</option>
-          </select>
+          <PSelect
+            v-model="form.status"
+            :options="[
+              { label: 'ACTIVE', value: 'ACTIVE' },
+              { label: 'INACTIVE', value: 'INACTIVE' }
+            ]"
+            optionLabel="label"
+            optionValue="value"
+          />
         </label>
 
-        <p v-if="successMessage" class="form-success">{{ successMessage }}</p>
-        <button :disabled="!tenantStore.selectedTenantId" type="submit">Create branch</button>
-      </form>
-    </section>
+        <template #actions>
+          <PButton :disabled="!tenantStore.selectedTenantId" icon="pi pi-plus" label="Create branch" type="submit" />
+        </template>
+      </FormShell>
+    </AdminPanel>
   </div>
 </section>

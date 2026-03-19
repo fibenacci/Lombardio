@@ -10,6 +10,27 @@ spring:
     table: platform_flyway_schema_history
     default-schema: platform
     create-schemas: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
 
 identity-access:
   base-url: http://localhost:8081
+
+integration:
+  outbox:
+    access-token: test-platform-outbox-token
+  rabbitmq:
+    exchange: lombardio.domain
+    publisher-batch-size: 25
+    publisher-enabled: false
+
+app:
+  cors:
+    allowed-origins: http://localhost:5173
+    allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+    allowed-headers: Authorization,Content-Type,Accept,X-Requested-With
+    exposed-headers: Content-Disposition,Location
+    max-age-seconds: 3600

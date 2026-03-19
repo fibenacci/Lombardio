@@ -1,5 +1,6 @@
 import { computed, defineComponent, onMounted, reactive, ref } from "vue";
 import { createBranch, fetchBranches } from "../../services/api/access";
+import { useAppToast } from "../../composables/use-app-toast";
 import { authStore } from "../../stores/auth";
 import { tenantStore } from "../../stores/tenant";
 import template from "./template.html?raw";
@@ -8,6 +9,7 @@ import "./styles.scss";
 export default defineComponent({
   name: "BranchesView",
   setup() {
+    const toast = useAppToast();
     const branches = ref([]);
     const isLoading = ref(true);
     const errorMessage = ref("");
@@ -58,6 +60,7 @@ export default defineComponent({
           authStore.token
         );
         successMessage.value = "Branch created";
+        toast.success("Branch created", `${form.displayName || form.key} is available for staff assignment.`);
         form.key = "";
         form.displayName = "";
         form.status = "ACTIVE";

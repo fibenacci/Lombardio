@@ -1,84 +1,68 @@
 <section class="page">
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">{{ t("security.eyebrow") }}</p>
-      <h2>{{ t("security.title") }}</h2>
-    </div>
-    <p class="page-copy">{{ t("security.copy") }}</p>
-  </header>
+  <PageHeader :eyebrow="t('security.eyebrow')" :title="t('security.title')" :copy="t('security.copy')" icon="pi pi-shield" />
 
   <div class="panel-grid">
-    <section class="panel">
-      <div class="panel-header">
-        <div>
-          <h3>{{ t("security.totpStatusTitle") }}</h3>
-          <p class="panel-subtitle">{{ t("security.totpStatusSubtitle") }}</p>
+    <PCard class="panel">
+      <template #title>{{ t("security.totpStatusTitle") }}</template>
+      <template #subtitle>{{ t("security.totpStatusSubtitle") }}</template>
+      <template #content>
+        <StatusTag :value="authStore.user?.mfaEnabled ? 'ENABLED' : 'INACTIVE'" :activeValues="['ENABLED']" />
+        <PDivider />
+        <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
+        <PMessage v-if="successMessage" severity="success" variant="simple">{{ successMessage }}</PMessage>
+        <PButton
+          v-if="!authStore.user?.mfaEnabled"
+          :disabled="isSubmitting"
+          icon="pi pi-shield"
+          :label="t('security.startSetup')"
+          @click="startEnrollment"
+        />
+      </template>
+    </PCard>
+
+    <PCard v-if="enrollment" class="panel">
+      <template #title>{{ t("security.activateTitle") }}</template>
+      <template #subtitle>{{ t("security.activateSubtitle") }}</template>
+      <template #content>
+        <div class="stack-form">
+          <label>
+            <span>{{ t("security.secret") }}</span>
+            <PInputText :modelValue="enrollment.secret" readonly type="text" />
+            <small class="muted-copy">{{ enrollment.secret }}</small>
+          </label>
+
+          <label>
+            <span>{{ t("security.otpauthUri") }}</span>
+            <PTextarea :modelValue="enrollment.otpauthUri" readonly rows="4" />
+          </label>
+
+          <label>
+            <span>{{ t("security.code") }}</span>
+            <PInputText v-model="activationCode" type="text" inputmode="numeric" autocomplete="one-time-code" />
+          </label>
+
+          <PButton :disabled="isSubmitting" icon="pi pi-check-circle" :label="t('security.enableTotp')" @click="activate" />
         </div>
-      </div>
+      </template>
+    </PCard>
 
-      <p class="status-line">
-        {{ authStore.user?.mfaEnabled ? t("security.totpActive") : t("security.totpInactive") }}
-      </p>
-
-      <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
-      <p v-if="successMessage" class="form-success">{{ successMessage }}</p>
-
-      <button
-        v-if="!authStore.user?.mfaEnabled"
-        :disabled="isSubmitting"
-        type="button"
-        @click="startEnrollment"
-      >
-        {{ t("security.startSetup") }}
-      </button>
-    </section>
-
-    <section v-if="enrollment" class="panel">
-      <div class="panel-header">
-        <div>
-          <h3>{{ t("security.activateTitle") }}</h3>
-          <p class="panel-subtitle">{{ t("security.activateSubtitle") }}</p>
+    <PCard class="panel">
+      <template #title>{{ t("security.settingsTitle") }}</template>
+      <template #subtitle>{{ t("security.settingsSubtitle") }}</template>
+      <template #content>
+        <div class="stack-form">
+          <label>
+            <span>{{ t("language.label") }}</span>
+            <PSelect
+              v-model="selectedLocale"
+              :options="availableLocales.map((item) => ({ label: t(`language.${item}`), value: item }))"
+              optionLabel="label"
+              optionValue="value"
+              @change="updateLanguage"
+            />
+          </label>
         </div>
-      </div>
-
-      <div class="stack-form">
-        <label>
-          <span>{{ t("security.secret") }}</span>
-          <input :value="enrollment.secret" readonly type="text" />
-        </label>
-
-        <label>
-          <span>{{ t("security.otpauthUri") }}</span>
-          <textarea readonly rows="4">{{ enrollment.otpauthUri }}</textarea>
-        </label>
-
-        <label>
-          <span>{{ t("security.code") }}</span>
-          <input v-model="activationCode" type="text" inputmode="numeric" autocomplete="one-time-code" />
-        </label>
-
-        <button :disabled="isSubmitting" type="button" @click="activate">{{ t("security.enableTotp") }}</button>
-      </div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-header">
-        <div>
-          <h3>{{ t("security.settingsTitle") }}</h3>
-          <p class="panel-subtitle">{{ t("security.settingsSubtitle") }}</p>
-        </div>
-      </div>
-
-      <div class="stack-form">
-        <label>
-          <span>{{ t("language.label") }}</span>
-          <select v-model="selectedLocale" @change="updateLanguage">
-            <option v-for="item in availableLocales" :key="item" :value="item">
-              {{ t(`language.${item}`) }}
-            </option>
-          </select>
-        </label>
-      </div>
-    </section>
+      </template>
+    </PCard>
   </div>
 </section>

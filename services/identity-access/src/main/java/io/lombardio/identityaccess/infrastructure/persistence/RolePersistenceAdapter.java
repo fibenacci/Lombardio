@@ -43,6 +43,11 @@ public class RolePersistenceAdapter implements RoleRepository {
     }
 
     @Override
+    public Optional<Role> findByTenantIdAndKey(String tenantId, String key) {
+        return repository.findFirstByTenantIdAndKey(tenantId, key).map(this::toDomain);
+    }
+
+    @Override
     public Role save(Role role) {
         return toDomain(repository.save(toEntity(role)));
     }

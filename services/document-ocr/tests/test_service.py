@@ -86,3 +86,18 @@ def test_prefill_merges_split_mrz_lines_and_normalizes_common_mrz_confusions() -
     assert result["documentType"] == "REISEPASS"
     assert result["documentNumber"] == "L898902C3"
     assert result["documentValidUntil"] == "2012-04-15"
+
+
+def test_prefill_handles_document_fields_without_labels() -> None:
+    service = DocumentOcrService()
+
+    result = service.prefill(
+        tenant_id="tenant-default",
+        front_image_data_url="data:text/plain;base64,UGVyc29uYWxhdXN3ZWlzCkMwMVg3NTg5CjE4LjAzLjIwMzE=",
+        back_image_data_url="data:text/plain;base64,",
+    )
+
+    assert result["matched"] is True
+    assert result["documentType"] == "PERSONALAUSWEIS"
+    assert result["documentNumber"] == "C01X7589"
+    assert result["documentValidUntil"] == "2031-03-18"

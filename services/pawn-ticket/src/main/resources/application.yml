@@ -36,6 +36,9 @@ management:
 identity-access:
   base-url: ${IDENTITY_ACCESS_BASE_URL}
 
+internal:
+  service-token: ${CUSTOMER_INTERNAL_SERVICE_TOKEN:dev-internal-token}
+
 app:
   cors:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}

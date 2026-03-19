@@ -1,5 +1,7 @@
 package io.lombardio.platform.config;
 
+import io.lombardio.platform.integration.api.IntegrationOutboxProperties;
+import io.lombardio.platform.integration.api.IntegrationRabbitMqProperties;
 import io.lombardio.platform.security.PlatformAuthenticationFilter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -15,7 +17,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
-@EnableConfigurationProperties(AppCorsProperties.class)
+@EnableConfigurationProperties({AppCorsProperties.class, IntegrationOutboxProperties.class, IntegrationRabbitMqProperties.class})
 public class SecurityConfig {
 
     @Bean
@@ -38,6 +40,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/internal/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(platformAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

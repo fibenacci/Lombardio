@@ -1,0 +1,67 @@
+.portal-home {
+  min-height: 100vh;
+  padding: 2rem;
+  background:
+    linear-gradient(180deg, rgba(255, 244, 222, 0.7), rgba(255, 255, 255, 0.9)),
+    linear-gradient(135deg, #f3e3c3 0%, #fff7ec 60%, #faf4eb 100%);
+}
+
+.portal-home__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.portal-panel {
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  background: rgba(255, 252, 246, 0.92);
+  box-shadow: 0 1rem 2.5rem rgba(103, 74, 34, 0.12);
+}
+
+.portal-ticket-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.portal-ticket-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(103, 74, 34, 0.14);
+  border-radius: 1rem;
+  background: #fffdfa;
+}
+
+.portal-ticket-card dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.portal-ticket-card dt {
+  font-size: 0.8rem;
+  color: #76583a;
+}
+
+.portal-ticket-card dd {
+  margin: 0.2rem 0 0;
+  font-weight: 600;
+}
+
+.portal-ticket-card button,
+.portal-logout {
+  justify-self: start;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.8rem 1.1rem;
+  background: #5f4121;
+  color: #fffaf2;
+}
+
+.portal-error {
+  color: #9a2b2b;
+}

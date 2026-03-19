@@ -19,31 +19,24 @@
 
       <FormFeedback :field-errors="fieldErrors" :message="errorMessage" />
 
-      <table v-if="!isLoading && tenantStore.selectedTenantId" class="data-table">
-        <thead>
-          <tr>
-            <th>{{ t("cashdesk.columns.ticket") }}</th>
-            <th>{{ t("cashdesk.columns.customer") }}</th>
-            <th>{{ t("cashdesk.columns.dueDate") }}</th>
-            <th>{{ t("cashdesk.columns.loan") }}</th>
-            <th>{{ t("cashdesk.columns.repayment") }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="ticket in tickets"
-            :key="ticket.ticketNumber"
-            :class="{ selected: selectedTicketNumber === ticket.ticketNumber }"
-            @click="selectedTicketNumber = ticket.ticketNumber"
-          >
-            <td>{{ ticket.ticketNumber }}</td>
-            <td>{{ ticket.customerDisplayName }}</td>
-            <td>{{ ticket.dueDate }}</td>
-            <td>{{ ticket.totalLoanValue }} EUR</td>
-            <td>{{ ticket.totalRepaymentAmount }} EUR</td>
-          </tr>
-        </tbody>
-      </table>
+      <AppDataTable
+        v-if="tenantStore.selectedTenantId"
+        :value="tickets"
+        dataKey="ticketNumber"
+        :loading="isLoading"
+        :rowClass="(data) => (selectedTicketNumber === data.ticketNumber ? 'selected' : '')"
+        @row-click="selectedTicketNumber = $event.data.ticketNumber"
+      >
+        <PColumn field="ticketNumber" :header="t('cashdesk.columns.ticket')" sortable />
+        <PColumn field="customerDisplayName" :header="t('cashdesk.columns.customer')" sortable />
+        <PColumn field="dueDate" :header="t('cashdesk.columns.dueDate')" sortable />
+        <PColumn field="totalLoanValue" :header="t('cashdesk.columns.loan')" sortable>
+          <template #body="{ data }">{{ data.totalLoanValue }} EUR</template>
+        </PColumn>
+        <PColumn field="totalRepaymentAmount" :header="t('cashdesk.columns.repayment')" sortable>
+          <template #body="{ data }">{{ data.totalRepaymentAmount }} EUR</template>
+        </PColumn>
+      </AppDataTable>
     </section>
 
     <section class="panel">
@@ -129,26 +122,17 @@
           </div>
           <span>{{ t("cashdesk.entryCount", { count: transactions.length }) }}</span>
         </div>
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>{{ t("cashdesk.journalColumns.createdAt") }}</th>
-              <th>{{ t("cashdesk.journalColumns.ticket") }}</th>
-              <th>{{ t("cashdesk.journalColumns.customer") }}</th>
-              <th>{{ t("cashdesk.journalColumns.type") }}</th>
-              <th>{{ t("cashdesk.journalColumns.amount") }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="transaction in transactions" :key="transaction.id">
-              <td>{{ transaction.createdAt?.slice(0, 16).replace('T', ' ') }}</td>
-              <td>{{ transaction.ticketNumber }}</td>
-              <td>{{ transaction.customerDisplayName }}</td>
-              <td>{{ transaction.type }}</td>
-              <td>{{ transaction.totalAmount }} EUR</td>
-            </tr>
-          </tbody>
-        </table>
+        <AppDataTable :value="transactions" dataKey="id" :loading="isLoading">
+          <PColumn field="createdAt" :header="t('cashdesk.journalColumns.createdAt')" sortable>
+            <template #body="{ data }">{{ data.createdAt?.slice(0, 16).replace('T', ' ') }}</template>
+          </PColumn>
+          <PColumn field="ticketNumber" :header="t('cashdesk.journalColumns.ticket')" sortable />
+          <PColumn field="customerDisplayName" :header="t('cashdesk.journalColumns.customer')" sortable />
+          <PColumn field="type" :header="t('cashdesk.journalColumns.type')" sortable />
+          <PColumn field="totalAmount" :header="t('cashdesk.journalColumns.amount')" sortable>
+            <template #body="{ data }">{{ data.totalAmount }} EUR</template>
+          </PColumn>
+        </AppDataTable>
       </div>
     </section>
   </div>

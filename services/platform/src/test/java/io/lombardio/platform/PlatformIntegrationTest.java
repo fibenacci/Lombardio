@@ -65,6 +65,19 @@ class PlatformIntegrationTest {
                 .andExpect(jsonPath("$.tenantId").value(tenantId))
                 .andExpect(jsonPath("$.featureKey").value("customer-management"))
                 .andExpect(jsonPath("$.enabled").value(true));
+
+        mockMvc.perform(post("/internal/v1/outbox-events/claim")
+                        .header("Authorization", "Bearer test-platform-outbox-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "consumer": "integration-service",
+                                  "limit": 10
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].eventType").value("platform.tenant.created"))
+                .andExpect(jsonPath("$[1].eventType").value("platform.tenant.feature.enabled"));
     }
 
     @Test
@@ -108,6 +121,19 @@ class PlatformIntegrationTest {
                                 }
                                 """))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldRejectInternalOutboxWithoutToken() throws Exception {
+        mockMvc.perform(post("/internal/v1/outbox-events/claim")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "consumer": "integration-service",
+                                  "limit": 10
+                                }
+                                """))
+                .andExpect(status().isUnauthorized());
     }
 
     private String extractField(String response, String field) {

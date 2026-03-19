@@ -31,6 +31,12 @@ paths:
       responses:
         "200":
           description: Customer created
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerWriteRequest"
   /api/v1/tenants/{tenantId}/customers/{customerId}:
     get:
       summary: Load customer detail for tenant
@@ -64,3 +70,128 @@ paths:
       responses:
         "200":
           description: Customer updated
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerWriteRequest"
+  /api/v1/customer-portal/invitations/{token}:
+    get:
+      summary: Load a customer portal invitation by token
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Invitation payload
+  /api/v1/customer-portal/invitations/accept:
+    post:
+      summary: Accept a customer portal invitation and set a password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerPortalAcceptInvitationRequest"
+      responses:
+        "200":
+          description: Portal session issued
+  /api/v1/customer-portal/auth/login:
+    post:
+      summary: Login for the customer portal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerPortalLoginRequest"
+      responses:
+        "200":
+          description: Portal session issued
+  /api/v1/customer-portal/auth/me:
+    get:
+      summary: Load the current authenticated portal customer
+      responses:
+        "200":
+          description: Portal customer
+  /api/v1/customer-portal/pawn-tickets:
+    get:
+      summary: List active pawn tickets for the authenticated portal customer
+      responses:
+        "200":
+          description: Portal pawn tickets
+  /api/v1/customer-portal/pawn-tickets/{ticketNumber}/document:
+    get:
+      summary: Download a pawn ticket document for the authenticated portal customer
+      parameters:
+        - name: ticketNumber
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: PDF document
+components:
+  schemas:
+    CustomerWriteRequest:
+      type: object
+      required:
+        - customerNumber
+        - firstName
+        - lastName
+        - birthDate
+        - phone
+        - wantsDigitalPawnTicket
+      properties:
+        customerNumber:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+          nullable: true
+        wantsDigitalPawnTicket:
+          type: boolean
+        street:
+          type: string
+          nullable: true
+        postalCode:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+    CustomerPortalLoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    CustomerPortalAcceptInvitationRequest:
+      type: object
+      required:
+        - token
+        - password
+      properties:
+        token:
+          type: string
+        password:
+          type: string

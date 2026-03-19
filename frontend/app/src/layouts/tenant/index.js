@@ -10,36 +10,40 @@ const NAV_GROUPS = [
   {
     key: "workspace",
     labelKey: "tenantLayout.workspace",
+    icon: "pi pi-home",
     items: [
-      { name: "tenant-home", labelKey: "tenantLayout.dashboard", to: "/app/dashboard" }
+      { name: "tenant-home", labelKey: "tenantLayout.dashboard", to: "/app/dashboard", icon: "pi pi-chart-line" }
     ]
   },
   {
     key: "operations",
     labelKey: "tenantLayout.operations",
+    icon: "pi pi-briefcase",
     items: [
-      { name: "tenant-customers", labelKey: "tenantLayout.customers", to: "/app/customers" },
-      { name: "tenant-loans", labelKey: "tenantLayout.loans", to: "/app/loans" },
-      { name: "tenant-pawn-tickets", labelKey: "tenantLayout.pawnTickets", to: "/app/pawn-tickets" },
-      { name: "tenant-cashdesk", labelKey: "tenantLayout.cashdesk", to: "/app/cashdesk" },
-      { name: "tenant-auctions", labelKey: "tenantLayout.auctions", to: "/app/auctions" }
+      { name: "tenant-customers", labelKey: "tenantLayout.customers", to: "/app/customers", icon: "pi pi-users" },
+      { name: "tenant-loans", labelKey: "tenantLayout.loans", to: "/app/loans", icon: "pi pi-wallet" },
+      { name: "tenant-pawn-tickets", labelKey: "tenantLayout.pawnTickets", to: "/app/pawn-tickets", icon: "pi pi-ticket" },
+      { name: "tenant-cashdesk", labelKey: "tenantLayout.cashdesk", to: "/app/cashdesk", icon: "pi pi-credit-card" },
+      { name: "tenant-auctions", labelKey: "tenantLayout.auctions", to: "/app/auctions", icon: "pi pi-megaphone" }
     ]
   },
   {
     key: "live",
     labelKey: "tenantLayout.live",
+    icon: "pi pi-bolt",
     items: [
-      { name: "tenant-online-auctions", labelKey: "tenantLayout.onlineAuctions", to: "/app/online-auctions" }
+      { name: "tenant-online-auctions", labelKey: "tenantLayout.onlineAuctions", to: "/app/online-auctions", icon: "pi pi-globe" }
     ]
   },
   {
     key: "admin",
     labelKey: "tenantLayout.admin",
+    icon: "pi pi-cog",
     items: [
-      { name: "tenant-branches", labelKey: "tenantLayout.branches", to: "/app/branches" },
-      { name: "tenant-users", labelKey: "tenantLayout.users", to: "/app/users" },
-      { name: "tenant-roles", labelKey: "tenantLayout.roles", to: "/app/roles" },
-      { name: "tenant-security", labelKey: "tenantLayout.security", to: "/app/security" }
+      { name: "tenant-branches", labelKey: "tenantLayout.branches", to: "/app/branches", icon: "pi pi-building-columns" },
+      { name: "tenant-users", labelKey: "tenantLayout.users", to: "/app/users", icon: "pi pi-user" },
+      { name: "tenant-roles", labelKey: "tenantLayout.roles", to: "/app/roles", icon: "pi pi-id-card" },
+      { name: "tenant-security", labelKey: "tenantLayout.security", to: "/app/security", icon: "pi pi-shield" }
     ]
   }
 ];
@@ -89,6 +93,10 @@ export default defineComponent({
       return !isSidebarCollapsed.value && openGroupKey.value === groupKey;
     }
 
+    function groupInitial(label) {
+      return label.slice(0, 1).toUpperCase();
+    }
+
     function toggleSidebar() {
       isSidebarCollapsed.value = !isSidebarCollapsed.value;
     }
@@ -111,6 +119,7 @@ export default defineComponent({
       isGroupOpen,
       isSidebarCollapsed,
       navGroups,
+      groupInitial,
       logout,
       route,
       selectedTenant,

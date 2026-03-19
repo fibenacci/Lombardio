@@ -29,6 +29,11 @@ public class BranchPersistenceAdapter implements BranchRepository {
     }
 
     @Override
+    public Optional<Branch> findByTenantIdAndKey(String tenantId, String key) {
+        return repository.findFirstByTenantIdAndKey(tenantId, key).map(this::toDomain);
+    }
+
+    @Override
     public Branch save(Branch branch) {
         return toDomain(repository.save(toEntity(branch)));
     }

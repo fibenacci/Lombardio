@@ -1,5 +1,8 @@
 package io.lombardio.platform.tenant.application;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.lombardio.platform.integration.application.PlatformOutboxService;
 import io.lombardio.platform.tenant.api.CreateTenantRequest;
 import io.lombardio.platform.tenant.api.TenantFeatureResponse;
 import io.lombardio.platform.tenant.api.TenantResponse;
@@ -10,10 +13,12 @@ import io.lombardio.platform.tenant.domain.TenantFeature;
 import io.lombardio.platform.tenant.domain.TenantFeatureRepository;
 import io.lombardio.platform.tenant.domain.TenantRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -33,15 +38,21 @@ public class TenantCatalogService {
 
     private final TenantRepository tenantRepository;
     private final TenantFeatureRepository tenantFeatureRepository;
+    private final PlatformOutboxService platformOutboxService;
+    private final ObjectMapper objectMapper;
     private final Clock clock;
 
     public TenantCatalogService(
             TenantRepository tenantRepository,
             TenantFeatureRepository tenantFeatureRepository,
+            PlatformOutboxService platformOutboxService,
+            ObjectMapper objectMapper,
             Clock clock
     ) {
         this.tenantRepository = tenantRepository;
         this.tenantFeatureRepository = tenantFeatureRepository;
+        this.platformOutboxService = platformOutboxService;
+        this.objectMapper = objectMapper;
         this.clock = clock;
     }
 
@@ -49,6 +60,7 @@ public class TenantCatalogService {
         return tenantRepository.findAll().stream().map(this::toTenantResponse).toList();
     }
 
+    @Transactional
     public TenantResponse createTenant(CreateTenantRequest request) {
         tenantRepository.findByKey(request.key()).ifPresent(tenant -> {
             throw new IllegalArgumentException("Tenant key already exists: " + request.key());
@@ -64,9 +76,12 @@ public class TenantCatalogService {
                 now
         );
 
-        return toTenantResponse(tenantRepository.save(tenant));
+        Tenant saved = tenantRepository.save(tenant);
+        recordTenantEvent("platform.tenant.created", saved);
+        return toTenantResponse(saved);
     }
 
+    @Transactional
     public TenantResponse updateTenant(String tenantId, UpdateTenantRequest request) {
         Tenant existing = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new IllegalArgumentException("Tenant not found: " + tenantId));
@@ -80,7 +95,9 @@ public class TenantCatalogService {
                 Instant.now(clock)
         );
 
-        return toTenantResponse(tenantRepository.save(updated));
+        Tenant saved = tenantRepository.save(updated);
+        recordTenantEvent("platform.tenant.updated", saved);
+        return toTenantResponse(saved);
     }
 
     public List<TenantFeatureResponse> listFeatures(String tenantId) {
@@ -90,6 +107,7 @@ public class TenantCatalogService {
                 .toList();
     }
 
+    @Transactional
     public TenantFeatureResponse upsertFeature(String tenantId, String featureKey, UpsertTenantFeatureRequest request) {
         requireTenant(tenantId);
         validateFeatureKey(featureKey);
@@ -101,7 +119,49 @@ public class TenantCatalogService {
                 Instant.now(clock)
         );
 
-        return toFeatureResponse(tenantFeatureRepository.save(feature));
+        TenantFeature saved = tenantFeatureRepository.save(feature);
+        recordFeatureEvent(request.enabled() ? "platform.tenant.feature.enabled" : "platform.tenant.feature.disabled", saved);
+        return toFeatureResponse(saved);
+    }
+
+    private void recordTenantEvent(String eventType, Tenant tenant) {
+        platformOutboxService.record(
+                "tenant",
+                tenant.id(),
+                eventType,
+                tenant.id(),
+                toJson(Map.of(
+                        "tenantId", tenant.id(),
+                        "key", tenant.key(),
+                        "displayName", tenant.displayName(),
+                        "status", tenant.status(),
+                        "createdAt", tenant.createdAt().toString(),
+                        "updatedAt", tenant.updatedAt().toString()
+                ))
+        );
+    }
+
+    private void recordFeatureEvent(String eventType, TenantFeature feature) {
+        platformOutboxService.record(
+                "tenant-feature",
+                feature.tenantId() + ":" + feature.featureKey(),
+                eventType,
+                feature.tenantId(),
+                toJson(Map.of(
+                        "tenantId", feature.tenantId(),
+                        "featureKey", feature.featureKey(),
+                        "enabled", feature.enabled(),
+                        "updatedAt", feature.updatedAt().toString()
+                ))
+        );
+    }
+
+    private String toJson(Object payload) {
+        try {
+            return objectMapper.writeValueAsString(payload);
+        } catch (JsonProcessingException exception) {
+            throw new IllegalStateException("Failed to serialize outbox payload", exception);
+        }
     }
 
     private Tenant requireTenant(String tenantId) {

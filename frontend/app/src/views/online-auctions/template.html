@@ -1,53 +1,47 @@
-<section class="view-shell online-auction-view">
-  <header class="section-header">
-    <div>
-      <p class="eyebrow">Live Commerce</p>
-      <h2>Online-Auktionen</h2>
-    </div>
-    <p class="meta-copy">Separater Live-Bieter-Kontext mit Centrifugo-Realtime</p>
-  </header>
+<section class="page online-auction-view">
+  <PageHeader eyebrow="Live Commerce" title="Online-Auktionen" icon="pi pi-megaphone" copy="Separater Live-Bieter-Kontext mit Centrifugo-Realtime" />
 
-  <p v-if="errorMessage" class="error-banner">{{ errorMessage }}</p>
+  <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
 
   <div class="online-auction-grid">
-    <section class="panel">
-      <h3>Neue Online-Auktion</h3>
-      <label>
-        <span>Titel</span>
-        <input v-model="createForm.title" type="text">
-      </label>
-      <label>
-        <span>Slug</span>
-        <input v-model="createForm.slug" type="text">
-      </label>
-      <label>
-        <span>Mindestinkrement</span>
-        <input v-model="createForm.minimumIncrement" type="number" min="1.00" step="0.01">
-      </label>
-      <label>
-        <span>Countdown in Sekunden</span>
-        <input v-model="createForm.countdownSeconds" type="number" min="30" step="1">
-      </label>
-      <div class="lot-editor">
+    <AdminPanel title="Neue Online-Auktion" subtitle="Realtime-Auktionsraum mit Bieterfreigaben und Countdown.">
+      <FormShell :errorMessage="errorMessage" @submit="submitCreate">
+        <label>
+          <span>Titel</span>
+          <PInputText v-model="createForm.title" type="text" />
+        </label>
+        <label>
+          <span>Slug</span>
+          <PInputText v-model="createForm.slug" type="text" />
+        </label>
+        <label>
+          <span>Mindestinkrement</span>
+          <PInputText v-model="createForm.minimumIncrement" type="number" min="1.00" step="0.01" />
+        </label>
+        <label>
+          <span>Countdown in Sekunden</span>
+          <PInputText v-model="createForm.countdownSeconds" type="number" min="30" step="1" />
+        </label>
+        <div class="lot-editor">
         <div class="lot-row header">
           <span>Los</span>
           <span>Beschreibung</span>
           <span>Startgebot</span>
         </div>
         <div v-for="(lot, index) in createForm.lots" :key="index" class="lot-row">
-          <input v-model="lot.title" type="text" placeholder="Los titel">
-          <input v-model="lot.description" type="text" placeholder="Detailbeschreibung">
-          <input v-model="lot.startingBid" type="number" min="0.01" step="0.01">
+          <PInputText v-model="lot.title" type="text" placeholder="Los titel" />
+          <PInputText v-model="lot.description" type="text" placeholder="Detailbeschreibung" />
+          <PInputText v-model="lot.startingBid" type="number" min="0.01" step="0.01" />
         </div>
-      </div>
-      <div class="button-row">
-        <button class="secondary-button" type="button" @click="addLot">Los hinzufuegen</button>
-        <button type="button" @click="submitCreate">Online-Auktion anlegen</button>
-      </div>
-    </section>
+        </div>
+        <template #actions>
+          <PButton icon="pi pi-plus" label="Los hinzufuegen" severity="secondary" outlined type="button" @click="addLot" />
+          <PButton icon="pi pi-save" label="Online-Auktion anlegen" type="submit" />
+        </template>
+      </FormShell>
+    </AdminPanel>
 
-    <section class="panel">
-      <h3>Katalog</h3>
+    <AdminPanel title="Katalog" subtitle="Waehle eine Auktion fuer Freigaben und Statuswechsel.">
       <div class="auction-list">
         <button
           v-for="auction in auctions"
@@ -62,96 +56,82 @@
           <span>{{ auction.slug }}</span>
         </button>
       </div>
-    </section>
+    </AdminPanel>
   </div>
 
-  <section v-if="selectedAuction" class="panel">
-    <header class="section-header compact">
-      <div>
-        <p class="eyebrow">Public URL</p>
-        <h3>{{ selectedAuction.title }}</h3>
-      </div>
-      <div class="button-row">
-        <button class="secondary-button" type="button" @click="changeStatus('publish')">Publizieren</button>
-        <button class="secondary-button" type="button" @click="changeStatus('start')">Live starten</button>
-        <button class="secondary-button" type="button" @click="changeStatus('close')">Schliessen</button>
-      </div>
-    </header>
+  <AdminPanel v-if="selectedAuction" :title="selectedAuction.title" subtitle="Public URL">
+    <template #actions>
+      <SectionActions>
+        <PButton icon="pi pi-send" label="Publizieren" severity="secondary" outlined type="button" @click="changeStatus('publish')" />
+        <PButton icon="pi pi-play" label="Live starten" severity="secondary" outlined type="button" @click="changeStatus('start')" />
+        <PButton icon="pi pi-stop" label="Schliessen" severity="secondary" outlined type="button" @click="changeStatus('close')" />
+      </SectionActions>
+    </template>
 
-    <div class="panel nested">
+    <AdminPanel title="Oeffentliche URL">
       <p class="public-link">{{ publicUrlFor(selectedAuction) }}</p>
       <p class="hint">Bieter registrieren sich dort selbst und erhalten Paddle-Nummer, Access-Token und Realtime-Session.</p>
       <p class="hint">Mindestinkrement: {{ selectedAuction.minimumIncrement }} | Countdown: {{ selectedAuction.countdownSeconds }}s</p>
-    </div>
+    </AdminPanel>
 
-    <div class="panel nested">
-      <h4>Lose</h4>
-      <table class="lot-table">
-        <thead>
-          <tr>
-            <th>Los</th>
-            <th>Titel</th>
-            <th>Start</th>
-            <th>Aktuell</th>
-            <th>Hoechstbieter</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="lot in selectedAuction.lots" :key="lot.id">
-            <td>{{ lot.lotNumber }}</td>
-            <td>{{ lot.title }}</td>
-            <td>{{ lot.startingBid }}</td>
-            <td>{{ lot.currentBid }}</td>
-            <td>{{ lot.highestBidderAlias || "-" }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <AdminPanel title="Lose">
+      <AppDataTable :value="selectedAuction.lots" dataKey="id">
+        <PColumn field="lotNumber" header="Los" sortable />
+        <PColumn field="title" header="Titel" sortable />
+        <PColumn field="startingBid" header="Start" sortable />
+        <PColumn field="currentBid" header="Aktuell" sortable />
+        <PColumn header="Hoechstbieter" field="highestBidderAlias" sortable>
+          <template #body="{ data }">{{ data.highestBidderAlias || "-" }}</template>
+        </PColumn>
+      </AppDataTable>
+    </AdminPanel>
 
-    <div class="panel nested">
-      <h4>Bieterfreigaben</h4>
-      <table class="lot-table">
-        <thead>
-          <tr>
-            <th>Paddle</th>
-            <th>Name</th>
-            <th>E-Mail</th>
-            <th>Status</th>
-            <th>Aktion</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="registration in selectedAuction.registrations" :key="registration.id">
-            <td>{{ registration.paddleNumber }}</td>
-            <td>{{ registration.displayName }}</td>
-            <td>{{ registration.email }}</td>
-            <td>
-              {{ registration.approvalStatus }}<br>
-              <small>KYC: {{ registration.kycStatus }} | Konto: {{ registration.accountCheckStatus }}</small>
-            </td>
-            <td>
-              <div class="action-stack">
-                <input :value="registration.legalName" type="text" disabled>
-                <input :value="registration.birthDate" type="text" disabled>
-                <input :value="registration.ibanMasked" type="text" disabled>
-                <select v-model="reviewForms[registration.id].kycStatus">
-                  <option value="PENDING">KYC pending</option>
-                  <option value="PASSED">KYC passed</option>
-                  <option value="FAILED">KYC failed</option>
-                </select>
-                <select v-model="reviewForms[registration.id].accountCheckStatus">
-                  <option value="PENDING">Konto pending</option>
-                  <option value="PASSED">Konto passed</option>
-                  <option value="FAILED">Konto failed</option>
-                </select>
-                <input v-model="reviewForms[registration.id].reviewNote" type="text" placeholder="Review-Notiz">
-                <button class="secondary-button" type="button" @click="reviewRegistration(registration.id, 'APPROVE')">Freigeben</button>
-                <button class="secondary-button" type="button" @click="reviewRegistration(registration.id, 'REJECT')">Ablehnen</button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
+    <AdminPanel title="Bieterfreigaben">
+      <AppDataTable :value="selectedAuction.registrations" dataKey="id">
+        <PColumn field="paddleNumber" header="Paddle" sortable />
+        <PColumn field="displayName" header="Name" sortable />
+        <PColumn field="email" header="E-Mail" sortable />
+        <PColumn header="Status" field="approvalStatus" sortable>
+          <template #body="{ data }">
+            {{ data.approvalStatus }}<br />
+            <small>KYC: {{ data.kycStatus }} | Konto: {{ data.accountCheckStatus }}</small>
+          </template>
+        </PColumn>
+        <PColumn header="Aktion">
+          <template #body="{ data }">
+            <div class="action-stack">
+              <PInputText :modelValue="data.legalName" type="text" disabled />
+              <PInputText :modelValue="data.birthDate" type="text" disabled />
+              <PInputText :modelValue="data.ibanMasked" type="text" disabled />
+              <PSelect
+                v-model="reviewForms[data.id].kycStatus"
+                :options="[
+                  { label: 'KYC pending', value: 'PENDING' },
+                  { label: 'KYC passed', value: 'PASSED' },
+                  { label: 'KYC failed', value: 'FAILED' }
+                ]"
+                optionLabel="label"
+                optionValue="value"
+              />
+              <PSelect
+                v-model="reviewForms[data.id].accountCheckStatus"
+                :options="[
+                  { label: 'Konto pending', value: 'PENDING' },
+                  { label: 'Konto passed', value: 'PASSED' },
+                  { label: 'Konto failed', value: 'FAILED' }
+                ]"
+                optionLabel="label"
+                optionValue="value"
+              />
+              <PInputText v-model="reviewForms[data.id].reviewNote" type="text" placeholder="Review-Notiz" />
+              <SectionActions>
+                <PButton label="Freigeben" severity="secondary" outlined size="small" type="button" @click="reviewRegistration(data.id, 'APPROVE')" />
+                <PButton label="Ablehnen" severity="secondary" outlined size="small" type="button" @click="reviewRegistration(data.id, 'REJECT')" />
+              </SectionActions>
+            </div>
+          </template>
+        </PColumn>
+      </AppDataTable>
+    </AdminPanel>
+  </AdminPanel>
 </section>

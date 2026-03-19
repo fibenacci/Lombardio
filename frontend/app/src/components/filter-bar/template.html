@@ -1,0 +1,9 @@
+<section class="filter-bar">
+  <div class="filter-bar__fields">
+    <slot />
+  </div>
+
+  <div v-if="$slots.actions" class="filter-bar__actions">
+    <slot name="actions" />
+  </div>
+</section>

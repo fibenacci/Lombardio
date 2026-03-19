@@ -40,6 +40,40 @@
     "verifyCode": "Code prüfen",
     "loginFailed": "Anmeldung fehlgeschlagen"
   },
+  "customerPortalLogin": {
+    "eyebrow": "Digitaler Pfandschein",
+    "title": "Kundenportal",
+    "copy": "Aktive Pfandscheine, Fälligkeiten und Vertragsdokumente online einsehen.",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "submit": "Anmelden",
+    "submitting": "Anmeldung läuft..."
+  },
+  "customerPortalActivate": {
+    "eyebrow": "Portal-Aktivierung",
+    "title": "Zugang aktivieren",
+    "copy": "Zugang für {customer} mit {email} aktivieren und Passwort festlegen.",
+    "password": "Passwort",
+    "confirmPassword": "Passwort bestätigen",
+    "submit": "Zugang aktivieren",
+    "submitting": "Aktivierung läuft...",
+    "passwordMismatch": "Die Passwörter stimmen nicht überein."
+  },
+  "customerPortalHome": {
+    "eyebrow": "Mein Pfandschein",
+    "title": "Aktive Pfandscheine",
+    "copy": "Willkommen {customer}. Hier stehen die aktuell aktiven Verträge digital bereit.",
+    "logout": "Abmelden",
+    "empty": "Aktuell sind keine aktiven Pfandscheine hinterlegt.",
+    "download": "Dokument öffnen",
+    "downloading": "Dokument wird geöffnet...",
+    "fields": {
+      "dueDate": "Fälligkeit",
+      "loanAmount": "Darlehen",
+      "repayment": "Rückzahlung",
+      "positions": "Positionen"
+    }
+  },
   "platformLayout": {
     "eyebrow": "Platform",
     "title": "Lombardio Control",
@@ -208,7 +242,7 @@
     "copyWithoutTenant": "Wähle zuerst einen Tenant.",
     "loading": "Kundenakte wird geladen...",
     "masterDataTitle": "Kundenstammdaten",
-    "masterDataSubtitle": "Bearbeitung der operativen CRM-Basisdaten.",
+    "masterDataSubtitle": "Bearbeitung der operativen CRM-Basisdaten inklusive digitalem Pfandscheinzugang.",
     "saveCustomer": "Kunde speichern",
     "loansTitle": "Pfandverträge und Beleihungen",
     "loansSubtitle": "Chronologische Vertrags- und Pfandscheinhistorie des Kunden.",
@@ -241,13 +275,16 @@
     "fields": {
       "customerNumber": "Kundennummer",
       "phone": "Telefon",
+      "email": "E-Mail",
       "firstName": "Vorname",
       "lastName": "Nachname",
       "birthDate": "Geburtsdatum",
       "street": "Straße",
       "postalCode": "PLZ",
-      "city": "Ort"
+      "city": "Ort",
+      "wantsDigitalPawnTicket": "Digitalen Pfandschein und Endkundenzugang aktivieren"
     },
+    "onlineAccessStatus": "Online-Zugangsstatus: {status}",
     "loanColumns": {
       "recordedAt": "Aufzeichnung",
       "language": "Sprache",
@@ -263,6 +300,31 @@
       "decisionNote": "Prüfnotiz",
       "frontImage": "Ausweis Vorderseite",
       "backImage": "Ausweis Rückseite"
+    },
+    "statusOptions": {
+      "kyc": {
+        "NOT_STARTED": "Nicht gestartet",
+        "IN_PROGRESS": "In Bearbeitung",
+        "APPROVED": "Freigegeben",
+        "REJECTED": "Abgelehnt"
+      },
+      "aml": {
+        "NOT_REVIEWED": "Nicht geprüft",
+        "CLEAR": "Freigegeben",
+        "REVIEW_REQUIRED": "Weitere Prüfung erforderlich",
+        "BLOCKED": "Blockiert",
+        "REPORTED": "Verdacht gemeldet"
+      }
+    },
+    "documentTypeOptions": {
+      "PERSONALAUSWEIS": "Personalausweis",
+      "REISEPASS": "Reisepass",
+      "AUFENTHALTSTITEL": "Aufenthaltstitel"
+    },
+    "riskLevels": {
+      "LOW": "Niedrig",
+      "MEDIUM": "Mittel",
+      "HIGH": "Hoch"
     },
     "amlFields": {
       "status": "AML-Status",
@@ -303,6 +365,11 @@
     "customerProfile": "AML/KYC im Kundenprofil",
     "positionsTitle": "Positionen",
     "addPosition": "Position hinzufügen",
+    "customerSearchPlaceholder": "Kundenbestand, Name oder Telefon",
+    "selectCustomerPlaceholder": "Kundenbestand wählen",
+    "selectGuidelinePlaceholder": "Richtlinie wählen",
+    "prefillDocument": "Ausweisdaten vorbefüllen",
+    "removePosition": "Entfernen",
     "totalLoan": "Summe Beleihung",
     "submitting": "Beleihung wird erstellt...",
     "submit": "Beleihung abschließen",

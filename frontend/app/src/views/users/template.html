@@ -1,141 +1,111 @@
 <section class="page">
-  <header class="page-header">
-      <div>
-        <p class="eyebrow">Identity Access</p>
-        <h2>Users</h2>
-      </div>
-      <p class="page-copy">
-        {{
-          tenantStore.selectedTenantId
-            ? `Create and maintain staff accounts for tenant ${tenantStore.selectedTenant()?.displayName ?? tenantStore.selectedTenantId}.`
-            : "Select a tenant in the Tenants view before managing users."
-        }}
-      </p>
-  </header>
+  <PageHeader
+    eyebrow="Identity Access"
+    title="Users"
+    icon="pi pi-users"
+    :copy="
+      tenantStore.selectedTenantId
+        ? `Create and maintain staff accounts for tenant ${tenantStore.selectedTenant()?.displayName ?? tenantStore.selectedTenantId}.`
+        : 'Select a tenant in the Tenants view before managing users.'
+    "
+  />
 
   <div class="panel-grid">
-    <section class="panel">
-      <div class="panel-header">
-        <h3>User Directory</h3>
-        <span>{{ isLoading ? "Loading..." : `${userRows.length} records` }}</span>
-      </div>
-
-      <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
-
-      <table v-if="!isLoading && tenantStore.selectedTenantId" class="data-table">
-        <thead>
-          <tr>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Display name</th>
-            <th>Status</th>
-            <th>Branches</th>
-            <th>Roles</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="user in userRows" :key="user.id">
-            <td>{{ user.username }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.displayName }}</td>
-            <td>
-              <span :class="['status-badge', { 'is-inactive': user.status !== 'ACTIVE' }]">
-                {{ user.status }}
-              </span>
-            </td>
-            <td>{{ (user.branchIds ?? []).length }}</td>
-            <td>{{ user.roleNames }}</td>
-            <td>
-              <button
+    <AdminPanel title="User Directory" :subtitle="isLoading ? 'Loading...' : `${userRows.length} records`">
+      <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
+      <AppDataTable v-if="tenantStore.selectedTenantId" :value="userRows" dataKey="id" :loading="isLoading">
+        <PColumn field="username" header="Username" sortable />
+        <PColumn field="email" header="Email" sortable />
+        <PColumn field="displayName" header="Display name" sortable />
+        <PColumn header="Status" field="status" sortable>
+          <template #body="{ data }">
+            <StatusTag :value="data.status" />
+          </template>
+        </PColumn>
+        <PColumn field="branchCount" header="Branches" sortable />
+        <PColumn field="roleNames" header="Roles" sortable />
+        <PColumn header="Actions">
+          <template #body="{ data }">
+            <div class="table-actions">
+              <PButton
                 v-if="canManageUsers"
-                class="secondary-button"
-                type="button"
-                @click="startEdit(user)"
-              >
-                Edit
-              </button>
-              <button
-                v-if="canDelegateToUser(user)"
-                class="secondary-button"
-                type="button"
-                @click="delegateToUser(user.id)"
-              >
-                Open as user
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+                icon="pi pi-pencil"
+                label="Edit"
+                severity="secondary"
+                outlined
+                size="small"
+                @click="startEdit(data)"
+              />
+              <ConfirmAction
+                v-if="canDelegateToUser(data)"
+                icon="pi pi-external-link"
+                label="Open as user"
+                severity="secondary"
+                outlined
+                size="small"
+                header="Start delegated session"
+                :message="`You are about to enter the application as ${data.displayName || data.username}.`"
+                confirmLabel="Start session"
+                @confirm="delegateToUser(data.id)"
+              />
+            </div>
+          </template>
+        </PColumn>
+      </AppDataTable>
+    </AdminPanel>
 
-    <section v-if="canManageUsers" class="panel">
-      <div class="panel-header">
-        <div>
-          <h3>{{ editingUserId ? "Edit User" : "Create User" }}</h3>
-          <p class="panel-subtitle">Writes directly to the live identity service.</p>
-        </div>
-      </div>
-
-      <form class="stack-form" @submit.prevent="submit">
-        <label>
-          <span>Username</span>
-          <input v-model="form.username" type="text" />
-        </label>
-
-        <label>
-          <span>Email</span>
-          <input v-model="form.email" type="email" />
-        </label>
-
-        <label v-if="!editingUserId">
-          <span>Initial password</span>
-          <input v-model="form.initialPassword" type="password" />
-        </label>
-
-        <label>
-          <span>Display name</span>
-          <input v-model="form.displayName" type="text" />
-        </label>
-
-        <label>
-          <span>Status</span>
-          <select v-model="form.status">
-            <option value="ACTIVE">ACTIVE</option>
-            <option value="INACTIVE">INACTIVE</option>
-          </select>
-        </label>
-
-        <fieldset class="selection-list">
-          <legend>Assign branches</legend>
-          <label v-for="branch in branches" :key="branch.id">
-            <input
-              :checked="form.branchIds.includes(branch.id)"
-              type="checkbox"
-              @change="toggleBranch(branch.id)"
-            />
-            <span>{{ branch.displayName }}</span>
+    <AdminPanel v-if="canManageUsers" :title="editingUserId ? 'Edit User' : 'Create User'" subtitle="Writes directly to the live identity service.">
+      <FormShell :errorMessage="errorMessage" :successMessage="successMessage" @submit="submit">
+          <label>
+            <span>Username</span>
+            <PInputText v-model="form.username" type="text" />
           </label>
-        </fieldset>
 
-        <fieldset class="selection-list">
-          <legend>Assign roles</legend>
-          <label v-for="role in roles" :key="role.id">
-            <input
-              :checked="form.roleIds.includes(role.id)"
-              type="checkbox"
-              @change="toggleRole(role.id)"
-            />
-            <span>{{ role.displayName }}</span>
+          <label>
+            <span>Email</span>
+            <PInputText v-model="form.email" type="email" />
           </label>
-        </fieldset>
 
-        <p v-if="successMessage" class="form-success">{{ successMessage }}</p>
-        <button :disabled="!tenantStore.selectedTenantId" type="submit">
-          {{ editingUserId ? "Save user" : "Create user" }}
-        </button>
-        <button v-if="editingUserId" class="secondary-button" type="button" @click="resetForm">Cancel</button>
-      </form>
-    </section>
+          <label v-if="!editingUserId">
+            <span>Initial password</span>
+            <PPassword v-model="form.initialPassword" :feedback="false" toggleMask fluid />
+          </label>
+
+          <label>
+            <span>Display name</span>
+            <PInputText v-model="form.displayName" type="text" />
+          </label>
+
+          <label>
+            <span>Status</span>
+            <PSelect
+              v-model="form.status"
+              :options="[
+                { label: 'ACTIVE', value: 'ACTIVE' },
+                { label: 'INACTIVE', value: 'INACTIVE' }
+              ]"
+              optionLabel="label"
+              optionValue="value"
+            />
+          </label>
+
+          <label>
+            <span>Assign branches</span>
+            <PMultiSelect v-model="form.branchIds" :options="branchOptions" optionLabel="label" optionValue="value" display="chip" />
+          </label>
+
+          <label>
+            <span>Assign roles</span>
+            <PMultiSelect v-model="form.roleIds" :options="roleOptions" optionLabel="label" optionValue="value" display="chip" />
+          </label>
+
+        <template #actions>
+          <SectionActions>
+            <PButton :disabled="!tenantStore.selectedTenantId" :label="editingUserId ? 'Save user' : 'Create user'" icon="pi pi-save" type="submit" />
+            <PButton v-if="editingUserId" icon="pi pi-times" label="Cancel" severity="secondary" outlined type="button" @click="resetForm" />
+          </SectionActions>
+        </template>
+      </FormShell>
+    </AdminPanel>
   </div>
 </section>

@@ -12,6 +12,16 @@ import numpy as np
 from PIL import Image
 
 try:
+    import easyocr
+except Exception:  # pragma: no cover
+    easyocr = None
+
+try:
+    import cv2
+except Exception:  # pragma: no cover
+    cv2 = None
+
+try:
     from paddleocr import PaddleOCR
 except Exception:  # pragma: no cover
     PaddleOCR = None
@@ -26,6 +36,13 @@ VALID_UNTIL_PATTERN = re.compile(
     re.IGNORECASE,
 )
 MRZ_LINE_PATTERN = re.compile(r"[A-Z0-9<]{30,}")
+GENERIC_DOCUMENT_NUMBER_PATTERN = re.compile(
+    r"(?<![A-Z0-9<\-])(?=[A-Z0-9<\-]{6,15})(?=.*[A-Z])(?=.*\d)([A-Z0-9<\-]+)(?![A-Z0-9<\-])",
+    re.IGNORECASE,
+)
+GENERIC_DATE_PATTERN = re.compile(
+    r"(?<!\d)((?:\d{2}[./-]\d{2}[./-]\d{4})|(?:\d{4}[./-]\d{2}[./-]\d{2}))(?!\d)"
+)
 
 
 @dataclass
@@ -37,6 +54,7 @@ class DecodedDocument:
 
 class DocumentOcrService:
     _ocr_instance: Any = None
+    _easyocr_reader: Any = None
 
     def __init__(self) -> None:
         self._ocr = self._get_ocr()
@@ -53,12 +71,12 @@ class DocumentOcrService:
         for decoded in (front, back):
             if decoded.text:
                 extracted_texts.append(decoded.text)
-            elif decoded.image is not None and self._ocr is not None:
-                provider_name = "paddleocr"
-                text, confidences = self._read_with_paddle(decoded.image)
+            elif decoded.image is not None:
+                text, confidences, detected_provider = self._read_text_from_image(decoded.image)
                 if text:
                     extracted_texts.append(text)
                     confidence_values.extend(confidences)
+                    provider_name = detected_provider
 
         combined_text = "\n".join(extracted_texts)
         document_type = self._extract_document_type(combined_text)
@@ -97,6 +115,8 @@ class DocumentOcrService:
         }
 
     def _read_with_paddle(self, image: np.ndarray) -> tuple[str, list[float]]:
+        if self._ocr is None:
+            return "", []
         try:
             result = self._ocr.ocr(image, cls=True)
         except Exception:
@@ -124,6 +144,46 @@ class DocumentOcrService:
                     confidences.append(float(text_data[1]))
                 except (TypeError, ValueError):
                     continue
+
+        return "\n".join(extracted_lines), confidences
+
+    def _read_text_from_image(self, image: np.ndarray) -> tuple[str, list[float], str]:
+        oriented_image = self._normalize_orientation(image)
+        text, confidences = self._read_with_easyocr(oriented_image)
+        if text:
+            return text, confidences, "easyocr"
+
+        text, confidences = self._read_with_paddle(oriented_image)
+        if text:
+            return text, confidences, "paddleocr"
+
+        return "", [], "document-ocr-fallback"
+
+    def _read_with_easyocr(self, image: np.ndarray) -> tuple[str, list[float]]:
+        reader = self._get_easyocr_reader()
+        if reader is None:
+            return "", []
+
+        grayscale = self._prepare_grayscale(image)
+        if grayscale is None:
+            return "", []
+
+        try:
+            result = reader.readtext(grayscale, detail=1, contrast_ths=0.05, rotation_info=1)
+        except Exception:
+            return "", []
+
+        extracted_lines: list[str] = []
+        confidences: list[float] = []
+        for _, text, confidence in result:
+            line_text = str(text).strip()
+            if not line_text:
+                continue
+            extracted_lines.append(line_text)
+            try:
+                confidences.append(float(confidence))
+            except (TypeError, ValueError):
+                continue
 
         return "\n".join(extracted_lines), confidences
 
@@ -169,17 +229,12 @@ class DocumentOcrService:
             if match:
                 normalized = self._normalize_document_number_candidate(match.group(1))
                 return self._clean_document_number(normalized)
-        return None
+        return self._extract_document_number_from_free_text(value)
 
     def _extract_valid_until(self, value: str) -> str | None:
         if not value:
             return None
-        for line in value.splitlines():
-            normalized_line = self._normalize_text(line).replace(":", " ").replace("=", " ")
-            match = VALID_UNTIL_PATTERN.search(normalized_line)
-            if match:
-                return self._normalize_date(match.group(1))
-        return None
+        return self._extract_valid_until_with_keywords(value) or self._extract_valid_until_from_free_text(value)
 
     def _extract_from_mrz(self, value: str) -> dict[str, str] | None:
         mrz_lines = self._collect_mrz_lines(value)
@@ -283,6 +338,60 @@ class DocumentOcrService:
             return None
         return None
 
+    def _normalize_orientation(self, image: np.ndarray) -> np.ndarray:
+        if cv2 is None:
+            return image
+
+        height, width = image.shape[:2]
+        oriented = image
+        if width > height:
+            oriented = cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        return oriented
+
+    def _prepare_grayscale(self, image: np.ndarray) -> np.ndarray | None:
+        if cv2 is None:
+            return None
+
+        mono = image
+        if mono.ndim == 3:
+            try:
+                mono = cv2.cvtColor(mono, cv2.COLOR_RGB2GRAY)
+            except Exception:
+                try:
+                    mono = cv2.cvtColor(mono, cv2.COLOR_BGR2GRAY)
+                except Exception:
+                    return None
+
+        mono = np.clip(mono, 0, 255).astype(np.uint8)
+        try:
+            mono = cv2.equalizeHist(mono)
+            mono = cv2.GaussianBlur(mono, (3, 3), 0)
+        except Exception:
+            pass
+        return mono
+
+    def _extract_document_number_from_free_text(self, value: str) -> str | None:
+        normalized = self._normalize_text(value)
+        for candidate in GENERIC_DOCUMENT_NUMBER_PATTERN.findall(normalized):
+            cleaned = self._clean_document_number(candidate)
+            if cleaned:
+                return cleaned
+        return None
+
+    def _extract_valid_until_with_keywords(self, value: str) -> str | None:
+        for line in value.splitlines():
+            normalized_line = self._normalize_text(line).replace(":", " ").replace("=", " ")
+            match = VALID_UNTIL_PATTERN.search(normalized_line)
+            if match:
+                return self._normalize_date(match.group(1))
+        return None
+
+    def _extract_valid_until_from_free_text(self, value: str) -> str | None:
+        match = GENERIC_DATE_PATTERN.search(value)
+        if not match:
+            return None
+        return self._normalize_date(match.group(1))
+
     def _normalize_mrz_date(self, value: str) -> str | None:
         if not re.fullmatch(r"\d{6}", value):
             return None
@@ -302,3 +411,14 @@ class DocumentOcrService:
         if cls._ocr_instance is None:
             cls._ocr_instance = PaddleOCR(use_angle_cls=True, lang="en", show_log=False)
         return cls._ocr_instance
+
+    @classmethod
+    def _get_easyocr_reader(cls) -> Any:
+        if easyocr is None:
+            return None
+        if cls._easyocr_reader is None:
+            try:
+                cls._easyocr_reader = easyocr.Reader(["en", "de"], gpu=False, silent=True)
+            except Exception:
+                return None
+        return cls._easyocr_reader

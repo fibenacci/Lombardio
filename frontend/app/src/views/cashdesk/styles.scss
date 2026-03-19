@@ -2,6 +2,10 @@
   background: rgba(211, 228, 255, 0.45);
 }
 
+.p-datatable .p-datatable-tbody > tr {
+  cursor: pointer;
+}
+
 .ticket-summary {
   display: grid;
   gap: 0.3rem;

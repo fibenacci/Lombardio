@@ -10,6 +10,9 @@ public record Customer(
         String lastName,
         LocalDate birthDate,
         String phone,
+        String email,
+        boolean wantsDigitalPawnTicket,
+        String onlineAccessStatus,
         String street,
         String postalCode,
         String city

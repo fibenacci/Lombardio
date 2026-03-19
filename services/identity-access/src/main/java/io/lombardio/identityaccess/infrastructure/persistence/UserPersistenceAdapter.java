@@ -46,6 +46,11 @@ public class UserPersistenceAdapter implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByTenantIdAndEmail(String tenantId, String email) {
+        return repository.findFirstByTenantIdAndEmailIgnoreCase(tenantId, email).map(this::toDomain);
+    }
+
+    @Override
     public User save(User user) {
         return toDomain(repository.save(toEntity(user)));
     }

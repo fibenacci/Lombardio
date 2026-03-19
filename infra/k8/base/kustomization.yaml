@@ -3,7 +3,9 @@ kind: Kustomization
 namespace: lombardio
 resources:
   - namespace.yaml
+  - external-secrets.yaml
   - postgres.yaml
+  - redis.yaml
   - document-ocr.yaml
   - centrifugo.yaml
   - customer.yaml

@@ -1,0 +1,13 @@
+{
+  "client": {
+    "allowed_origins": ["*"]
+  },
+  "api_key": "change-me",
+  "token_hmac_secret_key": "change-me",
+  "engine": {
+    "type": "redis",
+    "redis": {
+      "address": "redis:6379"
+    }
+  }
+}

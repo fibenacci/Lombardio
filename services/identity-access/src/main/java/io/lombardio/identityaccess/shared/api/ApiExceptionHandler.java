@@ -1,5 +1,6 @@
 package io.lombardio.identityaccess.shared.api;
 
+import io.lombardio.identityaccess.ratelimit.RateLimitExceededException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,13 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiError> handleBadCredentials(BadCredentialsException exception) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new ApiError("invalid_credentials", exception.getMessage()));
+    }
+
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ApiError> handleRateLimitExceeded(RateLimitExceededException exception) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("Retry-After", String.valueOf(exception.retryAfterSeconds()))
+                .body(new ApiError("rate_limit_exceeded", exception.getMessage()));
     }
 
     private String formatFieldError(FieldError error) {

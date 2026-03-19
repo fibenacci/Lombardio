@@ -12,4 +12,6 @@ public interface PawnTicketRepository {
     Optional<PawnTicket> findByTicketNumber(String ticketNumber);
 
     List<PawnTicket> findByTenantId(String tenantId);
+
+    List<PawnTicket> findByTenantIdAndCustomerId(String tenantId, String customerId);
 }

@@ -1,6 +1,7 @@
 package io.lombardio.customer.config;
 
 import io.lombardio.customer.infrastructure.security.CustomerAuthenticationFilter;
+import io.lombardio.customer.portal.infrastructure.security.CustomerPortalAuthenticationFilter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +22,7 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
+            CustomerPortalAuthenticationFilter customerPortalAuthenticationFilter,
             CustomerAuthenticationFilter authenticationFilter,
             CorsConfigurationSource corsConfigurationSource
     )
@@ -38,8 +40,11 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/api/v1/customer-portal/auth/login").permitAll()
+                        .requestMatchers("/api/v1/customer-portal/invitations/**").permitAll()
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(customerPortalAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

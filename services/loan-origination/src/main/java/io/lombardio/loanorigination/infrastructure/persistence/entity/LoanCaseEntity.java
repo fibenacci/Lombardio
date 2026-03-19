@@ -6,7 +6,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 
 import java.util.ArrayList;
@@ -56,15 +55,12 @@ public class LoanCaseEntity {
     private String customerCheckedDocumentType;
 
     @OneToMany(mappedBy = "loanCase", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @OrderColumn(name = "sort_order")
     private List<PledgeRecordEntity> pledgeRecords = new ArrayList<>();
 
     @OneToMany(mappedBy = "loanCase", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @OrderColumn(name = "sort_order")
     private List<LoanPositionEntity> positions = new ArrayList<>();
 
     @OneToMany(mappedBy = "loanCase", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @OrderColumn(name = "sort_order")
     private List<LoanPawnTicketEntity> pawnTickets = new ArrayList<>();
 
     public String getId() {

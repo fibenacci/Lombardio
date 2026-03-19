@@ -46,6 +46,9 @@ public class AuctionEntity {
 
     private String announcementReference;
 
+    @Column(nullable = false)
+    private String realtimeChannel;
+
     @OneToMany(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("lotNumber asc")
     private List<AuctionLotEntity> lots = new ArrayList<>();
@@ -76,6 +79,8 @@ public class AuctionEntity {
     public void setClosedAt(Instant closedAt) { this.closedAt = closedAt; }
     public String getAnnouncementReference() { return announcementReference; }
     public void setAnnouncementReference(String announcementReference) { this.announcementReference = announcementReference; }
+    public String getRealtimeChannel() { return realtimeChannel; }
+    public void setRealtimeChannel(String realtimeChannel) { this.realtimeChannel = realtimeChannel; }
     public List<AuctionLotEntity> getLots() { return lots; }
     public void setLots(List<AuctionLotEntity> lots) { this.lots = lots; }
     public Instant getCreatedAt() { return createdAt; }

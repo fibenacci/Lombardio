@@ -22,9 +22,9 @@
 
   <div v-else class="customer-detail-layout">
     <section class="panel">
-      <div class="panel-header">
+      <div class="panel-header header">
         <div>
-          <h3>{{ t("customerDetail.masterDataTitle") }}</h3>
+          <h3>sefsefsefse{{ t("customerDetail.masterDataTitle") }}</h3>
           <p class="panel-subtitle">{{ t("customerDetail.masterDataSubtitle") }}</p>
         </div>
       </div>
@@ -32,42 +32,57 @@
       <div class="stack-form two-column-grid">
         <label>
           <span>{{ t("customerDetail.fields.customerNumber") }}</span>
-          <input v-model="customer.customerNumber" type="text" />
+          <PInputText v-model="customer.customerNumber" class="form-field" />
         </label>
         <label>
           <span>{{ t("customerDetail.fields.phone") }}</span>
-          <input v-model="customer.phone" type="text" />
+          <PInputText v-model="customer.phone" class="form-field" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.fields.email") }}</span>
+          <PInputText v-model="customer.email" type="email" class="form-field" />
         </label>
         <label>
           <span>{{ t("customerDetail.fields.firstName") }}</span>
-          <input v-model="customer.firstName" type="text" />
+          <PInputText v-model="customer.firstName" class="form-field" />
         </label>
         <label>
           <span>{{ t("customerDetail.fields.lastName") }}</span>
-          <input v-model="customer.lastName" type="text" />
+          <PInputText v-model="customer.lastName" class="form-field" />
         </label>
         <label>
           <span>{{ t("customerDetail.fields.birthDate") }}</span>
-          <input v-model="customer.birthDate" type="date" />
+          <PInputText v-model="customer.birthDate" type="date" class="form-field" />
         </label>
         <label>
           <span>{{ t("customerDetail.fields.street") }}</span>
-          <input v-model="customer.street" type="text" />
+          <PInputText v-model="customer.street" class="form-field" />
         </label>
         <label>
           <span>{{ t("customerDetail.fields.postalCode") }}</span>
-          <input v-model="customer.postalCode" type="text" />
+          <PInputText v-model="customer.postalCode" class="form-field" />
         </label>
         <label class="full-span">
           <span>{{ t("customerDetail.fields.city") }}</span>
-          <input v-model="customer.city" type="text" />
+          <PInputText v-model="customer.city" class="form-field" />
         </label>
+        <div class="checkbox-field full-span">
+          <span>{{ t("customerDetail.fields.wantsDigitalPawnTicket") }}</span>
+          <PToggleSwitch v-model="customer.wantsDigitalPawnTicket" />
+        </div>
       </div>
 
+      <p class="legal-copy">
+        {{ t("customerDetail.onlineAccessStatus", { status: customer.onlineAccessStatus || "NOT_REQUESTED" }) }}
+      </p>
+
       <div class="detail-actions">
-        <button :disabled="isSavingCustomer" type="button" @click="saveCustomer">
-          {{ isSavingCustomer ? t("common.saving") : t("customerDetail.saveCustomer") }}
-        </button>
+        <PButton
+          :disabled="isSavingCustomer"
+          type="button"
+          @click="saveCustomer"
+          :label="isSavingCustomer ? t('common.saving') : t('customerDetail.saveCustomer')"
+        />
       </div>
     </section>
 
@@ -125,36 +140,39 @@
       <div class="stack-form two-column-grid">
         <label>
           <span>{{ t("customerDetail.kycFields.status") }}</span>
-          <select v-model="kyc.status">
-            <option value="NOT_STARTED">NOT_STARTED</option>
-            <option value="IN_PROGRESS">IN_PROGRESS</option>
-            <option value="APPROVED">APPROVED</option>
-            <option value="REJECTED">REJECTED</option>
-          </select>
+          <PSelect
+            v-model="kyc.status"
+            :options="kycStatusOptions"
+            optionLabel="label"
+            optionValue="value"
+            class="form-field"
+          />
         </label>
         <label>
           <span>{{ t("customerDetail.kycFields.documentType") }}</span>
-          <select v-model="kyc.documentType">
-            <option value="PERSONALAUSWEIS">Personalausweis</option>
-            <option value="REISEPASS">Reisepass</option>
-            <option value="AUFENTHALTSTITEL">Aufenthaltstitel</option>
-          </select>
+          <PSelect
+            v-model="kyc.documentType"
+            :options="kycDocumentTypeOptions"
+            optionLabel="label"
+            optionValue="value"
+            class="form-field"
+          />
         </label>
         <label>
           <span>{{ t("customerDetail.kycFields.documentNumber") }}</span>
-          <input v-model="kyc.documentNumber" type="text" />
+          <PInputText v-model="kyc.documentNumber" class="form-field" />
         </label>
         <label>
           <span>{{ t("customerDetail.kycFields.documentValidUntil") }}</span>
-          <input v-model="kyc.documentValidUntil" type="date" />
+          <PInputText v-model="kyc.documentValidUntil" type="date" class="form-field" />
         </label>
         <label>
           <span>{{ t("customerDetail.kycFields.verifiedUntil") }}</span>
-          <input v-model="kyc.verifiedUntil" type="date" />
+          <PInputText v-model="kyc.verifiedUntil" type="date" class="form-field" />
         </label>
         <label class="full-span">
           <span>{{ t("customerDetail.kycFields.decisionNote") }}</span>
-          <textarea v-model="kyc.decisionNote" rows="3"></textarea>
+          <PTextarea v-model="kyc.decisionNote" rows="3" class="form-field" />
         </label>
         <label>
           <span>{{ t("customerDetail.kycFields.frontImage") }}</span>
@@ -165,9 +183,13 @@
           <input accept="image/*" type="file" @change="updateDocument('documentBackImageDataUrl', $event)" />
         </label>
         <div v-if="documentOcrAvailable" class="full-span inline-row">
-          <button class="secondary-button" :disabled="isPrefillingKyc" type="button" @click="prefillDocument">
-            {{ isPrefillingKyc ? t("customerDetail.ocrRunning") : t("customerDetail.prefillDocument") }}
-          </button>
+          <PButton
+            class="secondary-button"
+            :disabled="isPrefillingKyc"
+            :label="isPrefillingKyc ? t('customerDetail.ocrRunning') : t('customerDetail.prefillDocument')"
+            type="button"
+            @click="prefillDocument"
+          />
           <span class="muted-copy">{{ t("customerDetail.ocrCopy") }}</span>
         </div>
       </div>
@@ -188,9 +210,12 @@
       <p class="legal-copy">{{ t("customerDetail.kycLegalCopy") }}</p>
 
       <div class="detail-actions">
-        <button :disabled="isSavingKyc" type="button" @click="saveKyc">
-          {{ isSavingKyc ? t("common.saving") : t("customerDetail.saveKyc") }}
-        </button>
+        <PButton
+          :disabled="isSavingKyc"
+          type="button"
+          @click="saveKyc"
+          :label="isSavingKyc ? t('common.saving') : t('customerDetail.saveKyc')"
+        />
       </div>
     </section>
 
@@ -205,57 +230,59 @@
       <div class="stack-form two-column-grid">
         <label>
           <span>{{ t("customerDetail.amlFields.status") }}</span>
-          <select v-model="aml.status">
-            <option value="NOT_REVIEWED">NOT_REVIEWED</option>
-            <option value="CLEAR">CLEAR</option>
-            <option value="REVIEW_REQUIRED">REVIEW_REQUIRED</option>
-            <option value="BLOCKED">BLOCKED</option>
-            <option value="REPORTED">REPORTED</option>
-          </select>
+          <PSelect
+            v-model="aml.status"
+            :options="amlStatusOptions"
+            optionLabel="label"
+            optionValue="value"
+            class="form-field"
+          />
         </label>
         <label>
           <span>{{ t("customerDetail.amlFields.riskLevel") }}</span>
-          <select v-model="aml.riskLevel">
-            <option value="LOW">LOW</option>
-            <option value="MEDIUM">MEDIUM</option>
-            <option value="HIGH">HIGH</option>
-          </select>
+          <PSelect
+            v-model="aml.riskLevel"
+            :options="amlRiskLevelOptions"
+            optionLabel="label"
+            optionValue="value"
+            class="form-field"
+          />
         </label>
         <label class="checkbox-field">
-          <input v-model="aml.pepFlag" type="checkbox" />
           <span>{{ t("customerDetail.amlFields.pepFlag") }}</span>
+          <PToggleSwitch v-model="aml.pepFlag" />
         </label>
         <label class="checkbox-field">
-          <input v-model="aml.sanctionsHit" type="checkbox" />
           <span>{{ t("customerDetail.amlFields.sanctionsHit") }}</span>
+          <PToggleSwitch v-model="aml.sanctionsHit" />
         </label>
         <label class="checkbox-field">
-          <input v-model="aml.unusualTransactionFlag" type="checkbox" />
           <span>{{ t("customerDetail.amlFields.unusualTransactionFlag") }}</span>
+          <PToggleSwitch v-model="aml.unusualTransactionFlag" />
         </label>
         <label class="checkbox-field">
-          <input v-model="aml.sourceOfFundsChecked" type="checkbox" />
           <span>{{ t("customerDetail.amlFields.sourceOfFundsChecked") }}</span>
+          <PToggleSwitch v-model="aml.sourceOfFundsChecked" />
         </label>
         <label class="checkbox-field full-span">
-          <input v-model="aml.suspiciousActivityReported" type="checkbox" />
           <span>{{ t("customerDetail.amlFields.suspiciousActivityReported") }}</span>
+          <PToggleSwitch v-model="aml.suspiciousActivityReported" />
         </label>
         <label v-if="aml.suspiciousActivityReported" class="full-span">
           <span>{{ t("customerDetail.amlFields.goamlReference") }}</span>
-          <input v-model="aml.goamlReference" type="text" />
+          <PInputText v-model="aml.goamlReference" class="form-field" />
         </label>
         <label>
           <span>{{ t("customerDetail.amlFields.lastScreenedAt") }}</span>
-          <input v-model="aml.lastScreenedAt" type="datetime-local" />
+          <PInputText v-model="aml.lastScreenedAt" type="datetime-local" class="form-field" />
         </label>
         <label>
           <span>{{ t("customerDetail.amlFields.reviewedAt") }}</span>
-          <input v-model="aml.reviewedAt" type="datetime-local" />
+          <PInputText v-model="aml.reviewedAt" type="datetime-local" class="form-field" />
         </label>
         <label class="full-span">
           <span>{{ t("customerDetail.amlFields.decisionNote") }}</span>
-          <textarea v-model="aml.decisionNote" rows="3"></textarea>
+          <PTextarea v-model="aml.decisionNote" rows="3" class="form-field" />
         </label>
       </div>
 
@@ -271,9 +298,12 @@
       </div>
 
       <div class="detail-actions">
-        <button :disabled="isSavingAml" type="button" @click="saveAml">
-          {{ isSavingAml ? t("common.saving") : t("customerDetail.saveAml") }}
-        </button>
+        <PButton
+          :disabled="isSavingAml"
+          type="button"
+          @click="saveAml"
+          :label="isSavingAml ? t('common.saving') : t('customerDetail.saveAml')"
+        />
       </div>
     </section>
   </div>

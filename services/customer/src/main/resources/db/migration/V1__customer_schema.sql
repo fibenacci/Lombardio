@@ -8,6 +8,9 @@ create table if not exists customer.customers (
     last_name varchar(120) not null,
     birth_date date not null,
     phone varchar(64) not null,
+    email varchar(255),
+    wants_digital_pawn_ticket boolean not null default false,
+    online_access_status varchar(32) not null default 'NOT_REQUESTED',
     street varchar(255),
     postal_code varchar(32),
     city varchar(120)

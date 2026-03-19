@@ -16,12 +16,25 @@ spring:
     hibernate:
       ddl-auto: none
     open-in-view: false
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST}
+    port: ${SPRING_RABBITMQ_PORT}
+    username: ${SPRING_RABBITMQ_USERNAME}
+    password: ${SPRING_RABBITMQ_PASSWORD}
 
 server:
   port: 8082
 
 identity-access:
   base-url: ${IDENTITY_ACCESS_BASE_URL}
+
+integration:
+  outbox:
+    access-token: ${PLATFORM_OUTBOX_ACCESS_TOKEN}
+  rabbitmq:
+    exchange: ${INTEGRATION_RABBITMQ_EXCHANGE}
+    publisher-batch-size: ${INTEGRATION_RABBITMQ_PUBLISHER_BATCH_SIZE}
+    publisher-enabled: ${INTEGRATION_RABBITMQ_PUBLISHER_ENABLED}
 
 app:
   cors:

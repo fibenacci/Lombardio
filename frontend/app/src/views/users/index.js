@@ -1,5 +1,6 @@
 import { computed, defineComponent, onMounted, reactive, ref } from "vue";
 import { createUser, fetchBranches, fetchRoles, fetchUsers, updateUser } from "../../services/api/access";
+import { useAppToast } from "../../composables/use-app-toast";
 import { authStore } from "../../stores/auth";
 import { tenantStore } from "../../stores/tenant";
 import template from "./template.html?raw";
@@ -8,6 +9,7 @@ import "./styles.scss";
 export default defineComponent({
   name: "UsersView",
   setup() {
+    const toast = useAppToast();
     const users = ref([]);
     const roles = ref([]);
     const branches = ref([]);
@@ -28,9 +30,24 @@ export default defineComponent({
     const userRows = computed(() =>
       users.value.map((user) => ({
         ...user,
+        branchCount: (user.branchIds ?? []).length,
         roleNames: user.roleIds
           .map((roleId) => roles.value.find((role) => role.id === roleId)?.displayName ?? roleId)
           .join(", ")
+      }))
+    );
+
+    const branchOptions = computed(() =>
+      branches.value.map((branch) => ({
+        label: branch.displayName,
+        value: branch.id
+      }))
+    );
+
+    const roleOptions = computed(() =>
+      roles.value.map((role) => ({
+        label: role.displayName,
+        value: role.id
       }))
     );
 
@@ -62,24 +79,6 @@ export default defineComponent({
       }
     }
 
-    function toggleRole(roleId) {
-      if (form.roleIds.includes(roleId)) {
-        form.roleIds = form.roleIds.filter((item) => item !== roleId);
-        return;
-      }
-
-      form.roleIds = [...form.roleIds, roleId];
-    }
-
-    function toggleBranch(branchId) {
-      if (form.branchIds.includes(branchId)) {
-        form.branchIds = form.branchIds.filter((item) => item !== branchId);
-        return;
-      }
-
-      form.branchIds = [...form.branchIds, branchId];
-    }
-
     async function submit() {
       successMessage.value = "";
       errorMessage.value = "";
@@ -101,6 +100,7 @@ export default defineComponent({
             authStore.token
           );
           successMessage.value = "User updated";
+          toast.success("User updated", `${payload.displayName || payload.username} was saved.`);
         } else {
           await createUser(
             tenantStore.selectedTenantId,
@@ -111,6 +111,7 @@ export default defineComponent({
             authStore.token
           );
           successMessage.value = "User created";
+          toast.success("User created", `${payload.displayName || payload.username} is now available in the directory.`);
         }
 
         resetForm();
@@ -129,6 +130,7 @@ export default defineComponent({
         await tenantStore.refreshTenants();
         await loadData();
         successMessage.value = "Delegated session started";
+        toast.info("Delegated session started", "You are now acting with the selected user context.");
       } catch (error) {
         handleApiError(error);
       }
@@ -182,6 +184,7 @@ export default defineComponent({
 
     return {
       branches,
+      branchOptions,
       editingUserId,
       errorMessage,
       form,
@@ -192,11 +195,10 @@ export default defineComponent({
       resetForm,
       startEdit,
       roles,
+      roleOptions,
       tenantStore,
       submit,
       successMessage,
-      toggleBranch,
-      toggleRole,
       userRows
     };
   },

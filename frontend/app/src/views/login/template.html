@@ -1,36 +1,44 @@
 <main class="login-shell">
-  <section class="login-card">
-    <p class="eyebrow">{{ t("login.eyebrow") }}</p>
-    <h1>{{ t("login.title") }}</h1>
-    <p class="intro">{{ t("login.intro") }}</p>
+  <PCard class="login-card">
+    <template #content>
+      <div class="login-head">
+        <PTag value="Lombardio" severity="contrast" rounded />
+        <p class="eyebrow">{{ t("login.eyebrow") }}</p>
+        <h1>{{ t("login.title") }}</h1>
+        <p class="intro">{{ t("login.intro") }}</p>
+      </div>
 
-    <form class="login-form" @submit.prevent="submit">
-      <label v-if="!authStore.hasPendingMfa()">
-        <span>{{ t("login.email") }}</span>
-        <input v-model="form.email" type="email" autocomplete="username" />
-      </label>
+      <form class="login-form" @submit.prevent="submit">
+        <label v-if="!authStore.hasPendingMfa()">
+          <span>{{ t("login.email") }}</span>
+          <PInputText v-model="form.email" type="email" autocomplete="username" />
+        </label>
 
-      <label v-if="!authStore.hasPendingMfa()">
-        <span>{{ t("login.password") }}</span>
-        <input v-model="form.password" type="password" autocomplete="current-password" />
-      </label>
+        <label v-if="!authStore.hasPendingMfa()">
+          <span>{{ t("login.password") }}</span>
+          <PPassword v-model="form.password" inputClass="w-full" autocomplete="current-password" :feedback="false" toggleMask fluid />
+        </label>
 
-      <label v-if="authStore.hasPendingMfa()">
-        <span>{{ t("login.authenticatorCode") }}</span>
-        <input v-model="form.totpCode" type="text" inputmode="numeric" autocomplete="one-time-code" />
-      </label>
+        <label v-if="authStore.hasPendingMfa()">
+          <span>{{ t("login.authenticatorCode") }}</span>
+          <PInputText v-model="form.totpCode" type="text" inputmode="numeric" autocomplete="one-time-code" />
+        </label>
 
-      <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
+        <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
 
-      <button :disabled="isSubmitting" type="submit">
-        {{
-          isSubmitting
-            ? t("login.signingIn")
-            : authStore.hasPendingMfa()
-              ? t("login.verifyCode")
-              : t("login.signIn")
-        }}
-      </button>
-    </form>
-  </section>
+        <PButton
+          :disabled="isSubmitting"
+          :icon="authStore.hasPendingMfa() ? 'pi pi-shield' : 'pi pi-sign-in'"
+          :label="
+            isSubmitting
+              ? t('login.signingIn')
+              : authStore.hasPendingMfa()
+                ? t('login.verifyCode')
+                : t('login.signIn')
+          "
+          type="submit"
+        />
+      </form>
+    </template>
+  </PCard>
 </main>

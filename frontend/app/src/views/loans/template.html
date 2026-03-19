@@ -1,61 +1,52 @@
 <section class="page">
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">{{ t("loans.eyebrow") }}</p>
-      <h2>{{ t("loans.title") }}</h2>
-    </div>
-    <p class="page-copy">
-      {{
-        tenantStore.selectedTenantId
-          ? t("loans.copyWithTenant", { tenant: tenantStore.selectedTenant()?.displayName ?? tenantStore.selectedTenantId })
-          : t("loans.copyWithoutTenant")
-      }}
-    </p>
-  </header>
+  <PageHeader
+    :eyebrow="t('loans.eyebrow')"
+    :title="t('loans.title')"
+    icon="pi pi-file-edit"
+    :copy="
+      tenantStore.selectedTenantId
+        ? t('loans.copyWithTenant', { tenant: tenantStore.selectedTenant()?.displayName ?? tenantStore.selectedTenantId })
+        : t('loans.copyWithoutTenant')
+    "
+  />
 
-  <section class="panel">
-    <div class="panel-header">
-      <div>
-        <h3>{{ t("loans.registerTitle") }}</h3>
-        <p class="panel-subtitle">{{ t("loans.registerSubtitle") }}</p>
-      </div>
-      <span>{{ isLoading ? t("common.loading") : t("loans.count", { count: filteredLoans.length }) }}</span>
-    </div>
+  <AdminPanel :title="t('loans.registerTitle')" :subtitle="isLoading ? t('common.loading') : t('loans.count', { count: filteredLoans.length })">
+    <template #actions>
+      <span class="muted-copy">{{ t("loans.registerSubtitle") }}</span>
+    </template>
 
-    <div class="toolbar">
-      <input v-model="query" :placeholder="t('loans.searchPlaceholder')" type="text" />
-    </div>
+    <FilterBar>
+      <PInputText v-model="query" :placeholder="t('loans.searchPlaceholder')" type="text" />
+    </FilterBar>
 
-    <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
+    <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
 
-    <table v-if="!isLoading && tenantStore.selectedTenantId" class="data-table">
-      <thead>
-        <tr>
-          <th>{{ t("loans.columns.recordedAt") }}</th>
-          <th>{{ t("loans.columns.customer") }}</th>
-          <th>{{ t("loans.columns.documentType") }}</th>
-          <th>{{ t("loans.columns.tickets") }}</th>
-          <th>{{ t("loans.columns.powerOfAttorney") }}</th>
-          <th>{{ t("loans.columns.retentionUntil") }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="loan in filteredLoans" :key="loan.id">
-          <td>{{ loan.pledgeRecord.recordedAt }}</td>
-          <td>
-            <div>{{ loan.customer.displayName }}</div>
-            <small class="muted-copy">{{ loan.customer.customerNumber }}</small>
-          </td>
-          <td>{{ loan.pledgeRecord.checkedDocumentType ?? t("common.notAvailable") }}</td>
-          <td>
-            <div v-for="ticket in loan.pawnTickets" :key="ticket.ticketNumber">
-              {{ ticket.ticketNumber }} · {{ ticket.totalLoanValue }} EUR
-            </div>
-          </td>
-          <td>{{ loan.pledgeRecord.powerOfAttorneyRequired ? t("common.yes") : t("common.no") }}</td>
-          <td>{{ loan.pledgeRecord.retentionUntil }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+    <AppDataTable v-if="tenantStore.selectedTenantId" :value="filteredLoans" dataKey="id" :loading="isLoading">
+      <PColumn field="pledgeRecord.recordedAt" :header="t('loans.columns.recordedAt')" sortable />
+      <PColumn :header="t('loans.columns.customer')" field="customer.displayName" sortable>
+        <template #body="{ data }">
+          <div>{{ data.customer.displayName }}</div>
+          <small class="muted-copy">{{ data.customer.customerNumber }}</small>
+        </template>
+      </PColumn>
+      <PColumn :header="t('loans.columns.documentType')" field="pledgeRecord.checkedDocumentType" sortable>
+        <template #body="{ data }">
+          {{ data.pledgeRecord.checkedDocumentType ?? t("common.notAvailable") }}
+        </template>
+      </PColumn>
+      <PColumn :header="t('loans.columns.tickets')">
+        <template #body="{ data }">
+          <div v-for="ticket in data.pawnTickets" :key="ticket.ticketNumber">
+            {{ ticket.ticketNumber }} · {{ ticket.totalLoanValue }} EUR
+          </div>
+        </template>
+      </PColumn>
+      <PColumn :header="t('loans.columns.powerOfAttorney')" field="pledgeRecord.powerOfAttorneyRequired" sortable>
+        <template #body="{ data }">
+          {{ data.pledgeRecord.powerOfAttorneyRequired ? t("common.yes") : t("common.no") }}
+        </template>
+      </PColumn>
+      <PColumn field="pledgeRecord.retentionUntil" :header="t('loans.columns.retentionUntil')" sortable />
+    </AppDataTable>
+  </AdminPanel>
 </section>

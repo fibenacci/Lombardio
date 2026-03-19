@@ -11,6 +11,7 @@ import {
   placeAuctionBid,
   settleAuctionLot
 } from "../../services/api/auction";
+import { useAppToast } from "../../composables/use-app-toast";
 import template from "./template.html?raw";
 import "./styles.scss";
 
@@ -27,6 +28,7 @@ function emptyLot() {
 export default defineComponent({
   name: "AuctionsView",
   setup() {
+    const toast = useAppToast();
     const auctions = ref([]);
     const surplusCases = ref([]);
     const selectedAuctionId = ref("");
@@ -102,6 +104,7 @@ export default defineComponent({
           authStore.token
         );
         createForm.lots = [emptyLot()];
+        toast.success("Auction created", createForm.title || "Auction draft created.");
         await reloadData();
       } catch (error) {
         errorMessage.value = error instanceof Error ? error.message : "Request failed";
@@ -117,6 +120,7 @@ export default defineComponent({
           announceForm,
           authStore.token
         );
+        toast.success("Announcement saved", "Public auction notice was updated.");
         await reloadData();
       } catch (error) {
         errorMessage.value = error instanceof Error ? error.message : "Request failed";
@@ -126,12 +130,14 @@ export default defineComponent({
     async function triggerOpen() {
       if (!selectedAuction.value) return;
       await openAuction(tenantStore.selectedTenantId, selectedAuction.value.id, authStore.token);
+      toast.info("Auction opened", `${selectedAuction.value.title} is now open.`);
       await reloadData();
     }
 
     async function triggerClose() {
       if (!selectedAuction.value) return;
       await closeAuction(tenantStore.selectedTenantId, selectedAuction.value.id, authStore.token);
+      toast.info("Auction closed", `${selectedAuction.value.title} was closed.`);
       await reloadData();
     }
 
@@ -149,6 +155,7 @@ export default defineComponent({
           authStore.token
         );
         bidForms[lotId].amount = "";
+        toast.success("Bid recorded", "The bid was added to the selected lot.");
         await reloadData();
       } catch (error) {
         errorMessage.value = error instanceof Error ? error.message : "Request failed";
@@ -168,6 +175,7 @@ export default defineComponent({
           authStore.token
         );
         settleForms[lotId].hammerPrice = "";
+        toast.success("Lot settled", "Hammer price and surplus calculation were updated.");
         await reloadData();
       } catch (error) {
         errorMessage.value = error instanceof Error ? error.message : "Request failed";

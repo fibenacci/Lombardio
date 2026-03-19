@@ -7,12 +7,19 @@
 
 .login-card {
   width: min(100%, 460px);
-  padding: 2rem;
-  border: 1px solid rgba(19, 34, 56, 0.08);
-  border-radius: 24px;
+  border: 1px solid var(--app-border);
   background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 24px 60px rgba(19, 34, 56, 0.12);
-  backdrop-filter: blur(12px);
+  box-shadow: 0 30px 80px rgba(19, 34, 56, 0.14);
+  backdrop-filter: blur(14px);
+}
+
+.login-card .p-card-body {
+  padding: 2rem;
+}
+
+.login-head {
+  display: grid;
+  gap: 0.6rem;
 }
 
 .login-form {

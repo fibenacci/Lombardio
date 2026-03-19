@@ -32,7 +32,21 @@ Then deploy the base manifests:
 kubectl apply -k infra/k8/base
 ```
 
-Before that, replace every `change-me` placeholder in `infra/k8/base` or override the secrets in an environment-specific overlay. Do not commit real shared-environment credentials into these base manifests.
+The base now assumes that:
+
+- the External Secrets CRDs are installed
+- a `ClusterSecretStore` named `vault-backend` exists
+- the expected secret paths are available in the configured secret backend
+
+For shared environments, prepare those foundations through Terraform first:
+
+```bash
+cd infra/terraform/environments/staging
+terraform init
+terraform apply
+```
+
+The base manifests no longer store runtime credentials inline.
 
 ## Overlays
 
@@ -50,3 +64,15 @@ They are designed to be driven by GitHub Actions with image tag replacement at d
 - Replace the placeholder image names before applying in shared environments.
 - Store kubeconfigs and registry access only in GitHub environment secrets, not in the repository.
 - Keep runtime secrets out of committed defaults. For local Docker Compose, copy `.env.example` to `.env` and fill in the values there.
+- The expected Vault paths for Kubernetes runtime secrets currently include:
+  - `lombardio/postgres`
+  - `lombardio/identity-access`
+  - `lombardio/platform`
+  - `lombardio/customer`
+  - `lombardio/pawn-ticket`
+  - `lombardio/kyc`
+  - `lombardio/aml`
+  - `lombardio/loan-origination`
+  - `lombardio/auction`
+  - `lombardio/online-auction`
+  - `lombardio/grafana`

@@ -1,0 +1,28 @@
+<main class="portal-shell">
+  <section class="portal-card">
+    <p class="eyebrow">{{ t("customerPortalActivate.eyebrow") }}</p>
+    <h1>{{ t("customerPortalActivate.title") }}</h1>
+
+    <p v-if="isLoading" class="intro">{{ t("common.loading") }}</p>
+    <template v-else>
+      <p v-if="invitation" class="intro">
+        {{ t("customerPortalActivate.copy", { customer: invitation.customerDisplayName, email: invitation.email }) }}
+      </p>
+      <form v-if="invitation" class="portal-form" @submit.prevent="submit">
+        <label>
+          <span>{{ t("customerPortalActivate.password") }}</span>
+          <input v-model="form.password" type="password" autocomplete="new-password" />
+        </label>
+        <label>
+          <span>{{ t("customerPortalActivate.confirmPassword") }}</span>
+          <input v-model="form.confirmPassword" type="password" autocomplete="new-password" />
+        </label>
+        <p v-if="errorMessage" class="portal-error">{{ errorMessage }}</p>
+        <button :disabled="isSubmitting" type="submit">
+          {{ isSubmitting ? t("customerPortalActivate.submitting") : t("customerPortalActivate.submit") }}
+        </button>
+      </form>
+      <p v-else-if="errorMessage" class="portal-error">{{ errorMessage }}</p>
+    </template>
+  </section>
+</main>

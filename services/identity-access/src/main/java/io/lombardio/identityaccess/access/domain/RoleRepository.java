@@ -11,5 +11,7 @@ public interface RoleRepository {
 
     Optional<Role> findByKey(String key);
 
+    Optional<Role> findByTenantIdAndKey(String tenantId, String key);
+
     Role save(Role role);
 }

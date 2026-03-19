@@ -1,4 +1,5 @@
 import { computed, defineComponent, onMounted, ref } from "vue";
+import { useAppToast } from "../../composables/use-app-toast";
 import { authStore } from "../../stores/auth";
 import { tenantStore } from "../../stores/tenant";
 import { useI18n } from "../../i18n";
@@ -24,6 +25,7 @@ export default defineComponent({
   name: "PawnTicketsView",
   setup() {
     const { t } = useI18n();
+    const toast = useAppToast();
     const tickets = ref([]);
     const query = ref("");
     const isLoading = ref(true);
@@ -78,6 +80,7 @@ export default defineComponent({
             popup.print();
           }, { once: true });
         }
+        toast.info("Pawn ticket opened", `${ticketNumber} was opened in a new window.`);
       } catch (error) {
         errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
       } finally {
@@ -98,6 +101,7 @@ export default defineComponent({
             popup.print();
           }, { once: true });
         }
+        toast.info("Labels opened", `Label sheet for ${ticketNumber} was opened in a new window.`);
       } catch (error) {
         errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
       } finally {

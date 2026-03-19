@@ -40,6 +40,40 @@
     "verifyCode": "Verify code",
     "loginFailed": "Login failed"
   },
+  "customerPortalLogin": {
+    "eyebrow": "Digital pawn ticket",
+    "title": "Customer portal",
+    "copy": "View active pawn tickets, due dates and contract documents online.",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "submitting": "Signing in..."
+  },
+  "customerPortalActivate": {
+    "eyebrow": "Portal activation",
+    "title": "Activate access",
+    "copy": "Activate access for {customer} with {email} and set a password.",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "submit": "Activate access",
+    "submitting": "Activating access...",
+    "passwordMismatch": "The passwords do not match."
+  },
+  "customerPortalHome": {
+    "eyebrow": "My pawn ticket",
+    "title": "Active pawn tickets",
+    "copy": "Welcome {customer}. Your currently active contracts are available here digitally.",
+    "logout": "Sign out",
+    "empty": "There are currently no active pawn tickets stored.",
+    "download": "Open document",
+    "downloading": "Opening document...",
+    "fields": {
+      "dueDate": "Due date",
+      "loanAmount": "Loan",
+      "repayment": "Repayment",
+      "positions": "Positions"
+    }
+  },
   "platformLayout": {
     "eyebrow": "Platform",
     "title": "Lombardio Control",
@@ -208,7 +242,7 @@
     "copyWithoutTenant": "Select a tenant first.",
     "loading": "Loading customer file...",
     "masterDataTitle": "Customer master data",
-    "masterDataSubtitle": "Edit the operational CRM baseline data.",
+    "masterDataSubtitle": "Edit the operational CRM baseline data including digital pawn-ticket access.",
     "saveCustomer": "Save customer",
     "loansTitle": "Pawn contracts and originations",
     "loansSubtitle": "Chronological contract and pawn-ticket history for the customer.",
@@ -241,13 +275,16 @@
     "fields": {
       "customerNumber": "Customer number",
       "phone": "Phone",
+      "email": "Email",
       "firstName": "First name",
       "lastName": "Last name",
       "birthDate": "Birth date",
       "street": "Street",
       "postalCode": "Postal code",
-      "city": "City"
+      "city": "City",
+      "wantsDigitalPawnTicket": "Enable digital pawn ticket and customer access"
     },
+    "onlineAccessStatus": "Online access status: {status}",
     "loanColumns": {
       "recordedAt": "Recorded",
       "language": "Language",
@@ -263,6 +300,31 @@
       "decisionNote": "Review note",
       "frontImage": "Document front side",
       "backImage": "Document back side"
+    },
+    "statusOptions": {
+      "kyc": {
+        "NOT_STARTED": "Not started",
+        "IN_PROGRESS": "In progress",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      },
+      "aml": {
+        "NOT_REVIEWED": "Not reviewed",
+        "CLEAR": "Clear",
+        "REVIEW_REQUIRED": "Review required",
+        "BLOCKED": "Blocked",
+        "REPORTED": "Reported"
+      }
+    },
+    "documentTypeOptions": {
+      "PERSONALAUSWEIS": "Identity card",
+      "REISEPASS": "Passport",
+      "AUFENTHALTSTITEL": "Residence permit"
+    },
+    "riskLevels": {
+      "LOW": "Low",
+      "MEDIUM": "Medium",
+      "HIGH": "High"
     },
     "amlFields": {
       "status": "AML status",
@@ -303,6 +365,11 @@
     "customerProfile": "AML/KYC in customer profile",
     "positionsTitle": "Positions",
     "addPosition": "Add position",
+    "customerSearchPlaceholder": "Customer record, name or phone",
+    "selectCustomerPlaceholder": "Select customer",
+    "selectGuidelinePlaceholder": "Choose guideline",
+    "prefillDocument": "Prefill document data",
+    "removePosition": "Remove",
     "totalLoan": "Total origination",
     "submitting": "Creating origination...",
     "submit": "Complete origination",

@@ -67,6 +67,33 @@ Apply them with:
 kubectl apply -k infra/k8/base
 ```
 
+## Terraform Foundations
+
+Terraform foundations now live in `infra/terraform`.
+
+They are intended for cluster-level and environment-level concerns such as:
+
+- ingress controller installation
+- cert-manager
+- External Secrets
+- metrics-server
+- secret backend bootstrap such as a Vault-backed `ClusterSecretStore`
+
+The application deployment path remains Kubernetes plus Kustomize:
+
+- Terraform prepares cluster foundations
+- `infra/k8` deploys Lombardio workloads
+- GitHub Actions continue to roll out application versions with `kubectl apply -k`
+
+Start with:
+
+```bash
+cd infra/terraform/environments/staging
+cp terraform.tfvars.example terraform.tfvars
+terraform init
+terraform plan
+```
+
 ## Scaling Guidance
 
 - Scale stateless services horizontally via the `Deployment` replica count.

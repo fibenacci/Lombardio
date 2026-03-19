@@ -37,6 +37,13 @@ public class PawnTicketPersistenceAdapter implements PawnTicketRepository {
                 .toList();
     }
 
+    @Override
+    public List<PawnTicket> findByTenantIdAndCustomerId(String tenantId, String customerId) {
+        return repository.findByTenantIdAndCustomerIdOrderByCreatedAtDesc(tenantId, customerId).stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
     private PawnTicketEntity toEntity(PawnTicket pawnTicket) {
         PawnTicketEntity entity = new PawnTicketEntity();
         entity.setId(pawnTicket.id());

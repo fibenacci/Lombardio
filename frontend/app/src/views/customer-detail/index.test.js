@@ -30,6 +30,9 @@ describe("CustomerDetailView", () => {
       lastName: "Becker",
       birthDate: "1988-04-12",
       phone: "+49 170 111111",
+      email: "anna@example.test",
+      wantsDigitalPawnTicket: true,
+      onlineAccessStatus: "INVITED",
       street: "Hauptstrasse 1",
       postalCode: "10115",
       city: "Berlin"
@@ -120,6 +123,7 @@ describe("CustomerDetailView", () => {
     expect(wrapper.text()).toContain("AML review required before loan origination");
     expect(wrapper.text()).toContain("Pfandverträge und Beleihungen");
     expect(wrapper.text()).toContain("PS-1001");
+    expect(wrapper.text()).toContain("Online-Zugangsstatus: INVITED");
 
     wrapper.vm.aml.status = "CLEAR";
     wrapper.vm.aml.riskLevel = "MEDIUM";

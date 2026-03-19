@@ -15,3 +15,6 @@ spring:
 identity:
   security:
     encryption-key: 5t0iQ0q4ryx6vSlvBo5J+eqT7vJk2mW+NfO7M3h/r90=
+
+rate-limit:
+  backend: memory

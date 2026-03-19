@@ -1,28 +1,49 @@
 <div class="app-shell">
   <aside class="sidebar">
-    <div>
+    <div class="sidebar-head">
       <p class="eyebrow">{{ t("platformLayout.eyebrow") }}</p>
       <h1>{{ t("platformLayout.title") }}</h1>
+      <p class="meta-copy">Platform governance, tenant activation and secure administrative access.</p>
     </div>
 
     <nav class="nav">
-      <RouterLink :class="{ active: route.name === 'platform-tenants' }" to="/platform/tenants">{{ t("platformLayout.tenants") }}</RouterLink>
-      <RouterLink :class="{ active: route.name === 'platform-security' }" to="/platform/security">{{ t("platformLayout.security") }}</RouterLink>
-      <RouterLink :class="{ active: route.name === 'tenant-home' }" to="/app/dashboard">{{ t("platformLayout.tenantApp") }}</RouterLink>
+      <RouterLink
+        v-for="item in navigationItems"
+        :key="item.name"
+        :class="['nav-link', { active: route.name === item.name }]"
+        :to="item.to"
+      >
+        <span class="nav-link-copy">
+          <i :class="item.icon"></i>
+          <span>{{ item.label }}</span>
+        </span>
+        <i class="pi pi-angle-right"></i>
+      </RouterLink>
     </nav>
 
     <div class="sidebar-footer">
+      <PCard class="identity-card">
+        <template #content>
+          <div class="identity-card-body">
+            <div class="identity-card-main">
+              <PAvatar :label="user?.displayName?.slice(0, 1) ?? 'U'" shape="circle" size="large" />
+              <div>
+                <p class="meta-label">{{ t("common.signedInAs") }}</p>
+                <strong>{{ user?.displayName }}</strong>
+                <p class="meta-copy">{{ user?.email }}</p>
+              </div>
+            </div>
+            <PTag v-if="isImpersonating" severity="warn" icon="pi pi-user-edit" :value="t('common.delegatedAccess')" />
+          </div>
+        </template>
+      </PCard>
+
       <div v-if="isImpersonating" class="support-banner">
         <p class="meta-label">{{ t("common.supportSession") }}</p>
         <strong>{{ t("common.delegatedAccess") }}</strong>
-        <button class="secondary-button" type="button" @click="endDelegation">{{ t("common.returnToBaseSession") }}</button>
+        <PButton class="sidebar-action" icon="pi pi-replay" :label="t('common.returnToBaseSession')" severity="secondary" outlined @click="endDelegation" />
       </div>
-      <div>
-        <p class="meta-label">{{ t("common.signedInAs") }}</p>
-        <strong>{{ user?.displayName }}</strong>
-        <p class="meta-copy">{{ user?.email }}</p>
-      </div>
-      <button class="secondary-button" type="button" @click="logout">{{ t("common.signOut") }}</button>
+      <PButton class="sidebar-action" icon="pi pi-sign-out" :label="t('common.signOut')" severity="secondary" outlined @click="logout" />
     </div>
   </aside>
 

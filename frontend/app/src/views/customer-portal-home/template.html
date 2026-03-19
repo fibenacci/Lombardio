@@ -1,0 +1,45 @@
+<main class="portal-home">
+  <header class="portal-home__header">
+    <div>
+      <p class="eyebrow">{{ t("customerPortalHome.eyebrow") }}</p>
+      <h1>{{ t("customerPortalHome.title") }}</h1>
+      <p class="intro">{{ t("customerPortalHome.copy", { customer: customer?.displayName ?? '' }) }}</p>
+    </div>
+    <button class="portal-logout" type="button" @click="logout">{{ t("customerPortalHome.logout") }}</button>
+  </header>
+
+  <section class="portal-panel">
+    <p v-if="isLoading" class="intro">{{ t("common.loading") }}</p>
+    <p v-else-if="errorMessage" class="portal-error">{{ errorMessage }}</p>
+    <div v-else-if="tickets.length" class="portal-ticket-list">
+      <article v-for="ticket in tickets" :key="ticket.ticketNumber" class="portal-ticket-card">
+        <div class="portal-ticket-card__meta">
+          <p class="eyebrow">{{ ticket.contractNumber }}</p>
+          <h2>{{ ticket.ticketNumber }}</h2>
+        </div>
+        <dl>
+          <div>
+            <dt>{{ t("customerPortalHome.fields.dueDate") }}</dt>
+            <dd>{{ ticket.dueDate }}</dd>
+          </div>
+          <div>
+            <dt>{{ t("customerPortalHome.fields.loanAmount") }}</dt>
+            <dd>{{ formatCurrency(ticket.loanAmount) }}</dd>
+          </div>
+          <div>
+            <dt>{{ t("customerPortalHome.fields.repayment") }}</dt>
+            <dd>{{ formatCurrency(ticket.totalRepaymentAmount) }}</dd>
+          </div>
+          <div>
+            <dt>{{ t("customerPortalHome.fields.positions") }}</dt>
+            <dd>{{ ticket.positionCount }}</dd>
+          </div>
+        </dl>
+        <button :disabled="isDownloading === ticket.ticketNumber" type="button" @click="downloadDocument(ticket.ticketNumber)">
+          {{ isDownloading === ticket.ticketNumber ? t("customerPortalHome.downloading") : t("customerPortalHome.download") }}
+        </button>
+      </article>
+    </div>
+    <p v-else class="intro">{{ t("customerPortalHome.empty") }}</p>
+  </section>
+</main>

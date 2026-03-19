@@ -1,71 +1,53 @@
 <section class="page">
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">{{ t("customers.eyebrow") }}</p>
-      <h2>{{ t("customers.title") }}</h2>
-    </div>
-    <p class="page-copy">
-      {{
-        tenantStore.selectedTenantId
-          ? t("customers.copyWithTenant", { tenant: tenantStore.selectedTenant()?.displayName ?? tenantStore.selectedTenantId })
-          : t("customers.copyWithoutTenant")
-      }}
-    </p>
-  </header>
+  <PageHeader
+    :eyebrow="t('customers.eyebrow')"
+    :title="t('customers.title')"
+    icon="pi pi-users"
+    :copy="
+      tenantStore.selectedTenantId
+        ? t('customers.copyWithTenant', { tenant: tenantStore.selectedTenant()?.displayName ?? tenantStore.selectedTenantId })
+        : t('customers.copyWithoutTenant')
+    "
+  />
 
-  <section class="panel">
-    <div class="panel-header">
-      <div>
-        <h3>{{ t("customers.overviewTitle") }}</h3>
-        <p class="panel-subtitle">{{ t("customers.overviewSubtitle") }}</p>
-      </div>
-      <span>{{ isLoading ? t("common.loading") : t("customers.count", { count: customers.length }) }}</span>
-    </div>
+  <AdminPanel :title="t('customers.overviewTitle')" :subtitle="isLoading ? t('common.loading') : t('customers.count', { count: customers.length })">
+      <FilterBar>
+        <PInputText v-model="query" :placeholder="t('customers.searchPlaceholder')" type="text" />
+        <template #actions>
+        <PButton icon="pi pi-search" :label="t('common.search')" severity="secondary" outlined @click="runSearch" />
+        </template>
+      </FilterBar>
 
-    <div class="toolbar">
-      <input v-model="query" :placeholder="t('customers.searchPlaceholder')" type="text" />
-      <button class="secondary-button" type="button" @click="runSearch">{{ t("common.search") }}</button>
-    </div>
+      <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
 
-    <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
-
-    <table v-if="!isLoading && tenantStore.selectedTenantId" class="data-table">
-      <thead>
-        <tr>
-          <th>{{ t("customers.columns.customerNumber") }}</th>
-          <th>{{ t("customers.columns.name") }}</th>
-          <th>{{ t("customers.columns.phone") }}</th>
-          <th>KYC</th>
-          <th>AML</th>
-          <th>{{ t("customers.columns.address") }}</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="customer in customers" :key="customer.id">
-          <td>{{ customer.customerNumber }}</td>
-          <td>{{ customer.displayName }}</td>
-          <td>{{ customer.phone }}</td>
-          <td>
-            <span :class="['status-badge', { 'is-inactive': !customer.kycApproved }]">
-              {{ customer.kycStatus }}
-            </span>
-          </td>
-          <td>
+      <AppDataTable v-if="tenantStore.selectedTenantId" :value="customers" dataKey="id" :loading="isLoading">
+        <PColumn field="customerNumber" :header="t('customers.columns.customerNumber')" sortable />
+        <PColumn field="displayName" :header="t('customers.columns.name')" sortable />
+        <PColumn field="phone" :header="t('customers.columns.phone')" sortable />
+        <PColumn header="KYC" field="kycStatus" sortable>
+          <template #body="{ data }">
+            <StatusTag :value="data.kycStatus" :activeValues="['APPROVED']" :warnValues="['PENDING']" />
+          </template>
+        </PColumn>
+        <PColumn header="AML" field="amlStatus" sortable>
+          <template #body="{ data }">
             <div class="compliance-cell">
-              <span :class="['status-badge', { 'is-inactive': customer.amlOriginationAllowed === false && customer.amlStatus !== 'CLEAR' }]">
-                {{ customer.amlStatus ?? "UNKNOWN" }}
-              </span>
-              <small v-if="customer.amlRiskLevel" class="muted-copy">{{ t("customers.risk", { level: customer.amlRiskLevel }) }}</small>
-              <small v-if="customer.goamlReference" class="muted-copy">goAML {{ customer.goamlReference }}</small>
+              <StatusTag :value="data.amlStatus ?? 'UNKNOWN'" :activeValues="['CLEAR']" :warnValues="['REVIEW_REQUIRED']" />
+              <small v-if="data.amlRiskLevel" class="muted-copy">{{ t("customers.risk", { level: data.amlRiskLevel }) }}</small>
+              <small v-if="data.goamlReference" class="muted-copy">goAML {{ data.goamlReference }}</small>
             </div>
-          </td>
-          <td>{{ [customer.street, customer.postalCode, customer.city].filter(Boolean).join(", ") || t("customers.noAddress") }}</td>
-          <td>
-            <button class="secondary-button" type="button" @click="openCustomer(customer.id)">{{ t("common.details") }}</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+          </template>
+        </PColumn>
+        <PColumn :header="t('customers.columns.address')" field="city" sortable>
+          <template #body="{ data }">
+            {{ [data.street, data.postalCode, data.city].filter(Boolean).join(", ") || t("customers.noAddress") }}
+          </template>
+        </PColumn>
+        <PColumn>
+          <template #body="{ data }">
+            <PButton icon="pi pi-arrow-right" :label="t('common.details')" severity="secondary" outlined size="small" @click="openCustomer(data.id)" />
+          </template>
+        </PColumn>
+      </AppDataTable>
+  </AdminPanel>
 </section>

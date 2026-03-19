@@ -45,6 +45,14 @@ public final class InMemoryRepositories {
         }
 
         @Override
+        public Optional<User> findByTenantIdAndEmail(String tenantId, String email) {
+            return store.values().stream()
+                    .filter(user -> user.tenantId().equals(tenantId))
+                    .filter(user -> user.email().equalsIgnoreCase(email))
+                    .findFirst();
+        }
+
+        @Override
         public User save(User user) {
             store.put(user.id(), user);
             return user;
@@ -70,6 +78,14 @@ public final class InMemoryRepositories {
         }
 
         @Override
+        public Optional<Role> findByTenantIdAndKey(String tenantId, String key) {
+            return store.values().stream()
+                    .filter(role -> role.tenantId().equals(tenantId))
+                    .filter(role -> role.key().equals(key))
+                    .findFirst();
+        }
+
+        @Override
         public Role save(Role role) {
             store.put(role.id(), role);
             return role;
@@ -87,6 +103,14 @@ public final class InMemoryRepositories {
         @Override
         public Optional<Branch> findById(String id) {
             return Optional.ofNullable(store.get(id));
+        }
+
+        @Override
+        public Optional<Branch> findByTenantIdAndKey(String tenantId, String key) {
+            return store.values().stream()
+                    .filter(branch -> branch.tenantId().equals(tenantId))
+                    .filter(branch -> branch.key().equals(key))
+                    .findFirst();
         }
 
         @Override

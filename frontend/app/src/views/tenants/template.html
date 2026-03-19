@@ -1,93 +1,85 @@
 <section class="page">
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">Platform</p>
-      <h2>Tenants</h2>
-    </div>
-    <p class="page-copy">Create tenants and enable features before tenant administrators manage users and roles.</p>
-  </header>
+  <PageHeader
+    eyebrow="Platform"
+    title="Tenants"
+    icon="pi pi-building"
+    copy="Create tenants and enable features before tenant administrators manage users and roles."
+  />
 
   <div class="panel-grid">
-    <section class="panel">
-      <div class="panel-header">
-        <h3>Tenant Directory</h3>
-        <span>{{ isLoading ? "Loading..." : `${tenants.length} tenants` }}</span>
-      </div>
+    <AdminPanel title="Tenant Directory" :subtitle="isLoading ? 'Loading...' : `${tenants.length} tenants`">
+      <template #actions>
+        <PTag v-if="selectedTenant" severity="info" :value="selectedTenant.displayName" />
+      </template>
 
-      <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
+      <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
+      <AppDataTable :value="tenants" dataKey="id" :loading="isLoading">
+        <PColumn field="displayName" header="Tenant" sortable>
+          <template #body="{ data }">
+            <button
+              :class="['tenant-row-action', { active: tenantStore.selectedTenantId === data.id }]"
+              type="button"
+              @click="selectTenant(data.id)"
+            >
+              <span class="tenant-row-main">
+                <strong>{{ data.displayName }}</strong>
+                <span class="muted-copy">{{ data.key }}</span>
+              </span>
+              <PTag :severity="tenantStatusSeverity(data.status)" :value="data.status" />
+            </button>
+          </template>
+        </PColumn>
+      </AppDataTable>
+    </AdminPanel>
 
-      <div v-if="!isLoading" class="tenant-list">
-        <button
-          v-for="tenant in tenants"
-          :key="tenant.id"
-          :class="['tenant-tile', { active: tenantStore.selectedTenantId === tenant.id }]"
-          type="button"
-          @click="selectTenant(tenant.id)"
-        >
-          <strong>{{ tenant.displayName }}</strong>
-          <span>{{ tenant.key }}</span>
-          <span :class="['status-badge', { 'is-inactive': tenant.status !== 'ACTIVE' }]">
-            {{ tenant.status }}
-          </span>
-        </button>
-      </div>
-    </section>
+    <AdminPanel title="Create Tenant" subtitle="Platform-level tenant bootstrap.">
+      <FormShell :errorMessage="errorMessage" :successMessage="successMessage" @submit="submit">
+          <label>
+            <span>Key</span>
+            <PInputText v-model="form.key" type="text" />
+          </label>
 
-    <section class="panel">
-      <div class="panel-header">
-        <div>
-          <h3>Create Tenant</h3>
-          <p class="panel-subtitle">Platform-level tenant bootstrap.</p>
-        </div>
-      </div>
+          <label>
+            <span>Display name</span>
+            <PInputText v-model="form.displayName" type="text" />
+          </label>
 
-      <form class="stack-form" @submit.prevent="submit">
-        <label>
-          <span>Key</span>
-          <input v-model="form.key" type="text" />
-        </label>
+          <label>
+            <span>Status</span>
+            <PSelect
+              v-model="form.status"
+              :options="[
+                { label: 'ACTIVE', value: 'ACTIVE' },
+                { label: 'INACTIVE', value: 'INACTIVE' }
+              ]"
+              optionLabel="label"
+              optionValue="value"
+            />
+          </label>
 
-        <label>
-          <span>Display name</span>
-          <input v-model="form.displayName" type="text" />
-        </label>
-
-        <label>
-          <span>Status</span>
-          <select v-model="form.status">
-            <option value="ACTIVE">ACTIVE</option>
-            <option value="INACTIVE">INACTIVE</option>
-          </select>
-        </label>
-
-        <p v-if="successMessage" class="form-success">{{ successMessage }}</p>
-        <button type="submit">Create tenant</button>
-      </form>
-    </section>
+        <template #actions>
+          <PButton icon="pi pi-plus" label="Create tenant" type="submit" />
+        </template>
+      </FormShell>
+    </AdminPanel>
   </div>
 
-  <section class="panel">
-    <div class="panel-header">
-      <div>
-        <h3>Tenant Features</h3>
-        <p class="panel-subtitle">
-          {{ selectedTenant ? `Current tenant: ${selectedTenant.displayName}` : "Select a tenant to manage features." }}
-        </p>
-      </div>
-    </div>
-
+  <AdminPanel
+    title="Tenant Features"
+    :subtitle="selectedTenant ? `Current tenant: ${selectedTenant.displayName}` : 'Select a tenant to manage features.'"
+  >
     <div v-if="selectedTenant" class="feature-grid">
-      <label v-for="feature in tenantFeatures" :key="feature.key" class="feature-card">
-        <div>
-          <strong>{{ feature.label }}</strong>
-          <p class="muted-copy">{{ feature.key }}</p>
+        <div v-for="feature in tenantFeatures" :key="feature.key" class="feature-card">
+          <div>
+            <strong>{{ feature.label }}</strong>
+            <p class="muted-copy">{{ feature.key }}</p>
+          </div>
+          <PToggleSwitch
+            :modelValue="feature.enabled"
+            @update:modelValue="toggleFeature(feature.key, $event)"
+          />
         </div>
-        <input
-          :checked="feature.enabled"
-          type="checkbox"
-          @change="toggleFeature(feature.key, $event.target.checked)"
-        />
-      </label>
     </div>
-  </section>
+    <PMessage v-else severity="secondary" variant="simple">Select a tenant to manage features.</PMessage>
+  </AdminPanel>
 </section>
