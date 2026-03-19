@@ -1,0 +1,67 @@
+.auction-view {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.auction-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.lot-editor,
+.auction-list,
+.action-stack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.lot-row {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 1fr 1fr 2fr 1fr 1fr;
+}
+
+.auction-card {
+  align-items: start;
+  background: #f4f1ea;
+  border: 1px solid #d9d1c1;
+  border-radius: 1rem;
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem;
+  text-align: left;
+}
+
+.auction-card.selected {
+  border-color: #2d6a4f;
+  box-shadow: 0 0 0 2px rgba(45, 106, 79, 0.12);
+}
+
+.panel.nested {
+  background: #fbfaf7;
+}
+
+.lot-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.lot-table th,
+.lot-table td {
+  border-bottom: 1px solid #e3dccf;
+  padding: 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.action-stack {
+  min-width: 12rem;
+}
+
+@media (max-width: 960px) {
+  .auction-grid,
+  .lot-row {
+    grid-template-columns: 1fr;
+  }
+}

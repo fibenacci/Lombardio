@@ -1,0 +1,84 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">{{ t("security.eyebrow") }}</p>
+      <h2>{{ t("security.title") }}</h2>
+    </div>
+    <p class="page-copy">{{ t("security.copy") }}</p>
+  </header>
+
+  <div class="panel-grid">
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>{{ t("security.totpStatusTitle") }}</h3>
+          <p class="panel-subtitle">{{ t("security.totpStatusSubtitle") }}</p>
+        </div>
+      </div>
+
+      <p class="status-line">
+        {{ authStore.user?.mfaEnabled ? t("security.totpActive") : t("security.totpInactive") }}
+      </p>
+
+      <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
+      <p v-if="successMessage" class="form-success">{{ successMessage }}</p>
+
+      <button
+        v-if="!authStore.user?.mfaEnabled"
+        :disabled="isSubmitting"
+        type="button"
+        @click="startEnrollment"
+      >
+        {{ t("security.startSetup") }}
+      </button>
+    </section>
+
+    <section v-if="enrollment" class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>{{ t("security.activateTitle") }}</h3>
+          <p class="panel-subtitle">{{ t("security.activateSubtitle") }}</p>
+        </div>
+      </div>
+
+      <div class="stack-form">
+        <label>
+          <span>{{ t("security.secret") }}</span>
+          <input :value="enrollment.secret" readonly type="text" />
+        </label>
+
+        <label>
+          <span>{{ t("security.otpauthUri") }}</span>
+          <textarea readonly rows="4">{{ enrollment.otpauthUri }}</textarea>
+        </label>
+
+        <label>
+          <span>{{ t("security.code") }}</span>
+          <input v-model="activationCode" type="text" inputmode="numeric" autocomplete="one-time-code" />
+        </label>
+
+        <button :disabled="isSubmitting" type="button" @click="activate">{{ t("security.enableTotp") }}</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>{{ t("security.settingsTitle") }}</h3>
+          <p class="panel-subtitle">{{ t("security.settingsSubtitle") }}</p>
+        </div>
+      </div>
+
+      <div class="stack-form">
+        <label>
+          <span>{{ t("language.label") }}</span>
+          <select v-model="selectedLocale" @change="updateLanguage">
+            <option v-for="item in availableLocales" :key="item" :value="item">
+              {{ t(`language.${item}`) }}
+            </option>
+          </select>
+        </label>
+      </div>
+    </section>
+  </div>
+</section>

@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: document-ocr
+spec:
+  selector:
+    app: document-ocr
+  ports:
+    - name: http
+      port: 8087
+      targetPort: 8087
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: document-ocr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: document-ocr
+  template:
+    metadata:
+      labels:
+        app: document-ocr
+    spec:
+      containers:
+        - name: document-ocr
+          image: ghcr.io/example/lombardio/document-ocr:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8087
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /docs
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /docs
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1024Mi

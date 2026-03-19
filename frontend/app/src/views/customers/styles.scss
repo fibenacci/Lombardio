@@ -1,0 +1,21 @@
+.toolbar {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.toolbar input {
+  flex: 1;
+}
+
+.compliance-cell {
+  display: grid;
+  gap: 0.25rem;
+}
+
+@media (max-width: 720px) {
+  .toolbar {
+    display: grid;
+  }
+}

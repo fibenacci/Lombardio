@@ -1,0 +1,68 @@
+.customer-detail-layout {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.document-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.document-card {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 1rem;
+  padding: 1rem;
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.document-card img {
+  width: 100%;
+  max-height: 18rem;
+  object-fit: contain;
+  border-radius: 0.75rem;
+  background: white;
+}
+
+.stack-form textarea {
+  resize: vertical;
+}
+
+.checkbox-field {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  min-height: 3rem;
+}
+
+.checkbox-field input {
+  width: auto;
+}
+
+.compliance-summary {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 1rem;
+  margin-top: 1rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 1rem;
+  background: rgba(248, 250, 252, 0.9);
+}
+
+@media (max-width: 720px) {
+  .document-preview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .compliance-summary {
+    grid-template-columns: 1fr;
+  }
+}

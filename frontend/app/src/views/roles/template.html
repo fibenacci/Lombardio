@@ -1,0 +1,97 @@
+<section class="page">
+  <header class="page-header">
+      <div>
+        <p class="eyebrow">Authorization</p>
+        <h2>Roles</h2>
+      </div>
+      <p class="page-copy">
+        {{
+          tenantStore.selectedTenantId
+            ? `Define role templates for tenant ${tenantStore.selectedTenant()?.displayName ?? tenantStore.selectedTenantId}.`
+            : "Select a tenant in the Tenants view before managing roles."
+        }}
+      </p>
+  </header>
+
+  <div class="panel-grid">
+    <section class="panel">
+      <div class="panel-header">
+        <h3>Role Directory</h3>
+        <span>{{ isLoading ? "Loading..." : `${roleRows.length} roles` }}</span>
+      </div>
+
+      <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
+
+      <table v-if="!isLoading && tenantStore.selectedTenantId" class="data-table">
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Permissions</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="role in roleRows" :key="role.id">
+            <td>{{ role.key }}</td>
+            <td>{{ role.displayName }}</td>
+            <td>{{ role.description }}</td>
+            <td>{{ role.permissionCount }}</td>
+            <td>
+              <span :class="['status-badge', { 'is-inactive': !role.active }]">
+                {{ role.active ? "ACTIVE" : "INACTIVE" }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section v-if="canManageRoles" class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>Create Role</h3>
+          <p class="panel-subtitle">Backed by live permission definitions from the API.</p>
+        </div>
+      </div>
+
+      <form class="stack-form" @submit.prevent="submit">
+        <label>
+          <span>Key</span>
+          <input v-model="form.key" type="text" />
+        </label>
+
+        <label>
+          <span>Display name</span>
+          <input v-model="form.displayName" type="text" />
+        </label>
+
+        <label>
+          <span>Description</span>
+          <textarea v-model="form.description" rows="4" />
+        </label>
+
+        <label class="inline-toggle">
+          <input v-model="form.active" type="checkbox" />
+          <span>Role is active</span>
+        </label>
+
+        <fieldset class="selection-list">
+          <legend>Permissions</legend>
+          <label v-for="permission in permissions" :key="permission.key">
+            <input
+              :checked="form.permissionKeys.includes(permission.key)"
+              type="checkbox"
+              @change="togglePermission(permission.key)"
+            />
+            <span>{{ permission.key }}</span>
+          </label>
+        </fieldset>
+
+        <p v-if="successMessage" class="form-success">{{ successMessage }}</p>
+        <button :disabled="!tenantStore.selectedTenantId" type="submit">Create role</button>
+      </form>
+    </section>
+  </div>
+</section>

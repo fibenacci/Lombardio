@@ -1,0 +1,29 @@
+.selected {
+  background: rgba(211, 228, 255, 0.45);
+}
+
+.ticket-summary {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  background: #eef4fb;
+}
+
+.settlement-card {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 18px;
+  background: #f7faf5;
+  border: 1px solid #d8e7d8;
+}
+
+.journal-card {
+  margin-top: 1rem;
+}
+
+.settlement-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}

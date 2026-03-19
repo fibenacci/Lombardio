@@ -1,0 +1,66 @@
+<div class="app-shell" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+  <aside class="sidebar" :class="{ collapsed: isSidebarCollapsed }">
+    <div class="sidebar-head">
+      <div class="sidebar-brand">
+        <div>
+          <p class="eyebrow">{{ t("tenantLayout.eyebrow") }}</p>
+          <h1 v-if="!isSidebarCollapsed">{{ selectedTenant?.displayName ?? t("tenantLayout.fallbackTitle") }}</h1>
+          <p v-if="!isSidebarCollapsed" class="meta-copy">{{ t("tenantLayout.subtitle") }}</p>
+        </div>
+        <button class="sidebar-toggle" type="button" @click="toggleSidebar">
+          {{ isSidebarCollapsed ? "»" : "«" }}
+        </button>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <div
+        v-for="group in navGroups"
+        :key="group.key"
+        class="nav-group"
+        :class="{ active: group.isActive, open: isGroupOpen(group.key), collapsed: isSidebarCollapsed }"
+      >
+        <button class="nav-group-trigger" type="button" @click="toggleGroup(group.key)">
+          <span class="nav-group-label">{{ isSidebarCollapsed ? group.label.slice(0, 1) : group.label }}</span>
+          <span v-if="!isSidebarCollapsed" class="nav-group-state">{{ isGroupOpen(group.key) ? "−" : "+" }}</span>
+        </button>
+        <div class="nav-flyout">
+          <RouterLink
+            v-for="item in group.items"
+            :key="item.name"
+            :class="{ active: route.name === item.name }"
+            :to="item.to"
+          >
+            {{ item.label }}
+          </RouterLink>
+        </div>
+      </div>
+      <RouterLink
+        v-if="canManagePlatform"
+        class="nav-platform-link"
+        :class="{ active: route.name === 'platform-tenants' }"
+        to="/platform/tenants"
+      >
+        {{ isSidebarCollapsed ? "P" : t("tenantLayout.platform") }}
+      </RouterLink>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div v-if="isImpersonating" class="support-banner">
+        <p class="meta-label">{{ t("common.supportSession") }}</p>
+        <strong v-if="!isSidebarCollapsed">{{ t("common.delegatedAccess") }}</strong>
+        <button v-if="!isSidebarCollapsed" class="secondary-button" type="button" @click="endDelegation">{{ t("common.returnToBaseSession") }}</button>
+      </div>
+      <div v-if="!isSidebarCollapsed">
+        <p class="meta-label">{{ t("common.signedInAs") }}</p>
+        <strong>{{ user?.displayName }}</strong>
+        <p class="meta-copy">{{ user?.email }}</p>
+      </div>
+      <button class="secondary-button" type="button" @click="logout">{{ isSidebarCollapsed ? "↩" : t("common.signOut") }}</button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <RouterView />
+  </main>
+</div>

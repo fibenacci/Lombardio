@@ -1,0 +1,36 @@
+<main class="login-shell">
+  <section class="login-card">
+    <p class="eyebrow">{{ t("login.eyebrow") }}</p>
+    <h1>{{ t("login.title") }}</h1>
+    <p class="intro">{{ t("login.intro") }}</p>
+
+    <form class="login-form" @submit.prevent="submit">
+      <label v-if="!authStore.hasPendingMfa()">
+        <span>{{ t("login.email") }}</span>
+        <input v-model="form.email" type="email" autocomplete="username" />
+      </label>
+
+      <label v-if="!authStore.hasPendingMfa()">
+        <span>{{ t("login.password") }}</span>
+        <input v-model="form.password" type="password" autocomplete="current-password" />
+      </label>
+
+      <label v-if="authStore.hasPendingMfa()">
+        <span>{{ t("login.authenticatorCode") }}</span>
+        <input v-model="form.totpCode" type="text" inputmode="numeric" autocomplete="one-time-code" />
+      </label>
+
+      <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
+
+      <button :disabled="isSubmitting" type="submit">
+        {{
+          isSubmitting
+            ? t("login.signingIn")
+            : authStore.hasPendingMfa()
+              ? t("login.verifyCode")
+              : t("login.signIn")
+        }}
+      </button>
+    </form>
+  </section>
+</main>

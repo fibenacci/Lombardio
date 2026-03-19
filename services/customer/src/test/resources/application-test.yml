@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:customer;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    default-schema: customer
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+kyc:
+  base-url: http://localhost:8086

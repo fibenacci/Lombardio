@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: online-auction-config
+data:
+  ONLINE_AUCTION_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=online_auction
+  ONLINE_AUCTION_DB_USERNAME: lombardio
+  IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
+  CENTRIFUGO_BASE_URL: http://centrifugo:8000
+  CENTRIFUGO_WS_URL: ws://realtime.lombardio.local/connection/websocket
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: online-auction-secret
+type: Opaque
+stringData:
+  ONLINE_AUCTION_DB_PASSWORD: change-me
+  CENTRIFUGO_API_KEY: change-me
+  CENTRIFUGO_HMAC_SECRET: change-me
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: online-auction
+spec:
+  selector:
+    app: online-auction
+  ports:
+    - name: http
+      port: 8090
+      targetPort: 8090
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: online-auction
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: online-auction
+  template:
+    metadata:
+      labels:
+        app: online-auction
+    spec:
+      containers:
+        - name: online-auction
+          image: ghcr.io/example/lombardio/online-auction:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8090
+              name: http
+          envFrom:
+            - configMapRef:
+                name: online-auction-config
+            - secretRef:
+                name: online-auction-secret
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

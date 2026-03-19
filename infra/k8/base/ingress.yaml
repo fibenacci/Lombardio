@@ -1,0 +1,127 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lombardio
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app.lombardio.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
+    - host: identity.lombardio.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: identity-access
+                port:
+                  number: 8081
+    - host: platform.lombardio.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: platform
+                port:
+                  number: 8082
+    - host: origination.lombardio.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: loan-origination
+                port:
+                  number: 8083
+    - host: customer.lombardio.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: customer
+                port:
+                  number: 8084
+    - host: pawn-ticket.lombardio.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: pawn-ticket
+                port:
+                  number: 8085
+    - host: kyc.lombardio.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kyc
+                port:
+                  number: 8086
+    - host: aml.lombardio.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: aml
+                port:
+                  number: 8088
+    - host: auction.lombardio.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: auction
+                port:
+                  number: 8089
+    - host: online-auction.lombardio.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: online-auction
+                port:
+                  number: 8090
+    - host: reporting.lombardio.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: reporting
+                port:
+                  number: 8091
+    - host: realtime.lombardio.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: centrifugo
+                port:
+                  number: 8000

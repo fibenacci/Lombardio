@@ -1,0 +1,38 @@
+<div class="app-shell">
+  <aside class="sidebar">
+    <div>
+      <p class="eyebrow">Operations</p>
+      <h1>Lombardio Admin</h1>
+    </div>
+
+    <nav class="nav">
+      <RouterLink
+        v-if="canManagePlatform"
+        :class="{ active: route.name === 'tenants' }"
+        to="/tenants"
+      >
+        Tenants
+      </RouterLink>
+      <RouterLink :class="{ active: route.name === 'users' }" to="/users">Users</RouterLink>
+      <RouterLink :class="{ active: route.name === 'roles' }" to="/roles">Roles</RouterLink>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div v-if="isImpersonating" class="support-banner">
+        <p class="meta-label">Support session</p>
+        <strong>Delegated access</strong>
+        <button class="secondary-button" type="button" @click="endDelegation">Return to base session</button>
+      </div>
+      <div>
+        <p class="meta-label">Signed in as</p>
+        <strong>{{ user?.displayName }}</strong>
+        <p class="meta-copy">{{ user?.email }}</p>
+      </div>
+      <button class="secondary-button" type="button" @click="logout">Sign out</button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <RouterView />
+  </main>
+</div>

@@ -1,0 +1,280 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">{{ t("customerDetail.eyebrow") }}</p>
+      <h2>{{ t("customerDetail.title") }}</h2>
+    </div>
+    <p class="page-copy">
+      {{
+        tenantStore?.selectedTenantId
+          ? t("customerDetail.copyWithTenant", { tenant: tenant?.displayName ?? tenantStore.selectedTenantId })
+          : t("customerDetail.copyWithoutTenant")
+      }}
+    </p>
+  </header>
+
+  <FormFeedback :field-errors="fieldErrors" :message="errorMessage" />
+  <p v-if="successMessage" class="form-success">{{ successMessage }}</p>
+
+  <div v-if="isLoading" class="panel">
+    <p class="placeholder-copy">{{ t("customerDetail.loading") }}</p>
+  </div>
+
+  <div v-else class="customer-detail-layout">
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>{{ t("customerDetail.masterDataTitle") }}</h3>
+          <p class="panel-subtitle">{{ t("customerDetail.masterDataSubtitle") }}</p>
+        </div>
+      </div>
+
+      <div class="stack-form two-column-grid">
+        <label>
+          <span>{{ t("customerDetail.fields.customerNumber") }}</span>
+          <input v-model="customer.customerNumber" type="text" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.fields.phone") }}</span>
+          <input v-model="customer.phone" type="text" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.fields.firstName") }}</span>
+          <input v-model="customer.firstName" type="text" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.fields.lastName") }}</span>
+          <input v-model="customer.lastName" type="text" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.fields.birthDate") }}</span>
+          <input v-model="customer.birthDate" type="date" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.fields.street") }}</span>
+          <input v-model="customer.street" type="text" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.fields.postalCode") }}</span>
+          <input v-model="customer.postalCode" type="text" />
+        </label>
+        <label class="full-span">
+          <span>{{ t("customerDetail.fields.city") }}</span>
+          <input v-model="customer.city" type="text" />
+        </label>
+      </div>
+
+      <div class="detail-actions">
+        <button :disabled="isSavingCustomer" type="button" @click="saveCustomer">
+          {{ isSavingCustomer ? t("common.saving") : t("customerDetail.saveCustomer") }}
+        </button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>{{ t("customerDetail.loansTitle") }}</h3>
+          <p class="panel-subtitle">{{ t("customerDetail.loansSubtitle") }}</p>
+        </div>
+      </div>
+
+      <div v-if="loans.length" class="stack-form">
+        <article v-for="loan in loans" :key="loan.id" class="ticket-card">
+          <p class="eyebrow">{{ t("customerDetail.loanEyebrow", { timestamp: formatDateTime(loan.pledgeRecord.recordedAt) }) }}</p>
+          <div class="quote-grid">
+            <div>
+              <p class="meta-label">{{ t("customerDetail.loanColumns.recordedAt") }}</p>
+              <strong>{{ formatDateTime(loan.pledgeRecord.recordedAt) }}</strong>
+            </div>
+            <div>
+              <p class="meta-label">{{ t("customerDetail.loanColumns.language") }}</p>
+              <strong>{{ loan.pledgeRecord.languageCode }}</strong>
+            </div>
+            <div>
+              <p class="meta-label">{{ t("customerDetail.loanColumns.retentionUntil") }}</p>
+              <strong>{{ loan.pledgeRecord.retentionUntil }}</strong>
+            </div>
+            <div>
+              <p class="meta-label">{{ t("customerDetail.loanColumns.documentType") }}</p>
+              <strong>{{ loan.pledgeRecord.checkedDocumentType ?? t("common.notAvailable") }}</strong>
+            </div>
+          </div>
+          <p class="muted-copy">{{ t("customerDetail.loanSummary", { positions: loan.positions.length, tickets: loan.pawnTickets.length }) }}</p>
+          <ul class="document-list">
+            <li v-for="ticket in loan.pawnTickets" :key="ticket.ticketNumber">
+              {{ t("customerDetail.ticketLine", { number: ticket.ticketNumber, loanValue: ticket.totalLoanValue, dueDate: ticket.dueDate }) }}
+            </li>
+          </ul>
+          <p v-if="loan.pledgeRecord.powerOfAttorneyRequired" class="legal-copy">
+            {{ t("customerDetail.powerOfAttorneyLine", { bearerName: loan.pledgeRecord.bearerName }) }}
+          </p>
+        </article>
+      </div>
+      <p v-else class="placeholder-copy">{{ t("customerDetail.noLoans") }}</p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>{{ t("customerDetail.kycTitle") }}</h3>
+          <p class="panel-subtitle">{{ t("customerDetail.kycSubtitle") }}</p>
+        </div>
+      </div>
+
+      <div class="stack-form two-column-grid">
+        <label>
+          <span>{{ t("customerDetail.kycFields.status") }}</span>
+          <select v-model="kyc.status">
+            <option value="NOT_STARTED">NOT_STARTED</option>
+            <option value="IN_PROGRESS">IN_PROGRESS</option>
+            <option value="APPROVED">APPROVED</option>
+            <option value="REJECTED">REJECTED</option>
+          </select>
+        </label>
+        <label>
+          <span>{{ t("customerDetail.kycFields.documentType") }}</span>
+          <select v-model="kyc.documentType">
+            <option value="PERSONALAUSWEIS">Personalausweis</option>
+            <option value="REISEPASS">Reisepass</option>
+            <option value="AUFENTHALTSTITEL">Aufenthaltstitel</option>
+          </select>
+        </label>
+        <label>
+          <span>{{ t("customerDetail.kycFields.documentNumber") }}</span>
+          <input v-model="kyc.documentNumber" type="text" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.kycFields.documentValidUntil") }}</span>
+          <input v-model="kyc.documentValidUntil" type="date" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.kycFields.verifiedUntil") }}</span>
+          <input v-model="kyc.verifiedUntil" type="date" />
+        </label>
+        <label class="full-span">
+          <span>{{ t("customerDetail.kycFields.decisionNote") }}</span>
+          <textarea v-model="kyc.decisionNote" rows="3"></textarea>
+        </label>
+        <label>
+          <span>{{ t("customerDetail.kycFields.frontImage") }}</span>
+          <input accept="image/*" type="file" @change="updateDocument('documentFrontImageDataUrl', $event)" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.kycFields.backImage") }}</span>
+          <input accept="image/*" type="file" @change="updateDocument('documentBackImageDataUrl', $event)" />
+        </label>
+        <div v-if="documentOcrAvailable" class="full-span inline-row">
+          <button class="secondary-button" :disabled="isPrefillingKyc" type="button" @click="prefillDocument">
+            {{ isPrefillingKyc ? t("customerDetail.ocrRunning") : t("customerDetail.prefillDocument") }}
+          </button>
+          <span class="muted-copy">{{ t("customerDetail.ocrCopy") }}</span>
+        </div>
+      </div>
+
+      <div class="document-preview-grid">
+        <article class="document-card">
+          <p class="meta-label">{{ t("customerDetail.frontSide") }}</p>
+          <img v-if="kyc.documentFrontImageDataUrl" :src="kyc.documentFrontImageDataUrl" :alt="t('customerDetail.frontSide')" />
+          <p v-else class="placeholder-copy">{{ t("customerDetail.noDocument") }}</p>
+        </article>
+        <article class="document-card">
+          <p class="meta-label">{{ t("customerDetail.backSide") }}</p>
+          <img v-if="kyc.documentBackImageDataUrl" :src="kyc.documentBackImageDataUrl" :alt="t('customerDetail.backSide')" />
+          <p v-else class="placeholder-copy">{{ t("customerDetail.noDocument") }}</p>
+        </article>
+      </div>
+
+      <p class="legal-copy">{{ t("customerDetail.kycLegalCopy") }}</p>
+
+      <div class="detail-actions">
+        <button :disabled="isSavingKyc" type="button" @click="saveKyc">
+          {{ isSavingKyc ? t("common.saving") : t("customerDetail.saveKyc") }}
+        </button>
+      </div>
+    </section>
+
+    <section v-if="amlFeatureEnabled" class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>{{ t("customerDetail.amlTitle") }}</h3>
+          <p class="panel-subtitle">{{ t("customerDetail.amlSubtitle") }}</p>
+        </div>
+      </div>
+
+      <div class="stack-form two-column-grid">
+        <label>
+          <span>{{ t("customerDetail.amlFields.status") }}</span>
+          <select v-model="aml.status">
+            <option value="NOT_REVIEWED">NOT_REVIEWED</option>
+            <option value="CLEAR">CLEAR</option>
+            <option value="REVIEW_REQUIRED">REVIEW_REQUIRED</option>
+            <option value="BLOCKED">BLOCKED</option>
+            <option value="REPORTED">REPORTED</option>
+          </select>
+        </label>
+        <label>
+          <span>{{ t("customerDetail.amlFields.riskLevel") }}</span>
+          <select v-model="aml.riskLevel">
+            <option value="LOW">LOW</option>
+            <option value="MEDIUM">MEDIUM</option>
+            <option value="HIGH">HIGH</option>
+          </select>
+        </label>
+        <label class="checkbox-field">
+          <input v-model="aml.pepFlag" type="checkbox" />
+          <span>{{ t("customerDetail.amlFields.pepFlag") }}</span>
+        </label>
+        <label class="checkbox-field">
+          <input v-model="aml.sanctionsHit" type="checkbox" />
+          <span>{{ t("customerDetail.amlFields.sanctionsHit") }}</span>
+        </label>
+        <label class="checkbox-field">
+          <input v-model="aml.unusualTransactionFlag" type="checkbox" />
+          <span>{{ t("customerDetail.amlFields.unusualTransactionFlag") }}</span>
+        </label>
+        <label class="checkbox-field">
+          <input v-model="aml.sourceOfFundsChecked" type="checkbox" />
+          <span>{{ t("customerDetail.amlFields.sourceOfFundsChecked") }}</span>
+        </label>
+        <label class="checkbox-field full-span">
+          <input v-model="aml.suspiciousActivityReported" type="checkbox" />
+          <span>{{ t("customerDetail.amlFields.suspiciousActivityReported") }}</span>
+        </label>
+        <label v-if="aml.suspiciousActivityReported" class="full-span">
+          <span>{{ t("customerDetail.amlFields.goamlReference") }}</span>
+          <input v-model="aml.goamlReference" type="text" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.amlFields.lastScreenedAt") }}</span>
+          <input v-model="aml.lastScreenedAt" type="datetime-local" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.amlFields.reviewedAt") }}</span>
+          <input v-model="aml.reviewedAt" type="datetime-local" />
+        </label>
+        <label class="full-span">
+          <span>{{ t("customerDetail.amlFields.decisionNote") }}</span>
+          <textarea v-model="aml.decisionNote" rows="3"></textarea>
+        </label>
+      </div>
+
+      <div class="compliance-summary">
+        <div>
+          <p class="meta-label">{{ t("customerDetail.amlFields.originationAllowed") }}</p>
+          <strong>{{ aml.originationAllowed ? t("common.yes") : t("common.no") }}</strong>
+        </div>
+        <div class="full-span">
+          <p class="meta-label">{{ t("customerDetail.amlFields.decisionReason") }}</p>
+          <p>{{ aml.decisionReason || t("customerDetail.noAmlDecision") }}</p>
+        </div>
+      </div>
+
+      <div class="detail-actions">
+        <button :disabled="isSavingAml" type="button" @click="saveAml">
+          {{ isSavingAml ? t("common.saving") : t("customerDetail.saveAml") }}
+        </button>
+      </div>
+    </section>
+  </div>
+</section>

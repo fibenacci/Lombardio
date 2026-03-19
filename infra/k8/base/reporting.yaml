@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: reporting
+spec:
+  selector:
+    app: reporting
+  ports:
+    - name: http
+      port: 8091
+      targetPort: 8091
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reporting
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: reporting
+  template:
+    metadata:
+      labels:
+        app: reporting
+    spec:
+      containers:
+        - name: reporting
+          image: ghcr.io/example/lombardio/reporting:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8091
+              name: http
+          env:
+            - name: IDENTITY_ACCESS_BASE_URL
+              value: http://identity-access:8081
+            - name: LOAN_ORIGINATION_BASE_URL
+              value: http://loan-origination:8083
+            - name: PAWN_TICKET_BASE_URL
+              value: http://pawn-ticket:8085
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

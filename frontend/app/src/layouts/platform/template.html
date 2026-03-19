@@ -1,0 +1,32 @@
+<div class="app-shell">
+  <aside class="sidebar">
+    <div>
+      <p class="eyebrow">{{ t("platformLayout.eyebrow") }}</p>
+      <h1>{{ t("platformLayout.title") }}</h1>
+    </div>
+
+    <nav class="nav">
+      <RouterLink :class="{ active: route.name === 'platform-tenants' }" to="/platform/tenants">{{ t("platformLayout.tenants") }}</RouterLink>
+      <RouterLink :class="{ active: route.name === 'platform-security' }" to="/platform/security">{{ t("platformLayout.security") }}</RouterLink>
+      <RouterLink :class="{ active: route.name === 'tenant-home' }" to="/app/dashboard">{{ t("platformLayout.tenantApp") }}</RouterLink>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div v-if="isImpersonating" class="support-banner">
+        <p class="meta-label">{{ t("common.supportSession") }}</p>
+        <strong>{{ t("common.delegatedAccess") }}</strong>
+        <button class="secondary-button" type="button" @click="endDelegation">{{ t("common.returnToBaseSession") }}</button>
+      </div>
+      <div>
+        <p class="meta-label">{{ t("common.signedInAs") }}</p>
+        <strong>{{ user?.displayName }}</strong>
+        <p class="meta-copy">{{ user?.email }}</p>
+      </div>
+      <button class="secondary-button" type="button" @click="logout">{{ t("common.signOut") }}</button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <RouterView />
+  </main>
+</div>

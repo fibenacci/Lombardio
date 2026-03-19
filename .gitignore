@@ -6,3 +6,6 @@ target/
 .DS_Store
 .env
 **/target
+GWG_*
+AGENTS.md
+concept.md

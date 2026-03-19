@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: online-auction-service
+  datasource:
+    url: ${ONLINE_AUCTION_DB_URL}
+    username: ${ONLINE_AUCTION_DB_USERNAME}
+    password: ${ONLINE_AUCTION_DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    default-schema: online_auction
+    schemas: online_auction
+server:
+  port: 8090
+
+identity-access:
+  base-url: ${IDENTITY_ACCESS_BASE_URL}
+
+centrifugo:
+  base-url: ${CENTRIFUGO_BASE_URL}
+  api-key: ${CENTRIFUGO_API_KEY}
+  hmac-secret: ${CENTRIFUGO_HMAC_SECRET}
+  ws-url: ${CENTRIFUGO_WS_URL}
+
+app:
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}
+    allowed-methods: ${APP_CORS_ALLOWED_METHODS}
+    allowed-headers: ${APP_CORS_ALLOWED_HEADERS}
+    exposed-headers: ${APP_CORS_EXPOSED_HEADERS}
+    max-age-seconds: ${APP_CORS_MAX_AGE_SECONDS}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}

@@ -1,0 +1,93 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Platform</p>
+      <h2>Tenants</h2>
+    </div>
+    <p class="page-copy">Create tenants and enable features before tenant administrators manage users and roles.</p>
+  </header>
+
+  <div class="panel-grid">
+    <section class="panel">
+      <div class="panel-header">
+        <h3>Tenant Directory</h3>
+        <span>{{ isLoading ? "Loading..." : `${tenants.length} tenants` }}</span>
+      </div>
+
+      <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
+
+      <div v-if="!isLoading" class="tenant-list">
+        <button
+          v-for="tenant in tenants"
+          :key="tenant.id"
+          :class="['tenant-tile', { active: tenantStore.selectedTenantId === tenant.id }]"
+          type="button"
+          @click="selectTenant(tenant.id)"
+        >
+          <strong>{{ tenant.displayName }}</strong>
+          <span>{{ tenant.key }}</span>
+          <span :class="['status-badge', { 'is-inactive': tenant.status !== 'ACTIVE' }]">
+            {{ tenant.status }}
+          </span>
+        </button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>Create Tenant</h3>
+          <p class="panel-subtitle">Platform-level tenant bootstrap.</p>
+        </div>
+      </div>
+
+      <form class="stack-form" @submit.prevent="submit">
+        <label>
+          <span>Key</span>
+          <input v-model="form.key" type="text" />
+        </label>
+
+        <label>
+          <span>Display name</span>
+          <input v-model="form.displayName" type="text" />
+        </label>
+
+        <label>
+          <span>Status</span>
+          <select v-model="form.status">
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="INACTIVE">INACTIVE</option>
+          </select>
+        </label>
+
+        <p v-if="successMessage" class="form-success">{{ successMessage }}</p>
+        <button type="submit">Create tenant</button>
+      </form>
+    </section>
+  </div>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h3>Tenant Features</h3>
+        <p class="panel-subtitle">
+          {{ selectedTenant ? `Current tenant: ${selectedTenant.displayName}` : "Select a tenant to manage features." }}
+        </p>
+      </div>
+    </div>
+
+    <div v-if="selectedTenant" class="feature-grid">
+      <label v-for="feature in tenantFeatures" :key="feature.key" class="feature-card">
+        <div>
+          <strong>{{ feature.label }}</strong>
+          <p class="muted-copy">{{ feature.key }}</p>
+        </div>
+        <input
+          :checked="feature.enabled"
+          type="checkbox"
+          @change="toggleFeature(feature.key, $event.target.checked)"
+        />
+      </label>
+    </div>
+  </section>
+</section>

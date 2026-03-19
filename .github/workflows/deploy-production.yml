@@ -1,0 +1,42 @@
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Image tag to deploy to production
+        required: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAMESPACE: ${{ github.repository_owner }}/lombardio
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: imranismail/setup-kustomize@v2
+      - uses: azure/setup-kubectl@v4
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          printf '%s' '${{ secrets.KUBE_CONFIG_PRODUCTION }}' > ~/.kube/config
+      - name: Set images
+        run: |
+          cd infra/k8/overlays/production
+          kustomize edit set image ghcr.io/example/lombardio/identity-access:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/identity-access:${{ github.event.inputs.image_tag }}
+          kustomize edit set image ghcr.io/example/lombardio/platform:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/platform:${{ github.event.inputs.image_tag }}
+          kustomize edit set image ghcr.io/example/lombardio/customer:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/customer:${{ github.event.inputs.image_tag }}
+          kustomize edit set image ghcr.io/example/lombardio/loan-origination:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/loan-origination:${{ github.event.inputs.image_tag }}
+          kustomize edit set image ghcr.io/example/lombardio/pawn-ticket:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/pawn-ticket:${{ github.event.inputs.image_tag }}
+          kustomize edit set image ghcr.io/example/lombardio/kyc:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/kyc:${{ github.event.inputs.image_tag }}
+          kustomize edit set image ghcr.io/example/lombardio/aml:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/aml:${{ github.event.inputs.image_tag }}
+          kustomize edit set image ghcr.io/example/lombardio/auction:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/auction:${{ github.event.inputs.image_tag }}
+          kustomize edit set image ghcr.io/example/lombardio/online-auction:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/online-auction:${{ github.event.inputs.image_tag }}
+          kustomize edit set image ghcr.io/example/lombardio/document-ocr:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/document-ocr:${{ github.event.inputs.image_tag }}
+          kustomize edit set image ghcr.io/example/lombardio/reporting:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/reporting:${{ github.event.inputs.image_tag }}
+          kustomize edit set image ghcr.io/example/lombardio/frontend:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/frontend:${{ github.event.inputs.image_tag }}
+      - name: Deploy production
+        run: kubectl apply -k infra/k8/overlays/production

@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: kyc-service
+  datasource:
+    url: ${KYC_DB_URL}
+    username: ${KYC_DB_USERNAME}
+    password: ${KYC_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    default-schema: kyc
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+server:
+  port: 8086
+
+identity-access:
+  base-url: ${IDENTITY_ACCESS_BASE_URL}
+
+platform:
+  base-url: ${PLATFORM_BASE_URL}
+
+document-ocr:
+  base-url: ${DOCUMENT_OCR_BASE_URL}
+
+app:
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}
+    allowed-methods: ${APP_CORS_ALLOWED_METHODS}
+    allowed-headers: ${APP_CORS_ALLOWED_HEADERS}
+    exposed-headers: ${APP_CORS_EXPOSED_HEADERS}
+    max-age-seconds: ${APP_CORS_MAX_AGE_SECONDS}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}

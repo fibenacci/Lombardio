@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: pawn-ticket-service
+  datasource:
+    url: ${PAWN_TICKET_DB_URL}
+    username: ${PAWN_TICKET_DB_USERNAME}
+    password: ${PAWN_TICKET_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    table: pawn_ticket_flyway_schema_history
+    default-schema: pawn_ticket
+    create-schemas: true
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+server:
+  port: 8085
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+identity-access:
+  base-url: ${IDENTITY_ACCESS_BASE_URL}
+
+app:
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}
+    allowed-methods: ${APP_CORS_ALLOWED_METHODS}
+    allowed-headers: ${APP_CORS_ALLOWED_HEADERS}
+    exposed-headers: ${APP_CORS_EXPOSED_HEADERS}
+    max-age-seconds: ${APP_CORS_MAX_AGE_SECONDS}

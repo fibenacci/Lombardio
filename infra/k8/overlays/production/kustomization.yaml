@@ -1,0 +1,186 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+
+patches:
+  - target:
+      kind: Deployment
+      name: frontend
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+      - op: replace
+        path: /spec/template/spec/containers/0/env
+        value:
+          - name: API_BASE_URL
+            value: https://identity.lombardio.example
+          - name: PLATFORM_API_BASE_URL
+            value: https://platform.lombardio.example
+          - name: ORIGINATION_API_BASE_URL
+            value: https://origination.lombardio.example
+          - name: CUSTOMER_API_BASE_URL
+            value: https://customer.lombardio.example
+          - name: PAWN_TICKET_API_BASE_URL
+            value: https://pawn-ticket.lombardio.example
+          - name: KYC_API_BASE_URL
+            value: https://kyc.lombardio.example
+          - name: AML_API_BASE_URL
+            value: https://aml.lombardio.example
+          - name: AUCTION_API_BASE_URL
+            value: https://auction.lombardio.example
+          - name: ONLINE_AUCTION_API_BASE_URL
+            value: https://online-auction.lombardio.example
+          - name: REPORTING_API_BASE_URL
+            value: https://reporting.lombardio.example
+          - name: CENTRIFUGO_WS_URL
+            value: wss://realtime.lombardio.example/connection/websocket
+  - target:
+      kind: Deployment
+      name: identity-access
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+  - target:
+      kind: Deployment
+      name: platform
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+  - target:
+      kind: Deployment
+      name: reporting
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+  - target:
+      kind: Ingress
+      name: lombardio
+    patch: |-
+      - op: replace
+        path: /spec/rules
+        value:
+          - host: app.lombardio.example
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: frontend
+                      port:
+                        number: 80
+          - host: identity.lombardio.example
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: identity-access
+                      port:
+                        number: 8081
+          - host: platform.lombardio.example
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: platform
+                      port:
+                        number: 8082
+          - host: origination.lombardio.example
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: loan-origination
+                      port:
+                        number: 8083
+          - host: customer.lombardio.example
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: customer
+                      port:
+                        number: 8084
+          - host: pawn-ticket.lombardio.example
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: pawn-ticket
+                      port:
+                        number: 8085
+          - host: kyc.lombardio.example
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: kyc
+                      port:
+                        number: 8086
+          - host: aml.lombardio.example
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: aml
+                      port:
+                        number: 8088
+          - host: auction.lombardio.example
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: auction
+                      port:
+                        number: 8089
+          - host: online-auction.lombardio.example
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: online-auction
+                      port:
+                        number: 8090
+          - host: reporting.lombardio.example
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: reporting
+                      port:
+                        number: 8091
+          - host: realtime.lombardio.example
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: centrifugo
+                      port:
+                        number: 8000

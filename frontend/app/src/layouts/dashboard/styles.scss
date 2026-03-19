@@ -1,0 +1,71 @@
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-right: 1px solid rgba(19, 34, 56, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(12px);
+}
+
+.nav {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.nav a {
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  color: #132238;
+  text-decoration: none;
+}
+
+.nav a.active {
+  background: #103d63;
+  color: #ffffff;
+}
+
+.sidebar-footer {
+  display: grid;
+  gap: 1rem;
+}
+
+.support-banner {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px solid rgba(124, 92, 47, 0.2);
+  border-radius: 12px;
+  background: rgba(253, 245, 230, 0.8);
+}
+
+.meta-label {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7c5c2f;
+}
+
+.content {
+  padding: 1.5rem;
+  backdrop-filter: blur(12px);
+}
+
+@media (max-width: 960px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-right: 0;
+    border-bottom: 1px solid rgba(19, 34, 56, 0.08);
+  }
+}

@@ -1,0 +1,27 @@
+route:
+  routes:
+    - matchers:
+        - severity="warning"
+      receiver: mail-warning
+    - matchers:
+        - severity="critical"
+      receiver: mail-critical
+
+receivers:
+  - name: mail-warning
+    email_configs:
+      - to: ops@example.com
+        from: alertmanager@example.com
+        smarthost: smtp.example.com:587
+        auth_username: alertmanager@example.com
+        auth_password: replace-me
+        send_resolved: true
+
+  - name: mail-critical
+    email_configs:
+      - to: oncall@example.com
+        from: alertmanager@example.com
+        smarthost: smtp.example.com:587
+        auth_username: alertmanager@example.com
+        auth_password: replace-me
+        send_resolved: true

@@ -1,0 +1,61 @@
+groups:
+  - name: lombardio-identity-access
+    rules:
+      - alert: IdentityAccessHigh5xxRate
+        expr: |
+          (
+            sum(rate(http_server_requests_seconds_count{application="identity-access",status=~"5.."}[5m]))
+            /
+            clamp_min(sum(rate(http_server_requests_seconds_count{application="identity-access"}[5m])), 0.001)
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          service: identity-access
+        annotations:
+          summary: Identity Access has elevated 5xx errors
+          description: The 5xx error ratio on identity-access is above 5 percent for 5 minutes.
+
+      - alert: IdentityAccessUnauthorizedSpike
+        expr: |
+          sum(rate(http_server_requests_seconds_count{application="identity-access",status=~"401|403"}[10m])) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+          service: identity-access
+        annotations:
+          summary: Identity Access sees an elevated unauthorized rate
+          description: 401/403 traffic on identity-access is above 0.5 requests per second over 10 minutes.
+
+  - name: lombardio-loan-origination
+    rules:
+      - alert: LoanOriginationHighLatencyP95
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (
+              rate(http_server_requests_seconds_bucket{application="loan-origination"}[5m])
+            )
+          ) > 1.5
+        for: 10m
+        labels:
+          severity: warning
+          service: loan-origination
+        annotations:
+          summary: Loan origination p95 latency is high
+          description: The p95 latency on loan-origination is above 1.5 seconds for 10 minutes.
+
+      - alert: LoanOriginationHigh5xxRate
+        expr: |
+          (
+            sum(rate(http_server_requests_seconds_count{application="loan-origination",status=~"5.."}[5m]))
+            /
+            clamp_min(sum(rate(http_server_requests_seconds_count{application="loan-origination"}[5m])), 0.001)
+          ) > 0.03
+        for: 5m
+        labels:
+          severity: critical
+          service: loan-origination
+        annotations:
+          summary: Loan origination has elevated 5xx errors
+          description: The 5xx error ratio on loan-origination is above 3 percent for 5 minutes.

@@ -1,0 +1,157 @@
+<section class="view-shell online-auction-view">
+  <header class="section-header">
+    <div>
+      <p class="eyebrow">Live Commerce</p>
+      <h2>Online-Auktionen</h2>
+    </div>
+    <p class="meta-copy">Separater Live-Bieter-Kontext mit Centrifugo-Realtime</p>
+  </header>
+
+  <p v-if="errorMessage" class="error-banner">{{ errorMessage }}</p>
+
+  <div class="online-auction-grid">
+    <section class="panel">
+      <h3>Neue Online-Auktion</h3>
+      <label>
+        <span>Titel</span>
+        <input v-model="createForm.title" type="text">
+      </label>
+      <label>
+        <span>Slug</span>
+        <input v-model="createForm.slug" type="text">
+      </label>
+      <label>
+        <span>Mindestinkrement</span>
+        <input v-model="createForm.minimumIncrement" type="number" min="1.00" step="0.01">
+      </label>
+      <label>
+        <span>Countdown in Sekunden</span>
+        <input v-model="createForm.countdownSeconds" type="number" min="30" step="1">
+      </label>
+      <div class="lot-editor">
+        <div class="lot-row header">
+          <span>Los</span>
+          <span>Beschreibung</span>
+          <span>Startgebot</span>
+        </div>
+        <div v-for="(lot, index) in createForm.lots" :key="index" class="lot-row">
+          <input v-model="lot.title" type="text" placeholder="Los titel">
+          <input v-model="lot.description" type="text" placeholder="Detailbeschreibung">
+          <input v-model="lot.startingBid" type="number" min="0.01" step="0.01">
+        </div>
+      </div>
+      <div class="button-row">
+        <button class="secondary-button" type="button" @click="addLot">Los hinzufuegen</button>
+        <button type="button" @click="submitCreate">Online-Auktion anlegen</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3>Katalog</h3>
+      <div class="auction-list">
+        <button
+          v-for="auction in auctions"
+          :key="auction.id"
+          class="auction-card"
+          :class="{ selected: selectedAuctionId === auction.id }"
+          type="button"
+          @click="selectedAuctionId = auction.id"
+        >
+          <strong>{{ auction.title }}</strong>
+          <span>{{ auction.status }}</span>
+          <span>{{ auction.slug }}</span>
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <section v-if="selectedAuction" class="panel">
+    <header class="section-header compact">
+      <div>
+        <p class="eyebrow">Public URL</p>
+        <h3>{{ selectedAuction.title }}</h3>
+      </div>
+      <div class="button-row">
+        <button class="secondary-button" type="button" @click="changeStatus('publish')">Publizieren</button>
+        <button class="secondary-button" type="button" @click="changeStatus('start')">Live starten</button>
+        <button class="secondary-button" type="button" @click="changeStatus('close')">Schliessen</button>
+      </div>
+    </header>
+
+    <div class="panel nested">
+      <p class="public-link">{{ publicUrlFor(selectedAuction) }}</p>
+      <p class="hint">Bieter registrieren sich dort selbst und erhalten Paddle-Nummer, Access-Token und Realtime-Session.</p>
+      <p class="hint">Mindestinkrement: {{ selectedAuction.minimumIncrement }} | Countdown: {{ selectedAuction.countdownSeconds }}s</p>
+    </div>
+
+    <div class="panel nested">
+      <h4>Lose</h4>
+      <table class="lot-table">
+        <thead>
+          <tr>
+            <th>Los</th>
+            <th>Titel</th>
+            <th>Start</th>
+            <th>Aktuell</th>
+            <th>Hoechstbieter</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="lot in selectedAuction.lots" :key="lot.id">
+            <td>{{ lot.lotNumber }}</td>
+            <td>{{ lot.title }}</td>
+            <td>{{ lot.startingBid }}</td>
+            <td>{{ lot.currentBid }}</td>
+            <td>{{ lot.highestBidderAlias || "-" }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel nested">
+      <h4>Bieterfreigaben</h4>
+      <table class="lot-table">
+        <thead>
+          <tr>
+            <th>Paddle</th>
+            <th>Name</th>
+            <th>E-Mail</th>
+            <th>Status</th>
+            <th>Aktion</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="registration in selectedAuction.registrations" :key="registration.id">
+            <td>{{ registration.paddleNumber }}</td>
+            <td>{{ registration.displayName }}</td>
+            <td>{{ registration.email }}</td>
+            <td>
+              {{ registration.approvalStatus }}<br>
+              <small>KYC: {{ registration.kycStatus }} | Konto: {{ registration.accountCheckStatus }}</small>
+            </td>
+            <td>
+              <div class="action-stack">
+                <input :value="registration.legalName" type="text" disabled>
+                <input :value="registration.birthDate" type="text" disabled>
+                <input :value="registration.ibanMasked" type="text" disabled>
+                <select v-model="reviewForms[registration.id].kycStatus">
+                  <option value="PENDING">KYC pending</option>
+                  <option value="PASSED">KYC passed</option>
+                  <option value="FAILED">KYC failed</option>
+                </select>
+                <select v-model="reviewForms[registration.id].accountCheckStatus">
+                  <option value="PENDING">Konto pending</option>
+                  <option value="PASSED">Konto passed</option>
+                  <option value="FAILED">Konto failed</option>
+                </select>
+                <input v-model="reviewForms[registration.id].reviewNote" type="text" placeholder="Review-Notiz">
+                <button class="secondary-button" type="button" @click="reviewRegistration(registration.id, 'APPROVE')">Freigeben</button>
+                <button class="secondary-button" type="button" @click="reviewRegistration(registration.id, 'REJECT')">Ablehnen</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>

@@ -1,0 +1,61 @@
+name: Deploy Staging
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Image tag to deploy to staging
+        required: true
+        default: latest
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAMESPACE: ${{ github.repository_owner }}/lombardio
+
+jobs:
+  deploy:
+    if: |
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main') ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: imranismail/setup-kustomize@v2
+      - uses: azure/setup-kubectl@v4
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          printf '%s' '${{ secrets.KUBE_CONFIG_STAGING }}' > ~/.kube/config
+      - name: Resolve image tag
+        id: meta
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            echo "tag=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ github.event.inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Set images
+        run: |
+          cd infra/k8/overlays/staging
+          kustomize edit set image ghcr.io/example/lombardio/identity-access:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/identity-access:${{ steps.meta.outputs.tag }}
+          kustomize edit set image ghcr.io/example/lombardio/platform:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/platform:${{ steps.meta.outputs.tag }}
+          kustomize edit set image ghcr.io/example/lombardio/customer:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/customer:${{ steps.meta.outputs.tag }}
+          kustomize edit set image ghcr.io/example/lombardio/loan-origination:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/loan-origination:${{ steps.meta.outputs.tag }}
+          kustomize edit set image ghcr.io/example/lombardio/pawn-ticket:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/pawn-ticket:${{ steps.meta.outputs.tag }}
+          kustomize edit set image ghcr.io/example/lombardio/kyc:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/kyc:${{ steps.meta.outputs.tag }}
+          kustomize edit set image ghcr.io/example/lombardio/aml:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/aml:${{ steps.meta.outputs.tag }}
+          kustomize edit set image ghcr.io/example/lombardio/auction:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/auction:${{ steps.meta.outputs.tag }}
+          kustomize edit set image ghcr.io/example/lombardio/online-auction:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/online-auction:${{ steps.meta.outputs.tag }}
+          kustomize edit set image ghcr.io/example/lombardio/document-ocr:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/document-ocr:${{ steps.meta.outputs.tag }}
+          kustomize edit set image ghcr.io/example/lombardio/reporting:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/reporting:${{ steps.meta.outputs.tag }}
+          kustomize edit set image ghcr.io/example/lombardio/frontend:latest=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/frontend:${{ steps.meta.outputs.tag }}
+      - name: Deploy staging
+        run: kubectl apply -k infra/k8/overlays/staging

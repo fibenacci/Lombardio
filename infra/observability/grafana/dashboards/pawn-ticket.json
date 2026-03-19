@@ -1,0 +1,128 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": false,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "targets": [
+        {
+          "expr": "sum(rate(lombardio_pawn_ticket_issued_total[5m]))",
+          "legendFormat": "issued",
+          "refId": "A"
+        }
+      ],
+      "title": "Pawn Tickets Issued",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "targets": [
+        {
+          "expr": "sum(rate(lombardio_pawn_ticket_loan_amount_sum[5m])) / clamp_min(sum(rate(lombardio_pawn_ticket_loan_amount_count[5m])), 0.001)",
+          "legendFormat": "avg loan amount",
+          "refId": "A"
+        }
+      ],
+      "title": "Average Pawn Ticket Loan Amount",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "targets": [
+        {
+          "expr": "sum by (type) (rate(lombardio_cash_transaction_executed_total[5m]))",
+          "legendFormat": "{{type}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Cash Transactions by Type",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "targets": [
+        {
+          "expr": "sum by (type) (rate(lombardio_cash_transaction_total_amount_sum[5m])) / clamp_min(sum by (type) (rate(lombardio_cash_transaction_total_amount_count[5m])), 0.001)",
+          "legendFormat": "{{type}} avg",
+          "refId": "A"
+        }
+      ],
+      "title": "Average Settlement Amount by Type",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": [
+    "pawn-ticket",
+    "lombardio"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "title": "Pawn Ticket",
+  "uid": "pawn-ticket",
+  "version": 1
+}

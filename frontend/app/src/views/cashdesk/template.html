@@ -1,0 +1,155 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">{{ t("cashdesk.eyebrow") }}</p>
+      <h2>{{ t("cashdesk.title") }}</h2>
+    </div>
+    <p class="page-copy">{{ t("cashdesk.copy") }}</p>
+  </header>
+
+  <div class="panel-grid">
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>{{ t("cashdesk.activeTicketsTitle") }}</h3>
+          <p class="panel-subtitle">{{ t("cashdesk.activeTicketsSubtitle") }}</p>
+        </div>
+        <span>{{ isLoading ? t("common.loading") : t("cashdesk.ticketCount", { count: tickets.length }) }}</span>
+      </div>
+
+      <FormFeedback :field-errors="fieldErrors" :message="errorMessage" />
+
+      <table v-if="!isLoading && tenantStore.selectedTenantId" class="data-table">
+        <thead>
+          <tr>
+            <th>{{ t("cashdesk.columns.ticket") }}</th>
+            <th>{{ t("cashdesk.columns.customer") }}</th>
+            <th>{{ t("cashdesk.columns.dueDate") }}</th>
+            <th>{{ t("cashdesk.columns.loan") }}</th>
+            <th>{{ t("cashdesk.columns.repayment") }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="ticket in tickets"
+            :key="ticket.ticketNumber"
+            :class="{ selected: selectedTicketNumber === ticket.ticketNumber }"
+            @click="selectedTicketNumber = ticket.ticketNumber"
+          >
+            <td>{{ ticket.ticketNumber }}</td>
+            <td>{{ ticket.customerDisplayName }}</td>
+            <td>{{ ticket.dueDate }}</td>
+            <td>{{ ticket.totalLoanValue }} EUR</td>
+            <td>{{ ticket.totalRepaymentAmount }} EUR</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>{{ t("cashdesk.actionTitle") }}</h3>
+          <p class="panel-subtitle">{{ t("cashdesk.actionSubtitle") }}</p>
+        </div>
+      </div>
+
+      <div v-if="selectedTicket" class="stack-form">
+        <div class="ticket-summary">
+          <strong>{{ selectedTicket.ticketNumber }}</strong>
+          <span>{{ selectedTicket.customerDisplayName }}</span>
+          <span class="muted-copy">{{ t("cashdesk.ticketSummary", { loanValue: selectedTicket.totalLoanValue, dueDate: selectedTicket.dueDate }) }}</span>
+        </div>
+
+        <label>
+          <span>{{ t("cashdesk.fields.action") }}</span>
+          <select v-model="activeAction">
+            <option value="redeem">{{ t("cashdesk.actions.redeem") }}</option>
+            <option value="extend">{{ t("cashdesk.actions.extend") }}</option>
+            <option value="partial">{{ t("cashdesk.actions.partial") }}</option>
+          </select>
+        </label>
+
+        <label v-if="activeAction === 'extend'">
+          <span>{{ t("cashdesk.fields.extensionMonths") }}</span>
+          <input v-model="form.extensionMonths" min="1" step="1" type="number" />
+        </label>
+
+        <label v-if="activeAction === 'partial'">
+          <span>{{ t("cashdesk.fields.repaymentAmount") }}</span>
+          <input v-model="form.repaymentAmount" min="0.01" step="0.01" type="number" />
+        </label>
+
+        <label v-if="activeAction !== 'extend'">
+          <span>{{ t("cashdesk.fields.remainingTermMonths") }}</span>
+          <input v-model="form.remainingTermMonths" min="1" step="1" type="number" />
+        </label>
+
+        <label>
+          <span>{{ t("cashdesk.fields.manualMonthlyOperatingFee") }}</span>
+          <input v-model="form.manualMonthlyOperatingFee" min="0" step="0.01" type="number" />
+        </label>
+
+        <button :disabled="isSubmitting || !selectedTicket" type="button" @click="calculate">
+          {{ isSubmitting ? t("cashdesk.calculating") : t("cashdesk.calculate") }}
+        </button>
+      </div>
+
+      <div v-if="settlement" class="settlement-card">
+        <p class="eyebrow">{{ t("cashdesk.resultEyebrow") }}</p>
+        <div class="settlement-grid">
+          <div>
+            <p class="meta-label">{{ t("cashdesk.settlement.outstandingLoanAmount") }}</p>
+            <strong>{{ settlement.outstandingLoanAmount }} EUR</strong>
+          </div>
+          <div>
+            <p class="meta-label">{{ t("cashdesk.settlement.interestAmount") }}</p>
+            <strong>{{ settlement.interestAmount }} EUR</strong>
+          </div>
+          <div>
+            <p class="meta-label">{{ t("cashdesk.settlement.operatingFeeAmount") }}</p>
+            <strong>{{ settlement.operatingFeeAmount }} EUR</strong>
+          </div>
+          <div>
+            <p class="meta-label">{{ t("cashdesk.settlement.totalDueAmount") }}</p>
+            <strong>{{ settlement.totalDueAmount }} EUR</strong>
+          </div>
+        </div>
+        <p class="legal-copy">{{ settlement.legalText }}</p>
+        <button :disabled="isSubmitting" type="button" @click="execute">
+          {{ isSubmitting ? t("cashdesk.executing") : t("cashdesk.execute") }}
+        </button>
+      </div>
+
+      <div class="journal-card">
+        <div class="panel-header">
+          <div>
+            <h3>{{ t("cashdesk.journalTitle") }}</h3>
+            <p class="panel-subtitle">{{ t("cashdesk.journalSubtitle") }}</p>
+          </div>
+          <span>{{ t("cashdesk.entryCount", { count: transactions.length }) }}</span>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>{{ t("cashdesk.journalColumns.createdAt") }}</th>
+              <th>{{ t("cashdesk.journalColumns.ticket") }}</th>
+              <th>{{ t("cashdesk.journalColumns.customer") }}</th>
+              <th>{{ t("cashdesk.journalColumns.type") }}</th>
+              <th>{{ t("cashdesk.journalColumns.amount") }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="transaction in transactions" :key="transaction.id">
+              <td>{{ transaction.createdAt?.slice(0, 16).replace('T', ' ') }}</td>
+              <td>{{ transaction.ticketNumber }}</td>
+              <td>{{ transaction.customerDisplayName }}</td>
+              <td>{{ transaction.type }}</td>
+              <td>{{ transaction.totalAmount }} EUR</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</section>

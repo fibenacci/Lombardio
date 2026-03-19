@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: Lombardio
+    orgId: 1
+    folder: Lombardio
+    type: file
+    disableDeletion: false
+    allowUiUpdates: false
+    options:
+      path: /var/lib/grafana/dashboards

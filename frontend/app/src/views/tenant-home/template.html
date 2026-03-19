@@ -1,0 +1,552 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">{{ t("tenantHome.eyebrow") }}</p>
+      <h2>{{ selectedTenant?.displayName ?? t("tenantHome.titleFallback") }}</h2>
+    </div>
+    <p class="page-copy">
+      {{ t("tenantHome.copy") }}
+    </p>
+  </header>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h3>{{ t("tenantHome.reportingTitle") }}</h3>
+        <p class="panel-subtitle">{{ t("tenantHome.reportingSubtitle") }}</p>
+      </div>
+    </div>
+
+    <p v-if="reportingError" class="legal-copy">{{ reportingError }}</p>
+
+    <div v-else-if="reportingOverview" class="reporting-grid">
+      <div class="reporting-card">
+        <p class="meta-label">Kassenzufluss</p>
+        <strong>{{ formatCurrency(reportingOverview.finance.cashInflow) }}</strong>
+      </div>
+      <div class="reporting-card">
+        <p class="meta-label">Kassenausfluss</p>
+        <strong>{{ formatCurrency(reportingOverview.finance.cashOutflow) }}</strong>
+      </div>
+      <div class="reporting-card">
+        <p class="meta-label">Netto Cashflow</p>
+        <strong>{{ formatCurrency(reportingOverview.finance.netCashflow) }}</strong>
+      </div>
+      <div class="reporting-card">
+        <p class="meta-label">Realisierte Ertraege</p>
+        <strong>{{ formatCurrency(reportingOverview.finance.realizedRevenue) }}</strong>
+      </div>
+      <div class="reporting-card">
+        <p class="meta-label">Offenes Darlehensvolumen</p>
+        <strong>{{ formatCurrency(reportingOverview.finance.activeLoanExposure) }}</strong>
+      </div>
+      <div class="reporting-card">
+        <p class="meta-label">Aktive Pfandscheine</p>
+        <strong>{{ reportingOverview.finance.activeTicketCount }}</strong>
+      </div>
+
+      <div class="reporting-panel full-span">
+        <div class="subpanel-header">
+        <h4>{{ t("tenantHome.financeTrend") }}</h4>
+          <span class="muted-copy">{{ reportingOverview.rangeStart }} bis {{ reportingOverview.rangeEnd }}</span>
+        </div>
+        <div class="trend-chart">
+          <div v-for="point in reportingOverview.financeTrend" :key="point.date" class="trend-day">
+            <div class="trend-bars">
+              <span class="trend-bar is-inflow" :style="{ height: `${(Number(point.cashInflow) / financeTrendMax) * 100}%` }"></span>
+              <span class="trend-bar is-outflow" :style="{ height: `${(Number(point.cashOutflow) / financeTrendMax) * 100}%` }"></span>
+              <span class="trend-bar is-revenue" :style="{ height: `${(Number(point.realizedRevenue) / financeTrendMax) * 100}%` }"></span>
+            </div>
+            <span class="trend-label">{{ point.date.slice(5) }}</span>
+          </div>
+        </div>
+        <div class="trend-legend">
+          <span><i class="legend-dot is-inflow"></i> {{ t("tenantHome.inflow") }}</span>
+          <span><i class="legend-dot is-outflow"></i> {{ t("tenantHome.outflow") }}</span>
+          <span><i class="legend-dot is-revenue"></i> {{ t("tenantHome.revenue") }}</span>
+        </div>
+      </div>
+
+      <div class="reporting-panel">
+        <div class="subpanel-header">
+          <h4>{{ t("tenantHome.inventoryByCategory") }}</h4>
+        </div>
+        <div class="inventory-list">
+          <div v-for="category in reportingOverview.inventoryByCategory" :key="category.category" class="inventory-row">
+            <div class="inventory-row-head">
+              <strong>{{ category.category }}</strong>
+              <span>{{ formatCurrency(category.pledgedValue) }}</span>
+            </div>
+            <div class="inventory-bar-track">
+              <span class="inventory-bar-fill" :style="{ width: `${(Number(category.pledgedValue) / inventoryMax) * 100}%` }"></span>
+            </div>
+            <p class="muted-copy">{{ t("tenantHome.positionCount", { count: category.itemCount }) }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reporting-panel">
+        <div class="subpanel-header">
+          <h4>{{ t("tenantHome.cashTransactions") }}</h4>
+        </div>
+        <div class="inventory-list">
+          <div v-for="transaction in reportingOverview.transactionMix" :key="transaction.type" class="inventory-row">
+            <div class="inventory-row-head">
+              <strong>{{ transaction.type }}</strong>
+              <span>{{ formatCurrency(transaction.totalAmount) }}</span>
+            </div>
+            <p class="muted-copy">{{ t("tenantHome.transactionCount", { count: transaction.transactionCount }) }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="origination-layout">
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>{{ t("tenantHome.originationTitle") }}</h3>
+          <p class="panel-subtitle">{{ t("tenantHome.originationSubtitle") }}</p>
+        </div>
+      </div>
+
+      <FormFeedback :field-errors="fieldErrors" :message="errorMessage" />
+      <p v-if="successMessage" class="form-success">{{ successMessage }}</p>
+
+      <div class="workflow-stack">
+        <section class="subpanel">
+          <div class="subpanel-header">
+            <h4>Kunde</h4>
+            <label class="toggle">
+              <input v-model="useNewCustomer" type="checkbox" />
+              <span>Neukunde anlegen</span>
+            </label>
+          </div>
+
+          <div v-if="!useNewCustomer" class="stack-form">
+            <label>
+              <span>Bestandssuche</span>
+              <div class="inline-row">
+                <input v-model="customerQuery" type="text" placeholder="Name, Telefon oder Kundennummer" />
+                <button class="secondary-button" type="button" @click="runCustomerSearch">Suchen</button>
+              </div>
+            </label>
+
+            <label>
+              <span>Kunde</span>
+              <select v-model="selectedCustomerId">
+                <option disabled value="">Kundenbestand waehlen</option>
+                <option v-for="customer in customers" :key="customer.id" :value="customer.id">
+                  {{ customer.customerNumber }} - {{ customer.displayName }} - KYC {{ customer.kycStatus ?? "NOT_STARTED" }}
+                </option>
+              </select>
+            </label>
+
+            <div
+              v-if="selectedCustomer"
+              class="kyc-banner"
+              :class="{ 'is-approved': selectedCustomer.kycApproved && (!amlFeatureEnabled || selectedCustomer.amlOriginationAllowed) }"
+            >
+              <div>
+                <strong>KYC-Status: {{ selectedCustomer.kycStatus ?? "NOT_STARTED" }}</strong>
+                <p v-if="selectedCustomer.verificationMode" class="muted-copy">
+                  Pruefmodus: {{ selectedCustomer.verificationMode }}
+                  <span v-if="selectedCustomer.providerStatus"> · Provider-Status: {{ selectedCustomer.providerStatus }}</span>
+                </p>
+                <p v-if="amlFeatureEnabled" class="muted-copy">
+                  AML: {{ selectedCustomer.amlStatus ?? "UNKNOWN" }}
+                  <span v-if="selectedCustomer.amlRiskLevel"> · Risiko {{ selectedCustomer.amlRiskLevel }}</span>
+                </p>
+                <p v-if="!selectedCustomer.kycApproved" class="muted-copy">
+                  Ohne freigegebenes KYC kann keine Beleihung abgeschlossen werden.
+                </p>
+                <p v-else-if="amlFeatureEnabled && !selectedCustomer.amlOriginationAllowed" class="muted-copy">
+                  {{ selectedCustomer.amlDecisionReason ?? "AML-Review erforderlich vor der Beleihung." }}
+                </p>
+              </div>
+              <div class="inline-row">
+                <button
+                  v-if="!selectedCustomer.kycApproved"
+                  class="secondary-button"
+                  :disabled="isUpdatingKyc"
+                  type="button"
+                  @click="approveSelectedCustomerKyc"
+                >
+                  {{ isUpdatingKyc ? t("tenantHome.updatingKyc") : t("tenantHome.approveKyc") }}
+                </button>
+                <button
+                  v-if="!selectedCustomer.kycApproved && providerVerificationAvailable"
+                  class="secondary-button"
+                  :disabled="isUpdatingKyc"
+                  type="button"
+                  @click="startProviderVerification"
+                >
+                  {{ isUpdatingKyc ? t("tenantHome.startingProvider") : t("tenantHome.providerVerification") }}
+                </button>
+                <button class="secondary-button" type="button" @click="openSelectedCustomerDetails">
+                  {{ t("tenantHome.customerProfile") }}
+                </button>
+              </div>
+            </div>
+            <p v-if="providerVerificationAvailable" class="legal-copy">
+              Dieser Tenant hat das optionale Feature fuer externe Ausweispruefung aktiviert. Die manuelle KYC-Pruefung bleibt weiterhin verfuegbar.
+            </p>
+          </div>
+
+          <div v-else class="stack-form two-column-grid">
+            <label>
+              <span>Kundennummer</span>
+              <input v-model="newCustomer.customerNumber" required type="text" />
+            </label>
+            <label>
+              <span>Telefon</span>
+              <input v-model="newCustomer.phone" required type="text" />
+            </label>
+            <label>
+              <span>Vorname</span>
+              <input v-model="newCustomer.firstName" required type="text" />
+            </label>
+            <label>
+              <span>Nachname</span>
+              <input v-model="newCustomer.lastName" required type="text" />
+            </label>
+            <label>
+              <span>Geburtsdatum</span>
+              <input v-model="newCustomer.birthDate" required type="date" />
+            </label>
+            <label>
+              <span>Strasse</span>
+              <input v-model="newCustomer.street" type="text" />
+            </label>
+            <label>
+              <span>PLZ</span>
+              <input v-model="newCustomer.postalCode" type="text" />
+            </label>
+            <label class="full-span">
+              <span>Ort</span>
+              <input v-model="newCustomer.city" type="text" />
+            </label>
+            <label>
+              <span>Dokumenttyp</span>
+              <select v-model="newCustomerKyc.documentType" required>
+                <option value="PERSONALAUSWEIS">Personalausweis</option>
+                <option value="REISEPASS">Reisepass</option>
+                <option value="AUFENTHALTSTITEL">Aufenthaltstitel</option>
+              </select>
+            </label>
+            <label>
+              <span>Ausweisnummer</span>
+              <input v-model="newCustomerKyc.documentNumber" required type="text" />
+            </label>
+            <label class="full-span">
+              <span>Gueltig bis</span>
+              <input v-model="newCustomerKyc.documentValidUntil" required type="date" />
+            </label>
+            <label>
+              <span>Ausweis Vorderseite</span>
+              <input accept="image/*" required type="file" @change="updateNewCustomerDocument('documentFrontImageDataUrl', $event)" />
+            </label>
+            <label>
+              <span>Ausweis Rueckseite</span>
+              <input accept="image/*" required type="file" @change="updateNewCustomerDocument('documentBackImageDataUrl', $event)" />
+            </label>
+            <div v-if="documentOcrAvailable" class="full-span inline-row">
+              <button class="secondary-button" type="button" @click="prefillNewCustomerDocumentData">
+                Ausweisdaten vorbefuellen
+              </button>
+              <span class="muted-copy">Optionaler OCR-Pfad fuer Nummer und Gueltigkeit. Manuelle Pruefung bleibt verpflichtend.</span>
+            </div>
+            <p class="legal-copy full-span">
+              Fuer Neukunden ist ein gueltiges Ausweisdokument mit Vorder- und Rueckseite zwingend. Die automatische Auslesung von Nummer und Gueltigkeit wird im KYC-Kontext vorbereitet, aktuell werden die Werte manuell bestaetigt.
+            </p>
+            <div class="full-span aml-inline-panel">
+              <div class="subpanel-header">
+                <h4>Verpfaender und Vollmacht</h4>
+              </div>
+              <div class="stack-form two-column-grid">
+                <label class="checkbox-field full-span">
+                  <input v-model="pledgePresentation.thirdPartyPledgorPresentation" type="checkbox" />
+                  <span>Ueberbringer und Verpfaender sind nicht identisch</span>
+                </label>
+                <template v-if="pledgePresentation.thirdPartyPledgorPresentation">
+                  <label>
+                    <span>Name des Ueberbringers</span>
+                    <input v-model="pledgePresentation.bearerName" required type="text" />
+                  </label>
+                  <label>
+                    <span>Strasse des Ueberbringers</span>
+                    <input v-model="pledgePresentation.bearerStreet" type="text" />
+                  </label>
+                  <label>
+                    <span>PLZ</span>
+                    <input v-model="pledgePresentation.bearerPostalCode" type="text" />
+                  </label>
+                  <label>
+                    <span>Ort</span>
+                    <input v-model="pledgePresentation.bearerCity" type="text" />
+                  </label>
+                  <label class="full-span">
+                    <span>Schriftliche Vollmacht</span>
+                    <input accept=".pdf,image/*" required type="file" @change="updatePowerOfAttorneyDocument($event)" />
+                  </label>
+                </template>
+              </div>
+              <p class="legal-copy">
+                Wenn Ueberbringer und Verpfaender nicht identisch sind, muss eine schriftliche Vollmacht hinterlegt werden. Die Aufzeichnung wird unverzueglich in deutscher Sprache gespeichert.
+              </p>
+            </div>
+            <div v-if="amlFeatureEnabled" class="full-span aml-inline-panel">
+              <div class="subpanel-header">
+                <h4>AML-Pruefung fuer Neukunde</h4>
+              </div>
+              <div class="stack-form two-column-grid">
+                <label>
+                  <span>AML-Status</span>
+                  <select v-model="newCustomerAml.status">
+                    <option value="NOT_REVIEWED">NOT_REVIEWED</option>
+                    <option value="CLEAR">CLEAR</option>
+                    <option value="REVIEW_REQUIRED">REVIEW_REQUIRED</option>
+                    <option value="BLOCKED">BLOCKED</option>
+                    <option value="REPORTED">REPORTED</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Risikolevel</span>
+                  <select v-model="newCustomerAml.riskLevel">
+                    <option value="LOW">LOW</option>
+                    <option value="MEDIUM">MEDIUM</option>
+                    <option value="HIGH">HIGH</option>
+                  </select>
+                </label>
+                <label class="checkbox-field">
+                  <input v-model="newCustomerAml.pepFlag" type="checkbox" />
+                  <span>PEP-Treffer</span>
+                </label>
+                <label class="checkbox-field">
+                  <input v-model="newCustomerAml.sanctionsHit" type="checkbox" />
+                  <span>Sanktions-Treffer</span>
+                </label>
+                <label class="checkbox-field">
+                  <input v-model="newCustomerAml.unusualTransactionFlag" type="checkbox" />
+                  <span>Ungewoehnliche Transaktion</span>
+                </label>
+                <label class="checkbox-field">
+                  <input v-model="newCustomerAml.sourceOfFundsChecked" type="checkbox" />
+                  <span>Source of Funds geprueft</span>
+                </label>
+                <label class="checkbox-field full-span">
+                  <input v-model="newCustomerAml.suspiciousActivityReported" type="checkbox" />
+                  <span>Verdachtsmeldung erstellt</span>
+                </label>
+                <label v-if="newCustomerAml.suspiciousActivityReported" class="full-span">
+                  <span>goAML-Referenz</span>
+                  <input v-model="newCustomerAml.goamlReference" type="text" />
+                </label>
+                <label class="full-span">
+                  <span>AML-Notiz</span>
+                  <textarea v-model="newCustomerAml.decisionNote" rows="3"></textarea>
+                </label>
+              </div>
+              <p class="legal-copy">
+                Wenn AML-Compliance fuer den Tenant aktiv ist, muss der Neukunde vor Abschluss mindestens auf CLEAR stehen. Verdachtsfaelle erfordern eine goAML-Referenz und duerfen nicht in die Beleihung laufen.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="subpanel">
+          <div class="subpanel-header">
+            <h4>{{ t("tenantHome.positionsTitle") }}</h4>
+            <button class="secondary-button" type="button" @click="addPosition">{{ t("tenantHome.addPosition") }}</button>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table positions-table">
+              <thead>
+                <tr>
+                  <th>Pfandschein</th>
+                  <th>Bewertungsrichtlinie</th>
+                  <th>Bezeichnung</th>
+                  <th>Beschreibung</th>
+                  <th>Beleihwert</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(position, index) in positions" :key="index">
+                  <td>
+                    <input v-model="position.ticketGroup" min="1" required step="1" type="number" />
+                  </td>
+                  <td>
+                    <select :value="position.guidelineId" @change="applyGuideline(index, $event.target.value)" required>
+                      <option disabled value="">Richtlinie waehlen</option>
+                      <option v-for="guideline in guidelines" :key="guideline.id" :value="guideline.id">
+                        {{ guideline.label }}
+                      </option>
+                    </select>
+                  </td>
+                  <td>
+                    <input v-model="position.label" required type="text" />
+                  </td>
+                  <td>
+                    <input v-model="position.description" required type="text" />
+                  </td>
+                  <td>
+                    <input v-model="position.pledgedValue" min="0.01" required step="0.01" type="number" />
+                  </td>
+                  <td>
+                    <button class="secondary-button" type="button" @click="removePosition(index)">Entfernen</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="subpanel">
+          <div class="subpanel-header">
+            <h4>Laufzeit und Kostenmodell</h4>
+          </div>
+
+          <div class="stack-form two-column-grid">
+            <label>
+              <span>Laufzeit in Monaten</span>
+              <input v-model="terms.termMonths" min="3" step="1" type="number" />
+            </label>
+
+            <label>
+              <span>Beleihsumme</span>
+              <input :value="`${totalLoanValue} EUR`" readonly type="text" />
+            </label>
+
+            <label v-if="loanQuotes.some((quote) => quote.manualMonthlyOperatingFeeRequired)" class="full-span">
+              <span>Monatliche Betriebsverguetung</span>
+              <input v-model="terms.manualMonthlyOperatingFee" min="0" step="0.01" type="number" />
+            </label>
+          </div>
+
+          <p class="legal-copy">
+            Zinsen und Verguetungen werden transparent nach PfandlV dargestellt. Bei Darlehen ueber 300 EUR ist die monatliche Betriebsverguetung nicht mehr automatisch aus der Anlage ableitbar und muss bewusst gesetzt werden.
+          </p>
+        </section>
+
+        <section class="summary-strip">
+          <div>
+            <p class="meta-label">{{ t("tenantHome.totalLoan") }}</p>
+            <strong>{{ totalLoanValue }} EUR</strong>
+          </div>
+          <button :disabled="isLoading || isSubmitting || !canSubmitLoan" type="button" @click="submitLoan">
+            {{ isSubmitting ? t("tenantHome.submitting") : t("tenantHome.submit") }}
+          </button>
+        </section>
+      </div>
+    </section>
+
+    <section class="stack-column">
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h3>{{ t("tenantHome.ticketAndCostsTitle") }}</h3>
+            <p class="panel-subtitle">{{ t("tenantHome.ticketAndCostsSubtitle") }}</p>
+          </div>
+        </div>
+
+        <div v-if="loanQuotes.length" class="ticket-preview">
+          <article v-for="quote in loanQuotes" :key="quote.ticketGroup" class="ticket-card">
+            <p class="eyebrow">Pfandschein {{ quote.ticketGroup }}</p>
+            <p>{{ quote.positionCount }} Position(en)</p>
+            <div class="quote-grid">
+              <div>
+                <p class="meta-label">Beleihsumme</p>
+                <strong>{{ quote.totalLoanValue }} EUR</strong>
+              </div>
+              <div>
+                <p class="meta-label">Faelligkeit</p>
+                <strong>{{ quote.dueDate }}</strong>
+              </div>
+              <div>
+                <p class="meta-label">Frueheste Versteigerung</p>
+                <strong>{{ quote.earliestAuctionDate }}</strong>
+              </div>
+              <div>
+                <p class="meta-label">Monatszins</p>
+                <strong>{{ quote.monthlyInterestRate }} %</strong>
+              </div>
+              <div>
+                <p class="meta-label">Betriebsverguetung / Monat</p>
+                <strong>{{ quote.monthlyOperatingFee }} EUR</strong>
+              </div>
+              <div>
+                <p class="meta-label">Zinsen gesamt</p>
+                <strong>{{ quote.totalInterestAmount }} EUR</strong>
+              </div>
+              <div>
+                <p class="meta-label">Verguetung gesamt</p>
+                <strong>{{ quote.totalOperatingFeeAmount }} EUR</strong>
+              </div>
+              <div class="full-span">
+                <p class="meta-label">Rueckzahlungsbetrag bei Faelligkeit</p>
+                <strong>{{ quote.totalRepaymentAmount }} EUR</strong>
+              </div>
+            </div>
+            <p class="legal-copy">{{ quote.legalText }}</p>
+          </article>
+        </div>
+        <p v-else class="placeholder-copy">
+          Sobald Positionen und Beleihwerte erfasst sind, erscheinen hier Zinssatz, Betriebsverguetung, Laufzeit, Rueckzahlung und die relevanten Rechtshinweise.
+        </p>
+
+        <div v-if="createdLoan" ref="issuedTicketRef" class="issued-ticket">
+          <h4>Erzeugte Pfandscheine</h4>
+          <article v-for="pawnTicket in createdLoan.pawnTickets" :key="pawnTicket.ticketNumber" class="ticket-card">
+            <p class="eyebrow">{{ pawnTicket.ticketNumber }}</p>
+            <p>Vertrag: {{ pawnTicket.contractNumber }}</p>
+            <p>Pfandschein erstellt bis {{ pawnTicket.dueDate }}</p>
+            <p>Rueckzahlungsbetrag: {{ pawnTicket.totalRepaymentAmount }} EUR</p>
+            <p>Zinsen gesamt: {{ pawnTicket.totalInterestAmount }} EUR</p>
+            <p>Betriebsverguetung gesamt: {{ pawnTicket.totalOperatingFeeAmount }} EUR</p>
+            <p>Barcode: {{ pawnTicket.contractBarcode }}</p>
+            <p>AGB-Version: {{ pawnTicket.termsVersion }}</p>
+            <div v-if="pawnTicket.positions?.length" class="position-list">
+              <div v-for="position in pawnTicket.positions" :key="position.itemNumber" class="position-pill">
+                <strong>{{ position.itemNumber }}</strong> · {{ position.label }} · {{ position.description }}
+              </div>
+            </div>
+            <div class="inline-row">
+              <button :disabled="isDownloadingTicket" type="button" @click="openPawnTicketDocument(pawnTicket.ticketNumber, false)">
+                {{ isDownloadingTicket ? t("tenantHome.loadingTicket") : t("tenantHome.ticketPdf") }}
+              </button>
+              <button class="secondary-button" :disabled="isDownloadingTicket" type="button" @click="openPawnTicketDocument(pawnTicket.ticketNumber, true)">
+                {{ t("common.print") }}
+              </button>
+              <button class="secondary-button" :disabled="isDownloadingTicket" type="button" @click="openPawnTicketLabels(pawnTicket.ticketNumber, false)">
+                Pfandetiketten
+              </button>
+              <button class="secondary-button" :disabled="isDownloadingTicket" type="button" @click="openPawnTicketLabels(pawnTicket.ticketNumber, true)">
+                {{ t("tenantHome.printLabels") }}
+              </button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h3>{{ t("tenantHome.modulesTitle") }}</h3>
+            <p class="panel-subtitle">{{ t("tenantHome.modulesSubtitle") }}</p>
+          </div>
+        </div>
+
+        <section class="module-grid">
+          <article v-for="module in modules" :key="module.key" class="module-card">
+            <p class="eyebrow">{{ module.key }}</p>
+            <h4>{{ module.title }}</h4>
+            <p>{{ module.copy }}</p>
+          </article>
+        </section>
+      </section>
+    </section>
+  </div>
+</section>

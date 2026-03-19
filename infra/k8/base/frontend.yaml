@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  selector:
+    app: frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/example/lombardio/frontend:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: API_BASE_URL
+              value: http://identity.lombardio.local
+            - name: PLATFORM_API_BASE_URL
+              value: http://platform.lombardio.local
+            - name: ORIGINATION_API_BASE_URL
+              value: http://origination.lombardio.local
+            - name: CUSTOMER_API_BASE_URL
+              value: http://customer.lombardio.local
+            - name: PAWN_TICKET_API_BASE_URL
+              value: http://pawn-ticket.lombardio.local
+            - name: KYC_API_BASE_URL
+              value: http://kyc.lombardio.local
+            - name: AML_API_BASE_URL
+              value: http://aml.lombardio.local
+            - name: AUCTION_API_BASE_URL
+              value: http://auction.lombardio.local
+            - name: ONLINE_AUCTION_API_BASE_URL
+              value: http://online-auction.lombardio.local
+            - name: REPORTING_API_BASE_URL
+              value: http://reporting.lombardio.local
+            - name: CENTRIFUGO_WS_URL
+              value: ws://realtime.lombardio.local/connection/websocket
+          ports:
+            - containerPort: 80
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi

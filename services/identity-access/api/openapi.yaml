@@ -1,0 +1,611 @@
+openapi: 3.0.3
+info:
+  title: Lombardio Identity Access API
+  version: 0.1.0
+  description: Initial contract for authentication, users, roles, and permissions.
+servers:
+  - url: http://localhost:8081
+    description: Local development
+security:
+  - bearerAuth: []
+tags:
+  - name: Auth
+  - name: Users
+  - name: Roles
+  - name: Permissions
+paths:
+  /api/v1/auth/login:
+    post:
+      security: []
+      tags: [Auth]
+      summary: Login with email and password
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout current user
+      operationId: logout
+      responses:
+        "204":
+          description: Logged out
+  /api/v1/auth/mfa/totp/verify:
+    post:
+      security: []
+      tags: [Auth]
+      summary: Complete a pending TOTP login challenge
+      operationId: verifyTotpChallenge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyTotpChallengeRequest"
+      responses:
+        "200":
+          description: MFA verified and session issued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+  /api/v1/auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user
+      operationId: getCurrentUser
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentUserResponse"
+  /api/v1/auth/mfa/totp/enroll:
+    post:
+      tags: [Auth]
+      summary: Start TOTP enrollment for current user
+      operationId: startTotpEnrollment
+      responses:
+        "200":
+          description: TOTP enrollment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TotpEnrollmentResponse"
+  /api/v1/auth/mfa/totp/activate:
+    post:
+      tags: [Auth]
+      summary: Activate TOTP for current user
+      operationId: activateTotp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivateTotpRequest"
+      responses:
+        "200":
+          description: TOTP activated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentUserResponse"
+  /api/v1/auth/delegations:
+    post:
+      tags: [Auth]
+      summary: Create delegated support session
+      operationId: createDelegation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDelegationRequest"
+      responses:
+        "200":
+          description: Delegated session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+  /api/v1/users:
+    get:
+      tags: [Users]
+      summary: List users
+      operationId: listUsers
+      responses:
+        "200":
+          description: User collection
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      tags: [Users]
+      summary: Create user
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "200":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /api/v1/users/{id}:
+    patch:
+      tags: [Users]
+      summary: Update user
+      operationId: updateUser
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/roles:
+    get:
+      tags: [Roles]
+      summary: List roles
+      operationId: listRoles
+      responses:
+        "200":
+          description: Role collection
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Role"
+    post:
+      tags: [Roles]
+      summary: Create role
+      operationId: createRole
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRoleRequest"
+      responses:
+        "200":
+          description: Role created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Role"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /api/v1/roles/{id}:
+    patch:
+      tags: [Roles]
+      summary: Update role
+      operationId: updateRole
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRoleRequest"
+      responses:
+        "200":
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Role"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/permissions:
+    get:
+      tags: [Permissions]
+      summary: List permissions
+      operationId: listPermissions
+      responses:
+        "200":
+          description: Permission collection
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Permission"
+components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    NotFound:
+      description: Entity not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque-token
+  schemas:
+    ApiError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        tenantKey:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    LoginResponse:
+      type: object
+      required: [status, userId, actorUserId, tenantId, displayName, impersonating, permissions, mfaMethods]
+      properties:
+        status:
+          type: string
+          enum: [AUTHENTICATED, MFA_REQUIRED]
+        accessToken:
+          type: string
+          nullable: true
+        challengeId:
+          type: string
+          nullable: true
+        tokenType:
+          type: string
+          nullable: true
+        userId:
+          type: string
+        actorUserId:
+          type: string
+        tenantId:
+          type: string
+        displayName:
+          type: string
+        impersonating:
+          type: boolean
+        permissions:
+          type: array
+          items:
+            type: string
+        mfaMethods:
+          type: array
+          items:
+            type: string
+    VerifyTotpChallengeRequest:
+      type: object
+      required: [challengeId, code]
+      properties:
+        challengeId:
+          type: string
+        code:
+          type: string
+    ActivateTotpRequest:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+    TotpEnrollmentResponse:
+      type: object
+      required: [secret, otpauthUri, enabled]
+      properties:
+        secret:
+          type: string
+        otpauthUri:
+          type: string
+        enabled:
+          type: boolean
+    CreateDelegationRequest:
+      type: object
+      required: [userId]
+      properties:
+        userId:
+          type: string
+    CurrentUserResponse:
+      type: object
+      required: [id, actorUserId, tenantId, username, email, displayName, status, impersonating, mfaEnabled, mfaMethods, roles, permissions]
+      properties:
+        id:
+          type: string
+        actorUserId:
+          type: string
+        tenantId:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        displayName:
+          type: string
+        status:
+          type: string
+        impersonating:
+          type: boolean
+        mfaEnabled:
+          type: boolean
+        mfaMethods:
+          type: array
+          items:
+            type: string
+        roles:
+          type: array
+          items:
+            type: string
+        permissions:
+          type: array
+          items:
+            type: string
+    User:
+      type: object
+      required: [id, tenantId, branchIds, username, email, displayName, status, roleIds, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        tenantId:
+          type: string
+        branchIds:
+          type: array
+          items:
+            type: string
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        displayName:
+          type: string
+        status:
+          type: string
+        roleIds:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateUserRequest:
+      type: object
+      required: [username, email, initialPassword, displayName, status, roleIds]
+      properties:
+        tenantId:
+          type: string
+        branchIds:
+          type: array
+          items:
+            type: string
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        initialPassword:
+          type: string
+        displayName:
+          type: string
+        status:
+          type: string
+        roleIds:
+          type: array
+          items:
+            type: string
+    UpdateUserRequest:
+      type: object
+      required: [username, email, displayName, status, roleIds]
+      properties:
+        tenantId:
+          type: string
+        branchIds:
+          type: array
+          items:
+            type: string
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        displayName:
+          type: string
+        status:
+          type: string
+        roleIds:
+          type: array
+          items:
+            type: string
+    Role:
+      type: object
+      required: [id, tenantId, key, displayName, description, active, permissionKeys]
+      properties:
+        id:
+          type: string
+        tenantId:
+          type: string
+        key:
+          type: string
+        displayName:
+          type: string
+        description:
+          type: string
+        active:
+          type: boolean
+        permissionKeys:
+          type: array
+          items:
+            type: string
+    CreateRoleRequest:
+      type: object
+      required: [key, displayName, description, permissionKeys]
+      properties:
+        tenantId:
+          type: string
+        key:
+          type: string
+        displayName:
+          type: string
+        description:
+          type: string
+        active:
+          type: boolean
+        permissionKeys:
+          type: array
+          items:
+            type: string
+    UpdateRoleRequest:
+      allOf:
+        - $ref: "#/components/schemas/CreateRoleRequest"
+    Permission:
+      type: object
+      required: [key, displayName, description]
+      properties:
+        key:
+          type: string
+        displayName:
+          type: string
+        description:
+          type: string
+  /api/v1/tenants/{tenantId}/users:
+    get:
+      tags: [Users]
+      summary: List users for tenant
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tenant user collection
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      tags: [Users]
+      summary: Create user for tenant
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "200":
+          description: Created tenant user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /api/v1/tenants/{tenantId}/roles:
+    get:
+      tags: [Roles]
+      summary: List roles for tenant
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tenant role collection
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Role"
+    post:
+      tags: [Roles]
+      summary: Create role for tenant
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRoleRequest"
+      responses:
+        "200":
+          description: Created tenant role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Role"

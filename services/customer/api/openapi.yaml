@@ -1,0 +1,66 @@
+openapi: 3.0.3
+info:
+  title: Lombardio Customer API
+  version: 0.1.0
+paths:
+  /api/v1/tenants/{tenantId}/customers:
+    get:
+      summary: Search customers for tenant
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Customer search result
+    post:
+      summary: Create customer for tenant
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Customer created
+  /api/v1/tenants/{tenantId}/customers/{customerId}:
+    get:
+      summary: Load customer detail for tenant
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Customer detail
+    put:
+      summary: Update customer for tenant
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Customer updated

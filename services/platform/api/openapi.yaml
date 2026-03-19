@@ -1,0 +1,143 @@
+openapi: 3.0.3
+info:
+  title: Lombardio Platform API
+  version: 0.1.0
+  description: Platform-level tenant and feature management API.
+servers:
+  - url: http://localhost:8082
+    description: Local development
+tags:
+  - name: Tenants
+  - name: Features
+paths:
+  /api/v1/platform/tenants:
+    get:
+      tags: [Tenants]
+      summary: List tenants
+      responses:
+        "200":
+          description: Tenant collection
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Tenant"
+    post:
+      tags: [Tenants]
+      summary: Create tenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTenantRequest"
+      responses:
+        "200":
+          description: Tenant created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tenant"
+  /api/v1/platform/tenants/{id}:
+    patch:
+      tags: [Tenants]
+      summary: Update tenant
+      parameters:
+        - $ref: "#/components/parameters/TenantId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTenantRequest"
+      responses:
+        "200":
+          description: Tenant updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tenant"
+  /api/v1/platform/tenants/{id}/features:
+    get:
+      tags: [Features]
+      summary: List features for tenant
+      parameters:
+        - $ref: "#/components/parameters/TenantId"
+      responses:
+        "200":
+          description: Tenant features
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TenantFeature"
+  /api/v1/platform/tenants/{id}/features/{featureKey}:
+    put:
+      tags: [Features]
+      summary: Upsert tenant feature state
+      parameters:
+        - $ref: "#/components/parameters/TenantId"
+        - $ref: "#/components/parameters/FeatureKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertTenantFeatureRequest"
+      responses:
+        "200":
+          description: Tenant feature updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TenantFeature"
+components:
+  parameters:
+    TenantId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+    FeatureKey:
+      name: featureKey
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    Tenant:
+      type: object
+      required: [id, key, displayName, status, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        key: { type: string }
+        displayName: { type: string }
+        status: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CreateTenantRequest:
+      type: object
+      required: [key, displayName, status]
+      properties:
+        key: { type: string }
+        displayName: { type: string }
+        status: { type: string }
+    UpdateTenantRequest:
+      allOf:
+        - $ref: "#/components/schemas/CreateTenantRequest"
+    TenantFeature:
+      type: object
+      required: [tenantId, featureKey, enabled, updatedAt]
+      properties:
+        tenantId: { type: string }
+        featureKey: { type: string }
+        enabled: { type: boolean }
+        updatedAt: { type: string, format: date-time }
+    UpsertTenantFeatureRequest:
+      type: object
+      required: [enabled]
+      properties:
+        enabled: { type: boolean }

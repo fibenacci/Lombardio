@@ -1,0 +1,21 @@
+route:
+  receiver: default
+  group_by:
+    - alertname
+    - service
+    - severity
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - matchers:
+        - severity="critical"
+      receiver: critical-default
+    - matchers:
+        - severity="warning"
+      receiver: warning-default
+
+receivers:
+  - name: default
+  - name: warning-default
+  - name: critical-default

@@ -1,0 +1,8 @@
+<section v-if="message || normalizedFieldErrors.length" class="form-feedback" role="alert">
+  <p v-if="message" class="form-feedback__message">{{ message }}</p>
+  <ul v-if="normalizedFieldErrors.length" class="form-feedback__list">
+    <li v-for="(fieldError, index) in normalizedFieldErrors" :key="`${fieldError.field}-${index}`">
+      <strong>{{ fieldError.field }}</strong>: {{ fieldError.message }}
+    </li>
+  </ul>
+</section>

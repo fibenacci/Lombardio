@@ -1,0 +1,432 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lombardio-postgres
+    environment:
+      POSTGRES_DB: lombardio_identity
+      POSTGRES_USER: lombardio
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lombardio -d lombardio_identity"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  identity-access:
+    build:
+      context: .
+      dockerfile: services/identity-access/build/package/Dockerfile
+      target: development
+    container_name: lombardio-identity-access
+    environment:
+      IDENTITY_ACCESS_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity
+      IDENTITY_ACCESS_DB_USERNAME: lombardio
+      IDENTITY_ACCESS_DB_PASSWORD: ${IDENTITY_ACCESS_DB_PASSWORD}
+      IDENTITY_SECURITY_ENCRYPTION_KEY: ${IDENTITY_SECURITY_ENCRYPTION_KEY}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
+      APP_CORS_ALLOWED_METHODS: ${APP_CORS_ALLOWED_METHODS}
+      APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
+      APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
+      APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./services/identity-access:/workspace
+      - maven-cache:/root/.m2
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  platform:
+    build:
+      context: .
+      dockerfile: services/platform/build/package/Dockerfile
+      target: development
+    container_name: lombardio-platform
+    environment:
+      PLATFORM_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=platform
+      PLATFORM_DB_USERNAME: lombardio
+      PLATFORM_DB_PASSWORD: ${PLATFORM_DB_PASSWORD}
+      IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
+      APP_CORS_ALLOWED_METHODS: ${APP_CORS_ALLOWED_METHODS}
+      APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
+      APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
+      APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./services/platform:/workspace
+      - maven-cache:/root/.m2
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  loan-origination:
+    build:
+      context: .
+      dockerfile: services/loan-origination/build/package/Dockerfile
+      target: development
+    container_name: lombardio-loan-origination
+    environment:
+      LOAN_ORIGINATION_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=loan_origination
+      LOAN_ORIGINATION_DB_USERNAME: lombardio
+      LOAN_ORIGINATION_DB_PASSWORD: ${LOAN_ORIGINATION_DB_PASSWORD}
+      IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
+      CUSTOMER_BASE_URL: http://customer:8084
+      PAWN_TICKET_BASE_URL: http://pawn-ticket:8085
+      KYC_BASE_URL: http://kyc:8086
+      AML_BASE_URL: http://aml:8088
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
+      APP_CORS_ALLOWED_METHODS: ${APP_CORS_ALLOWED_METHODS}
+      APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
+      APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
+      APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./services/loan-origination:/workspace
+      - maven-cache:/root/.m2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      customer:
+        condition: service_started
+      pawn-ticket:
+        condition: service_started
+      aml:
+        condition: service_started
+
+  customer:
+    build:
+      context: .
+      dockerfile: services/customer/build/package/Dockerfile
+      target: development
+    container_name: lombardio-customer
+    environment:
+      CUSTOMER_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=customer
+      CUSTOMER_DB_USERNAME: lombardio
+      CUSTOMER_DB_PASSWORD: ${CUSTOMER_DB_PASSWORD}
+      IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
+      KYC_BASE_URL: http://kyc:8086
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
+      APP_CORS_ALLOWED_METHODS: ${APP_CORS_ALLOWED_METHODS}
+      APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
+      APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
+      APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+    ports:
+      - "8084:8084"
+    volumes:
+      - ./services/customer:/workspace
+      - maven-cache:/root/.m2
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  pawn-ticket:
+    build:
+      context: .
+      dockerfile: services/pawn-ticket/build/package/Dockerfile
+      target: development
+    container_name: lombardio-pawn-ticket
+    environment:
+      PAWN_TICKET_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=pawn_ticket
+      PAWN_TICKET_DB_USERNAME: lombardio
+      PAWN_TICKET_DB_PASSWORD: ${PAWN_TICKET_DB_PASSWORD}
+      IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
+      APP_CORS_ALLOWED_METHODS: ${APP_CORS_ALLOWED_METHODS}
+      APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
+      APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
+      APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+    ports:
+      - "8085:8085"
+    volumes:
+      - ./services/pawn-ticket:/workspace
+      - maven-cache:/root/.m2
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  auction:
+    build:
+      context: .
+      dockerfile: services/auction/build/package/Dockerfile
+      target: development
+    container_name: lombardio-auction
+    environment:
+      AUCTION_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=auction
+      AUCTION_DB_USERNAME: lombardio
+      AUCTION_DB_PASSWORD: ${AUCTION_DB_PASSWORD}
+      IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
+      APP_CORS_ALLOWED_METHODS: ${APP_CORS_ALLOWED_METHODS}
+      APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
+      APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
+      APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./services/auction:/workspace
+      - maven-cache:/root/.m2
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  online-auction:
+    build:
+      context: .
+      dockerfile: services/online-auction/build/package/Dockerfile
+      target: development
+    container_name: lombardio-online-auction
+    environment:
+      ONLINE_AUCTION_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=online_auction
+      ONLINE_AUCTION_DB_USERNAME: lombardio
+      ONLINE_AUCTION_DB_PASSWORD: ${ONLINE_AUCTION_DB_PASSWORD}
+      IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
+      CENTRIFUGO_BASE_URL: http://centrifugo:8000
+      CENTRIFUGO_API_KEY: ${CENTRIFUGO_API_KEY}
+      CENTRIFUGO_HMAC_SECRET: ${CENTRIFUGO_HMAC_SECRET}
+      CENTRIFUGO_WS_URL: ws://localhost:8000/connection/websocket
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
+      APP_CORS_ALLOWED_METHODS: ${APP_CORS_ALLOWED_METHODS}
+      APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
+      APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
+      APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./services/online-auction:/workspace
+      - maven-cache:/root/.m2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      centrifugo:
+        condition: service_started
+
+  reporting:
+    build:
+      context: .
+      dockerfile: services/reporting/build/package/Dockerfile
+      target: development
+    container_name: lombardio-reporting
+    environment:
+      IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
+      LOAN_ORIGINATION_BASE_URL: http://loan-origination:8083
+      PAWN_TICKET_BASE_URL: http://pawn-ticket:8085
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
+      APP_CORS_ALLOWED_METHODS: ${APP_CORS_ALLOWED_METHODS}
+      APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
+      APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
+      APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+    ports:
+      - "8091:8091"
+    volumes:
+      - ./services/reporting:/workspace
+      - maven-cache:/root/.m2
+    depends_on:
+      identity-access:
+        condition: service_started
+      loan-origination:
+        condition: service_started
+      pawn-ticket:
+        condition: service_started
+
+  kyc:
+    build:
+      context: .
+      dockerfile: services/kyc/build/package/Dockerfile
+      target: development
+    container_name: lombardio-kyc
+    environment:
+      KYC_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=kyc
+      KYC_DB_USERNAME: lombardio
+      KYC_DB_PASSWORD: ${KYC_DB_PASSWORD}
+      IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
+      PLATFORM_BASE_URL: http://platform:8082
+      DOCUMENT_OCR_BASE_URL: http://document-ocr:8087
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
+      APP_CORS_ALLOWED_METHODS: ${APP_CORS_ALLOWED_METHODS}
+      APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
+      APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
+      APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./services/kyc:/workspace
+      - maven-cache:/root/.m2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      document-ocr:
+        condition: service_started
+
+  aml:
+    build:
+      context: .
+      dockerfile: services/aml/build/package/Dockerfile
+      target: development
+    container_name: lombardio-aml
+    environment:
+      AML_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=aml
+      AML_DB_USERNAME: lombardio
+      AML_DB_PASSWORD: ${AML_DB_PASSWORD}
+      IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
+      PLATFORM_BASE_URL: http://platform:8082
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
+      APP_CORS_ALLOWED_METHODS: ${APP_CORS_ALLOWED_METHODS}
+      APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS}
+      APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS}
+      APP_CORS_MAX_AGE_SECONDS: ${APP_CORS_MAX_AGE_SECONDS}
+    ports:
+      - "8088:8088"
+    volumes:
+      - ./services/aml:/workspace
+      - maven-cache:/root/.m2
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  document-ocr:
+    build:
+      context: .
+      dockerfile: services/document-ocr/build/package/Dockerfile
+      target: development
+    container_name: lombardio-document-ocr
+    working_dir: /workspace
+    environment:
+      PYTHONPATH: /workspace
+    ports:
+      - "8087:8087"
+    volumes:
+      - ./services/document-ocr:/workspace
+      - maven-cache:/root/.m2
+
+  centrifugo:
+    image: centrifugo/centrifugo:v6
+    container_name: lombardio-centrifugo
+    command: ["centrifugo", "-c", "/centrifugo/config.json"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./infra/centrifugo/config.json:/centrifugo/config.json:ro
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/app/build/package/Dockerfile
+      target: development
+    container_name: lombardio-frontend
+    environment:
+      VITE_API_BASE_URL: http://localhost:8081
+      VITE_PLATFORM_API_BASE_URL: http://localhost:8082
+      VITE_ORIGINATION_API_BASE_URL: http://localhost:8083
+      VITE_CUSTOMER_API_BASE_URL: http://localhost:8084
+      VITE_PAWN_TICKET_API_BASE_URL: http://localhost:8085
+      VITE_KYC_API_BASE_URL: http://localhost:8086
+      VITE_AML_API_BASE_URL: http://localhost:8088
+      VITE_AUCTION_API_BASE_URL: http://localhost:8089
+      VITE_ONLINE_AUCTION_API_BASE_URL: http://localhost:8090
+      VITE_REPORTING_API_BASE_URL: http://localhost:8091
+      VITE_CENTRIFUGO_WS_URL: ws://localhost:8000/connection/websocket
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/app:/workspace
+      - frontend-node-modules:/workspace/node_modules
+    depends_on:
+      identity-access:
+        condition: service_started
+      platform:
+        condition: service_started
+      loan-origination:
+        condition: service_started
+      customer:
+        condition: service_started
+      pawn-ticket:
+        condition: service_started
+      auction:
+        condition: service_started
+      online-auction:
+        condition: service_started
+      reporting:
+        condition: service_started
+      kyc:
+        condition: service_started
+      aml:
+        condition: service_started
+      centrifugo:
+        condition: service_started
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: lombardio-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infra/observability/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      identity-access:
+        condition: service_started
+      platform:
+        condition: service_started
+      customer:
+        condition: service_started
+      loan-origination:
+        condition: service_started
+      pawn-ticket:
+        condition: service_started
+      kyc:
+        condition: service_started
+      aml:
+        condition: service_started
+      auction:
+        condition: service_started
+      online-auction:
+        condition: service_started
+      reporting:
+        condition: service_started
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: lombardio-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./infra/observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infra/observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      prometheus:
+        condition: service_started
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: lombardio-alertmanager
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./infra/observability/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+
+volumes:
+  postgres-data:
+  maven-cache:
+  frontend-node-modules:
+  prometheus-data:
+  grafana-data:

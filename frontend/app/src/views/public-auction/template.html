@@ -1,0 +1,98 @@
+<section class="public-auction-view">
+  <header class="section-header">
+    <div>
+      <p class="eyebrow">Live Bidding</p>
+      <h2>{{ auction?.title ?? "Online-Auktion" }}</h2>
+    </div>
+    <p class="meta-copy">Realtime-Prototyp mit Centrifugo</p>
+  </header>
+
+  <p v-if="errorMessage" class="error-banner">{{ errorMessage }}</p>
+
+  <div class="public-auction-grid">
+    <section class="panel">
+      <h3>Bieterregistrierung</h3>
+      <label>
+        <span>Name</span>
+        <input v-model="registrationForm.displayName" type="text">
+      </label>
+      <label>
+        <span>E-Mail</span>
+        <input v-model="registrationForm.email" type="email">
+      </label>
+      <label>
+        <span>Rechtsname</span>
+        <input v-model="registrationForm.legalName" type="text">
+      </label>
+      <label>
+        <span>Geburtsdatum</span>
+        <input v-model="registrationForm.birthDate" type="date">
+      </label>
+      <label>
+        <span>IBAN</span>
+        <input v-model="registrationForm.iban" type="text">
+      </label>
+      <div class="button-row">
+        <button type="button" @click="registerBidder">Registrieren</button>
+        <button class="secondary-button" type="button" @click="enableRealtime">Realtime verbinden</button>
+      </div>
+      <div v-if="bidder" class="panel nested">
+        <strong>{{ bidder.paddleNumber }}</strong>
+        <p>{{ bidder.displayName }}</p>
+        <p class="meta-copy">Freigabe: {{ bidder.approvalStatus }}</p>
+        <p class="meta-copy">KYC: {{ bidder.kycStatus }} | Konto: {{ bidder.accountCheckStatus }}</p>
+        <p class="meta-copy">Realtime: {{ realtimeState }}</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3>Gebot abgeben</h3>
+      <label>
+        <span>Los</span>
+        <select v-model="bidForm.lotId">
+          <option v-for="lot in auction?.lots ?? []" :key="lot.id" :value="lot.id">
+            {{ lot.lotNumber }} - {{ lot.title }}
+          </option>
+        </select>
+      </label>
+      <label>
+        <span>Betrag</span>
+        <input v-model="bidForm.amount" type="number" min="0.01" step="0.01">
+      </label>
+      <p class="hint">Mindestinkrement: {{ auction?.minimumIncrement ?? "-" }}</p>
+      <p class="hint">Countdown endet: {{ auction?.countdownEndsAt ?? "-" }}</p>
+      <button type="button" :disabled="bidder?.approvalStatus !== 'APPROVED'" @click="submitBid">Gebot senden</button>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Lose</h3>
+    <table class="lot-table">
+      <thead>
+        <tr>
+          <th>Los</th>
+          <th>Titel</th>
+          <th>Aktuell</th>
+          <th>Fuehrend</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="lot in auction?.lots ?? []" :key="lot.id">
+          <td>{{ lot.lotNumber }}</td>
+          <td>{{ lot.title }}</td>
+          <td>{{ lot.currentBid }}</td>
+          <td>{{ lot.highestBidderAlias || "-" }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel">
+    <h3>Realtime-Feed</h3>
+    <ul class="realtime-feed">
+      <li v-for="(event, index) in realtimeEvents" :key="index">
+        <code>{{ event.type }}</code>
+      </li>
+    </ul>
+  </section>
+</section>

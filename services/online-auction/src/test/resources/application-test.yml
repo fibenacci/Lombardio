@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:online-auction;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+  flyway:
+    enabled: false
+
+identity-access:
+  base-url: http://identity-access.test
+
+centrifugo:
+  base-url: http://centrifugo.test
+  api-key: test
+  hmac-secret: test-secret
+  ws-url: ws://centrifugo.test/connection/websocket
+
+app:
+  cors:
+    allowed-origins: http://localhost:5173

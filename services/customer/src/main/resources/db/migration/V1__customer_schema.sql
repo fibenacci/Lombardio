@@ -1,0 +1,18 @@
+create schema if not exists customer;
+
+create table if not exists customer.customers (
+    id varchar(64) primary key,
+    tenant_id varchar(64) not null,
+    customer_number varchar(64) not null,
+    first_name varchar(120) not null,
+    last_name varchar(120) not null,
+    birth_date date not null,
+    phone varchar(64) not null,
+    street varchar(255),
+    postal_code varchar(32),
+    city varchar(120)
+);
+
+create unique index if not exists idx_customers_tenant_customer_number_unique
+    on customer.customers (tenant_id, customer_number);
+create index if not exists idx_customers_tenant_id on customer.customers (tenant_id);

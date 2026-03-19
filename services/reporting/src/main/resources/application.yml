@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: reporting-service
+
+server:
+  port: 8091
+
+identity-access:
+  base-url: ${IDENTITY_ACCESS_BASE_URL}
+
+loan-origination:
+  base-url: ${LOAN_ORIGINATION_BASE_URL}
+
+pawn-ticket:
+  base-url: ${PAWN_TICKET_BASE_URL}
+
+app:
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}
+    allowed-methods: ${APP_CORS_ALLOWED_METHODS}
+    allowed-headers: ${APP_CORS_ALLOWED_HEADERS}
+    exposed-headers: ${APP_CORS_EXPOSED_HEADERS}
+    max-age-seconds: ${APP_CORS_MAX_AGE_SECONDS}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}

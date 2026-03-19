@@ -1,0 +1,19 @@
+.form-feedback {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(162, 41, 41, 0.18);
+  border-radius: 14px;
+  background: rgba(255, 239, 239, 0.92);
+  color: #7d1f1f;
+}
+
+.form-feedback__message {
+  margin: 0;
+  font-weight: 600;
+}
+
+.form-feedback__list {
+  margin: 0;
+  padding-left: 1.2rem;
+}
