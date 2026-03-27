@@ -7,3 +7,4 @@ target/
 .env
 **/target
 GWG_*
+cloud-config.yml

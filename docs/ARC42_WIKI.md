@@ -135,193 +135,176 @@ Die Vorbereitung einer Versteigerung unterliegt strengen gesetzlichen Auflagen (
 
 ---
 
-## 7. Spezifikationen nach Pfandkategorien
+## 7. Verteilungssicht (Deployment View)
 
+Die Verteilungssicht beschreibt die technische Infrastruktur, auf der die Lombardio-Plattform betrieben wird.
+
+### 7.1 Infrastruktur-Modell
+Lombardio ist für den Betrieb in einer Cloud-nativen Umgebung optimiert:
+*   **Orchestrierung:** Kubernetes (K8s) dient als primäre Plattform für das Container-Management.
+*   **Provisionierung:** Infrastructure-as-Code (IaC) via Terraform zur Verwaltung von Cloud-Ressourcen (Namespaces, Datenbanken, Zertifikate).
+*   **Konfiguration:** Nutzung von Kustomize zur Steuerung umgebungsspezifischer Overlays (Production, Staging).
+
+### 7.2 Laufzeit-Umgebungen
+1.  **Lokale Entwicklung:** Docker Compose zur schnellen Emulation des Gesamtsystems.
+2.  **Staging/Production:** Managed Kubernetes Cluster mit automatischer Skalierung der Business-Services.
+
+### 7.3 Infrastruktur-Komponenten
+*   **API Gateway:** Traefik übernimmt das Ingress-Management, SSL-Terminierung und das Routing zu den Microservices.
+*   **Identitätsmanagement:** Keycloak läuft als zentraler IAM-Service innerhalb des Clusters.
+*   **Persistenz & Messaging:**
+    *   PostgreSQL (Stammdaten)
+    *   Redis (Caching & Session-Management)
+    *   RabbitMQ (Asynchrone Event-Bus Kommunikation)
+
+---
+
+## 8. Querschnittliche Konzepte
+
+In diesem Kapitel werden die domänenspezifischen und technischen Konzepte beschrieben, die über mehrere Bausteine hinweg relevant sind.
+
+### 8.1 Spezifikationen nach Pfandkategorien
 Unterschiedliche Kategorien von Pfandgegenständen erfordern spezifische Workflows zur Lagerung, Bewertung und Informationsaufnahme, um gesetzliche Anforderungen (§ 6, 7, 8, 10 PfandlV) und Versicherungsschutz zu gewährleisten.
 
-### 7.1 Schmuck & Uhren (Jewelry & Watches)
+#### 8.1.1 Schmuck & Uhren (Jewelry & Watches)
 *   **Gesetzliche Pflichtangaben:** Gewicht und Feingehaltsstempel (z.B. "585er Gold").
 *   **Informationsaufnahme:** Feingehalt, Brutto/Netto-Gewicht, Steinbesatz (Karat, Schliff), Werkgängigkeit (Uhren).
 *   **Wägung:** Zwingende Nutzung einer **geeichten Präzisionswaage der Eichklasse II** (Genauigkeit min. 0,01 g / 0,001 g). Die Eichung muss alle 2 Jahre erneuert werden.
 *   **Bewertung:** Tagesaktueller Börsenwert (Goldpreis-API-Integration) vs. Wiederverkaufswert.
 *   **Lagerung:** VdS-zertifizierte Tresore.
 
-### 7.2 Elektronik (Electronics)
+#### 8.1.2 Elektronik (Electronics)
 *   **Gesetzliche Pflichtangaben:** Fabrikmarke, Modell, Seriennummer oder IMEI.
 *   **Informationsaufnahme:** Optischer Zustand, Funktionstest (Akku, Display), Zubehör, Bestätigung über Factory Reset (Datenschutz).
 *   **Bewertung:** Zeitwert unter Berücksichtigung der hohen Depreziationsrate (Wertverfall).
 *   **Lagerung:** Trockene, temperierte Lagerung; Schutz vor statischer Aufladung.
 
-### 7.3 Kraftfahrzeuge (Vehicles)
+#### 8.1.3 Kraftfahrzeuge (Vehicles)
 *   **Gesetzliche Pflichtangaben:** Hersteller, Typ, Kennzeichen, VIN (Fahrgestellnr.), Motornummer, Ersatzreifen, Nutzlast.
 *   **Informationsaufnahme:** Kilometerstand, Erstzulassung, Unfallschäden, Vorhandensein von Dokumenten (Zulassungsbescheinigung I/II).
 *   **Bewertung:** Marktwertermittlung (DAT/Schwacke) abzüglich Standkosten.
 *   **Lagerung (§ 10 PfandlV):** Sicherer Standplatz, Batteriepflege, regelmäßiges Bewegen (Vermeidung von Standschäden).
 
----
-
-## 8. Compliance, Behörden & Problemkunden
-
+### 8.2 Compliance, Behörden & Problemkunden
 Der Umgang mit Hehlerware und problematischen Kunden ist rechtlich durch das BGB (§ 935), die PfandlV und das Geldwäschegesetz (GwG) streng reglementiert.
 
-### 8.1 Umgang mit Hehlerware (Stolen Goods)
+#### 8.2.1 Umgang mit Hehlerware (Stolen Goods)
 *   **Kein gutgläubiger Erwerb:** An abhandengekommenen Sachen kann kein Pfandrecht erworben werden (§ 935 BGB). Identifizierte Hehlerware muss entschädigungslos an den Eigentümer oder die Polizei herausgegeben werden.
 *   **Prävention:** Abgleich von Seriennummern (Elektronik, Fahrräder, Werkzeuge) mit polizeilichen Fahndungslisten bei der Aufnahme.
 *   **System-Vermerk:** Pfandgegenstände können im System als "POLICE_INQUIRY" oder "STOLEN_CONFIRMED" markiert werden, was die weitere Verwertung (Verlängerung/Auktion) sofort sperrt.
 
-### 8.2 Problemkunden & Blacklisting
+#### 8.2.2 Problemkunden & Blacklisting
 *   **Interne Sperrliste:** Kunden, die bereits durch Hehlerei, Betrug oder aggressives Verhalten aufgefallen sind, werden im `identity-intelligence` Service mit einem `BLOCK`-Status versehen.
 *   **Warnsignale:** Fehlendes Zubehör (Ladekabel bei Handys), fehlende Eigentumsnachweise bei hochwertigen Gütern oder widersprüchliche Angaben zur Herkunft.
 *   **Geldwäscheprävention (AML):** Erstellung von Verdachtsmeldungen bei ungewöhnlichen Transaktionsmustern über die goAML-Schnittstelle der FIU.
 
-### 8.3 Zusammenarbeit mit Behörden
+#### 8.2.3 Zusammenarbeit mit Behörden
 *   **Auskunftspflicht:** Gemäß PfandlV müssen die Geschäftsbücher (in Lombardio die digitalen Audit-Logs und Pfandregister) den Behörden auf Verlangen zur Einsicht vorgelegt werden.
 *   **Sicherstellung:** Das System dokumentiert behördliche Beschlagnahmungen lückenlos, um zivilrechtliche Rückforderungsansprüche gegen den Verpfänder vorzubereiten.
 *   **Tipping-Off Verbot:** Bei laufenden Geldwäsche-Verdachtsmeldungen darf der Kunde gemäß GwG nicht über die Meldung informiert werden. Das System muss entsprechende Statusanzeigen für den Kunden (Portal) unterdrücken.
 
-### 8.4 Plattform-Administration & Mehrmandantenfähigkeit
-
+### 8.3 Plattform-Administration & Mehrmandantenfähigkeit
 Lombardio ist als Multi-Tenant-Plattform konzipiert. Die Verwaltung der Mandanten erfolgt über eine dedizierte Plattform-Administrations-Sicht, die dem Betreiber volle Kontrolle über das Ökosystem gibt.
 
-#### 8.4.1 Mandanten-Provisionierung (Tenant Provisioning)
+#### 8.3.1 Mandanten-Provisionierung (Tenant Provisioning)
 Der Plattform-Administrator ist verantwortlich für das Onboarding neuer Unternehmen:
 *   **Tenant-Lifecycle:** Erstellung, Sperrung (Deaktivierung) und Archivierung von Mandanten.
 *   **Key-Verwaltung:** Vergabe eindeutiger technischer Identifier, die für die Tenant-Isolation auf Datenbank-Ebene genutzt werden.
 *   **Jurisdiction-Zuordnung:** Festlegung des rechtlichen Rahmens (z. B. DE, AT, FR), unter dem der Mandant operiert.
 
-#### 8.4.2 Feature-Management & Lizenzierung
+#### 8.3.2 Feature-Management & Lizenzierung
 Lombardio folgt einem modularen Ansatz. Der Plattform-Admin steuert den Funktionsumfang pro Mandant:
 *   **Modul-Aktivierung:** Gezieltes Freischalten von Features wie `aml-compliance`, `online-auctions` oder `buy-in-service`.
 *   **Kontingente:** (Geplant) Verwaltung von Limits (z. B. Anzahl der Mitarbeiter oder maximales Pfand-Volumen).
 *   **Infrastructure-as-a-Service:** Automatische Bereitstellung der notwendigen Ressourcen (z. B. Keycloak-Gruppen) bei der Erstellung eines Mandanten.
 
-### 8.4.3 Globales Monitoring & Support
+#### 8.3.3 Globales Monitoring & Support
 Für den operativen Betrieb der Plattform stehen zentrale Werkzeuge zur Verfügung:
 *   **Mandanten-Dashboards:** Übersicht über die Aktivität und den Status aller angebundenen Unternehmen.
 *   **Audit-Log-Einsicht:** Revisionssichere Einsicht in Systemereignisse zur Fehleranalyse und Einhaltung von Service Level Agreements (SLAs).
 *   **Support-Zugang:** (Optional) Möglichkeit für Plattform-Admins, Mandanten bei technischen Problemen durch Impersonation oder spezifische Support-Rollen zu unterstützen (unter Wahrung strenger Datenschutzvorgaben).
 
----
-
-## 9. Intelligente Rechtsautomatisierung (Legal Automation)
-
+### 8.4 Intelligente Rechtsautomatisierung (Legal Automation)
 Lombardio nutzt Software-Logik, um die Einhaltung komplexer Fristen und Gebührenstrukturen der Pfandleiherverordnung (PfandlV) sicherzustellen.
 
-### 9.1 Automatisierte Gebührenkontrolle (§ 10 PfandlV)
+#### 8.4.1 Automatisierte Gebührenkontrolle (§ 10 PfandlV)
 *   **Zinsdeckelung:** Das System erzwingt die gesetzliche Obergrenze von **1 % pro Monat**.
 *   **Gebührenstaffelung:** Die Kostenvergütung wird automatisch basierend auf der aktuellen PfandlV-Anlage berechnet (z. B. gestaffelte Gebühren bis 300 €, freie Vereinbarkeit darüber mit Angemessenheitsprüfung).
 *   **Rundungslogik:** Korrekte Berechnung von angebrochenen Monaten gemäß den kaufmännischen Gepflogenheiten der Branche.
 
-### 9.2 Fristen- & Verwertungswächter (§ 9 PfandlV)
+#### 8.4.2 Fristen- & Verwertungswächter (§ 9 PfandlV)
 *   **Auktionsreife (Grace Period):** Automatische Markierung von Pfandscheinen, die frühestens einen Monat nach Fälligkeit versteigert werden dürfen.
 *   **Verwertungszwang:** Überwachung der 6-Monats-Frist zur Versteigerung nach Eintritt der Verwertungsberechtigung, um Haftungsrisiken für den Mandanten zu minimieren.
 *   **Karenzzeiten:** Systemseitige Sperre von Einlösungen/Verlängerungen am Tag der Auktion ("Zuschlagsschutz").
 
-### 9.3 Automatisierte Überschussverwaltung (§ 11 PfandlV)
+#### 8.4.3 Automatisierte Überschussverwaltung (§ 11 PfandlV)
 *   **Überschuss-Tracking:** Automatische Berechnung des Mehrerlöses nach Abzug von Darlehen, Zinsen und Kosten.
 *   **Abführungs-Automatik:** Überwachung der 2-Jahres-Frist (nach dem Jahr der Verwertung). Wenn der Überschuss nicht abgeholt wird, generiert das System einen Export für die **Abführung an das zuständige Finanzamt** (Fiskus).
 
-### 9.4 Revisionssicherheit & Aufbewahrung (§ 3 PfandlV)
+#### 8.4.4 Revisionssicherheit & Aufbewahrung (§ 3 PfandlV)
 *   **4-Jahres-Frist:** Sicherstellung, dass alle Buchungsbelege und Pfandregister mindestens 4 Jahre (Spezialfrist PfandlV) bzw. 10 Jahre (GoBD) im System erhalten bleiben.
 *   **Unveränderbarkeit:** Nutzung des Outbox-Patterns und eines Event-Logs, um die Unveränderbarkeit der ursprünglichen Buchungen nachzuweisen.
 
----
-
-## 10. Zukünftige Automatisierungspotenziale & Erweiterte Compliance
-
+### 8.5 Zukünftige Automatisierungspotenziale & Erweiterte Compliance
 Um den Pfandleiher operativ weiter zu entlasten und die Rechtssicherheit zu erhöhen, sind folgende Erweiterungen vorgesehen:
 
-### 10.1 Versorgungs- & Versicherungsmeldewesen (§ 8 PfandlV)
+#### 8.5.1 Versorgungs- & Versicherungsmeldewesen (§ 8 PfandlV)
 *   **Bestandsmeldung:** Automatisierte monatliche Erstellung der Summenmeldung für die Versicherung. Das System aggregiert die aktuelle Beleihungssumme und prüft, ob die Versicherungssumme (mind. 200 % des Darlehens) noch ausreichend ist.
 *   **Risiko-Alerting:** Warnung bei Überschreiten von Tresor-Limits oder Versicherungsklassen pro Warengruppe.
 
-### 10.2 Digitales Mahnwesen & Kundenbindung
+#### 8.5.2 Digitales Mahnwesen & Kundenbindung
 *   **Ablauf-Erinnerung:** Automatisierter Versand von SMS oder E-Mails 14 Tage vor Ablauf der Verwertungsfrist. Dies reduziert die Verfallsquote und erhöht die Kundenzufriedenheit.
 *   **Digitaler Pfandschein (Hybrid):** Während der Papierschein (Inhaberpapier) physisch ausgehändigt wird (§ 6 PfandlV), stellt das System parallel eine digitale Version im Kundenportal bereit, inkl. Push-Benachrichtigungen bei Statusänderungen.
 
-### 10.3 Mobile Inventur & Lageroptimierung
+#### 8.5.3 Mobile Inventur & Lageroptimierung
 *   **Barcode-Audit:** Unterstützung mobiler Endgeräte zur schnellen Durchführung der jährlichen oder stichprobenartigen Inventur durch Scannen der Pfandetiketten.
 *   **Lagerplatz-Zuweisung:** Intelligente Vorschläge für Lagerorte basierend auf Kategorie (Tresor vs. Regal vs. Kfz-Stellplatz) und Wert.
 
-### 10.4 Automatisierte Wertermittlung (Valuation Assistant)
+#### 8.5.4 Automatisierte Wertermittlung (Valuation Assistant)
 *   **Echtzeit-Kurse:** Integration von APIs für Edelmetallpreise (Gold, Silber, Platin) zur automatischen Berechnung des Materialwerts.
 *   **Marktwert-Crawler:** (Geplant) Anbindung an Marktplatz-Daten (z. B. eBay-verkauft-Listen) für eine präzisere Zeitwertermittlung bei Elektronik und Uhren.
 
-### 10.5 DSGVO-Konforme Datenlöschung
+#### 8.5.5 DSGVO-Konforme Datenlöschung
 *   **Retention Management:** Automatisierte Anonymisierung von Kundendaten nach Ablauf aller gesetzlichen Aufbewahrungsfristen (PfandlV: 4 Jahre / GoBD: 10 Jahre), um der DSGVO ohne manuellen Aufwand gerecht zu werden.
 
----
-
-## 11. Dynamische Policy- & Compliance-Engine (Multi-Jurisdiction)
-
+### 8.6 Dynamische Policy- & Compliance-Engine (Multi-Jurisdiction)
 Um die Expansion in verschiedene europäische Märkte zu ermöglichen und die neue EU-Verbraucherkreditrichtlinie (CCD II) abzubilden, implementiert Lombardio eine dynamische Policy-Engine.
 
-### 11.1 Konzept der Rechtshoheit (Jurisdiction)
+#### 8.6.1 Konzept der Rechtshoheit (Jurisdiction)
 Jeder Mandant wird einer spezifischen **Jurisdiction** (z.B. `DE`, `AT`, `FR`) zugeordnet. Diese Zuordnung steuert, welche gesetzlichen Regelwerke für die Kreditberechnung, Fristen und Compliance-Prüfungen herangezogen werden.
 
-### 11.2 Policy-as-Code & Rule Engine
-Statt länderspezifische Logik im Code zu hardcoden, werden Regeln externalisiert:
-*   **Hierarchische Auflösung:** Globale Standards können durch Länder-Regeln und spezifische Mandanten-Anforderungen überschrieben werden.
-*   **Dynamische Parameter:** Zinsdeckel, Gebührenstaffeln, Kündigungsfristen und AML-Schwellenwerte werden als konfigurierbare Policies geladen.
-*   **Vorteil:** Schnelle Anpassung an Gesetzesänderungen (z.B. neue PfandlV-Sätze) ohne Software-Release.
+#### 8.6.2 Policy-as-Code & Rule Engine
+Regeln werden externalisiert und dynamisch geladen (Zinsdeckel, Gebührenstaffeln, etc.), was eine schnelle Anpassung an Gesetzesänderungen ohne Software-Release ermöglicht.
 
-### 11.3 Europaweite Compliance-Schnittstelle
-*   **CCD II & eIDAS 2.0:** Unterstützung für die **EU Digital Identity Wallet**. Verträge können mittels **Qualifizierter Elektronischer Signatur (QES)** rein digital und rechtssicher (gemäß eIDAS) abgeschlossen werden, was den papierlosen Pfandschein ermöglicht.
-*   **Differenzbesteuerung (Art. 311 MwSt-SystRL):** Dynamische Anpassung der Steuerberechnung (z. B. "Global Accounting" in NL vs. Einzel-Differenz in DE) und automatisierte Rechnungsstellung in der jeweiligen Landessprache.
-*   **Grenzwerte:** Dynamische Steuerung von Bargeldobergrenzen (z.B. 10.000 € EU-weit vs. 1.000 € in Frankreich/Spanien).
-*   **Widerrufsrecht:** Abbildung länderspezifischer Widerrufsfristen im Kreditvertrag.
+#### 8.6.3 Europaweite Compliance-Schnittstelle
+Unterstützung für EU Digital Identity Wallet (QES), Differenzbesteuerung gemäß Art. 311 MwSt-SystRL und länderspezifische Widerrufsfristen.
 
-### 11.4 Hardware-Anbindung & Peripherie (IoT / Edge)
-Zur Automatisierung der Filialprozesse unterstützt Lombardio die direkte Anbindung von Peripheriegeräten:
-*   **Waagen-Integration:** Direkte Übernahme von Gewichtsdaten aus geeichten Präzisionswaagen (Klasse II) via **Web Serial API**. Dies verhindert manuelle Tippfehler bei der Goldwertermittlung.
-*   **Barcode-Scanner:** Schnelle Erfassung von Pfandscheinen und Etiketten via USB-HID oder Serial.
-*   **Dokumenten-Scanner:** Automatisierte Erfassung von Ausweisdokumenten (KYC) mit optionaler OCR-Verarbeitung.
-*   **Drucker:** Unterstützung für Bondrucker (Quittungen), Etikettendrucker (Pfandetiketten) und A4-Drucker (Pfandscheine/Kataloge).
+#### 8.6.4 Hardware-Anbindung & Peripherie (IoT / Edge)
+Anbindung von geeichten Waagen (Klasse II), Scannern und Druckern zur Automatisierung der Filialprozesse.
 
-### 11.5 Cloud-TSE & KassenSichV (Compliance)
-Jeder Bargeldvorgang in der Filiale (Auszahlung, Einlösung, Verkauf, Ankauf) muss in Deutschland manipulationssicher signiert werden.
-*   **Anbindung:** Lombardio integriert eine Cloud-TSE (z. B. Fiskaly), um Transaktionen in Echtzeit zu signieren.
-*   **Belegpflicht:** Automatische Generierung von QR-Codes auf allen thermischen Quittungen und PDF-Belegen.
-*   **Prüfexport:** Bereitstellung des DSFinV-K Exports für unangekündigte Kassenprüfungen.
+#### 8.6.5 Cloud-TSE & KassenSichV (Compliance)
+Manipulationssichere Signierung aller Bargeldvorgänge via Cloud-TSE (z.B. Fiskaly) und DSFinV-K Export.
 
-### 11.6 Eigenständiger Ankauf-Service (Buy-In Service)
-Um die Plattform für Juweliere und den allgemeinen An- und Verkauf (ohne Pfandkontext) zu öffnen, wird ein modularer Service implementiert:
-*   **Rechtssichere Dokumentation (§ 38 GewO):** Erfassung von Ausweisdaten, detaillierten Warenbeschreibungen und Herkunftsnachweisen für überwachungsbedürftige Güter.
-*   **Differenzbesteuerung (§ 25a UStG):** Automatische Berechnung der Umsatzsteuer auf die Marge. Erstellung von Einkaufsbelegen und Verkaufsrechnungen ohne Steuerausweis, aber mit gesetzlichem Hinweistext.
-*   **Modularität:** Der Service kann unabhängig vom `pawn-ticket` Service genutzt werden, teilt sich aber die `identity-intelligence` (KYC/AML) und die `hardware-anbindung` (Waagen).
+#### 8.6.6 Eigenständiger Ankauf-Service (Buy-In Service)
+Modularer Service für den allgemeinen An- und Verkauf mit rechtssicherer Dokumentation (§ 38 GewO) und Differenzbesteuerung.
 
-### 11.7 KI-gestützte Wertermittlung & Bilderkennung (Computer Vision)
-Zur weiteren Prozessoptimierung integriert Lombardio KI-Modelle:
-*   **Modell-Identifikation:** Automatisierte Erkennung von Luxusuhren und Schmuckstücken mittels Foto zur Ermittlung von Referenzpreisen (z.B. via Chrono24 API).
-*   **Zustandsanalyse:** Objektive Bewertung des Erhaltungszustands durch Bildanalyse (Erkennung von Mikrokratzern oder Abnutzung).
-*   **Hehlerware-Prävention:** Echtzeit-Abgleich von Bildern und Seriennummern mit internationalen Datenbanken für gestohlene Güter (z. B. Art Loss Register).
+#### 8.6.7 KI-gestützte Wertermittlung & Bilderkennung
+Automatisierte Erkennung von Luxusgütern und Zustandsanalyse zur Wertermittlung und Hehlerware-Prävention.
 
-### 11.8 ESG & Kreislaufwirtschaft (Circular Economy)
-Lombardio macht den ökologischen Impact der Pfandleihe messbar:
-*   **CO2-Tracking:** Automatisierte Berechnung der eingesparten Ressourcen durch die Verlängerung des Produktlebenszyklus (Wiederverwendung statt Neuproduktion).
-*   **Nachhaltigkeits-Reporting:** Bereitstellung von Kennzahlen für die nicht-finanzielle Berichterstattung der Mandanten.
+#### 8.6.8 ESG & Kreislaufwirtschaft
+Messung des ökologischen Impacts durch Lebenszyklusverlängerung (Circular Economy Reporting).
 
-### 11.9 Digitale Resilienz (DORA - Digital Operational Resilience Act)
-Als Finanz-IKT-Dienstleister erfüllt Lombardio die strengen EU-Anforderungen an die Betriebsstabilität:
-*   **ICT Risk Management:** Integrierte Frameworks zur Überwachung und Meldung von IT-Vorfällen.
-*   **Resilienz-Tests:** Unterstützung von "Red Teaming" und regelmäßigen Sicherheits-Audits zur Sicherstellung der Systemverfügbarkeit.
+#### 8.6.9 Digitale Resilienz (DORA)
+Erfüllung der EU-Anforderungen an die Betriebsstabilität (ICT Risk Management, Resilienz-Tests).
 
-### 11.10 Optionales Open Banking & Bonitätsprüfung (PSD2 / CCD2)
-Obwohl Pfandkredite aufgrund der reinen Sachhaftung weitgehend von der strengen Bonitätsprüfungspflicht der CCD2 ausgenommen sind, bietet Lombardio ein optionales Modul für Spezialfälle:
-*   **Anwendungsbereich:** Hochwert-Transaktionen (z. B. Luxusuhren, Oldtimer), bei denen eine wirtschaftliche Plausibilitätsprüfung im Rahmen der Geldwäscheprävention (AML) oder durch Versicherungen gefordert wird.
-*   **Kontoinformationsdienste (AIS):** Lombardio kann als Account Information Service Provider (AISP) via PSD2-Schnittstelle (Open Banking) mit Zustimmung des Kunden dessen Bankdaten auslesen.
-*   **Vorbereitung auf Zusatzgeschäfte:** Ermöglicht Mandanten (z. B. Juwelieren) künftig rechtssicher Ratenkäufe oder unbesicherte Kredite anzubieten, bei denen die CCD2-Prüfpflicht voll greift.
+#### 8.6.10 Optionales Open Banking & Bonitätsprüfung (PSD2 / CCD2)
+Anbindung an Kontoinformationsdienste (AIS) für wirtschaftliche Plausibilitätsprüfungen bei hochwertigen Transaktionen.
 
+#### 8.6.11 Barrierefreiheit (European Accessibility Act - EAA)
+Konsequente Umsetzung von WCAG 2.1 Level AA für alle Kunden-Interfaces ab 2025.
 
-### 11.11 Barrierefreiheit (European Accessibility Act - EAA)
-Ab Juni 2025 müssen E-Commerce- und Banking-Portale in der EU barrierefrei sein (in DE geregelt durch das BFSG).
-*   **WCAG 2.1 Level AA:** Das optionale Customer-Portal von Lombardio wird streng nach diesen Richtlinien entwickelt (Tastaturbedienbarkeit, Screenreader-Kompatibilität, Farbkontraste).
-*   **Compliance-Zertifizierung:** Automatisiertes Testing in der CI/CD-Pipeline zur Sicherstellung und Dokumentation der Barrierefreiheit für alle Mandanten-Instanzen.
-
-### 11.12 Preisangaben & Verbraucherschutz (Omnibus-Richtlinie / PAngV)
-Für die angeschlossenen Online-Auktionen und den Verkauf über externe Kanäle:
-*   **Strengere Rabatt-Regeln:** Bei der Anzeige von Preisermäßigungen muss automatisch der niedrigste Preis der letzten 30 Tage als Referenz ausgewiesen werden.
-*   **Automatisches Tracking:** Das System trackt historische Verkaufspreise, um Verstöße gegen die Preisangabenverordnung bei Marketing-Aktionen zu verhindern.
+#### 8.6.12 Preisangaben & Verbraucherschutz (Omnibus-Richtlinie)
+Automatisches Tracking historischer Preise zur Einhaltung der PAngV bei Rabattaktionen.
 
 ---
 
@@ -353,27 +336,3 @@ Um eine konsistente Kommunikation zwischen Fachabteilung und Entwicklung zu gew�
 | **Verwertungsüberschuss (Surplus)** | Der Betrag, der bei einer Verwertung nach Abzug von Kredit, Zinsen und Kosten übrig bleibt und ggf. abgeführt werden muss. |
 | **Auktionskatalog (Auction Catalog)** | Die strukturierte Liste aller Lose einer Auktion inklusive Beschreibungen und Limitpreisen. |
 | **Bekanntmachungstext (Auction Notice)** | Der gesetzlich vorgeschriebene Text zur öffentlichen Ankündigung einer Versteigerung. |
-
----
-
-## 13. Plattform-Administration & Mehrmandantenfähigkeit
-
-Lombardio ist als Multi-Tenant-Plattform konzipiert. Die Verwaltung der Mandanten erfolgt über eine dedizierte Plattform-Administrations-Sicht, die dem Betreiber volle Kontrolle über das Ökosystem gibt.
-
-### 13.1 Mandanten-Provisionierung (Tenant Provisioning)
-Der Plattform-Administrator ist verantwortlich für das Onboarding neuer Unternehmen:
-*   **Tenant-Lifecycle:** Erstellung, Sperrung (Deaktivierung) und Archivierung von Mandanten.
-*   **Key-Verwaltung:** Vergabe eindeutiger technischer Identifier, die für die Tenant-Isolation auf Datenbank-Ebene genutzt werden.
-*   **Jurisdiction-Zuordnung:** Festlegung des rechtlichen Rahmens (z. B. DE, AT, FR), unter dem der Mandant operiert.
-
-### 13.2 Feature-Management & Lizenzierung
-Lombardio folgt einem modularen Ansatz. Der Plattform-Admin steuert den Funktionsumfang pro Mandant:
-*   **Modul-Aktivierung:** Gezieltes Freischalten von Features wie `aml-compliance`, `online-auctions` oder `buy-in-service`.
-*   **Kontingente:** (Geplant) Verwaltung von Limits (z. B. Anzahl der Mitarbeiter oder maximales Pfand-Volumen).
-*   **Infrastructure-as-a-Service:** Automatische Bereitstellung der notwendigen Ressourcen (z. B. Keycloak-Gruppen) bei der Erstellung eines Mandanten.
-
-### 13.3 Globales Monitoring & Support
-Für den operativen Betrieb der Plattform stehen zentrale Werkzeuge zur Verfügung:
-*   **Mandanten-Dashboards:** Übersicht über die Aktivität und den Status aller angebundenen Unternehmen.
-*   **Audit-Log-Einsicht:** Revisionssichere Einsicht in Systemereignisse zur Fehleranalyse und Einhaltung von Service Level Agreements (SLAs).
-*   **Support-Zugang:** (Optional) Möglichkeit für Plattform-Admins, Mandanten bei technischen Problemen durch Impersonation oder spezifische Support-Rollen zu unterstützen (unter Wahrung strenger Datenschutzvorgaben).
