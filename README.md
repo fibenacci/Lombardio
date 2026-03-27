@@ -1,325 +1,132 @@
-# Lombardio
+# 💎 Lombardio
 
-Lombardio is a modular software platform for pawnshops. It combines a tenant-aware administration core with domain services for customer data, loan origination, pawn tickets, auctions, KYC, AML, and reporting.
+**Lombardio** is a modular, high-security cloud platform specifically engineered for modern pawnshops (*Pfandleiher*). It transforms complex regulated workflows—from customer identity and pawn-ticket issuance to realtime auctions and multi-channel sales—into a seamless, auditable, and tenant-aware digital experience.
 
-## License
+---
 
-This repository is source-available under the custom terms in [LICENSE](/home/fibenacci/Dokumente/Projekte/Lombardio/LICENSE). It is not Open Source in the OSI sense. In particular, redistribution of the project, compiled artifacts, or substantial protected parts of its codebase and protected application structure is not permitted without prior written permission from the applicable rights holder.
+## ✨ Project Highlights
 
-The platform is built around four baseline requirements:
+- 🏢 **Multi-Tenant Excellence**: Hardened isolation ensures every request is strictly scoped by `tenantId`.
+- 🔐 **Security First**: Backend-enforced authorization powered by **Keycloak IAM** and **Regula** policy-as-code.
+- 🏗️ **Microservices Architecture**: A modular ecosystem of **Spring Boot (Java 21)** and **Go** services.
+- ⚖️ **Compliance & Auditability**: Every business-critical action generates an immutable audit trail for legal peace of mind.
+- 🔄 **Full Lifecycle Coverage**: Integrated handling of KYC/AML, Loan Origination, Pawn Tickets, and Realtime Auctions.
+- 🌐 **Omnichannel Ready**: Support for local POS sales and external commerce channels like **Shopware** and **eBay**.
+- 📊 **Deep Observability**: Full-stack monitoring with **Prometheus**, **Grafana**, and **Alertmanager**.
+- 🛠️ **Developer Experience**: One-command local setup with Docker Compose and a strict **TDD** culture.
 
-- tenant isolation
-- backend-enforced authorization
-- auditability of operational actions
-- explicit service boundaries
+---
 
-## At A Glance
+## 🏛️ Core Mandates
 
-- architecture: microservice-based backend plus internal admin frontend
-- backend stack: Spring Boot services and one Python OCR worker
-- frontend stack: operator-facing web application
-- local runtime: Docker Compose
-- infrastructure assets: Kubernetes, Kind, Terraform, and observability setup
+We build according to the **Lombardio Way**:
+1. **TDD (Test-Driven Development)**: Red 🔴 -> Green 🟢 -> Refactor 🔵. No feature without a verifying test.
+2. **Hexagonal Architecture**: Strict separation between core domain logic and infrastructure adapters.
+3. **KISS (Keep It Simple, Stupid)**: We favor straightforward, maintainable solutions over speculative complexity.
+4. **SOLID & Clean Code**: High cohesion, low coupling, and readable intent.
 
-## Current Product Scope
+---
 
-The main delivery priority is the secure administration core:
-
-- authentication and session handling
-- tenant management
-- feature management
-- user, role, and permission management
-- internal back-office UI
-
-Additional domain services already exist in the repository and can be developed in parallel, but the administration and security foundation remains the primary focus.
-
-## Architecture Overview
+## 🗺️ Architecture Overview
 
 ```text
                 +----------------------+
-                |   Frontend Admin UI  |
-                |   frontend/app       |
+                |   Frontend Admin UI  | (Vue.js 3 + PrimeVue)
+                |   /frontend/app      |
                 +----------+-----------+
                            |
-                           v
+                    [ Traefik Gateway ]
+                           |
      +---------------------+----------------------+
      |                Core Services               |
-     |                                            |
-     |  identity-access   platform                |
-     |  auth, users,      tenants, features       |
-     |  roles, sessions                             |
+     |  identity-access (Keycloak) | platform     |
+     |  auth, users, roles         | tenants      |
      +---------------------+----------------------+
                            |
           +----------------+------------------------------+
           |                |              |               |
           v                v              v               v
-   customer         loan-origination   pawn-ticket     reporting
-   kyc hooks        aml/kyc checks     documents       read models
-                    pawn-ticket link   cash flows
+   [ Identity ]      [ Origination ] [ Pawn Ticket ] [ Reporting ]
+   Identity Intel    Loan Case       Documents       Read Models
+   KYC / AML         Calculations    Cash Flows      Dashboards
           |
           +----------------+------------------------------+
                            |
                            v
-                    auction / online-auction
-                    local and realtime auction flows
-
-Supporting services:
-- integration
-- kyc
-- aml
-- document-ocr
-- centrifugo
-- postgres
-- prometheus / grafana / alertmanager
+              [ Auctions & Realtime ]
+              Local & Online Auction Flows
+              (Centrifugo / RabbitMQ)
 ```
 
-## Feature Overview
+---
 
-### Administration And Security
+## 🧩 Service Map
 
-#### `identity-access`
+### 🛡️ Core & Security
+- **`identity-intelligence`**: Unified domain for Identity, KYC, and AML assessment.
+- **`platform`**: Tenant lifecycle and feature-flag management.
+- **`platform-security`**: Shared security library for consistent Java service hardening.
 
-- email/password login
-- session issuance and invalidation
-- current-user lookup for downstream services
-- user management
-- role management
-- permission assignment
-- TOTP enrollment and activation support
+### 💰 Financials & Loans
+- **`pawn-ticket`**: The financial engine for issuance, settlement, and document generation.
+- **`loan-origination`**: Orchestrates the creation of new loan cases and valuation checks.
 
-#### `platform`
+### 🔨 Auctions & Sales
+- **`auction`**: Local auction management and lot settlement.
+- **`online-auction`**: Realtime bidder interaction via Centrifugo.
+- **`integration`**: Go-based worker for webhooks and external event forwarding.
 
-- tenant creation and update
-- tenant listing
-- feature management per tenant
-- platform-level tenant administration
+### 🧪 Supporting
+- **`reporting`**: Aggregated read-models for business intelligence.
+- **`document-ocr`**: Python-based worker for automated document processing.
 
-### Domain Services
+---
 
-#### `customer`
+## 🚀 Quick Start
 
-- customer create and update
-- customer search
-- customer retrieval
-- KYC integration hooks
+### 1️⃣ Prerequisites
+- **Docker & Docker Compose**
+- **Java 21 & Maven** (for local service runs)
+- **Node.js 20+** (for frontend development)
 
-#### `loan-origination`
-
-- valuation guideline listing
-- loan case creation
-- customer/KYC/AML checks during origination
-- pawn-ticket issuance integration
-
-#### `pawn-ticket`
-
-- pawn-ticket issuance
-- settlement and repayment calculations
-- cash transaction execution
-- pawn-ticket document generation
-- pawn-ticket overview endpoints
-
-#### `auction`
-
-- auction creation
-- auction announcement
-- auction opening and closing
-- bid placement
-- lot settlement
-- surplus case tracking
-
-#### `online-auction`
-
-- online auction administration
-- bidder registration
-- bidder review workflows
-- realtime session/token issuance
-- Centrifugo integration
-
-#### `kyc`
-
-- KYC status handling
-- document prefill support
-- OCR integration
-
-#### `aml`
-
-- AML assessment endpoints for downstream workflows
-- tenant-aware policy integration
-
-#### `reporting`
-
-- reporting dashboard aggregation
-- read integration with downstream services
-
-#### `integration`
-
-- consumes platform domain events from RabbitMQ
-- forwards selected events to configured webhooks
-- provides the first reusable external-integration worker
-
-#### `document-ocr`
-
-- OCR support for KYC-related flows
-
-### Frontend
-
-The frontend is an internal back-office application for operators and administrators.
-
-Current UI areas include:
-
-- login
-- tenant management
-- user and role administration
-- permission-aware navigation
-- customer, loan, pawn-ticket, auction, online-auction, and reporting views
-
-## Quick Start
-
-### Prerequisites
-
-- Docker
-- Docker Compose
-
-### Start In 5 Minutes
-
-1. Copy the example environment file:
-
+### 2️⃣ Up in 5 Minutes
 ```bash
+# 1. Setup environment
 cp .env.example .env
-```
 
-2. Fill in the required values in `.env`.
-
-   Optional demo data controls:
-
-```bash
-DEMO_DATA_ENABLED=true
-DEMO_DATA_SCALE=medium
-PLATFORM_DEMO_DATA_SCALE=
-IDENTITY_ACCESS_DEMO_DATA_SCALE=
-CUSTOMER_DEMO_DATA_SCALE=
-```
-
-`DEMO_DATA_SCALE` sets the default volume for all seeded services. Use service-specific overrides like `PLATFORM_DEMO_DATA_SCALE=large` or `CUSTOMER_DEMO_DATA_SCALE=small` when one bounded context needs more or less volume than the global default.
-
-   Optional local runtime tuning:
-
-```bash
-JAVA_CORE_TOOL_OPTIONS=
-JAVA_DEFAULT_TOOL_OPTIONS=
-JAVA_LIGHT_TOOL_OPTIONS=
-INTEGRATION_GOMAXPROCS=
-INTEGRATION_GOMEMLIMIT=
-```
-
-The compose stack ships with conservative CPU and memory limits plus JVM defaults. Override these variables only if one service needs a larger heap or different CPU parallelism locally.
-
-   Global hot reload switch:
-
-```bash
-COMPOSE_BUILD_TARGET=runtime
-```
-
-Set `COMPOSE_BUILD_TARGET=development` to run the whole stack in development targets with hot reload enabled. Set it back to `runtime` to switch all services back to packaged runtime images.
-
-3. Start the full local stack:
-
-```bash
+# 2. Fire up the stack
 docker compose up --build
 ```
 
-   `docker compose up` uses `COMPOSE_PROFILES` from `.env`. The example file enables the full dev stack by default.
+### 3️⃣ Local Access
+- 🖥️ **Frontend**: [http://localhost:5173](http://localhost:5173)
+- 🔑 **Keycloak**: [http://localhost:8080](http://localhost:8080)
+- 📈 **Grafana**: [http://localhost:3000](http://localhost:3000)
+- 🐰 **RabbitMQ**: [http://localhost:15672](http://localhost:15672)
 
-   Optional variants:
+---
 
-```bash
-./infra/scripts/dev.sh up lean
-docker compose --profile ops up --build
-docker compose --profile auction up --build
-docker compose --profile obs up --build
-docker compose --profile aux up --build
-docker compose --profile ops --profile auction up --build
-./infra/scripts/dev.sh stats
-```
+## 🛠️ Tech Stack
 
-The *frontend* container uses Vite's hot-reload server by default. To switch just the frontend back to the production Nginx image, set `FRONTEND_BUILD_TARGET=runtime` when building that service. For example:
+| Layer | Technology |
+| :--- | :--- |
+| **Backend** | Java 21 (Spring Boot 3), Go 1.22 |
+| **Frontend** | Vue.js 3, Vite, Pinia, PrimeVue |
+| **Database** | PostgreSQL 16, Redis (Cache) |
+| **Messaging** | RabbitMQ, Centrifugo (Realtime) |
+| **Infrastructure** | Traefik, Keycloak, Docker, Kubernetes, Terraform |
+| **Ops** | Prometheus, Grafana, Alertmanager |
 
-```bash
-FRONTEND_BUILD_TARGET=runtime docker compose up --no-start frontend
-docker compose start frontend
-```
+---
 
-The environment variable only affects the frontend build target, so the rest of the stack can keep its current build target unchanged.
+## 📜 License
 
-4. Open the frontend:
+This repository is **source-available**. See the [LICENSE](./LICENSE) file for custom terms. Redistribution or commercial use of protected parts is not permitted without prior written permission.
 
-```text
-http://localhost:5173
-```
+---
 
-## Local Service Endpoints
+## 📈 Status
 
-- frontend: `http://localhost:5173`
-- identity-access: `http://localhost:8081`
-- platform: `http://localhost:8082`
-- loan-origination: `http://localhost:8083`
-- customer: `http://localhost:8084`
-- pawn-ticket: `http://localhost:8085`
-- kyc: `http://localhost:8086`
-- document-ocr: `http://localhost:8087`
-- aml: `http://localhost:8088`
-- auction: `http://localhost:8089`
-- online-auction: `http://localhost:8090`
-- reporting: `http://localhost:8091`
-- integration: `http://localhost:8092`
-- rabbitmq management: `http://localhost:15672`
-- centrifugo: `http://localhost:8000`
-- prometheus: `http://localhost:9090`
-- grafana: `http://localhost:3000`
-- alertmanager: `http://localhost:9093`
+Lombardio is currently focused on the **Secure Administration Core**. While domain services for pawn and auctions are active, we are prioritizing the robustness of identity, tenant isolation, and auditability.
 
-## Repository Layout
-
-```text
-services/
-  identity-access/
-  platform/
-  customer/
-  loan-origination/
-  pawn-ticket/
-  auction/
-  online-auction/
-  integration/
-  kyc/
-  aml/
-  reporting/
-  document-ocr/
-frontend/
-  app/
-infra/
-  centrifugo/
-  k8/
-  kind/
-  observability/
-  scripts/
-  terraform/
-```
-
-## Configuration Model
-
-- local runtime secrets are not committed
-- use `.env.example` as the template for local configuration
-- Docker Compose reads runtime values from `.env`
-- Kubernetes base manifests contain placeholders and must be overridden before shared-environment use
-
-## Development Principles
-
-- keep business logic out of controllers
-- keep transport DTOs out of application services
-- prefer domain ports with infrastructure adapters
-- add tests close to the changed code
-- treat security, tenant isolation, and auditability as baseline requirements
-
-## Status
-
-The repository already contains a broad domain surface, but the main product direction is still a production-oriented administration core with strong security and clear service boundaries.
+> *Built with ❤️ for the Pawn Industry.*
