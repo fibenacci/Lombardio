@@ -1,8 +1,8 @@
 package io.lombardio.onlineauction.api;
 
 import io.lombardio.onlineauction.application.OnlineAuctionService;
-import io.lombardio.onlineauction.security.AuthenticatedOnlineAuctionUser;
-import io.lombardio.onlineauction.security.OnlineAuctionAuthorizationService;
+import io.lombardio.platform.security.AuthenticatedUser;
+import io.lombardio.onlineauction.infrastructure.security.OnlineAuctionAuthorizationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,8 +31,8 @@ public class AdminOnlineAuctionController {
 
     @GetMapping
     List<OnlineAuctionResponse> list(@PathVariable String tenantId,
-                                     @AuthenticationPrincipal AuthenticatedOnlineAuctionUser user) {
-        authorizationService.assertCanRead(user, tenantId);
+                                     @AuthenticationPrincipal AuthenticatedUser user) {
+        authorizationService.requireRead(user, tenantId);
         return onlineAuctionService.listAdminAuctions(tenantId);
     }
 
@@ -40,32 +40,32 @@ public class AdminOnlineAuctionController {
     @ResponseStatus(HttpStatus.CREATED)
     OnlineAuctionResponse create(@PathVariable String tenantId,
                                  @Valid @RequestBody CreateOnlineAuctionRequest request,
-                                 @AuthenticationPrincipal AuthenticatedOnlineAuctionUser user) {
-        authorizationService.assertCanWrite(user, tenantId);
+                                 @AuthenticationPrincipal AuthenticatedUser user) {
+        authorizationService.requireWrite(user, tenantId);
         return onlineAuctionService.createAuction(tenantId, request);
     }
 
     @PostMapping("/{auctionId}/publish")
     OnlineAuctionResponse publish(@PathVariable String tenantId,
                                   @PathVariable String auctionId,
-                                  @AuthenticationPrincipal AuthenticatedOnlineAuctionUser user) {
-        authorizationService.assertCanWrite(user, tenantId);
+                                  @AuthenticationPrincipal AuthenticatedUser user) {
+        authorizationService.requireWrite(user, tenantId);
         return onlineAuctionService.publishAuction(tenantId, auctionId);
     }
 
     @PostMapping("/{auctionId}/start")
     OnlineAuctionResponse start(@PathVariable String tenantId,
                                 @PathVariable String auctionId,
-                                @AuthenticationPrincipal AuthenticatedOnlineAuctionUser user) {
-        authorizationService.assertCanWrite(user, tenantId);
+                                @AuthenticationPrincipal AuthenticatedUser user) {
+        authorizationService.requireWrite(user, tenantId);
         return onlineAuctionService.startAuction(tenantId, auctionId);
     }
 
     @PostMapping("/{auctionId}/close")
     OnlineAuctionResponse close(@PathVariable String tenantId,
                                 @PathVariable String auctionId,
-                                @AuthenticationPrincipal AuthenticatedOnlineAuctionUser user) {
-        authorizationService.assertCanWrite(user, tenantId);
+                                @AuthenticationPrincipal AuthenticatedUser user) {
+        authorizationService.requireWrite(user, tenantId);
         return onlineAuctionService.closeAuction(tenantId, auctionId);
     }
 
@@ -74,8 +74,8 @@ public class AdminOnlineAuctionController {
                                              @PathVariable String auctionId,
                                              @PathVariable String registrationId,
                                              @Valid @RequestBody BidderReviewRequest request,
-                                             @AuthenticationPrincipal AuthenticatedOnlineAuctionUser user) {
-        authorizationService.assertCanWrite(user, tenantId);
+                                             @AuthenticationPrincipal AuthenticatedUser user) {
+        authorizationService.requireWrite(user, tenantId);
         return onlineAuctionService.reviewRegistration(tenantId, auctionId, registrationId, request);
     }
 }

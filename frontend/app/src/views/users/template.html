@@ -5,7 +5,7 @@
     icon="pi pi-users"
     :copy="
       tenantStore.selectedTenantId
-        ? `Create and maintain staff accounts for tenant ${tenantStore.selectedTenant()?.displayName ?? tenantStore.selectedTenantId}.`
+        ? `Create and maintain staff accounts for tenant ${tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId}.`
         : 'Select a tenant in the Tenants view before managing users.'
     "
   />
@@ -30,19 +30,18 @@
               <PButton
                 v-if="canManageUsers"
                 icon="pi pi-pencil"
-                label="Edit"
                 severity="secondary"
-                outlined
-                size="small"
+                variant="text"
+                rounded
                 @click="startEdit(data)"
               />
               <ConfirmAction
                 v-if="canDelegateToUser(data)"
-                icon="pi pi-external-link"
-                label="Open as user"
+                icon="pi pi-user-plus"
+                label=""
                 severity="secondary"
-                outlined
-                size="small"
+                variant="text"
+                rounded
                 header="Start delegated session"
                 :message="`You are about to enter the application as ${data.displayName || data.username}.`"
                 confirmLabel="Start session"

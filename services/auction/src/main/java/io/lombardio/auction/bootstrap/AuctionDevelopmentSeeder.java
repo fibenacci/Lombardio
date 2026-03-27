@@ -1,5 +1,6 @@
-package io.lombardio.auction.demo;
+package io.lombardio.auction.bootstrap;
 
+import io.lombardio.auction.demo.DemoDataProperties;
 import io.lombardio.auction.domain.model.Auction;
 import io.lombardio.auction.domain.model.AuctionLot;
 import io.lombardio.auction.domain.model.AuctionLotStatus;
@@ -14,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-class ScenarioDataSeeder {
+public class AuctionDevelopmentSeeder {
 
     private record DemoTenant(String id, String key, String numberPrefix, String city) {
     }
@@ -30,12 +31,12 @@ class ScenarioDataSeeder {
     private final AuctionRepository auctionRepository;
     private final DemoDataProperties demoDataProperties;
 
-    ScenarioDataSeeder(AuctionRepository auctionRepository, DemoDataProperties demoDataProperties) {
+    AuctionDevelopmentSeeder(AuctionRepository auctionRepository, DemoDataProperties demoDataProperties) {
         this.auctionRepository = auctionRepository;
         this.demoDataProperties = demoDataProperties;
     }
 
-    void seed() {
+    public void seed() {
         int tenantCount = tenantCount(demoDataProperties.effectiveScale());
         int auctionsPerTenant = auctionsPerTenant(demoDataProperties.effectiveScale());
         for (int tenantIndex = 0; tenantIndex < tenantCount; tenantIndex++) {

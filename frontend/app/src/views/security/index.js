@@ -1,5 +1,5 @@
 import { defineComponent, ref } from "vue";
-import { authStore } from "../../stores/auth";
+import { useAuthStore } from "../../stores/auth";
 import { useI18n } from "../../i18n";
 import template from "./template.html?raw";
 import "./styles.scss";
@@ -7,6 +7,7 @@ import "./styles.scss";
 export default defineComponent({
   name: "SecurityView",
   setup() {
+    const authStore = useAuthStore();
     const { availableLocales, locale, setLocale, t } = useI18n();
     const enrollment = ref(null);
     const activationCode = ref("");

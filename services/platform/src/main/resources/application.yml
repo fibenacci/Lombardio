@@ -25,9 +25,6 @@ spring:
 server:
   port: 8082
 
-identity-access:
-  base-url: ${IDENTITY_ACCESS_BASE_URL}
-
 integration:
   outbox:
     access-token: ${PLATFORM_OUTBOX_ACCESS_TOKEN}
@@ -37,6 +34,11 @@ integration:
     publisher-enabled: ${INTEGRATION_RABBITMQ_PUBLISHER_ENABLED}
 
 app:
+  keycloak:
+    server-url: ${KEYCLOAK_URL:http://localhost:8080}
+    realm: ${KEYCLOAK_REALM:lombardio}
+    admin-username: ${KEYCLOAK_ADMIN_USERNAME:admin}
+    admin-password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
   cors:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}
     allowed-methods: ${APP_CORS_ALLOWED_METHODS}

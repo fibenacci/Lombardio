@@ -19,3 +19,7 @@ export function fetchTenantFeatures(tenantId, token) {
 export function upsertTenantFeature(tenantId, featureKey, payload, token) {
   return platformPut(`/api/v1/platform/tenants/${tenantId}/features/${featureKey}`, payload, token);
 }
+
+export function createTenantUser(tenantId, payload, token) {
+  return platformPost(`/api/v1/platform/tenants/${tenantId}/users`, payload, token);
+}

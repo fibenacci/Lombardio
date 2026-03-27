@@ -2,6 +2,8 @@ package io.lombardio.pawnticket.api.http;
 
 import io.lombardio.pawnticket.application.service.PawnTicketPolicyService;
 import io.lombardio.pawnticket.domain.model.PawnTicket;
+import io.lombardio.platform.security.AuthenticatedUser;
+import io.lombardio.pawnticket.infrastructure.security.PawnTicketAuthorizationService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,11 +17,11 @@ import java.util.List;
 public class PawnTicketOverviewController {
 
     private final PawnTicketPolicyService pawnTicketPolicyService;
-    private final io.lombardio.pawnticket.infrastructure.security.PawnTicketAuthorizationService authorizationService;
+    private final PawnTicketAuthorizationService authorizationService;
 
     public PawnTicketOverviewController(
             PawnTicketPolicyService pawnTicketPolicyService,
-            io.lombardio.pawnticket.infrastructure.security.PawnTicketAuthorizationService authorizationService
+            PawnTicketAuthorizationService authorizationService
     ) {
         this.pawnTicketPolicyService = pawnTicketPolicyService;
         this.authorizationService = authorizationService;
@@ -27,7 +29,7 @@ public class PawnTicketOverviewController {
 
     @GetMapping
     public List<PawnTicketOverviewResponse> listTickets(
-            @AuthenticationPrincipal io.lombardio.pawnticket.infrastructure.security.AuthenticatedPawnTicketUser principal,
+            @AuthenticationPrincipal AuthenticatedUser principal,
             @PathVariable String tenantId
     ) {
         authorizationService.requireTicketRead(principal, tenantId);

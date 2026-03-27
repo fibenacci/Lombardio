@@ -1,7 +1,7 @@
 package io.lombardio.loanorigination.infrastructure.http;
 
 import io.lombardio.loanorigination.domain.port.AmlDirectory;
-import io.lombardio.loanorigination.infrastructure.security.RequestAuthorizationTokenResolver;
+import io.lombardio.platform.security.AuthenticatedUser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -14,15 +14,12 @@ import java.math.BigDecimal;
 public class HttpAmlDirectory implements AmlDirectory {
 
     private final RestClient restClient;
-    private final RequestAuthorizationTokenResolver tokenResolver;
 
     public HttpAmlDirectory(
             RestClient.Builder restClientBuilder,
-            @Value("${aml.base-url:http://localhost:8088}") String amlBaseUrl,
-            RequestAuthorizationTokenResolver tokenResolver
+            @Value("${identity.base-url:http://localhost:8084}") String amlBaseUrl
     ) {
         this.restClient = restClientBuilder.baseUrl(amlBaseUrl).build();
-        this.tokenResolver = tokenResolver;
     }
 
     @Override
@@ -30,7 +27,7 @@ public class HttpAmlDirectory implements AmlDirectory {
         try {
             RestClient.RequestBodySpec request = restClient.post()
                     .uri("/api/v1/tenants/{tenantId}/customers/{customerId}/aml/origination-check", tenantId, customerId);
-            tokenResolver.resolveBearerToken()
+            AuthenticatedUser.currentAccessToken()
                     .ifPresent(token -> request.header(HttpHeaders.AUTHORIZATION, "Bearer " + token));
 
             AmlAssessmentRecord response = request

@@ -5,9 +5,6 @@ spring:
 server:
   port: 8091
 
-identity-access:
-  base-url: ${IDENTITY_ACCESS_BASE_URL}
-
 loan-origination:
   base-url: ${LOAN_ORIGINATION_BASE_URL}
 

@@ -5,7 +5,7 @@ import io.lombardio.loanorigination.domain.model.LoanPosition;
 import io.lombardio.loanorigination.domain.model.PawnTicket;
 import io.lombardio.loanorigination.domain.model.PawnTicketPosition;
 import io.lombardio.loanorigination.domain.port.PawnTicketIssuer;
-import io.lombardio.loanorigination.infrastructure.security.RequestAuthorizationTokenResolver;
+import io.lombardio.platform.security.AuthenticatedUser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -19,15 +19,12 @@ import java.util.List;
 public class HttpPawnTicketIssuer implements PawnTicketIssuer {
 
     private final RestClient restClient;
-    private final RequestAuthorizationTokenResolver tokenResolver;
 
     public HttpPawnTicketIssuer(
             RestClient.Builder restClientBuilder,
-            @Value("${pawn-ticket.base-url:http://localhost:8085}") String pawnTicketBaseUrl,
-            RequestAuthorizationTokenResolver tokenResolver
+            @Value("${pawn-ticket.base-url:http://localhost:8085}") String pawnTicketBaseUrl
     ) {
         this.restClient = restClientBuilder.baseUrl(pawnTicketBaseUrl).build();
-        this.tokenResolver = tokenResolver;
     }
 
     @Override
@@ -41,7 +38,7 @@ public class HttpPawnTicketIssuer implements PawnTicketIssuer {
         ) {
         try {
             RestClient.RequestBodySpec request = restClient.post().uri("/api/v1/pawn-tickets/issue");
-            tokenResolver.resolveBearerToken()
+            AuthenticatedUser.currentAccessToken()
                     .ifPresent(token -> request.header(HttpHeaders.AUTHORIZATION, "Bearer " + token));
             PawnTicketRecord response = request
                     .body(new IssueRequest(

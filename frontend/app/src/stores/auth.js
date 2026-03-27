@@ -1,196 +1,93 @@
-import { reactive } from "vue";
-import {
-  activateTotp,
-  createDelegation,
-  fetchCurrentUser,
-  login as loginRequest,
-  logout as logoutRequest,
-  startTotpEnrollment,
-  verifyTotpChallenge
-} from "../services/api/auth";
+import { defineStore } from "pinia";
+import { readRuntimeValue } from "../config/runtime-config";
 
-const TOKEN_STORAGE_KEY = "lombardio.auth.token";
-const BASE_TOKEN_STORAGE_KEY = "lombardio.auth.base-token";
+const KEYCLOAK_URL = readRuntimeValue("KEYCLOAK_URL", import.meta.env.VITE_KEYCLOAK_URL ?? "http://localhost:8080");
+const KEYCLOAK_REALM = readRuntimeValue("KEYCLOAK_REALM", import.meta.env.VITE_KEYCLOAK_REALM ?? "lombardio");
+const KEYCLOAK_CLIENT_ID = readRuntimeValue("KEYCLOAK_CLIENT_ID", import.meta.env.VITE_KEYCLOAK_CLIENT_ID ?? "lombardio-app");
 
-export const authStore = reactive({
-  token: "",
-  user: null,
-  ready: false,
-  pendingMfaChallengeId: "",
-  pendingMfaMethods: [],
+export const useAuthStore = defineStore("auth", {
+  state: () => ({
+    authenticated: false,
+    user: null,
+    token: null,
+    ready: false
+  }),
 
-  async initialize() {
-    const storedToken = window.localStorage.getItem(TOKEN_STORAGE_KEY);
-
-    if (!storedToken) {
-      this.ready = true;
-      return;
-    }
-
-    this.token = storedToken;
-
-    try {
-      this.user = await fetchCurrentUser(this.token);
-    } catch (error) {
-      this.clearSession();
-    } finally {
-      this.ready = true;
+  getters: {
+    isAuthenticated: (state) => state.authenticated,
+    currentUser: (state) => state.user,
+    accessToken: (state) => state.token,
+    canManagePlatform: (state) => {
+      return state.user?.permissions?.includes("platform.tenants.read") || false;
     }
   },
 
-  async login(email, password) {
-    if (!email || !password) {
-      throw new Error("Email and password are required");
-    }
-
-    const response = await loginRequest({ email, password });
-
-    if (response.status === "MFA_REQUIRED") {
-      this.pendingMfaChallengeId = response.challengeId;
-      this.pendingMfaMethods = response.mfaMethods ?? [];
-      this.token = "";
-      this.user = null;
-      window.localStorage.removeItem(TOKEN_STORAGE_KEY);
-      return response;
-    }
-
-    this.token = response.accessToken;
-    this.pendingMfaChallengeId = "";
-    this.pendingMfaMethods = [];
-    window.localStorage.setItem(TOKEN_STORAGE_KEY, this.token);
-    window.localStorage.removeItem(BASE_TOKEN_STORAGE_KEY);
-    this.user = await fetchCurrentUser(this.token);
-    return response;
-  },
-
-  async verifyTotp(code) {
-    if (!this.pendingMfaChallengeId) {
-      throw new Error("No MFA challenge pending");
-    }
-
-    const response = await verifyTotpChallenge({
-      challengeId: this.pendingMfaChallengeId,
-      code
-    });
-
-    this.token = response.accessToken;
-    this.pendingMfaChallengeId = "";
-    this.pendingMfaMethods = [];
-    window.localStorage.setItem(TOKEN_STORAGE_KEY, this.token);
-    this.user = await fetchCurrentUser(this.token);
-    return response;
-  },
-
-  async beginTotpEnrollment() {
-    if (!this.token) {
-      throw new Error("Authentication required");
-    }
-
-    return startTotpEnrollment(this.token);
-  },
-
-  async activateTotp(code) {
-    if (!this.token) {
-      throw new Error("Authentication required");
-    }
-
-    this.user = await activateTotp({ code }, this.token);
-    return this.user;
-  },
-
-  async startDelegation(userId) {
-    if (!this.token) {
-      throw new Error("Authentication required");
-    }
-
-    const response = await createDelegation(userId, this.token);
-
-    if (!window.localStorage.getItem(BASE_TOKEN_STORAGE_KEY)) {
-      window.localStorage.setItem(BASE_TOKEN_STORAGE_KEY, this.token);
-    }
-
-    this.token = response.accessToken;
-    window.localStorage.setItem(TOKEN_STORAGE_KEY, this.token);
-    this.user = await fetchCurrentUser(this.token);
-    return this.user;
-  },
-
-  async endDelegation() {
-    const baseToken = window.localStorage.getItem(BASE_TOKEN_STORAGE_KEY);
-
-    if (!baseToken) {
-      return null;
-    }
-
-    this.token = baseToken;
-    window.localStorage.setItem(TOKEN_STORAGE_KEY, baseToken);
-    window.localStorage.removeItem(BASE_TOKEN_STORAGE_KEY);
-    this.user = await fetchCurrentUser(this.token);
-    return this.user;
-  },
-
-  async refreshUser() {
-    if (!this.token) {
-      this.user = null;
-      return null;
-    }
-
-    this.user = await fetchCurrentUser(this.token);
-    return this.user;
-  },
-
-  async logout() {
-    if (this.token) {
-      try {
-        await logoutRequest(this.token);
-      } catch (error) {
-        // Always clear client state even if the backend call fails.
+  actions: {
+    async initialize() {
+      const savedToken = localStorage.getItem("lombardio_token");
+      const savedUser = localStorage.getItem("lombardio_user");
+      
+      if (savedToken && savedUser) {
+        try {
+          this.token = savedToken;
+          this.user = JSON.parse(savedUser);
+          this.authenticated = true;
+        } catch (e) {
+          this.clearSession();
+        }
       }
+      this.ready = true;
+    },
+
+    async login(username, password) {
+      const params = new URLSearchParams();
+      params.append("client_id", KEYCLOAK_CLIENT_ID);
+      params.append("grant_type", "password");
+      params.append("username", username);
+      params.append("password", password);
+
+      try {
+        const response = await fetch(`${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: params
+        });
+
+        if (!response.ok) throw new Error("Invalid credentials");
+
+        const data = await response.json();
+        this.token = data.access_token;
+        this.authenticated = true;
+
+        // Extract user info from JWT payload
+        const payload = JSON.parse(atob(this.token.split(".")[1]));
+        this.user = {
+          id: payload.sub,
+          username: payload.preferred_username,
+          email: payload.email,
+          displayName: payload.name || payload.preferred_username,
+          tenantId: payload.tenantId || "tenant-default", // Fallback if not in token
+          permissions: payload.realm_access?.roles || []
+        };
+
+        localStorage.setItem("lombardio_token", this.token);
+        localStorage.setItem("lombardio_user", JSON.stringify(this.user));
+      } catch (error) {
+        this.clearSession();
+        throw error;
+      }
+    },
+
+    async logout() {
+      this.clearSession();
+    },
+
+    clearSession() {
+      this.authenticated = false;
+      this.user = null;
+      this.token = null;
+      localStorage.removeItem("lombardio_token");
+      localStorage.removeItem("lombardio_user");
     }
-
-    this.clearSession();
-  },
-
-  clearSession() {
-    this.token = "";
-    this.user = null;
-    this.pendingMfaChallengeId = "";
-    this.pendingMfaMethods = [];
-    window.localStorage.removeItem(TOKEN_STORAGE_KEY);
-    window.localStorage.removeItem(BASE_TOKEN_STORAGE_KEY);
-  },
-
-  resetForTests() {
-    this.token = "";
-    this.user = null;
-    this.ready = false;
-    this.pendingMfaChallengeId = "";
-    this.pendingMfaMethods = [];
-    window.localStorage.removeItem(TOKEN_STORAGE_KEY);
-    window.localStorage.removeItem(BASE_TOKEN_STORAGE_KEY);
-  },
-
-  hasPermission(permission) {
-    return this.user?.permissions?.includes(permission) ?? false;
-  },
-
-  canManagePlatform() {
-    return this.hasPermission("platform.tenants.read");
-  },
-
-  canImpersonate() {
-    return this.hasPermission("sessions.impersonate.platform") || this.hasPermission("sessions.impersonate.tenant");
-  },
-
-  isImpersonating() {
-    return Boolean(this.user?.impersonating);
-  },
-
-  isAuthenticated() {
-    return Boolean(this.token && this.user);
-  },
-  
-  hasPendingMfa() {
-    return Boolean(this.pendingMfaChallengeId);
   }
 });

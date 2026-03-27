@@ -58,6 +58,12 @@ public final class InMemoryPorts {
         }
 
         @Override
+        public KycProjection getStatus(String tenantId, String customerId) {
+            boolean approved = isApproved(tenantId, customerId);
+            return new KycProjection(approved ? "APPROVED" : "NOT_STARTED", approved, approved ? "PERSONALAUSWEIS" : null);
+        }
+
+        @Override
         public boolean isApproved(String tenantId, String customerId) {
             return approvals.getOrDefault(tenantId + ":" + customerId, false);
         }

@@ -1,6 +1,19 @@
 package io.lombardio.loanorigination.domain.port;
 
-public interface KycDirectory {
+import java.util.Optional;
 
-    boolean isApproved(String tenantId, String customerId);
+@FunctionalInterface
+public interface KycDirectory {
+    KycProjection getStatus(String tenantId, String customerId);
+
+    default KycProjection getStatus(String tenantId, String customerId, Optional<String> accessToken) {
+        return getStatus(tenantId, customerId);
+    }
+
+    default boolean isApproved(String tenantId, String customerId) {
+        return getStatus(tenantId, customerId).approved();
+    }
+
+    record KycProjection(String status, boolean approved, String documentType) {
+    }
 }

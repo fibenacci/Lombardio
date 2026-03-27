@@ -1,4 +1,4 @@
-package io.lombardio.pawnticket.api.http;
+package io.lombardio.pawnticket.api.http.error;
 
 import java.util.List;
 

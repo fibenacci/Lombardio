@@ -5,7 +5,7 @@
     icon="pi pi-id-card"
     :copy="
       tenantStore.selectedTenantId
-        ? `Define role templates for tenant ${tenantStore.selectedTenant()?.displayName ?? tenantStore.selectedTenantId}.`
+        ? `Define role templates for tenant ${tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId}.`
         : 'Select a tenant in the Tenants view before managing roles.'
     "
   />
@@ -23,14 +23,19 @@
             <StatusTag :value="data.active ? 'ACTIVE' : 'INACTIVE'" />
           </template>
         </PColumn>
+        <PColumn v-if="canManageRoles" header="Actions">
+          <template #body="{ data }">
+            <PButton icon="pi pi-pencil" severity="secondary" variant="text" rounded @click="edit(data)" />
+          </template>
+        </PColumn>
       </AppDataTable>
     </AdminPanel>
 
-    <AdminPanel v-if="canManageRoles" title="Create Role" subtitle="Backed by live permission definitions from the API.">
+    <AdminPanel v-if="canManageRoles" :title="isEditing ? 'Update Role' : 'Create Role'" subtitle="Backed by live permission definitions from the API.">
       <FormShell :errorMessage="errorMessage" :successMessage="successMessage" @submit="submit">
           <label>
             <span>Key</span>
-            <PInputText v-model="form.key" type="text" />
+            <PInputText v-model="form.key" type="text" :disabled="isEditing" />
           </label>
 
           <label>
@@ -64,7 +69,8 @@
           </label>
 
         <template #actions>
-          <PButton :disabled="!tenantStore.selectedTenantId" label="Create role" icon="pi pi-plus" type="submit" />
+          <PButton v-if="isEditing" label="Cancel" severity="secondary" variant="text" @click="cancelEdit" />
+          <PButton :disabled="!tenantStore.selectedTenantId" :label="isEditing ? 'Update role' : 'Create role'" :icon="isEditing ? 'pi pi-check' : 'pi pi-plus'" type="submit" />
         </template>
       </FormShell>
     </AdminPanel>

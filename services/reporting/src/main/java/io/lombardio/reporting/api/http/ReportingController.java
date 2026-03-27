@@ -1,7 +1,7 @@
 package io.lombardio.reporting.api.http;
 
 import io.lombardio.reporting.application.service.ReportingService;
-import io.lombardio.reporting.infrastructure.security.AuthenticatedReportingUser;
+import io.lombardio.platform.security.AuthenticatedUser;
 import io.lombardio.reporting.infrastructure.security.ReportingAuthorizationService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -35,7 +35,7 @@ public class ReportingController {
 
     @GetMapping("/reporting/dashboard")
     public ReportingDashboardResponse dashboard(
-            @AuthenticationPrincipal AuthenticatedReportingUser principal,
+            @AuthenticationPrincipal AuthenticatedUser principal,
             @PathVariable String tenantId,
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
             @RequestParam(name = "rangeDays", defaultValue = "14") @Min(7) @Max(90) int rangeDays

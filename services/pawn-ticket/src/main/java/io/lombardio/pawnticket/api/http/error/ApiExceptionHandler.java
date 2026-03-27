@@ -1,5 +1,7 @@
-package io.lombardio.pawnticket.api.http;
+package io.lombardio.pawnticket.api.http.error;
 
+import io.lombardio.platform.security.ForbiddenException;
+import io.lombardio.platform.security.UnauthorizedException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +35,18 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiError> handleIllegalArgument(IllegalArgumentException exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ApiError("bad_request", exception.getMessage(), List.of()));
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ApiError> handleUnauthorized(UnauthorizedException exception) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ApiError("unauthorized", exception.getMessage(), List.of()));
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiError> handleForbidden(ForbiddenException exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ApiError("forbidden", exception.getMessage(), List.of()));
     }
 
     private ApiFieldError mapFieldError(FieldError error) {

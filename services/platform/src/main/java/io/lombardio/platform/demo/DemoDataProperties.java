@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "demo.data")
 public class DemoDataProperties {
 
-    private boolean enabled = true;
+    private boolean enabled = false; // Default to false
     private String scale = "medium";
     private String serviceScale;
 

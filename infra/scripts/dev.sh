@@ -4,6 +4,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 COMPOSE_FILE="${ROOT}/compose.yaml"
+DEBUG_FILE="${ROOT}/docker-compose.debug.yml"
 CMD="${1:-up}"
 shift || true
 PROFILES=("$@")
@@ -37,7 +38,7 @@ else
 fi
 
 case "${CMD}" in
-  up)
+  up|debug)
     if [ "${#PROFILES[@]}" -eq 0 ]; then
       info "Starting full local stack"
     elif [ "${compose_env[0]}" = "COMPOSE_PROFILES=" ]; then
@@ -45,17 +46,36 @@ case "${CMD}" in
     else
       info "Starting local stack with profiles: ${PROFILES[*]}"
     fi
-    env "${compose_env[@]}" docker compose "${compose_args[@]}" up --build -d
+    
+    if [ "${CMD}" = "debug" ]; then
+      info "DEBUG MODE ENABLED"
+      compose_args+=("-f" "${DEBUG_FILE}")
+    fi
+
+    info "Building local stack..."
+    DOCKER_BUILDKIT=1 env "${compose_env[@]}" docker compose "${compose_args[@]}" up --build -d
     info "Frontend: http://localhost:5173"
     info "Platform: http://localhost:8082"
     info "Backend:  http://localhost:8081"
+    
     active_profiles="${compose_env[0]#COMPOSE_PROFILES=}"
     if printf '%s' "${active_profiles}" | grep -Eq '(^|,)ops(,|$)'; then
       info "Origination: http://localhost:8083"
-      info "Customer: http://localhost:8084"
+      info "Identity:    http://localhost:8084"
       info "Pawn ticket: http://localhost:8085"
-      info "AML: http://localhost:8088"
     fi
+    
+    if [ "${CMD}" = "debug" ]; then
+      info "--- DEBUG PORTS ---"
+      info "Platform:              5005"
+      info "Loan Origination:      5006"
+      info "Identity Intelligence: 5007"
+      info "Pawn Ticket:           5008"
+      info "Auction:               5009"
+      info "Online Auction:        5010"
+      info "Reporting:             5011"
+    fi
+
     if printf '%s' "${active_profiles}" | grep -Eq '(^|,)obs(,|$)'; then
       info "Grafana: http://localhost:3000"
       info "Prometheus: http://localhost:9090"
@@ -89,17 +109,18 @@ case "${CMD}" in
     ;;
   *)
     cat <<'EOF'
-Usage: ./infra/scripts/dev.sh [up|down|reset|logs|stats|ps|build|restart] [profile...]
+Usage: ./infra/scripts/dev.sh [up|debug|down|reset|logs|stats|ps|build|restart] [profile...]
 
   profiles  optional: lean, ops, auction, obs, aux, or all
   up        Build and start the local stack (default: full stack)
-  down     Stop all local containers
-  reset    Stop containers and remove named volumes
-  logs     Tail compose logs
-  stats    Show one-shot container CPU and memory usage
-  ps       Show service status
-  build    Build the service images without starting them
-  restart  Rebuild and restart all services
+  debug     Start in Java Debug mode (attaches JDWP on ports 5005-5011)
+  down      Stop all local containers
+  reset     Stop containers and remove named volumes
+  logs      Tail compose logs
+  stats     Show one-shot container CPU and memory usage
+  ps        Show service status
+  build     Build the service images without starting them
+  restart   Rebuild and restart all services
 EOF
     exit 1
     ;;

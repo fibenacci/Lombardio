@@ -6,7 +6,7 @@ export default defineComponent({
   props: {
     value: {
       type: String,
-      required: true
+      default: "UNKNOWN"
     },
     activeValues: {
       type: Array,
@@ -19,11 +19,13 @@ export default defineComponent({
   },
   setup(props) {
     const severity = computed(() => {
-      if (props.activeValues.includes(props.value)) {
+      const val = props.value || "UNKNOWN";
+      
+      if (props.activeValues.includes(val)) {
         return "success";
       }
 
-      if (props.warnValues.includes(props.value)) {
+      if (props.warnValues.includes(val)) {
         return "warn";
       }
 

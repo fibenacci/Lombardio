@@ -1,6 +1,6 @@
 import { computed, defineComponent, onMounted, reactive, ref } from "vue";
-import { authStore } from "../../stores/auth";
-import { tenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import {
   closeOnlineAuction,
   createOnlineAuction,
@@ -20,6 +20,8 @@ function emptyLot() {
 export default defineComponent({
   name: "OnlineAuctionsView",
   setup() {
+    const authStore = useAuthStore();
+    const tenantStore = useTenantStore();
     const toast = useAppToast();
     const auctions = ref([]);
     const selectedAuctionId = ref("");

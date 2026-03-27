@@ -24,7 +24,7 @@
     <section class="panel">
       <div class="panel-header header">
         <div>
-          <h3>sefsefsefse{{ t("customerDetail.masterDataTitle") }}</h3>
+          <h3>{{ t("customerDetail.masterDataTitle") }}</h3>
           <p class="panel-subtitle">{{ t("customerDetail.masterDataSubtitle") }}</p>
         </div>
       </div>
@@ -204,6 +204,10 @@
           <p class="meta-label">{{ t("customerDetail.backSide") }}</p>
           <img v-if="kyc.documentBackImageDataUrl" :src="kyc.documentBackImageDataUrl" :alt="t('customerDetail.backSide')" />
           <p v-else class="placeholder-copy">{{ t("customerDetail.noDocument") }}</p>
+        </article>
+        <article class="document-card portrait-preview" v-if="kyc.portraitImageDataUrl">
+          <p class="meta-label">Portrait</p>
+          <img :src="kyc.portraitImageDataUrl" alt="Portrait" />
         </article>
       </div>
 

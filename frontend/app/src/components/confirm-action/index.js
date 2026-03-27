@@ -20,6 +20,14 @@ export default defineComponent({
       type: Boolean,
       default: false
     },
+    rounded: {
+      type: Boolean,
+      default: false
+    },
+    variant: {
+      type: String,
+      default: null
+    },
     size: {
       type: String,
       default: null

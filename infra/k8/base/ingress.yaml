@@ -2,6 +2,8 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: lombardio
+  annotations:
+    nginx.ingress.kubernetes.io/auth-response-headers: "X-User-Id, X-User-Actor-Id, X-User-Tenant-Id, X-User-Impersonating, X-User-Permissions, X-User-Email, X-User-DisplayName"
 spec:
   ingressClassName: nginx
   rules:
@@ -22,7 +24,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: identity-access
                 port:
                   number: 8081
     - host: platform.lombardio.local

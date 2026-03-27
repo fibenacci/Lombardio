@@ -378,8 +378,6 @@
     "loadingTicket": "Loading pawn ticket...",
     "ticketPdf": "Pawn ticket as PDF",
     "printLabels": "Print labels",
-    "modulesTitle": "Business modules",
-    "modulesSubtitle": "Next expansion stages around origination.",
     "messages": {
       "amlLoadFailed": "AML status could not be loaded",
       "reportingFailed": "Reporting could not be loaded"

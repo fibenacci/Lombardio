@@ -38,7 +38,6 @@ patches:
             value: wss://realtime.lombardio.example/connection/websocket
   - target:
       kind: Deployment
-      name: identity-access
     patch: |-
       - op: replace
         path: /spec/replicas
@@ -81,7 +80,6 @@ patches:
                   pathType: Prefix
                   backend:
                     service:
-                      name: identity-access
                       port:
                         number: 8081
           - host: platform.lombardio.example

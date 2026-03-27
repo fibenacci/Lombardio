@@ -1,14 +1,16 @@
 import { computed, defineComponent, onMounted, reactive, ref } from "vue";
 import { createBranch, fetchBranches } from "../../services/api/access";
 import { useAppToast } from "../../composables/use-app-toast";
-import { authStore } from "../../stores/auth";
-import { tenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import template from "./template.html?raw";
 import "./styles.scss";
 
 export default defineComponent({
   name: "BranchesView",
   setup() {
+    const authStore = useAuthStore();
+    const tenantStore = useTenantStore();
     const toast = useAppToast();
     const branches = ref([]);
     const isLoading = ref(true);

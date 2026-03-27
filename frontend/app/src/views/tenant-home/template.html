@@ -127,34 +127,17 @@
           <div v-if="!useNewCustomer" class="stack-form">
             <label>
               <span>Bestandssuche</span>
-              <div class="inline-row">
-                <PInputText
-                  v-model="customerQuery"
-                  type="text"
-                  :placeholder="t('tenantHome.customerSearchPlaceholder')"
-                  class="form-field"
-                />
-                <PButton
-                  class="secondary-button"
-                  icon="pi pi-search"
-                  :label="t('common.search')"
-                  severity="secondary"
-                  outlined
-                  type="button"
-                  @click="runCustomerSearch"
-                />
-              </div>
-            </label>
-
-            <label>
-              <span>Kunde</span>
-              <PSelect
-                v-model="selectedCustomerId"
-                :options="customerOptions"
+              <PAutoComplete
+                id="customer-search"
+                v-model="selectedCustomerOption"
+                :suggestions="customerSuggestions"
                 optionLabel="label"
-                optionValue="value"
                 class="form-field"
-                :placeholder="t('tenantHome.selectCustomerPlaceholder')"
+                :placeholder="t('tenantHome.customerSearchPlaceholder')"
+                dropdown
+                forceSelection
+                @complete="searchCustomerSuggestions"
+                @item-select="handleCustomerSelection"
               />
             </label>
 
@@ -286,6 +269,10 @@
               <span>Ausweis Rueckseite</span>
               <input accept="image/*" required type="file" @change="updateNewCustomerDocument('documentBackImageDataUrl', $event)" />
             </label>
+            <div class="full-span" v-if="newCustomerKyc.portraitImageDataUrl">
+              <p class="meta-label">Portraet (Extrahiert)</p>
+              <img :src="newCustomerKyc.portraitImageDataUrl" alt="Portrait" style="max-width: 120px; border-radius: 4px; border: 1px solid var(--border-color);" />
+            </div>
             <div v-if="documentOcrAvailable" class="full-span inline-row">
               <PButton
                 class="secondary-button"
@@ -576,6 +563,9 @@
 
         <div v-if="createdLoan" ref="issuedTicketRef" class="issued-ticket">
           <h4>Erzeugte Pfandscheine</h4>
+          <p v-if="createdLoan.customer" class="muted-copy">
+            Kunde: {{ createdLoan.customer.displayName }}<span v-if="createdLoan.customer.customerNumber"> · {{ createdLoan.customer.customerNumber }}</span>
+          </p>
           <article v-for="pawnTicket in createdLoan.pawnTickets" :key="pawnTicket.ticketNumber" class="ticket-card">
             <p class="eyebrow">{{ pawnTicket.ticketNumber }}</p>
             <p>Vertrag: {{ pawnTicket.contractNumber }}</p>
@@ -628,23 +618,6 @@
             </div>
           </article>
         </div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-header">
-          <div>
-            <h3>{{ t("tenantHome.modulesTitle") }}</h3>
-            <p class="panel-subtitle">{{ t("tenantHome.modulesSubtitle") }}</p>
-          </div>
-        </div>
-
-        <section class="module-grid">
-          <article v-for="module in modules" :key="module.key" class="module-card">
-            <p class="eyebrow">{{ module.key }}</p>
-            <h4>{{ module.title }}</h4>
-            <p>{{ module.copy }}</p>
-          </article>
-        </section>
       </section>
     </section>
   </div>

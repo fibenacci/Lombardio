@@ -1,5 +1,6 @@
-package io.lombardio.onlineauction.demo;
+package io.lombardio.onlineauction.bootstrap;
 
+import io.lombardio.onlineauction.demo.DemoDataProperties;
 import io.lombardio.onlineauction.domain.BidderApprovalStatus;
 import io.lombardio.onlineauction.domain.BidderRegistration;
 import io.lombardio.onlineauction.domain.OnlineAuction;
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-class ScenarioDataSeeder {
+public class OnlineAuctionDevelopmentSeeder {
 
     private record DemoTenant(String id, String key, String city) {
     }
@@ -32,12 +33,12 @@ class ScenarioDataSeeder {
     private final OnlineAuctionRepository onlineAuctionRepository;
     private final DemoDataProperties demoDataProperties;
 
-    ScenarioDataSeeder(OnlineAuctionRepository onlineAuctionRepository, DemoDataProperties demoDataProperties) {
+    OnlineAuctionDevelopmentSeeder(OnlineAuctionRepository onlineAuctionRepository, DemoDataProperties demoDataProperties) {
         this.onlineAuctionRepository = onlineAuctionRepository;
         this.demoDataProperties = demoDataProperties;
     }
 
-    void seed() {
+    public void seed() {
         int tenantCount = tenantCount(demoDataProperties.effectiveScale());
         int auctionsPerTenant = auctionsPerTenant(demoDataProperties.effectiveScale());
         for (int tenantIndex = 0; tenantIndex < tenantCount; tenantIndex++) {

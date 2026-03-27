@@ -5,7 +5,7 @@
     icon="pi pi-file-edit"
     :copy="
       tenantStore.selectedTenantId
-        ? t('loans.copyWithTenant', { tenant: tenantStore.selectedTenant()?.displayName ?? tenantStore.selectedTenantId })
+        ? t('loans.copyWithTenant', { tenant: tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId })
         : t('loans.copyWithoutTenant')
     "
   />

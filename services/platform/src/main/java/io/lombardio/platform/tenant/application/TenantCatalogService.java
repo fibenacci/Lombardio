@@ -2,10 +2,13 @@ package io.lombardio.platform.tenant.application;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.lombardio.platform.iam.application.KeycloakService;
 import io.lombardio.platform.integration.application.PlatformOutboxService;
 import io.lombardio.platform.tenant.api.CreateTenantRequest;
+import io.lombardio.platform.tenant.api.CreateTenantUserRequest;
 import io.lombardio.platform.tenant.api.TenantFeatureResponse;
 import io.lombardio.platform.tenant.api.TenantResponse;
+import io.lombardio.platform.tenant.api.TenantUserResponse;
 import io.lombardio.platform.tenant.api.UpdateTenantRequest;
 import io.lombardio.platform.tenant.api.UpsertTenantFeatureRequest;
 import io.lombardio.platform.tenant.domain.Tenant;
@@ -39,6 +42,7 @@ public class TenantCatalogService {
     private final TenantRepository tenantRepository;
     private final TenantFeatureRepository tenantFeatureRepository;
     private final PlatformOutboxService platformOutboxService;
+    private final KeycloakService keycloakService;
     private final ObjectMapper objectMapper;
     private final Clock clock;
 
@@ -46,12 +50,14 @@ public class TenantCatalogService {
             TenantRepository tenantRepository,
             TenantFeatureRepository tenantFeatureRepository,
             PlatformOutboxService platformOutboxService,
+            KeycloakService keycloakService,
             ObjectMapper objectMapper,
             Clock clock
     ) {
         this.tenantRepository = tenantRepository;
         this.tenantFeatureRepository = tenantFeatureRepository;
         this.platformOutboxService = platformOutboxService;
+        this.keycloakService = keycloakService;
         this.objectMapper = objectMapper;
         this.clock = clock;
     }
@@ -67,8 +73,9 @@ public class TenantCatalogService {
         });
 
         Instant now = Instant.now(clock);
+        String tenantId = "tenant-" + UUID.randomUUID();
         Tenant tenant = new Tenant(
-                "tenant-" + UUID.randomUUID(),
+                tenantId,
                 request.key(),
                 request.displayName(),
                 request.status(),
@@ -76,9 +83,27 @@ public class TenantCatalogService {
                 now
         );
 
+        // Create Keycloak group for tenant
+        keycloakService.createTenantGroup(tenantId, request.displayName());
+
         Tenant saved = tenantRepository.save(tenant);
         recordTenantEvent("platform.tenant.created", saved);
         return toTenantResponse(saved);
+    }
+
+    public TenantUserResponse createTenantUser(String tenantId, CreateTenantUserRequest request) {
+        requireTenant(tenantId);
+        String userId = keycloakService.createTenantUser(
+                tenantId,
+                request.email(),
+                request.password(),
+                request.roles()
+        );
+        return new TenantUserResponse(userId, request.email(), request.displayName(), request.roles());
+    }
+
+    public List<String> listAvailableRoles() {
+        return keycloakService.getAvailableRoles();
     }
 
     @Transactional

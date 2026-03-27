@@ -5,7 +5,6 @@ metadata:
 data:
   KYC_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=kyc
   KYC_DB_USERNAME: lombardio
-  IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
   PLATFORM_BASE_URL: http://platform:8082
   DOCUMENT_OCR_BASE_URL: http://document-ocr:8087
 apiVersion: v1

@@ -9,7 +9,7 @@ import io.lombardio.auction.application.service.SettleAuctionLotCommand;
 import io.lombardio.auction.application.service.SurplusCase;
 import io.lombardio.auction.domain.model.Auction;
 import io.lombardio.auction.domain.model.AuctionLot;
-import io.lombardio.auction.infrastructure.security.AuthenticatedAuctionUser;
+import io.lombardio.platform.security.AuthenticatedUser;
 import io.lombardio.auction.infrastructure.security.AuctionAuthorizationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -39,9 +39,9 @@ public class AuctionController {
     @GetMapping("/auctions")
     List<AuctionResponse> listAuctions(
             @PathVariable String tenantId,
-            @AuthenticationPrincipal AuthenticatedAuctionUser user
+            @AuthenticationPrincipal AuthenticatedUser user
     ) {
-        authorizationService.assertCanReadAuctions(user, tenantId);
+        authorizationService.requireRead(user, tenantId);
         return auctionService.listAuctions(tenantId).stream()
                 .map(this::toResponse)
                 .toList();
@@ -52,9 +52,9 @@ public class AuctionController {
     AuctionResponse createAuction(
             @PathVariable String tenantId,
             @Valid @RequestBody CreateAuctionRequest request,
-            @AuthenticationPrincipal AuthenticatedAuctionUser user
+            @AuthenticationPrincipal AuthenticatedUser user
     ) {
-        authorizationService.assertCanWriteAuctions(user, tenantId);
+        authorizationService.requireWrite(user, tenantId);
         return toResponse(auctionService.createAuction(tenantId, toCommand(request)));
     }
 
@@ -63,9 +63,9 @@ public class AuctionController {
             @PathVariable String tenantId,
             @PathVariable String auctionId,
             @Valid @RequestBody AuctionStatusUpdateRequest request,
-            @AuthenticationPrincipal AuthenticatedAuctionUser user
+            @AuthenticationPrincipal AuthenticatedUser user
     ) {
-        authorizationService.assertCanWriteAuctions(user, tenantId);
+        authorizationService.requireWrite(user, tenantId);
         return toResponse(auctionService.announceAuction(tenantId, auctionId, toCommand(request)));
     }
 
@@ -73,9 +73,9 @@ public class AuctionController {
     AuctionResponse openAuction(
             @PathVariable String tenantId,
             @PathVariable String auctionId,
-            @AuthenticationPrincipal AuthenticatedAuctionUser user
+            @AuthenticationPrincipal AuthenticatedUser user
     ) {
-        authorizationService.assertCanWriteAuctions(user, tenantId);
+        authorizationService.requireWrite(user, tenantId);
         return toResponse(auctionService.openAuction(tenantId, auctionId));
     }
 
@@ -83,9 +83,9 @@ public class AuctionController {
     AuctionResponse closeAuction(
             @PathVariable String tenantId,
             @PathVariable String auctionId,
-            @AuthenticationPrincipal AuthenticatedAuctionUser user
+            @AuthenticationPrincipal AuthenticatedUser user
     ) {
-        authorizationService.assertCanWriteAuctions(user, tenantId);
+        authorizationService.requireWrite(user, tenantId);
         return toResponse(auctionService.closeAuction(tenantId, auctionId));
     }
 
@@ -95,9 +95,9 @@ public class AuctionController {
             @PathVariable String auctionId,
             @PathVariable String lotId,
             @Valid @RequestBody PlaceBidRequest request,
-            @AuthenticationPrincipal AuthenticatedAuctionUser user
+            @AuthenticationPrincipal AuthenticatedUser user
     ) {
-        authorizationService.assertCanWriteAuctions(user, tenantId);
+        authorizationService.requireWrite(user, tenantId);
         return toResponse(auctionService.placeBid(tenantId, auctionId, lotId, toCommand(request)));
     }
 
@@ -107,18 +107,18 @@ public class AuctionController {
             @PathVariable String auctionId,
             @PathVariable String lotId,
             @Valid @RequestBody AuctionSettlementRequest request,
-            @AuthenticationPrincipal AuthenticatedAuctionUser user
+            @AuthenticationPrincipal AuthenticatedUser user
     ) {
-        authorizationService.assertCanWriteAuctions(user, tenantId);
+        authorizationService.requireWrite(user, tenantId);
         return toResponse(auctionService.settleLot(tenantId, auctionId, lotId, toCommand(request)));
     }
 
     @GetMapping("/surplus-cases")
     List<SurplusCaseResponse> listSurplusCases(
             @PathVariable String tenantId,
-            @AuthenticationPrincipal AuthenticatedAuctionUser user
+            @AuthenticationPrincipal AuthenticatedUser user
     ) {
-        authorizationService.assertCanReadAuctions(user, tenantId);
+        authorizationService.requireRead(user, tenantId);
         return auctionService.listSurplusCases(tenantId).stream()
                 .map(this::toResponse)
                 .toList();

@@ -1,44 +1,51 @@
-<main class="login-shell">
+<div class="login-shell">
   <PCard class="login-card">
     <template #content>
       <div class="login-head">
-        <PTag value="Lombardio" severity="contrast" rounded />
-        <p class="eyebrow">{{ t("login.eyebrow") }}</p>
-        <h1>{{ t("login.title") }}</h1>
-        <p class="intro">{{ t("login.intro") }}</p>
+        <h1>Lombardio</h1>
+        <p>{{ t('login.welcomeMessage') }}</p>
       </div>
 
-      <form class="login-form" @submit.prevent="submit">
-        <label v-if="!authStore.hasPendingMfa()">
-          <span>{{ t("login.email") }}</span>
-          <PInputText v-model="form.email" type="email" autocomplete="username" />
-        </label>
+      <div v-if="errorMessage" class="p-error-message">
+        <PMessage severity="error" :closable="false">{{ errorMessage }}</PMessage>
+      </div>
 
-        <label v-if="!authStore.hasPendingMfa()">
-          <span>{{ t("login.password") }}</span>
-          <PPassword v-model="form.password" inputClass="w-full" autocomplete="current-password" :feedback="false" toggleMask fluid />
-        </label>
+      <form @submit.prevent="submit" class="login-form">
+        <div class="form-field">
+          <label for="username">{{ t('login.username') }}</label>
+          <PInputText 
+            id="username" 
+            v-model="form.username" 
+            :placeholder="t('login.usernamePlaceholder')"
+            class="w-full"
+            required
+            :disabled="isSubmitting"
+          />
+        </div>
 
-        <label v-if="authStore.hasPendingMfa()">
-          <span>{{ t("login.authenticatorCode") }}</span>
-          <PInputText v-model="form.totpCode" type="text" inputmode="numeric" autocomplete="one-time-code" />
-        </label>
+        <div class="form-field">
+          <label for="password">{{ t('login.password') }}</label>
+          <PPassword 
+            id="password" 
+            v-model="form.password" 
+            :placeholder="t('login.passwordPlaceholder')"
+            class="w-full"
+            :feedback="false"
+            toggle-mask
+            required
+            :disabled="isSubmitting"
+          />
+        </div>
 
-        <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
-
-        <PButton
-          :disabled="isSubmitting"
-          :icon="authStore.hasPendingMfa() ? 'pi pi-shield' : 'pi pi-sign-in'"
-          :label="
-            isSubmitting
-              ? t('login.signingIn')
-              : authStore.hasPendingMfa()
-                ? t('login.verifyCode')
-                : t('login.signIn')
-          "
-          type="submit"
-        />
+        <div class="login-actions">
+          <PButton 
+            type="submit" 
+            class="w-full p-button-lg"
+            :label="isSubmitting ? t('login.isLoggingIn') : t('login.submit')"
+            :loading="isSubmitting"
+          />
+        </div>
       </form>
     </template>
   </PCard>
-</main>
+</div>

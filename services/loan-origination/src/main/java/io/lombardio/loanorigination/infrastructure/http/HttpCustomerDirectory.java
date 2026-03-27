@@ -2,7 +2,7 @@ package io.lombardio.loanorigination.infrastructure.http;
 
 import io.lombardio.loanorigination.domain.model.CustomerProfile;
 import io.lombardio.loanorigination.domain.port.CustomerDirectory;
-import io.lombardio.loanorigination.infrastructure.security.RequestAuthorizationTokenResolver;
+import io.lombardio.platform.security.AuthenticatedUser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -15,15 +15,12 @@ import java.time.LocalDate;
 public class HttpCustomerDirectory implements CustomerDirectory {
 
     private final RestClient restClient;
-    private final RequestAuthorizationTokenResolver tokenResolver;
 
     public HttpCustomerDirectory(
             RestClient.Builder restClientBuilder,
-            @Value("${customer.base-url:http://localhost:8084}") String customerBaseUrl,
-            RequestAuthorizationTokenResolver tokenResolver
+            @Value("${identity.base-url:http://localhost:8084}") String customerBaseUrl
     ) {
         this.restClient = restClientBuilder.baseUrl(customerBaseUrl).build();
-        this.tokenResolver = tokenResolver;
     }
 
     @Override
@@ -31,7 +28,7 @@ public class HttpCustomerDirectory implements CustomerDirectory {
         try {
             RestClient.RequestHeadersSpec<?> request = restClient.get()
                     .uri("/api/v1/tenants/{tenantId}/customers/{customerId}", tenantId, customerId);
-            tokenResolver.resolveBearerToken()
+            AuthenticatedUser.currentAccessToken()
                     .ifPresent(token -> request.header(HttpHeaders.AUTHORIZATION, "Bearer " + token));
             CustomerRecord customer = request.retrieve().body(CustomerRecord.class);
 

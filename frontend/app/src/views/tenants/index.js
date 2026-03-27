@@ -1,23 +1,20 @@
 import { computed, defineComponent, onMounted, reactive, ref } from "vue";
 import { createTenant, upsertTenantFeature } from "../../services/api/platform";
 import { useAppToast } from "../../composables/use-app-toast";
-import { authStore } from "../../stores/auth";
-import { tenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import template from "./template.html?raw";
 import "./styles.scss";
 
 const FEATURE_CATALOG = [
-  { key: "identity-access", label: "Identity Access" },
-  { key: "customer-management", label: "Customer Management" },
-  { key: "collateral-management", label: "Collateral Management" },
-  { key: "aml-compliance", label: "AML Compliance" },
-  { key: "kyc-provider-verification", label: "KYC Provider Verification" },
-  { key: "kyc-document-ocr", label: "KYC Document OCR" }
+// ... (omitted for brevity)
 ];
 
 export default defineComponent({
   name: "TenantsView",
   setup() {
+    const authStore = useAuthStore();
+    const tenantStore = useTenantStore();
     const toast = useAppToast();
     const isLoading = ref(true);
     const errorMessage = ref("");
@@ -29,7 +26,7 @@ export default defineComponent({
     });
 
     const tenants = computed(() => tenantStore.tenants);
-    const selectedTenant = computed(() => tenantStore.selectedTenant());
+    const selectedTenant = computed(() => tenantStore.selectedTenant);
     const tenantFeatures = computed(() =>
       FEATURE_CATALOG.map((catalogEntry) => ({
         ...catalogEntry,

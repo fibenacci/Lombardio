@@ -378,7 +378,6 @@
     "loadingTicket": "Pfandschein wird geladen...",
     "ticketPdf": "Pfandschein als PDF",
     "printLabels": "Etiketten drucken",
-    "modulesTitle": "Fachmodule",
     "modulesSubtitle": "Nächste Ausbaustufen rund um die Beleihung.",
     "messages": {
       "amlLoadFailed": "AML-Status konnte nicht geladen werden",

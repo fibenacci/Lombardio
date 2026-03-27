@@ -1,5 +1,6 @@
-package io.lombardio.pawnticket.demo;
+package io.lombardio.pawnticket.bootstrap;
 
+import io.lombardio.pawnticket.demo.DemoDataProperties;
 import io.lombardio.pawnticket.domain.model.CashTransaction;
 import io.lombardio.pawnticket.domain.model.CashTransactionType;
 import io.lombardio.pawnticket.domain.model.PawnTicket;
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-class ScenarioDataSeeder {
+public class PawnTicketDevelopmentSeeder {
 
     private record DemoTenant(String id, String key, String numberPrefix, String city) {
     }
@@ -36,7 +37,7 @@ class ScenarioDataSeeder {
     private final CashTransactionRepository cashTransactionRepository;
     private final DemoDataProperties demoDataProperties;
 
-    ScenarioDataSeeder(
+    PawnTicketDevelopmentSeeder(
             PawnTicketRepository pawnTicketRepository,
             CashTransactionRepository cashTransactionRepository,
             DemoDataProperties demoDataProperties
@@ -46,7 +47,7 @@ class ScenarioDataSeeder {
         this.demoDataProperties = demoDataProperties;
     }
 
-    void seed() {
+    public void seed() {
         int tenantCount = tenantCount(demoDataProperties.effectiveScale());
         int ticketsPerTenant = ticketsPerTenant(demoDataProperties.effectiveScale());
 

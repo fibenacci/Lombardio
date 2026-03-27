@@ -32,7 +32,6 @@ spec:
             - containerPort: 8091
               name: http
           env:
-            - name: IDENTITY_ACCESS_BASE_URL
               value: http://identity-access:8081
             - name: LOAN_ORIGINATION_BASE_URL
               value: http://loan-origination:8083

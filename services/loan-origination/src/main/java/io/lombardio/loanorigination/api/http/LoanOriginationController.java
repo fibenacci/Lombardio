@@ -9,7 +9,7 @@ import io.lombardio.loanorigination.domain.model.PawnTicket;
 import io.lombardio.loanorigination.domain.model.PawnTicketPosition;
 import io.lombardio.loanorigination.domain.model.PledgeRecord;
 import io.lombardio.loanorigination.domain.model.ValuationGuideline;
-import io.lombardio.loanorigination.infrastructure.security.AuthenticatedLoanUser;
+import io.lombardio.platform.security.AuthenticatedUser;
 import io.lombardio.loanorigination.infrastructure.security.LoanAuthorizationService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -40,7 +40,7 @@ public class LoanOriginationController {
 
     @GetMapping("/valuation-guidelines")
     public List<ValuationGuidelineResponse> listGuidelines(
-            @AuthenticationPrincipal AuthenticatedLoanUser principal,
+            @AuthenticationPrincipal AuthenticatedUser principal,
             @PathVariable String tenantId
     ) {
         authorizationService.requireRead(principal, tenantId);
@@ -51,7 +51,7 @@ public class LoanOriginationController {
 
     @GetMapping("/loans")
     public List<LoanCaseResponse> listLoans(
-            @AuthenticationPrincipal AuthenticatedLoanUser principal,
+            @AuthenticationPrincipal AuthenticatedUser principal,
             @PathVariable String tenantId,
             @org.springframework.web.bind.annotation.RequestParam(name = "customerId", required = false) String customerId
     ) {
@@ -63,7 +63,7 @@ public class LoanOriginationController {
 
     @PostMapping("/loans")
     public LoanCaseResponse createLoan(
-            @AuthenticationPrincipal AuthenticatedLoanUser principal,
+            @AuthenticationPrincipal AuthenticatedUser principal,
             @PathVariable String tenantId,
             @Valid @RequestBody CreateLoanRequest request
     ) {

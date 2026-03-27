@@ -1,5 +1,7 @@
 package io.lombardio.platform.shared.api;
 
+import io.lombardio.platform.security.ForbiddenException;
+import io.lombardio.platform.security.UnauthorizedException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +42,18 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiError> handleAccessDenied(AccessDeniedException exception) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new ApiError("forbidden", exception.getMessage()));
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiError> handleForbidden(ForbiddenException exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ApiError("forbidden", exception.getMessage()));
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ApiError> handleUnauthorized(UnauthorizedException exception) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ApiError("unauthorized", exception.getMessage()));
     }
 
     private String formatFieldError(FieldError error) {

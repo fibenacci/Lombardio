@@ -1,7 +1,7 @@
 import { computed, defineComponent, nextTick, onMounted, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import { tenantStore } from "../../stores/tenant";
-import { authStore } from "../../stores/auth";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import { createLoan, fetchValuationGuidelines } from "../../services/api/origination";
 import { createCustomer, searchCustomers } from "../../services/api/customer";
 import { assessAmlOrigination, fetchAmlStatus, updateAmlStatus } from "../../services/api/aml";
@@ -26,7 +26,8 @@ function createEmptyNewCustomerKyc() {
     documentNumber: "",
     documentValidUntil: "",
     documentFrontImageDataUrl: "",
-    documentBackImageDataUrl: ""
+    documentBackImageDataUrl: "",
+    portraitImageDataUrl: ""
   };
 }
 
@@ -102,23 +103,49 @@ function formatCurrency(value) {
   }).format(Number(value ?? 0));
 }
 
+function formatCustomerOption(customer) {
+  return {
+    value: customer.id,
+    label: `${customer.customerNumber ?? ""} - ${customer.displayName ?? `${customer.firstName ?? ""} ${customer.lastName ?? ""}`.trim()} - KYC ${
+      customer.kycStatus ?? "NOT_STARTED"
+    }`
+  };
+}
+
+function matchesCustomerQuery(customer, query) {
+  const normalizedQuery = query.trim().toLowerCase();
+
+  if (!normalizedQuery) {
+    return true;
+  }
+
+  return [
+    customer.customerNumber,
+    customer.displayName,
+    customer.firstName,
+    customer.lastName,
+    customer.phone
+  ]
+    .filter((value) => String(value ?? "").trim().length > 0)
+    .some((value) => String(value).toLowerCase().includes(normalizedQuery));
+}
+
 export default defineComponent({
   name: "TenantHomeView",
   setup() {
     const router = useRouter();
     const { t } = useI18n();
-    const selectedTenant = computed(() => tenantStore.selectedTenant());
+    const authStore = useAuthStore();
+    const tenantStore = useTenantStore();
+    const selectedTenant = computed(() => tenantStore.selectedTenant);
     const customerQuery = ref("");
     const customers = ref([]);
+    const customerSuggestions = ref([]);
     const customerOptions = computed(() =>
-      customers.value.map((customer) => ({
-        value: customer.id,
-        label: `${customer.customerNumber ?? ""} - ${customer.displayName ?? `${customer.firstName ?? ""} ${customer.lastName ?? ""}`.trim()} - KYC ${
-          customer.kycStatus ?? "NOT_STARTED"
-        }`
-      }))
+      customers.value.map((customer) => formatCustomerOption(customer))
     );
     const selectedCustomerId = ref("");
+    const selectedCustomerOption = ref(null);
     const selectedCustomer = computed(() =>
       customers.value.find((customer) => customer.id === selectedCustomerId.value) ?? null
     );
@@ -293,6 +320,7 @@ export default defineComponent({
 
         guidelines.value = guidelineResponse;
         customers.value = await Promise.all(customerResponse.map((customer) => enrichCustomerCompliance(customer)));
+        customerSuggestions.value = customerOptions.value;
         await loadReportingOverview();
         await refreshQuote();
       } catch (error) {
@@ -317,18 +345,35 @@ export default defineComponent({
       }
     }
 
-    async function runCustomerSearch() {
+    async function searchCustomerSuggestions(event = {}) {
       if (!tenantStore.selectedTenantId) {
         return;
       }
 
       try {
         fieldErrors.value = [];
-        const customerResponse = await searchCustomers(tenantStore.selectedTenantId, customerQuery.value, authStore.token);
+        const query = String(event.query ?? customerQuery.value ?? "");
+        customerQuery.value = query;
+
+        if (query.trim().length < 2) {
+          customerSuggestions.value = customers.value
+            .filter((customer) => matchesCustomerQuery(customer, query))
+            .map((customer) => formatCustomerOption(customer));
+          return;
+        }
+
+        const customerResponse = await searchCustomers(tenantStore.selectedTenantId, query, authStore.token);
         customers.value = await Promise.all(customerResponse.map((customer) => enrichCustomerCompliance(customer)));
+        customerSuggestions.value = customerOptions.value;
       } catch (error) {
         handleError(error);
       }
+    }
+
+    function handleCustomerSelection(event) {
+      const option = event?.value ?? selectedCustomerOption.value;
+      selectedCustomerOption.value = option && typeof option === "object" ? option : null;
+      selectedCustomerId.value = option?.value ?? "";
     }
 
     async function refreshQuote() {
@@ -509,6 +554,9 @@ export default defineComponent({
         successMessage.value = "Beleihung erfasst und Pfandschein erzeugt";
         positions.value = [createEmptyPosition()];
         selectedCustomerId.value = "";
+        selectedCustomerOption.value = null;
+        customerQuery.value = "";
+        customerSuggestions.value = customerOptions.value;
         useNewCustomer.value = false;
         terms.manualMonthlyOperatingFee = "";
         Object.assign(pledgePresentation, {
@@ -522,7 +570,7 @@ export default defineComponent({
         Object.assign(newCustomerKyc, createEmptyNewCustomerKyc());
         Object.assign(newCustomerAml, createEmptyNewCustomerAml());
         await nextTick();
-        issuedTicketRef.value?.scrollIntoView({ behavior: "smooth", block: "start" });
+        issuedTicketRef.value?.scrollIntoView?.({ behavior: "smooth", block: "start" });
       } catch (error) {
         handleError(error);
       } finally {
@@ -593,8 +641,7 @@ export default defineComponent({
       if (!tenantStore.selectedTenantId) {
         return;
       }
-      if (!newCustomerKyc.documentFrontImageDataUrl || !newCustomerKyc.documentBackImageDataUrl) {
-        errorMessage.value = "Bitte Vorder- und Rueckseite des Ausweises zuerst hochladen.";
+      if (!newCustomerKyc.documentFrontImageDataUrl && !newCustomerKyc.documentBackImageDataUrl) {
         return;
       }
 
@@ -618,6 +665,11 @@ export default defineComponent({
         newCustomerKyc.documentType = result.documentType ?? newCustomerKyc.documentType;
         newCustomerKyc.documentNumber = result.documentNumber ?? newCustomerKyc.documentNumber;
         newCustomerKyc.documentValidUntil = result.documentValidUntil ?? newCustomerKyc.documentValidUntil;
+        newCustomerKyc.portraitImageDataUrl = result.portraitImageDataUrl ?? newCustomerKyc.portraitImageDataUrl;
+
+        if (result.firstName) newCustomer.firstName = result.firstName;
+        if (result.lastName) newCustomer.lastName = result.lastName;
+        if (result.birthDate) newCustomer.birthDate = result.birthDate;
       } catch (error) {
         handleError(error);
       }
@@ -667,6 +719,10 @@ export default defineComponent({
       }
       try {
         newCustomerKyc[side] = await readFileAsDataUrl(file);
+        
+        if (documentOcrAvailable.value && newCustomerKyc.documentFrontImageDataUrl) {
+          await prefillNewCustomerDocumentData();
+        }
       } catch (error) {
         handleError(error);
       }
@@ -742,14 +798,24 @@ export default defineComponent({
     onMounted(loadContext);
     watch([positions, () => terms.termMonths, () => terms.manualMonthlyOperatingFee], refreshQuote, { deep: true });
     watch([selectedCustomerId, totalLoanValue], loadSelectedCustomerKyc);
+    watch(selectedCustomerOption, (option) => {
+      if (!option || typeof option !== "object") {
+        selectedCustomerId.value = "";
+        return;
+      }
+
+      selectedCustomerId.value = option.value ?? "";
+    });
 
     return {
       addPosition,
       applyGuideline,
       createdLoan,
       customerQuery,
+      customerSuggestions,
       customers,
       customerOptions,
+      handleCustomerSelection,
       amlFeatureEnabled,
       errorMessage,
       fieldErrors,
@@ -777,9 +843,10 @@ export default defineComponent({
       reportingError,
       reportingOverview,
       removePosition,
-      runCustomerSearch,
+      searchCustomerSuggestions,
       selectedCustomer,
       selectedCustomerId,
+      selectedCustomerOption,
       selectedTenant,
       submitLoan,
       successMessage,

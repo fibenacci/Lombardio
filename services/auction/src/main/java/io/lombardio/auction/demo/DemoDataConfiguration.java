@@ -1,5 +1,6 @@
 package io.lombardio.auction.demo;
 
+import io.lombardio.auction.bootstrap.AuctionDevelopmentSeeder;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -12,7 +13,7 @@ class DemoDataConfiguration {
 
     @Bean
     @ConditionalOnProperty(value = "demo.data.enabled", havingValue = "true", matchIfMissing = true)
-    ApplicationRunner seedDemoData(ScenarioDataSeeder scenarioDataSeeder) {
-        return args -> scenarioDataSeeder.seed();
+    ApplicationRunner seedDemoData(AuctionDevelopmentSeeder seeder) {
+        return args -> seeder.seed();
     }
 }

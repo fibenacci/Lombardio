@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { authStore } from "../stores/auth";
-import { customerPortalStore } from "../stores/customerPortal";
+import { useAuthStore } from "../stores/auth";
+import { useCustomerPortalStore } from "../stores/customerPortal";
 
 const LoginView = () => import("../views/login");
 const PlatformLayout = () => import("../layouts/platform");
@@ -148,7 +148,15 @@ const routes = [
   },
   {
     path: "/",
-    redirect: () => defaultRoute()
+    redirect: () => {
+      const authStore = useAuthStore();
+      // FIX: Access as getter, not function
+      return authStore.canManagePlatform ? "/platform/tenants" : "/app/dashboard";
+    }
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    redirect: "/login"
   }
 ];
 
@@ -157,32 +165,35 @@ const router = createRouter({
   routes
 });
 
-function defaultRoute() {
-  return authStore.canManagePlatform() ? "/platform/tenants" : "/app/dashboard";
-}
-
 export function routeGuard(to) {
-  if (!authStore.ready || !customerPortalStore.ready) {
+  const authStore = useAuthStore();
+  const customerPortalStore = useCustomerPortalStore();
+
+  // If we are navigating to public routes, allow immediately
+  if (to.name === "public-online-auction" || to.path.startsWith("/portal/activate")) {
     return true;
   }
 
-  if (to.meta.requiresCustomerPortalAuth && !customerPortalStore.isAuthenticated()) {
-    return { name: "customer-portal-login" };
+  // Handle Customer Portal Auth
+  if (to.path.startsWith("/portal")) {
+    if (to.meta.requiresCustomerPortalAuth && !customerPortalStore.isAuthenticated) {
+      return { name: "customer-portal-login" };
+    }
+    return true;
   }
 
-  if ((to.name === "customer-portal-login" || to.name === "customer-portal-activate") && customerPortalStore.isAuthenticated()) {
-    return { name: "customer-portal-home" };
-  }
-
-  if (to.meta.requiresAuth && !authStore.isAuthenticated()) {
+  // Handle Admin App Auth
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     return { name: "login" };
   }
 
-  if (to.name === "login" && authStore.isAuthenticated()) {
-    return { path: defaultRoute() };
+  // If already at login but authenticated, redirect to home
+  if (to.name === "login" && authStore.isAuthenticated) {
+    return { path: authStore.canManagePlatform ? "/platform/tenants" : "/app/dashboard" };
   }
 
-  if (to.meta.requiresPlatformAccess && !authStore.canManagePlatform()) {
+  // Platform access check
+  if (to.meta.requiresPlatformAccess && !authStore.canManagePlatform) {
     return { path: "/app/dashboard" };
   }
 

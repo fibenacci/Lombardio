@@ -1,7 +1,7 @@
 import { computed, defineComponent, onMounted, ref } from "vue";
 import { fetchLoans } from "../../services/api/origination";
-import { authStore } from "../../stores/auth";
-import { tenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import { useI18n } from "../../i18n";
 import template from "./template.html?raw";
 import "./styles.scss";
@@ -9,6 +9,8 @@ import "./styles.scss";
 export default defineComponent({
   name: "LoansView",
   setup() {
+    const authStore = useAuthStore();
+    const tenantStore = useTenantStore();
     const { t } = useI18n();
     const loans = ref([]);
     const isLoading = ref(true);

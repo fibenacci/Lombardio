@@ -1,20 +1,23 @@
 import { computed, defineComponent, onMounted, reactive, ref } from "vue";
-import { createRole, fetchPermissions, fetchRoles } from "../../services/api/access";
+import { createRole, updateRole, fetchPermissions, fetchRoles } from "../../services/api/access";
 import { useAppToast } from "../../composables/use-app-toast";
-import { authStore } from "../../stores/auth";
-import { tenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import template from "./template.html?raw";
 import "./styles.scss";
 
 export default defineComponent({
   name: "RolesView",
   setup() {
+    const authStore = useAuthStore();
+    const tenantStore = useTenantStore();
     const toast = useAppToast();
     const roles = ref([]);
     const permissions = ref([]);
     const isLoading = ref(true);
     const errorMessage = ref("");
     const successMessage = ref("");
+    const editingId = ref(null);
     const form = reactive({
       key: "",
       displayName: "",
@@ -29,6 +32,8 @@ export default defineComponent({
         permissionCount: role.permissionKeys.length
       }))
     );
+
+    const isEditing = computed(() => editingId.value !== null);
 
     async function loadData() {
       isLoading.value = true;
@@ -56,13 +61,20 @@ export default defineComponent({
       }
     }
 
-    function togglePermission(permissionKey) {
-      if (form.permissionKeys.includes(permissionKey)) {
-        form.permissionKeys = form.permissionKeys.filter((item) => item !== permissionKey);
-        return;
-      }
+    function edit(role) {
+      editingId.value = role.id;
+      form.key = role.key;
+      form.displayName = role.displayName;
+      form.description = role.description;
+      form.active = role.active;
+      form.permissionKeys = [...role.permissionKeys];
+      successMessage.value = "";
+      errorMessage.value = "";
+    }
 
-      form.permissionKeys = [...form.permissionKeys, permissionKey];
+    function cancelEdit() {
+      editingId.value = null;
+      resetForm();
     }
 
     async function submit() {
@@ -70,21 +82,24 @@ export default defineComponent({
       errorMessage.value = "";
 
       try {
-        await createRole(
-          tenantStore.selectedTenantId,
-          {
-            key: form.key,
-            displayName: form.displayName,
-            description: form.description,
-            active: form.active,
-            permissionKeys: form.permissionKeys
-          },
-          authStore.token
-        );
+        const payload = {
+          tenantId: tenantStore.selectedTenantId,
+          key: form.key,
+          displayName: form.displayName,
+          description: form.description,
+          active: form.active,
+          permissionKeys: form.permissionKeys
+        };
 
-        successMessage.value = "Role created";
-        toast.success("Role created", `${form.displayName || form.key} is now available for assignment.`);
-        resetForm();
+        if (isEditing.value) {
+          await updateRole(editingId.value, payload, authStore.token);
+          toast.success("Role updated", `${form.displayName || form.key} has been updated.`);
+        } else {
+          await createRole(tenantStore.selectedTenantId, payload, authStore.token);
+          toast.success("Role created", `${form.displayName || form.key} is now available for assignment.`);
+        }
+
+        cancelEdit();
         await loadData();
       } catch (error) {
         handleApiError(error);
@@ -122,12 +137,14 @@ export default defineComponent({
       errorMessage,
       form,
       isLoading,
+      isEditing,
       permissions,
       roleRows,
       tenantStore,
+      edit,
+      cancelEdit,
       submit,
-      successMessage,
-      togglePermission
+      successMessage
     };
   },
   template

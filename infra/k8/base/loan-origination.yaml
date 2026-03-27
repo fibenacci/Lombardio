@@ -5,7 +5,6 @@ metadata:
 data:
   LOAN_ORIGINATION_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=loan_origination
   LOAN_ORIGINATION_DB_USERNAME: lombardio
-  IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
   CUSTOMER_BASE_URL: http://customer:8084
   PAWN_TICKET_BASE_URL: http://pawn-ticket:8085
   KYC_BASE_URL: http://kyc:8086

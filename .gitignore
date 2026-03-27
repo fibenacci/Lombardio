@@ -7,5 +7,3 @@ target/
 .env
 **/target
 GWG_*
-AGENTS.md
-concept.md

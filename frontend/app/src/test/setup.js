@@ -140,6 +140,62 @@ const TestMultiSelect = defineComponent({
   }
 });
 
+const TestAutoComplete = defineComponent({
+  name: "TestPrimeAutoComplete",
+  props: {
+    modelValue: {
+      type: [String, Number, Boolean, Object, Array, null],
+      default: null
+    },
+    suggestions: {
+      type: Array,
+      default: () => []
+    },
+    optionLabel: {
+      type: String,
+      default: null
+    }
+  },
+  emits: ["update:modelValue", "complete", "item-select", "clear"],
+  setup(props, { emit, attrs }) {
+    const inputValue = computed(() => {
+      if (props.modelValue && typeof props.modelValue === "object") {
+        return props.optionLabel ? props.modelValue[props.optionLabel] : (props.modelValue.label ?? "");
+      }
+
+      return String(props.modelValue ?? "");
+    });
+
+    const onInput = (event) => {
+      emit("update:modelValue", event.target.value);
+      emit("complete", { originalEvent: event, query: event.target.value });
+    };
+
+    const onChange = (event) => {
+      const option = props.suggestions.find((entry) => {
+        const label = props.optionLabel ? entry?.[props.optionLabel] : (entry?.label ?? entry?.value ?? "");
+        return label === event.target.value;
+      });
+
+      if (option) {
+        emit("update:modelValue", option);
+        emit("item-select", { originalEvent: event, value: option });
+        return;
+      }
+
+      emit("update:modelValue", event.target.value);
+    };
+
+    return () => h("input", {
+      ...attrs,
+      class: ["test-prime-autocomplete", attrs.class],
+      value: inputValue.value,
+      onInput,
+      onChange
+    });
+  }
+});
+
 config.global.plugins = [
   [PrimeVue, {
     theme: {
@@ -156,6 +212,7 @@ config.global.components = {
   AdminPanel,
   AppDataTable,
   ConfirmAction,
+  PAutoComplete: TestAutoComplete,
   PAvatar: Avatar,
   PButton: Button,
   PCard: Card,

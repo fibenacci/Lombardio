@@ -3,7 +3,7 @@ package io.lombardio.pawnticket.api.http;
 import io.lombardio.pawnticket.application.service.CashTransactionService;
 import io.lombardio.pawnticket.application.service.ExecuteCashTransactionCommand;
 import io.lombardio.pawnticket.domain.model.CashTransaction;
-import io.lombardio.pawnticket.infrastructure.security.AuthenticatedPawnTicketUser;
+import io.lombardio.platform.security.AuthenticatedUser;
 import io.lombardio.pawnticket.infrastructure.security.PawnTicketAuthorizationService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,7 +33,7 @@ public class CashTransactionController {
 
     @PostMapping("/cash-transactions")
     public CashTransactionResponse execute(
-            @AuthenticationPrincipal AuthenticatedPawnTicketUser principal,
+            @AuthenticationPrincipal AuthenticatedUser principal,
             @Valid @RequestBody ExecuteCashTransactionRequest request
     ) {
         authorizationService.requireCashWrite(principal, request.tenantId());
@@ -42,7 +42,7 @@ public class CashTransactionController {
 
     @GetMapping("/tenants/{tenantId}/cash-transactions")
     public List<CashTransactionResponse> list(
-            @AuthenticationPrincipal AuthenticatedPawnTicketUser principal,
+            @AuthenticationPrincipal AuthenticatedUser principal,
             @PathVariable String tenantId
     ) {
         authorizationService.requireCashRead(principal, tenantId);

@@ -1,0 +1,99 @@
+{
+  "id": "lombardio",
+  "realm": "lombardio",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      { "name": "platform.tenants.read" },
+      { "name": "platform.tenants.write" },
+      { "name": "customers.read" },
+      { "name": "customers.write" },
+      { "name": "kyc.read" },
+      { "name": "kyc.write" },
+      { "name": "aml.read" },
+      { "name": "aml.write" },
+      { "name": "loans.read" },
+      { "name": "loans.write" },
+      { "name": "auctions.read" },
+      { "name": "auctions.write" },
+      { "name": "pawn-tickets.read" },
+      { "name": "pawn-tickets.write" },
+      { "name": "cash-transactions.read" },
+      { "name": "cash-transactions.write" },
+      { "name": "reporting.read" },
+      { "name": "sessions.impersonate.platform" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "lombardio-app",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "webOrigins": ["*"],
+      "redirectUris": ["http://localhost:5173/*"],
+      "standardFlowEnabled": true,
+      "protocolMappers": [
+        {
+          "name": "tenantId",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "tenantId",
+            "claim.name": "tenantId",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "multivalued": "false",
+            "aggregate.attrs": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "platform@lombardio.local",
+      "enabled": true,
+      "email": "platform@lombardio.local",
+      "firstName": "Platform",
+      "lastName": "Admin",
+      "credentials": [{ "type": "password", "value": "admin", "temporary": false }],
+      "realmRoles": [
+        "platform.tenants.read",
+        "platform.tenants.write",
+        "sessions.impersonate.platform"
+      ]
+    },
+    {
+      "username": "admin@lombardio.local",
+      "enabled": true,
+      "email": "admin@lombardio.local",
+      "firstName": "Tenant",
+      "lastName": "Admin",
+      "credentials": [{ "type": "password", "value": "admin", "temporary": false }],
+      "realmRoles": [
+        "customers.read",
+        "customers.write",
+        "kyc.read",
+        "kyc.write",
+        "aml.read",
+        "aml.write",
+        "loans.read",
+        "loans.write",
+        "auctions.read",
+        "auctions.write",
+        "pawn-tickets.read",
+        "pawn-tickets.write",
+        "cash-transactions.read",
+        "cash-transactions.write",
+        "reporting.read"
+      ],
+      "attributes": {
+        "tenantId": ["tenant-default"]
+      }
+    }
+  ]
+}

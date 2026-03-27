@@ -1,6 +1,8 @@
 package io.lombardio.auction.api.http.error;
 
 import io.lombardio.auction.application.service.AuctionNotFoundException;
+import io.lombardio.platform.security.ForbiddenException;
+import io.lombardio.platform.security.UnauthorizedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -30,6 +32,18 @@ public class ApiExceptionHandler {
     ResponseEntity<ApiError> handleNotFound(AuctionNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ApiError("not_found", exception.getMessage(), List.of()));
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    ResponseEntity<ApiError> handleUnauthorized(UnauthorizedException exception) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ApiError("unauthorized", exception.getMessage(), List.of()));
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    ResponseEntity<ApiError> handleForbidden(ForbiddenException exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ApiError("forbidden", exception.getMessage(), List.of()));
     }
 
     private ApiFieldError toFieldError(FieldError fieldError) {

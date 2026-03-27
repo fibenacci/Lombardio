@@ -2,12 +2,14 @@ package io.lombardio.platform.tenant.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lombardio.platform.demo.PlatformSeedFixtures;
+import io.lombardio.platform.iam.application.KeycloakService;
 import io.lombardio.platform.integration.application.PlatformOutboxService;
 import io.lombardio.platform.tenant.api.CreateTenantRequest;
 import io.lombardio.platform.tenant.api.UpsertTenantFeatureRequest;
 import io.lombardio.platform.tenant.application.support.InMemoryTenantRepositories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -15,6 +17,7 @@ import java.time.ZoneOffset;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 class TenantCatalogServiceTest {
 
@@ -22,6 +25,7 @@ class TenantCatalogServiceTest {
     private final InMemoryTenantRepositories.Features features = new InMemoryTenantRepositories.Features();
     private final InMemoryTenantRepositories.OutboxEvents outboxEvents = new InMemoryTenantRepositories.OutboxEvents();
     private final Clock clock = Clock.fixed(Instant.parse("2026-03-18T12:00:00Z"), ZoneOffset.UTC);
+    private final KeycloakService keycloakService = mock(KeycloakService.class);
 
     private TenantCatalogService tenantCatalogService;
 
@@ -33,6 +37,7 @@ class TenantCatalogServiceTest {
                 tenants,
                 features,
                 new PlatformOutboxService(outboxEvents, clock),
+                keycloakService,
                 new ObjectMapper(),
                 clock
         );

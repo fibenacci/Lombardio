@@ -1,0 +1,109 @@
+http:
+  routers:
+    platform:
+      entryPoints: ["web"]
+      rule: "PathPrefix(`/api/v1/platform`)"
+      service: platform
+      middlewares: [cors]
+    
+    identity:
+      entryPoints: ["web"]
+      rule: "PathPrefix(`/api/v1/tenants/tenant-default/customers`)"
+      priority: 100
+      service: identity
+      middlewares: [cors]
+    
+    loans:
+      entryPoints: ["web"]
+      rule: "PathPrefix(`/api/v1/tenants/tenant-default/valuation-guidelines`) || PathPrefix(`/api/v1/tenants/tenant-default/loans`)"
+      priority: 100
+      service: loans
+      middlewares: [cors]
+    
+    pawn:
+      entryPoints: ["web"]
+      rule: "PathPrefix(`/api/v1/tenants/tenant-default/pawn-tickets`) || PathPrefix(`/api/v1/tenants/tenant-default/cash-transactions`)"
+      priority: 100
+      service: pawn
+      middlewares: [cors]
+    
+    # Legacy / specific kyc and aml paths now go to identity service
+    kyc_legacy:
+      entryPoints: ["web"]
+      rule: "PathPrefix(`/api/v1/tenants/tenant-default/customers/{customerId:[a-zA-Z0-9-]+}/kyc`)"
+      priority: 110
+      service: identity
+      middlewares: [cors]
+    
+    aml_legacy:
+      entryPoints: ["web"]
+      rule: "PathPrefix(`/api/v1/tenants/tenant-default/customers/{customerId:[a-zA-Z0-9-]+}/aml`)"
+      priority: 110
+      service: identity
+      middlewares: [cors]
+    
+    auction:
+      entryPoints: ["web"]
+      rule: "PathPrefix(`/api/v1/tenants/tenant-default/auctions`)"
+      priority: 100
+      service: auction
+      middlewares: [cors]
+    
+    online-auction:
+      entryPoints: ["web"]
+      rule: "PathPrefix(`/api/v1/tenants/tenant-default/online-auctions`) || PathPrefix(`/api/public/tenants/tenant-default/online-auctions`)"
+      priority: 100
+      service: online-auction
+      middlewares: [cors]
+    
+    reporting:
+      entryPoints: ["web"]
+      rule: "PathPrefix(`/api/v1/tenants/tenant-default/reporting`)"
+      priority: 100
+      service: reporting
+      middlewares: [cors]
+
+    tenants_fallback:
+      entryPoints: ["web"]
+      rule: "PathPrefix(`/api/v1/tenants/`)"
+      priority: 10
+      service: platform
+      middlewares: [cors]
+
+    portal:
+      entryPoints: ["web"]
+      rule: "PathPrefix(`/api/v1/customer-portal`)"
+      service: identity
+      middlewares: [cors]
+
+  services:
+    platform:
+      loadBalancer:
+        servers: [{ url: "http://platform:8082" }]
+    identity:
+      loadBalancer:
+        servers: [{ url: "http://identity-intelligence:8084" }]
+    loans:
+      loadBalancer:
+        servers: [{ url: "http://loan-origination:8083" }]
+    pawn:
+      loadBalancer:
+        servers: [{ url: "http://pawn-ticket:8085" }]
+    auction:
+      loadBalancer:
+        servers: [{ url: "http://auction:8089" }]
+    online-auction:
+      loadBalancer:
+        servers: [{ url: "http://online-auction:8090" }]
+    reporting:
+      loadBalancer:
+        servers: [{ url: "http://reporting:8091" }]
+
+  middlewares:
+    cors:
+      headers:
+        accessControlAllowMethods: ["GET", "OPTIONS", "POST", "PUT", "DELETE", "PATCH"]
+        accessControlAllowOriginList: ["http://localhost:5173"]
+        accessControlAllowHeaders: ["Authorization", "Content-Type", "X-Requested-With"]
+        accessControlAllowCredentials: true
+        addVaryHeader: true

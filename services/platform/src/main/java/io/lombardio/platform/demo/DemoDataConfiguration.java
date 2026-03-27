@@ -11,8 +11,9 @@ import org.springframework.context.annotation.Configuration;
 class DemoDataConfiguration {
 
     @Bean
-    @ConditionalOnProperty(value = "demo.data.enabled", havingValue = "true", matchIfMissing = true)
+    // @ConditionalOnProperty(value = "demo.data.enabled", havingValue = "true") // Kommentiert aus, um die Demo-Daten-Erstellung zu deaktivieren
     ApplicationRunner seedDemoData(ScenarioDataSeeder scenarioDataSeeder) {
         return args -> scenarioDataSeeder.seed();
     }
 }
+

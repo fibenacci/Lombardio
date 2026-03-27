@@ -1,6 +1,6 @@
 import { computed, defineComponent, onMounted, reactive, ref } from "vue";
-import { authStore } from "../../stores/auth";
-import { tenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import {
   calculatePartialRepayment,
   executeCashTransaction,
@@ -21,6 +21,9 @@ export default defineComponent({
   },
   setup() {
     const { t } = useI18n();
+    const authStore = useAuthStore();
+    const tenantStore = useTenantStore();
+    
     const tickets = ref([]);
     const selectedTicketNumber = ref("");
     const activeAction = ref("redeem");

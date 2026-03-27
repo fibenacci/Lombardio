@@ -1,5 +1,6 @@
-package io.lombardio.loanorigination.demo;
+package io.lombardio.loanorigination.bootstrap;
 
+import io.lombardio.loanorigination.demo.DemoDataProperties;
 import io.lombardio.loanorigination.domain.model.ValuationGuideline;
 import io.lombardio.loanorigination.domain.model.CustomerProfile;
 import io.lombardio.loanorigination.domain.model.LoanCase;
@@ -9,6 +10,7 @@ import io.lombardio.loanorigination.domain.model.PawnTicketPosition;
 import io.lombardio.loanorigination.domain.model.PledgeRecord;
 import io.lombardio.loanorigination.infrastructure.persistence.adapter.LoanCasePersistenceAdapter;
 import io.lombardio.loanorigination.domain.port.ValuationGuidelineRepository;
+import io.lombardio.loanorigination.demo.ReferenceDataSeeder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -18,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-class ScenarioDataSeeder {
+public class LoanOriginationDevelopmentSeeder {
 
     private static final String[] FIRST_NAMES = {"Anna", "Murat", "Leonie", "Jonas", "Sofia", "Mila", "Emre", "Paul", "Nina", "David", "Lina", "Felix", "Aylin", "Noah", "Mara", "Yusuf"};
     private static final String[] LAST_NAMES = {"Becker", "Yilmaz", "Schmidt", "Kaya", "Wagner", "Hartmann", "Keller", "Nguyen", "Fischer", "Ali", "Scholz", "Krause", "Demir", "Walter", "Schuster", "Brandt"};
@@ -28,7 +30,7 @@ class ScenarioDataSeeder {
     private final ValuationGuidelineRepository valuationGuidelineRepository;
     private final DemoDataProperties demoDataProperties;
 
-    ScenarioDataSeeder(
+    LoanOriginationDevelopmentSeeder(
             LoanCasePersistenceAdapter loanCaseRepository,
             ValuationGuidelineRepository valuationGuidelineRepository,
             DemoDataProperties demoDataProperties
@@ -38,7 +40,7 @@ class ScenarioDataSeeder {
         this.demoDataProperties = demoDataProperties;
     }
 
-    void seed() {
+    public void seed() {
         int tenantCount = tenantCount(demoDataProperties.effectiveScale());
         int casesPerTenant = casesPerTenant(demoDataProperties.effectiveScale());
 

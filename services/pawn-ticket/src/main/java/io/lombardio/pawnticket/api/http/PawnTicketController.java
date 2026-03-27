@@ -8,7 +8,7 @@ import io.lombardio.pawnticket.application.service.PawnTicketSettlementCommand;
 import io.lombardio.pawnticket.application.service.PawnTicketSettlementResult;
 import io.lombardio.pawnticket.domain.model.PawnTicket;
 import io.lombardio.pawnticket.domain.model.PawnTicketPosition;
-import io.lombardio.pawnticket.infrastructure.security.AuthenticatedPawnTicketUser;
+import io.lombardio.platform.security.AuthenticatedUser;
 import io.lombardio.pawnticket.infrastructure.security.PawnTicketAuthorizationService;
 import jakarta.validation.Valid;
 import org.springframework.http.ContentDisposition;
@@ -45,7 +45,7 @@ public class PawnTicketController {
 
     @PostMapping("/quote")
     public PawnTicketResponse quote(
-            @AuthenticationPrincipal AuthenticatedPawnTicketUser principal,
+            @AuthenticationPrincipal AuthenticatedUser principal,
             @Valid @RequestBody PawnTicketQuoteRequest request
     ) {
         authorizationService.requireTicketWrite(principal);
@@ -54,7 +54,7 @@ public class PawnTicketController {
 
     @PostMapping("/issue")
     public PawnTicketResponse issue(
-            @AuthenticationPrincipal AuthenticatedPawnTicketUser principal,
+            @AuthenticationPrincipal AuthenticatedUser principal,
             @Valid @RequestBody IssuePawnTicketRequest request
     ) {
         authorizationService.requireTicketWrite(principal, request.tenantId());
@@ -63,7 +63,7 @@ public class PawnTicketController {
 
     @PostMapping("/extend")
     public PawnTicketResponse extend(
-            @AuthenticationPrincipal AuthenticatedPawnTicketUser principal,
+            @AuthenticationPrincipal AuthenticatedUser principal,
             @Valid @RequestBody ExtendPawnTicketRequest request
     ) {
         authorizationService.requireTicketRead(principal);
@@ -72,7 +72,7 @@ public class PawnTicketController {
 
     @PostMapping("/partial-repayment")
     public SettlementResponse partialRepayment(
-            @AuthenticationPrincipal AuthenticatedPawnTicketUser principal,
+            @AuthenticationPrincipal AuthenticatedUser principal,
             @Valid @RequestBody PartialRepaymentRequest request
     ) {
         authorizationService.requireCashRead(principal);
@@ -81,7 +81,7 @@ public class PawnTicketController {
 
     @PostMapping("/redeem")
     public SettlementResponse redeem(
-            @AuthenticationPrincipal AuthenticatedPawnTicketUser principal,
+            @AuthenticationPrincipal AuthenticatedUser principal,
             @Valid @RequestBody RedeemPawnTicketRequest request
     ) {
         authorizationService.requireCashRead(principal);
@@ -95,7 +95,7 @@ public class PawnTicketController {
 
     @GetMapping(value = "/{ticketNumber}/document", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> document(
-            @AuthenticationPrincipal AuthenticatedPawnTicketUser principal,
+            @AuthenticationPrincipal AuthenticatedUser principal,
             @PathVariable String ticketNumber
     ) {
         PawnTicket pawnTicket = pawnTicketPolicyService.getIssuedTicket(ticketNumber);
@@ -113,7 +113,7 @@ public class PawnTicketController {
 
     @GetMapping(value = "/{ticketNumber}/labels", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> labels(
-            @AuthenticationPrincipal AuthenticatedPawnTicketUser principal,
+            @AuthenticationPrincipal AuthenticatedUser principal,
             @PathVariable String ticketNumber
     ) {
         PawnTicket pawnTicket = pawnTicketPolicyService.getIssuedTicket(ticketNumber);

@@ -14,11 +14,9 @@ data:
         static_configs:
           - targets:
               - localhost:9090
-      - job_name: identity-access
         metrics_path: /actuator/prometheus
         static_configs:
           - targets:
-              - identity-access:8081
       - job_name: platform
         metrics_path: /actuator/prometheus
         static_configs:
@@ -66,32 +64,24 @@ data:
               - reporting:8091
   alerts.yml: |
     groups:
-      - name: lombardio-identity-access
         rules:
           - alert: IdentityAccessHigh5xxRate
             expr: |
               (
-                sum(rate(http_server_requests_seconds_count{application="identity-access",status=~"5.."}[5m]))
                 /
-                clamp_min(sum(rate(http_server_requests_seconds_count{application="identity-access"}[5m])), 0.001)
               ) > 0.05
             for: 5m
             labels:
               severity: critical
-              service: identity-access
             annotations:
               summary: Identity Access has elevated 5xx errors
-              description: The 5xx error ratio on identity-access is above 5 percent for 5 minutes.
           - alert: IdentityAccessUnauthorizedSpike
             expr: |
-              sum(rate(http_server_requests_seconds_count{application="identity-access",status=~"401|403"}[10m])) > 0.5
             for: 10m
             labels:
               severity: warning
-              service: identity-access
             annotations:
               summary: Identity Access sees an elevated unauthorized rate
-              description: 401/403 traffic on identity-access is above 0.5 requests per second over 10 minutes.
       - name: lombardio-loan-origination
         rules:
           - alert: LoanOriginationHighLatencyP95

@@ -1,8 +1,0 @@
-package io.lombardio.customer.portal.infrastructure.persistence;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface CustomerPortalInvitationRepository extends JpaRepository<CustomerPortalInvitationEntity, String> {
-
-    void deleteByCustomerIdAndUsedAtIsNull(String customerId);
-}

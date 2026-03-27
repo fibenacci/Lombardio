@@ -4,8 +4,8 @@ import { fetchCustomer, updateCustomer } from "../../services/api/customer";
 import { fetchLoans } from "../../services/api/origination";
 import { fetchAmlStatus, updateAmlStatus } from "../../services/api/aml";
 import { fetchKycStatus, prefillKycDocument, updateKycStatus } from "../../services/api/kyc";
-import { authStore } from "../../stores/auth";
-import { tenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import { useI18n } from "../../i18n";
 import FormFeedback from "../../components/form-feedback";
 import template from "./template.html?raw";
@@ -52,6 +52,9 @@ export default defineComponent({
   setup() {
     const { locale, t } = useI18n();
     const route = useRoute();
+    const authStore = useAuthStore();
+    const tenantStore = useTenantStore();
+    
     const isLoading = ref(true);
     const isSavingCustomer = ref(false);
     const isSavingKyc = ref(false);
@@ -84,6 +87,7 @@ export default defineComponent({
       documentValidUntil: "",
       documentFrontImageDataUrl: "",
       documentBackImageDataUrl: "",
+      portraitImageDataUrl: "",
       decisionNote: ""
     });
     const aml = reactive({
@@ -103,7 +107,7 @@ export default defineComponent({
       featureAvailable: false
     });
 
-    const tenant = computed(() => tenantStore.selectedTenant());
+    const tenant = computed(() => tenantStore.selectedTenant);
     const customerId = computed(() => String(route.params.customerId ?? ""));
     const documentOcrAvailable = computed(() => tenantStore.hasFeature("kyc-document-ocr"));
     const amlFeatureEnabled = computed(() => tenantStore.hasFeature("aml-compliance"));
@@ -332,6 +336,14 @@ export default defineComponent({
       }
       try {
         kyc[side] = await readFileAsDataUrl(file);
+        
+        // Automatically trigger OCR if feature is available
+        if (documentOcrAvailable.value) {
+          // If we have at least the front side, we can try to prefill
+          if (kyc.documentFrontImageDataUrl) {
+            await prefillDocument();
+          }
+        }
       } catch (error) {
         handleError(error);
       }
@@ -341,8 +353,7 @@ export default defineComponent({
       if (!tenantStore.selectedTenantId || !customerId.value) {
         return;
       }
-      if (!kyc.documentFrontImageDataUrl || !kyc.documentBackImageDataUrl) {
-        errorMessage.value = t("customerDetail.messages.documentImagesRequired");
+      if (!kyc.documentFrontImageDataUrl && !kyc.documentBackImageDataUrl) {
         return;
       }
 
@@ -366,6 +377,12 @@ export default defineComponent({
         kyc.documentType = result.documentType ?? kyc.documentType;
         kyc.documentNumber = result.documentNumber ?? kyc.documentNumber;
         kyc.documentValidUntil = result.documentValidUntil ?? kyc.documentValidUntil;
+        kyc.portraitImageDataUrl = result.portraitImageDataUrl ?? kyc.portraitImageDataUrl;
+        
+        // Also prefill customer master data if empty or provided
+        if (result.firstName) customer.firstName = result.firstName;
+        if (result.lastName) customer.lastName = result.lastName;
+        if (result.birthDate) customer.birthDate = result.birthDate;
       } catch (error) {
         handleError(error);
       } finally {

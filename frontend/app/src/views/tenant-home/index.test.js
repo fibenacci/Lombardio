@@ -410,8 +410,9 @@ describe("TenantHomeView", () => {
     const wrapper = mountView();
     await flushPromises();
 
-    await wrapper.find("select").setValue("customer-berlin-1");
-    await wrapper.findAll("select")[1].setValue("guideline-gold-585");
+    wrapper.vm.selectedCustomerOption = wrapper.vm.customerOptions[0];
+    wrapper.vm.handleCustomerSelection({ value: wrapper.vm.customerOptions[0] });
+    await wrapper.findAll("select")[0].setValue("guideline-gold-585");
     await flushPromises();
 
     const textInputs = wrapper.findAll('input[type="text"]');
@@ -601,7 +602,8 @@ describe("TenantHomeView", () => {
     const wrapper = mountView();
     await flushPromises();
 
-    await wrapper.find("select").setValue("customer-berlin-2");
+    wrapper.vm.selectedCustomerOption = wrapper.vm.customerOptions[0];
+    wrapper.vm.handleCustomerSelection({ value: wrapper.vm.customerOptions[0] });
     await flushPromises();
 
     const approveButton = wrapper.findAll("button").find((button) => button.text().includes("KYC manuell freigeben"));
@@ -674,7 +676,8 @@ describe("TenantHomeView", () => {
     const wrapper = mountView();
     await flushPromises();
 
-    await wrapper.find("select").setValue("customer-berlin-2");
+    wrapper.vm.selectedCustomerOption = wrapper.vm.customerOptions[0];
+    wrapper.vm.handleCustomerSelection({ value: wrapper.vm.customerOptions[0] });
     await flushPromises();
 
     expect(wrapper.text()).toContain("optionale Feature fuer externe Ausweispruefung");

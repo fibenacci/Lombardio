@@ -5,7 +5,7 @@
     icon="pi pi-ticket"
     :copy="
       tenantStore.selectedTenantId
-        ? t('pawnTickets.copyWithTenant', { tenant: tenantStore.selectedTenant()?.displayName ?? tenantStore.selectedTenantId })
+        ? t('pawnTickets.copyWithTenant', { tenant: tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId })
         : t('pawnTickets.copyWithoutTenant')
     "
   />

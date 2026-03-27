@@ -1,5 +1,15 @@
 <span class="confirm-action">
-  <PButton :icon="icon" :label="label" :severity="severity" :outlined="outlined" :size="size" type="button" @click="open" />
+  <PButton
+    :icon="icon"
+    :label="label"
+    :severity="severity"
+    :outlined="outlined"
+    :rounded="rounded"
+    :variant="variant"
+    :size="size"
+    type="button"
+    @click="open"
+  />
 
   <PDialog v-model:visible="isOpen" modal :header="header" :style="{ width: '28rem', maxWidth: 'calc(100vw - 2rem)' }">
     <p class="muted-copy">{{ message }}</p>

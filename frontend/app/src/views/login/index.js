@@ -1,7 +1,7 @@
-import { defineComponent, reactive, ref } from "vue";
+import { defineComponent, reactive, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { authStore } from "../../stores/auth";
-import { tenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import { useI18n } from "../../i18n";
 import template from "./template.html?raw";
 import "./styles.scss";
@@ -10,40 +10,44 @@ export default defineComponent({
   name: "LoginView",
   setup() {
     const router = useRouter();
+    const authStore = useAuthStore();
+    const tenantStore = useTenantStore();
     const { t } = useI18n();
+
     const form = reactive({
-      email: "admin@lombardio.local",
-      password: "change-me",
-      totpCode: ""
+      username: "admin@lombardio.local",
+      password: "admin"
     });
     const errorMessage = ref("");
     const isSubmitting = ref(false);
+
+    onMounted(async () => {
+      if (authStore.isAuthenticated) {
+        await redirectAfterLogin();
+      }
+    });
 
     async function submit() {
       errorMessage.value = "";
       isSubmitting.value = true;
 
       try {
-        if (authStore.hasPendingMfa()) {
-          await authStore.verifyTotp(form.totpCode);
-        } else {
-          await authStore.login(form.email, form.password);
-        }
-
-        if (authStore.hasPendingMfa()) {
-          return;
-        }
-
-        await tenantStore.initialize();
-
-        router.push({
-          path: authStore.canManagePlatform() ? "/platform/tenants" : "/app/dashboard"
-        });
+        await authStore.login(form.username, form.password);
+        await redirectAfterLogin();
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : t("login.loginFailed");
+        console.error("Login failed", error);
+        errorMessage.value = t("login.loginFailed");
       } finally {
         isSubmitting.value = false;
       }
+    }
+
+    async function redirectAfterLogin() {
+      await tenantStore.initialize();
+      const hasPlatformPermission = authStore.canManagePlatform;
+      router.push({
+        path: hasPlatformPermission ? "/platform/tenants" : "/app/dashboard"
+      });
     }
 
     return {

@@ -179,6 +179,28 @@ Der Umgang mit Hehlerware und problematischen Kunden ist rechtlich durch das BGB
 *   **Sicherstellung:** Das System dokumentiert behördliche Beschlagnahmungen lückenlos, um zivilrechtliche Rückforderungsansprüche gegen den Verpfänder vorzubereiten.
 *   **Tipping-Off Verbot:** Bei laufenden Geldwäsche-Verdachtsmeldungen darf der Kunde gemäß GwG nicht über die Meldung informiert werden. Das System muss entsprechende Statusanzeigen für den Kunden (Portal) unterdrücken.
 
+### 8.4 Plattform-Administration & Mehrmandantenfähigkeit
+
+Lombardio ist als Multi-Tenant-Plattform konzipiert. Die Verwaltung der Mandanten erfolgt über eine dedizierte Plattform-Administrations-Sicht, die dem Betreiber volle Kontrolle über das Ökosystem gibt.
+
+#### 8.4.1 Mandanten-Provisionierung (Tenant Provisioning)
+Der Plattform-Administrator ist verantwortlich für das Onboarding neuer Unternehmen:
+*   **Tenant-Lifecycle:** Erstellung, Sperrung (Deaktivierung) und Archivierung von Mandanten.
+*   **Key-Verwaltung:** Vergabe eindeutiger technischer Identifier, die für die Tenant-Isolation auf Datenbank-Ebene genutzt werden.
+*   **Jurisdiction-Zuordnung:** Festlegung des rechtlichen Rahmens (z. B. DE, AT, FR), unter dem der Mandant operiert.
+
+#### 8.4.2 Feature-Management & Lizenzierung
+Lombardio folgt einem modularen Ansatz. Der Plattform-Admin steuert den Funktionsumfang pro Mandant:
+*   **Modul-Aktivierung:** Gezieltes Freischalten von Features wie `aml-compliance`, `online-auctions` oder `buy-in-service`.
+*   **Kontingente:** (Geplant) Verwaltung von Limits (z. B. Anzahl der Mitarbeiter oder maximales Pfand-Volumen).
+*   **Infrastructure-as-a-Service:** Automatische Bereitstellung der notwendigen Ressourcen (z. B. Keycloak-Gruppen) bei der Erstellung eines Mandanten.
+
+### 8.4.3 Globales Monitoring & Support
+Für den operativen Betrieb der Plattform stehen zentrale Werkzeuge zur Verfügung:
+*   **Mandanten-Dashboards:** Übersicht über die Aktivität und den Status aller angebundenen Unternehmen.
+*   **Audit-Log-Einsicht:** Revisionssichere Einsicht in Systemereignisse zur Fehleranalyse und Einhaltung von Service Level Agreements (SLAs).
+*   **Support-Zugang:** (Optional) Möglichkeit für Plattform-Admins, Mandanten bei technischen Problemen durch Impersonation oder spezifische Support-Rollen zu unterstützen (unter Wahrung strenger Datenschutzvorgaben).
+
 ---
 
 ## 9. Intelligente Rechtsautomatisierung (Legal Automation)

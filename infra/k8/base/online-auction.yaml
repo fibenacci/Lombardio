@@ -5,7 +5,6 @@ metadata:
 data:
   ONLINE_AUCTION_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=online_auction
   ONLINE_AUCTION_DB_USERNAME: lombardio
-  IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
   REDIS_HOST: redis
   REDIS_PORT: "6379"
   CENTRIFUGO_BASE_URL: http://centrifugo:8000

@@ -5,7 +5,6 @@ metadata:
 data:
   CUSTOMER_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=customer
   CUSTOMER_DB_USERNAME: lombardio
-  IDENTITY_ACCESS_BASE_URL: http://identity-access:8081
   KYC_BASE_URL: http://kyc:8086
 apiVersion: v1
 kind: Service

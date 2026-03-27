@@ -1,29 +1,64 @@
 .login-shell {
   min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at top left, #f8fafc, #e2e8f0);
+  padding: 1.5rem;
 }
 
 .login-card {
-  width: min(100%, 460px);
-  border: 1px solid var(--app-border);
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 30px 80px rgba(19, 34, 56, 0.14);
-  backdrop-filter: blur(14px);
-}
-
-.login-card .p-card-body {
-  padding: 2rem;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
 .login-head {
-  display: grid;
-  gap: 0.6rem;
+  text-align: center;
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.025em;
+  }
+
+  p {
+    color: #64748b;
+    font-size: 0.95rem;
+  }
 }
 
 .login-form {
-  display: grid;
-  gap: 1rem;
-  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #475569;
+  }
+}
+
+.login-actions {
+  margin-top: 1rem;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.p-error-message {
+  margin-bottom: 1.5rem;
 }

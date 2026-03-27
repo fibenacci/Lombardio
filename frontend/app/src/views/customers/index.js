@@ -2,8 +2,8 @@ import { defineComponent, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { searchCustomers } from "../../services/api/customer";
 import { fetchAmlStatus } from "../../services/api/aml";
-import { authStore } from "../../stores/auth";
-import { tenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import { useI18n } from "../../i18n";
 import template from "./template.html?raw";
 import "./styles.scss";
@@ -13,6 +13,9 @@ export default defineComponent({
   setup() {
     const { t } = useI18n();
     const router = useRouter();
+    const authStore = useAuthStore();
+    const tenantStore = useTenantStore();
+    
     const customers = ref([]);
     const query = ref("");
     const isLoading = ref(true);

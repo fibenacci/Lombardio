@@ -9,12 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-class ReferenceDataSeeder {
+public class ReferenceDataSeeder {
 
-    record DemoTenant(String id, String key, String numberPrefix, String city, String postalCode) {
+    public record DemoTenant(String id, String key, String numberPrefix, String city, String postalCode) {
     }
 
-    static final List<DemoTenant> TENANTS = List.of(
+    public static final List<DemoTenant> TENANTS = List.of(
             new DemoTenant("tenant-default", "default", "BER", "Berlin", "10115"),
             new DemoTenant("tenant-hamburg", "hanseatic", "HAM", "Hamburg", "20095"),
             new DemoTenant("tenant-munich", "isar", "MUC", "Muenchen", "80331"),

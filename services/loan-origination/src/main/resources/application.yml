@@ -18,20 +18,10 @@ spring:
 server:
   port: 8083
 
-customer:
-  base-url: ${CUSTOMER_BASE_URL}
+identity:
+  base-url: ${IDENTITY_BASE_URL}
 
 pawn-ticket:
-  base-url: ${PAWN_TICKET_BASE_URL}
-
-kyc:
-  base-url: ${KYC_BASE_URL}
-
-aml:
-  base-url: ${AML_BASE_URL}
-
-identity-access:
-  base-url: ${IDENTITY_ACCESS_BASE_URL}
 
 app:
   cors:

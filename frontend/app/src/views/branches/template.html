@@ -5,7 +5,7 @@
     icon="pi pi-sitemap"
     :copy="
       tenantStore.selectedTenantId
-        ? `Manage branches for tenant ${tenantStore.selectedTenant()?.displayName ?? tenantStore.selectedTenantId}.`
+        ? `Manage branches for tenant ${tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId}.`
         : 'Select a tenant before managing branches.'
     "
   />

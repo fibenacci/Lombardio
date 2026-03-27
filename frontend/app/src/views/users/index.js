@@ -1,14 +1,16 @@
 import { computed, defineComponent, onMounted, reactive, ref } from "vue";
 import { createUser, fetchBranches, fetchRoles, fetchUsers, updateUser } from "../../services/api/access";
 import { useAppToast } from "../../composables/use-app-toast";
-import { authStore } from "../../stores/auth";
-import { tenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import template from "./template.html?raw";
 import "./styles.scss";
 
 export default defineComponent({
   name: "UsersView",
   setup() {
+    const authStore = useAuthStore();
+    const tenantStore = useTenantStore();
     const toast = useAppToast();
     const users = ref([]);
     const roles = ref([]);
