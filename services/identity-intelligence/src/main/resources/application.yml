@@ -31,7 +31,7 @@ integration:
   base-url: ${INTEGRATION_BASE_URL:http://localhost:8092}
 
 customer:
-  internal-service-token: ${CUSTOMER_INTERNAL_SERVICE_TOKEN:dev-internal-token}
+  internal-service-token: ${CUSTOMER_INTERNAL_SERVICE_TOKEN:REPLACE_WITH_SECURE_TOKEN}
 
 customer-portal:
   public-base-url: ${CUSTOMER_PORTAL_PUBLIC_BASE_URL:http://localhost:5173/portal}

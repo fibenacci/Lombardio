@@ -9,6 +9,7 @@ data:
   REDIS_PORT: "6379"
   CENTRIFUGO_BASE_URL: http://centrifugo:8000
   CENTRIFUGO_WS_URL: ws://realtime.lombardio.local/connection/websocket
+---
 apiVersion: v1
 kind: Service
 metadata:

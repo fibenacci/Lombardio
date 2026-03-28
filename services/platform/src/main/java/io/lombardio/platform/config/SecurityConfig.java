@@ -1,6 +1,17 @@
+/*
+ * Lombardio Source-Available No-Distribution License 1.0
+ *
+ * Copyright (c) 2026 Benjamin Letzel. All rights reserved.
+ *
+ * This project is source-available for educational and review purposes only.
+ * Redistribution, sublicensing, or commercial use is strictly prohibited.
+ *
+ * For partnership or cooperation inquiries, please contact the author.
+ */
 package io.lombardio.platform.config;
 
 import io.lombardio.platform.security.KeycloakJwtAuthenticationConverter;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -21,68 +32,81 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Set;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @EnableConfigurationProperties(AppCorsProperties.class)
 public class SecurityConfig {
 
-    @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
-    private String jwkSetUri;
+  @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
+  private String jwkSetUri;
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource(null)))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/platform/health").permitAll()
-                        .requestMatchers("/api/v1/platform/tenants/*/features").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-                )
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(new KeycloakJwtAuthenticationConverter()))
-                );
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http.csrf(AbstractHttpConfigurer::disable)
+        .cors(cors -> cors.configurationSource(corsConfigurationSource(null)))
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
+            auth ->
+                auth.requestMatchers("/api/v1/platform/health")
+                    .permitAll()
+                    .requestMatchers("/actuator/health", "/actuator/info")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
+        .exceptionHandling(
+            exception ->
+                exception.authenticationEntryPoint(
+                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+        .oauth2ResourceServer(
+            oauth2 ->
+                oauth2.jwt(
+                    jwt ->
+                        jwt.jwtAuthenticationConverter(new KeycloakJwtAuthenticationConverter())));
 
-        return http.build();
+    return http.build();
+  }
+
+  @Bean
+  public JwtDecoder jwtDecoder() {
+    NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+
+    Set<String> trustedIssuers =
+        Set.of("http://localhost:8080/realms/lombardio", "http://keycloak:8080/realms/lombardio");
+
+    jwtDecoder.setJwtValidator(
+        new DelegatingOAuth2TokenValidator<>(
+            new JwtTimestampValidator(),
+            jwt -> {
+              String issuer = jwt.getIssuer() != null ? jwt.getIssuer().toString() : "";
+              if (trustedIssuers.contains(issuer)) {
+                return OAuth2TokenValidatorResult.success();
+              }
+              return OAuth2TokenValidatorResult.failure(
+                  new OAuth2Error("invalid_issuer", "The issuer is not trusted: " + issuer, null));
+            }));
+
+    return jwtDecoder;
+  }
+
+  @Bean
+  public CorsConfigurationSource corsConfigurationSource(AppCorsProperties corsProperties) {
+    if (corsProperties == null) {
+      UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+      source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+      return source;
     }
 
-    @Bean
-    public JwtDecoder jwtDecoder() {
-        // We use the standard decoder but configure it to be more lenient with the issuer
-        // during local development, while still validating the signature against Keycloak.
-        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
-        
-        // This disables strict issuer validation to avoid localhost vs container-name issues
-        jwtDecoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(new JwtTimestampValidator()));
-        
-        return jwtDecoder;
-    }
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowedOrigins(corsProperties.allowedOrigins());
+    configuration.setAllowedMethods(corsProperties.allowedMethods());
+    configuration.setAllowedHeaders(corsProperties.allowedHeaders());
+    configuration.setExposedHeaders(corsProperties.exposedHeaders());
+    configuration.setMaxAge(corsProperties.maxAgeSeconds());
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource(AppCorsProperties corsProperties) {
-        if (corsProperties == null) {
-            UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-            source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
-            return source;
-        }
-
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(corsProperties.allowedOrigins());
-        configuration.setAllowedMethods(corsProperties.allowedMethods());
-        configuration.setAllowedHeaders(corsProperties.allowedHeaders());
-        configuration.setExposedHeaders(corsProperties.exposedHeaders());
-        configuration.setMaxAge(corsProperties.maxAgeSeconds());
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
+  }
 }

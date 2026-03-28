@@ -1,14 +1,22 @@
+/*
+ * Lombardio Source-Available No-Distribution License 1.0
+ *
+ * Copyright (c) 2026 Benjamin Letzel. All rights reserved.
+ *
+ * This project is source-available for educational and review purposes only.
+ * Redistribution, sublicensing, or commercial use is strictly prohibited.
+ *
+ * For partnership or cooperation inquiries, please contact the author.
+ */
 package io.lombardio.onlineauction.api;
 
 import java.math.BigDecimal;
 
 public record OnlineAuctionLotResponse(
-        String id,
-        int lotNumber,
-        String title,
-        String description,
-        BigDecimal startingBid,
-        BigDecimal currentBid,
-        String highestBidderAlias
-) {
-}
+    String id,
+    int lotNumber,
+    String title,
+    String description,
+    BigDecimal startingBid,
+    BigDecimal currentBid,
+    String highestBidderAlias) {}

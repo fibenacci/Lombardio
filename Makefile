@@ -47,7 +47,15 @@ tf-plan: ## Plan Terraform changes (env=local|aws|gcp)
 tf-apply: ## Apply Terraform changes (env=local|aws|gcp)
 	@./$(TF_SCRIPT) $(env) apply
 
-# --- Testing ---
+# --- Testing & Code Quality ---
 
 test: ## Run all tests (Maven)
 	mvn clean install
+
+fix: ## Automatically fix code formatting (Java, Go, Frontend)
+	@echo "🎨 Fixing Java (Spotless)..."
+	mvn spotless:apply
+	@echo "🐹 Fixing Go (gofmt)..."
+	find services -name go.mod -execdir go fmt ./... \;
+	@echo "⚛️ Fixing Frontend (eslint/prettier)..."
+	cd frontend/app && npm run lint:fix --if-present

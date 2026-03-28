@@ -5,8 +5,13 @@ dist/
 target/
 .DS_Store
 .env
+.secrets
+*.tfstate
+*.tfstate.backup
 **/target
 GWG_*
 cloud-config.yml
 AGENTS.md
 GEMINI.md
+.terraform
+.terraform.lock.hcl

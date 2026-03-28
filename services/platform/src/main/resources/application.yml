@@ -38,7 +38,7 @@ app:
     server-url: ${KEYCLOAK_URL:http://localhost:8080}
     realm: ${KEYCLOAK_REALM:lombardio}
     admin-username: ${KEYCLOAK_ADMIN_USERNAME:admin}
-    admin-password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
+    admin-password: ${KEYCLOAK_ADMIN_PASSWORD:admin_change_me}
   cors:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}
     allowed-methods: ${APP_CORS_ALLOWED_METHODS}

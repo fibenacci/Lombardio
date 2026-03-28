@@ -1,37 +1,50 @@
+/*
+ * Lombardio Source-Available No-Distribution License 1.0
+ *
+ * Copyright (c) 2026 Benjamin Letzel. All rights reserved.
+ *
+ * This project is source-available for educational and review purposes only.
+ * Redistribution, sublicensing, or commercial use is strictly prohibited.
+ *
+ * For partnership or cooperation inquiries, please contact the author.
+ */
 package io.lombardio.identity.application.service;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.lombardio.identity.api.http.CreateCustomerRequest;
 import io.lombardio.identity.api.http.UpdateCustomerRequest;
 import io.lombardio.identity.domain.port.KycDirectory;
 import io.lombardio.identity.infrastructure.persistence.support.InMemoryCustomerRepository;
 import io.lombardio.identity.portal.application.CustomerPortalService;
+import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.time.LocalDate;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 class CustomerServiceTest {
 
-    private final CustomerService customerService = new CustomerService(
-            new InMemoryCustomerRepository(),
-            (tenantId, customerId) -> new KycDirectory.KycProjection("APPROVED", true, "PERSONALAUSWEIS"),
-            java.util.List.of(),
-            Mockito.mock(CustomerPortalService.class)
-    );
+  private final CustomerService customerService =
+      new CustomerService(
+          new InMemoryCustomerRepository(),
+          (tenantId, customerId) ->
+              new KycDirectory.KycProjection("APPROVED", true, "PERSONALAUSWEIS"),
+          java.util.List.of(),
+          Mockito.mock(CustomerPortalService.class));
 
-    @Test
-    void shouldSearchCustomersWithinTenant() {
-        var customers = customerService.search("tenant-default", "Anna");
+  @Test
+  void shouldSearchCustomersWithinTenant() {
+    var customers = customerService.search("tenant-default", "Anna");
 
-        assertEquals(1, customers.size());
-        assertEquals("Anna Becker", customers.get(0).displayName());
-    }
+    assertEquals(1, customers.size());
+    assertEquals("Anna Becker", customers.get(0).displayName());
+  }
 
-    @Test
-    void shouldCreateCustomer() {
-        var created = customerService.create("tenant-default", new CreateCustomerRequest(
+  @Test
+  void shouldCreateCustomer() {
+    var created =
+        customerService.create(
+            "tenant-default",
+            new CreateCustomerRequest(
                 "KD-3001",
                 "Lena",
                 "Sommer",
@@ -41,25 +54,28 @@ class CustomerServiceTest {
                 false,
                 "Beispielweg 3",
                 "10405",
-                "Berlin"
-        ));
+                "Berlin"));
 
-        assertEquals("KD-3001", created.customerNumber());
-        assertEquals("Lena Sommer", created.displayName());
-        assertEquals("Lena", created.firstName());
-        assertEquals(LocalDate.parse("1991-05-18"), created.birthDate());
-    }
+    assertEquals("KD-3001", created.customerNumber());
+    assertEquals("Lena Sommer", created.displayName());
+    assertEquals("Lena", created.firstName());
+    assertEquals(LocalDate.parse("1991-05-18"), created.birthDate());
+  }
 
-    @Test
-    void shouldLoadCustomerByIdWithinTenant() {
-        var customer = customerService.requireById("tenant-default", "customer-berlin-1");
+  @Test
+  void shouldLoadCustomerByIdWithinTenant() {
+    var customer = customerService.requireById("tenant-default", "customer-berlin-1");
 
-        assertEquals("Anna Becker", customer.displayName());
-    }
+    assertEquals("Anna Becker", customer.displayName());
+  }
 
-    @Test
-    void shouldUpdateCustomerWithinTenant() {
-        var updated = customerService.update("tenant-default", "customer-berlin-1", new UpdateCustomerRequest(
+  @Test
+  void shouldUpdateCustomerWithinTenant() {
+    var updated =
+        customerService.update(
+            "tenant-default",
+            "customer-berlin-1",
+            new UpdateCustomerRequest(
                 "KD-1001",
                 "Anna",
                 "Schneider",
@@ -69,11 +85,10 @@ class CustomerServiceTest {
                 true,
                 "Neue Str. 9",
                 "10117",
-                "Berlin"
-        ));
+                "Berlin"));
 
-        assertEquals("Anna Schneider", updated.displayName());
-        assertEquals("+49 170 999999", updated.phone());
-        assertEquals("Neue Str. 9", updated.street());
-    }
+    assertEquals("Anna Schneider", updated.displayName());
+    assertEquals("+49 170 999999", updated.phone());
+    assertEquals("Neue Str. 9", updated.street());
+  }
 }

@@ -30,7 +30,7 @@ platform:
   base-url: ${PLATFORM_BASE_URL}
 
 internal:
-  service-token: ${CUSTOMER_INTERNAL_SERVICE_TOKEN:dev-internal-token}
+  service-token: ${CUSTOMER_INTERNAL_SERVICE_TOKEN:REPLACE_WITH_SECURE_TOKEN}
 
 app:
   cors:

@@ -14,12 +14,12 @@ type WebhookDestination struct {
 }
 
 type Config struct {
-	Port                string
-	RabbitMQURL         string
-	RabbitMQExchange    string
-	RabbitMQQueue       string
-	RabbitMQBindingKey  string
-	WebhookDestinations []WebhookDestination
+	Port                 string
+	RabbitMQURL          string
+	RabbitMQExchange     string
+	RabbitMQQueue        string
+	RabbitMQBindingKey   string
+	WebhookDestinations  []WebhookDestination
 	InternalServiceToken string
 	EmailDeliveryMode    string
 	SMTPAddress          string
@@ -31,11 +31,11 @@ type Config struct {
 
 func LoadFromEnv() (Config, error) {
 	cfg := Config{
-		Port:               strings.TrimSpace(os.Getenv("PORT")),
-		RabbitMQURL:        strings.TrimSpace(os.Getenv("RABBITMQ_URL")),
-		RabbitMQExchange:   strings.TrimSpace(os.Getenv("RABBITMQ_EXCHANGE")),
-		RabbitMQQueue:      strings.TrimSpace(os.Getenv("RABBITMQ_QUEUE")),
-		RabbitMQBindingKey: strings.TrimSpace(os.Getenv("RABBITMQ_BINDING_KEY")),
+		Port:                 strings.TrimSpace(os.Getenv("PORT")),
+		RabbitMQURL:          strings.TrimSpace(os.Getenv("RABBITMQ_URL")),
+		RabbitMQExchange:     strings.TrimSpace(os.Getenv("RABBITMQ_EXCHANGE")),
+		RabbitMQQueue:        strings.TrimSpace(os.Getenv("RABBITMQ_QUEUE")),
+		RabbitMQBindingKey:   strings.TrimSpace(os.Getenv("RABBITMQ_BINDING_KEY")),
 		InternalServiceToken: strings.TrimSpace(os.Getenv("INTEGRATION_INTERNAL_SERVICE_TOKEN")),
 		EmailDeliveryMode:    strings.TrimSpace(os.Getenv("INTEGRATION_EMAIL_DELIVERY_MODE")),
 		SMTPAddress:          strings.TrimSpace(os.Getenv("INTEGRATION_SMTP_ADDRESS")),

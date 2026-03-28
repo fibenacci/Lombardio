@@ -1,15 +1,21 @@
+/*
+ * Lombardio Source-Available No-Distribution License 1.0
+ *
+ * Copyright (c) 2026 Benjamin Letzel. All rights reserved.
+ *
+ * This project is source-available for educational and review purposes only.
+ * Redistribution, sublicensing, or commercial use is strictly prohibited.
+ *
+ * For partnership or cooperation inquiries, please contact the author.
+ */
 package io.lombardio.loanorigination.domain.port;
 
 import java.math.BigDecimal;
 
 public interface AmlDirectory {
 
-    AmlAssessment assessForOrigination(String tenantId, String customerId, BigDecimal loanAmount);
+  AmlAssessment assessForOrigination(String tenantId, String customerId, BigDecimal loanAmount);
 
-    record AmlAssessment(
-            boolean featureAvailable,
-            boolean originationAllowed,
-            String decisionReason
-    ) {
-    }
+  record AmlAssessment(
+      boolean featureAvailable, boolean originationAllowed, String decisionReason) {}
 }

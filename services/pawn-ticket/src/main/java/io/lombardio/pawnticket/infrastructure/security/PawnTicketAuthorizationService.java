@@ -1,3 +1,13 @@
+/*
+ * Lombardio Source-Available No-Distribution License 1.0
+ *
+ * Copyright (c) 2026 Benjamin Letzel. All rights reserved.
+ *
+ * This project is source-available for educational and review purposes only.
+ * Redistribution, sublicensing, or commercial use is strictly prohibited.
+ *
+ * For partnership or cooperation inquiries, please contact the author.
+ */
 package io.lombardio.pawnticket.infrastructure.security;
 
 import io.lombardio.platform.security.AuthenticatedUser;
@@ -7,35 +17,35 @@ import org.springframework.stereotype.Service;
 @Service
 public class PawnTicketAuthorizationService extends BaseAuthorizationService {
 
-    public void requireTicketWrite(AuthenticatedUser principal) {
-        requirePermission(principal, "pawn-tickets.write");
-    }
+  public void requireTicketWrite(AuthenticatedUser principal) {
+    requirePermission(principal, "pawn-tickets.write");
+  }
 
-    public void requireTicketRead(AuthenticatedUser principal) {
-        requirePermission(principal, "pawn-tickets.read");
-    }
+  public void requireTicketRead(AuthenticatedUser principal) {
+    requirePermission(principal, "pawn-tickets.read");
+  }
 
-    public void requireTicketRead(AuthenticatedUser principal, String tenantId) {
-        requireTenantAccess(principal, tenantId, "pawn-tickets.read", "platform.tenants.read");
-    }
+  public void requireTicketRead(AuthenticatedUser principal, String tenantId) {
+    requireTenantAccess(principal, tenantId, "pawn-tickets.read", "platform.tenants.read");
+  }
 
-    public void requireTicketWrite(AuthenticatedUser principal, String tenantId) {
-        requireTenantAccess(principal, tenantId, "pawn-tickets.write", "platform.tenants.write");
-    }
+  public void requireTicketWrite(AuthenticatedUser principal, String tenantId) {
+    requireTenantAccess(principal, tenantId, "pawn-tickets.write", "platform.tenants.write");
+  }
 
-    public void requireCashWrite(AuthenticatedUser principal) {
-        requirePermission(principal, "cash-transactions.write");
-    }
+  public void requireCashWrite(AuthenticatedUser principal) {
+    requirePermission(principal, "cash-transactions.write");
+  }
 
-    public void requireCashRead(AuthenticatedUser principal) {
-        requirePermission(principal, "cash-transactions.read");
-    }
+  public void requireCashRead(AuthenticatedUser principal) {
+    requirePermission(principal, "cash-transactions.read");
+  }
 
-    public void requireCashRead(AuthenticatedUser principal, String tenantId) {
-        requireTenantAccess(principal, tenantId, "cash-transactions.read", "platform.tenants.read");
-    }
+  public void requireCashRead(AuthenticatedUser principal, String tenantId) {
+    requireTenantAccess(principal, tenantId, "cash-transactions.read", "platform.tenants.read");
+  }
 
-    public void requireCashWrite(AuthenticatedUser principal, String tenantId) {
-        requireTenantAccess(principal, tenantId, "cash-transactions.write", "platform.tenants.write");
-    }
+  public void requireCashWrite(AuthenticatedUser principal, String tenantId) {
+    requireTenantAccess(principal, tenantId, "cash-transactions.write", "platform.tenants.write");
+  }
 }

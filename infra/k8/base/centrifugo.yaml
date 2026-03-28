@@ -60,4 +60,4 @@ spec:
       volumes:
         - name: centrifugo-config
           secret:
-            name: centrifugo-config
+            secretName: centrifugo-config

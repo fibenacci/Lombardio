@@ -1,161 +1,199 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ../../base
+- ../../base
 
 patches:
-  - target:
-      kind: Deployment
-      name: frontend
-    patch: |-
-      - op: replace
-        path: /spec/template/spec/containers/0/env
-        value:
-          - name: API_BASE_URL
-            value: https://identity.staging.lombardio.example
-          - name: PLATFORM_API_BASE_URL
-            value: https://platform.staging.lombardio.example
-          - name: ORIGINATION_API_BASE_URL
-            value: https://origination.staging.lombardio.example
-          - name: CUSTOMER_API_BASE_URL
-            value: https://customer.staging.lombardio.example
-          - name: PAWN_TICKET_API_BASE_URL
-            value: https://pawn-ticket.staging.lombardio.example
-          - name: KYC_API_BASE_URL
-            value: https://kyc.staging.lombardio.example
-          - name: AML_API_BASE_URL
-            value: https://aml.staging.lombardio.example
-          - name: AUCTION_API_BASE_URL
-            value: https://auction.staging.lombardio.example
-          - name: ONLINE_AUCTION_API_BASE_URL
-            value: https://online-auction.staging.lombardio.example
-          - name: REPORTING_API_BASE_URL
-            value: https://reporting.staging.lombardio.example
-          - name: CENTRIFUGO_WS_URL
-            value: wss://realtime.staging.lombardio.example/connection/websocket
-  - target:
-      kind: Ingress
-      name: lombardio
-    patch: |-
-      - op: replace
-        path: /spec/rules
-        value:
-          - host: app.staging.lombardio.example
-            http:
-              paths:
-                - path: /
-                  pathType: Prefix
-                  backend:
-                    service:
-                      name: frontend
-                      port:
-                        number: 80
-          - host: identity.staging.lombardio.example
-            http:
-              paths:
-                - path: /
-                  pathType: Prefix
-                  backend:
-                    service:
-                      port:
-                        number: 8081
-          - host: platform.staging.lombardio.example
-            http:
-              paths:
-                - path: /
-                  pathType: Prefix
-                  backend:
-                    service:
-                      name: platform
-                      port:
-                        number: 8082
-          - host: origination.staging.lombardio.example
-            http:
-              paths:
-                - path: /
-                  pathType: Prefix
-                  backend:
-                    service:
-                      name: loan-origination
-                      port:
-                        number: 8083
-          - host: customer.staging.lombardio.example
-            http:
-              paths:
-                - path: /
-                  pathType: Prefix
-                  backend:
-                    service:
-                      name: customer
-                      port:
-                        number: 8084
-          - host: pawn-ticket.staging.lombardio.example
-            http:
-              paths:
-                - path: /
-                  pathType: Prefix
-                  backend:
-                    service:
-                      name: pawn-ticket
-                      port:
-                        number: 8085
-          - host: kyc.staging.lombardio.example
-            http:
-              paths:
-                - path: /
-                  pathType: Prefix
-                  backend:
-                    service:
-                      name: kyc
-                      port:
-                        number: 8086
-          - host: aml.staging.lombardio.example
-            http:
-              paths:
-                - path: /
-                  pathType: Prefix
-                  backend:
-                    service:
-                      name: aml
-                      port:
-                        number: 8088
-          - host: auction.staging.lombardio.example
-            http:
-              paths:
-                - path: /
-                  pathType: Prefix
-                  backend:
-                    service:
-                      name: auction
-                      port:
-                        number: 8089
-          - host: online-auction.staging.lombardio.example
-            http:
-              paths:
-                - path: /
-                  pathType: Prefix
-                  backend:
-                    service:
-                      name: online-auction
-                      port:
-                        number: 8090
-          - host: reporting.staging.lombardio.example
-            http:
-              paths:
-                - path: /
-                  pathType: Prefix
-                  backend:
-                    service:
-                      name: reporting
-                      port:
-                        number: 8091
-          - host: realtime.staging.lombardio.example
-            http:
-              paths:
-                - path: /
-                  pathType: Prefix
-                  backend:
-                    service:
-                      name: centrifugo
-                      port:
-                        number: 8000
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/env
+      value:
+        - name: API_BASE_URL
+          value: https://identity.staging.lombardio.example
+        - name: PLATFORM_API_BASE_URL
+          value: https://platform.staging.lombardio.example
+        - name: ORIGINATION_API_BASE_URL
+          value: https://origination.staging.lombardio.example
+        - name: CUSTOMER_API_BASE_URL
+          value: https://customer.staging.lombardio.example
+        - name: PAWN_TICKET_API_BASE_URL
+          value: https://pawn-ticket.staging.lombardio.example
+        - name: KYC_API_BASE_URL
+          value: https://kyc.staging.lombardio.example
+        - name: AML_API_BASE_URL
+          value: https://aml.staging.lombardio.example
+        - name: AUCTION_API_BASE_URL
+          value: https://auction.staging.lombardio.example
+        - name: ONLINE_AUCTION_API_BASE_URL
+          value: https://online-auction.staging.lombardio.example
+        - name: REPORTING_API_BASE_URL
+          value: https://reporting.staging.lombardio.example
+        - name: CENTRIFUGO_WS_URL
+          value: wss://realtime.staging.lombardio.example/connection/websocket
+  target:
+    kind: Deployment
+    name: frontend
+- patch: |-
+    - op: replace
+      path: /spec/rules
+      value:
+        - host: app.staging.lombardio.example
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: frontend
+                    port:
+                      number: 80
+        - host: identity.staging.lombardio.example
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: identity-access
+                    port:
+                      number: 8081
+        - host: platform.staging.lombardio.example
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: platform
+                    port:
+                      number: 8082
+        - host: origination.staging.lombardio.example
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: loan-origination
+                    port:
+                      number: 8083
+        - host: customer.staging.lombardio.example
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: customer
+                    port:
+                      number: 8084
+        - host: pawn-ticket.staging.lombardio.example
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: pawn-ticket
+                    port:
+                      number: 8085
+        - host: kyc.staging.lombardio.example
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: kyc
+                    port:
+                      number: 8086
+        - host: aml.staging.lombardio.example
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: aml
+                    port:
+                      number: 8088
+        - host: auction.staging.lombardio.example
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: auction
+                    port:
+                      number: 8089
+        - host: online-auction.staging.lombardio.example
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: online-auction
+                    port:
+                      number: 8090
+        - host: reporting.staging.lombardio.example
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: reporting
+                    port:
+                      number: 8091
+        - host: realtime.staging.lombardio.example
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: centrifugo
+                    port:
+                      number: 8000
+  target:
+    kind: Ingress
+    name: lombardio
+images:
+- name: ghcr.io/example/lombardio/aml:latest
+  newName: nginx
+  newTag: alpine
+- name: ghcr.io/example/lombardio/auction:latest
+  newName: nginx
+  newTag: alpine
+- name: ghcr.io/example/lombardio/customer:latest
+  newName: nginx
+  newTag: alpine
+- name: ghcr.io/example/lombardio/document-ocr:latest
+  newName: nginx
+  newTag: alpine
+- name: ghcr.io/example/lombardio/frontend:latest
+  newName: nginx
+  newTag: alpine
+- name: ghcr.io/example/lombardio/identity-access:latest
+  newName: nginx
+  newTag: alpine
+- name: ghcr.io/example/lombardio/kyc:latest
+  newName: nginx
+  newTag: alpine
+- name: ghcr.io/example/lombardio/loan-origination:latest
+  newName: nginx
+  newTag: alpine
+- name: ghcr.io/example/lombardio/online-auction:latest
+  newName: nginx
+  newTag: alpine
+- name: ghcr.io/example/lombardio/pawn-ticket:latest
+  newName: nginx
+  newTag: alpine
+- name: ghcr.io/example/lombardio/platform:latest
+  newName: nginx
+  newTag: alpine
+- name: ghcr.io/example/lombardio/reporting:latest
+  newName: nginx
+  newTag: alpine

@@ -1,3 +1,13 @@
+/*
+ * Lombardio Source-Available No-Distribution License 1.0
+ *
+ * Copyright (c) 2026 Benjamin Letzel. All rights reserved.
+ *
+ * This project is source-available for educational and review purposes only.
+ * Redistribution, sublicensing, or commercial use is strictly prohibited.
+ *
+ * For partnership or cooperation inquiries, please contact the author.
+ */
 package io.lombardio.loanorigination.infrastructure.persistence.entity;
 
 import jakarta.persistence.Column;
@@ -6,121 +16,119 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "loan_positions", schema = "loan_origination")
 public class LoanPositionEntity {
 
-    @Id
-    private String id;
+  @Id private String id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "loan_case_id", nullable = false)
-    private LoanCaseEntity loanCase;
+  @ManyToOne(optional = false)
+  @JoinColumn(name = "loan_case_id", nullable = false)
+  private LoanCaseEntity loanCase;
 
-    @Column(name = "ticket_group", nullable = false)
-    private Integer ticketGroup;
+  @Column(name = "ticket_group", nullable = false)
+  private Integer ticketGroup;
 
-    @Column(name = "label", nullable = false)
-    private String label;
+  @Column(name = "label", nullable = false)
+  private String label;
 
-    @Column(name = "description", nullable = false)
-    private String description;
+  @Column(name = "description", nullable = false)
+  private String description;
 
-    @Column(name = "guideline_id", nullable = false)
-    private String guidelineId;
+  @Column(name = "guideline_id", nullable = false)
+  private String guidelineId;
 
-    @Column(name = "guideline_label", nullable = false)
-    private String guidelineLabel;
+  @Column(name = "guideline_label", nullable = false)
+  private String guidelineLabel;
 
-    @Column(name = "base_loan_value", nullable = false)
-    private BigDecimal baseLoanValue;
+  @Column(name = "base_loan_value", nullable = false)
+  private BigDecimal baseLoanValue;
 
-    @Column(name = "pledged_value", nullable = false)
-    private BigDecimal pledgedValue;
+  @Column(name = "pledged_value", nullable = false)
+  private BigDecimal pledgedValue;
 
-    @Column(name = "sort_order", nullable = false)
-    private Integer sortOrder;
+  @Column(name = "sort_order", nullable = false)
+  private Integer sortOrder;
 
-    public String getId() {
-        return id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    public LoanCaseEntity getLoanCase() {
-        return loanCase;
-    }
+  public LoanCaseEntity getLoanCase() {
+    return loanCase;
+  }
 
-    public void setLoanCase(LoanCaseEntity loanCase) {
-        this.loanCase = loanCase;
-    }
+  public void setLoanCase(LoanCaseEntity loanCase) {
+    this.loanCase = loanCase;
+  }
 
-    public Integer getTicketGroup() {
-        return ticketGroup;
-    }
+  public Integer getTicketGroup() {
+    return ticketGroup;
+  }
 
-    public void setTicketGroup(Integer ticketGroup) {
-        this.ticketGroup = ticketGroup;
-    }
+  public void setTicketGroup(Integer ticketGroup) {
+    this.ticketGroup = ticketGroup;
+  }
 
-    public String getLabel() {
-        return label;
-    }
+  public String getLabel() {
+    return label;
+  }
 
-    public void setLabel(String label) {
-        this.label = label;
-    }
+  public void setLabel(String label) {
+    this.label = label;
+  }
 
-    public String getDescription() {
-        return description;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-    public String getGuidelineId() {
-        return guidelineId;
-    }
+  public String getGuidelineId() {
+    return guidelineId;
+  }
 
-    public void setGuidelineId(String guidelineId) {
-        this.guidelineId = guidelineId;
-    }
+  public void setGuidelineId(String guidelineId) {
+    this.guidelineId = guidelineId;
+  }
 
-    public String getGuidelineLabel() {
-        return guidelineLabel;
-    }
+  public String getGuidelineLabel() {
+    return guidelineLabel;
+  }
 
-    public void setGuidelineLabel(String guidelineLabel) {
-        this.guidelineLabel = guidelineLabel;
-    }
+  public void setGuidelineLabel(String guidelineLabel) {
+    this.guidelineLabel = guidelineLabel;
+  }
 
-    public BigDecimal getBaseLoanValue() {
-        return baseLoanValue;
-    }
+  public BigDecimal getBaseLoanValue() {
+    return baseLoanValue;
+  }
 
-    public void setBaseLoanValue(BigDecimal baseLoanValue) {
-        this.baseLoanValue = baseLoanValue;
-    }
+  public void setBaseLoanValue(BigDecimal baseLoanValue) {
+    this.baseLoanValue = baseLoanValue;
+  }
 
-    public BigDecimal getPledgedValue() {
-        return pledgedValue;
-    }
+  public BigDecimal getPledgedValue() {
+    return pledgedValue;
+  }
 
-    public void setPledgedValue(BigDecimal pledgedValue) {
-        this.pledgedValue = pledgedValue;
-    }
+  public void setPledgedValue(BigDecimal pledgedValue) {
+    this.pledgedValue = pledgedValue;
+  }
 
-    public Integer getSortOrder() {
-        return sortOrder;
-    }
+  public Integer getSortOrder() {
+    return sortOrder;
+  }
 
-    public void setSortOrder(Integer sortOrder) {
-        this.sortOrder = sortOrder;
-    }
+  public void setSortOrder(Integer sortOrder) {
+    this.sortOrder = sortOrder;
+  }
 }

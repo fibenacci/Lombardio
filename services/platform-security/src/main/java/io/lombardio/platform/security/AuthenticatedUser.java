@@ -1,38 +1,49 @@
+/*
+ * Lombardio Source-Available No-Distribution License 1.0
+ *
+ * Copyright (c) 2026 Benjamin Letzel. All rights reserved.
+ *
+ * This project is source-available for educational and review purposes only.
+ * Redistribution, sublicensing, or commercial use is strictly prohibited.
+ *
+ * For partnership or cooperation inquiries, please contact the author.
+ */
 package io.lombardio.platform.security;
-
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public record AuthenticatedUser(
-        String userId,
-        String actorUserId,
-        String tenantId,
-        boolean impersonating,
-        String email,
-        String displayName,
-        List<String> permissions
-) {
-    public boolean hasPermission(String permission) {
-        return permissions.contains(permission);
-    }
+    String userId,
+    String actorUserId,
+    String tenantId,
+    boolean impersonating,
+    String email,
+    String displayName,
+    List<String> permissions) {
+  public boolean hasPermission(String permission) {
+    return permissions.contains(permission);
+  }
 
-    public static Optional<String> currentAccessToken() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getCredentials() instanceof String token) {
-            return Optional.of(token);
-        }
-        // In case of standard Spring OAuth2 Resource Server, credentials might be Jwt object
-        if (authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser) {
-             // We need to store the token in the authentication object. 
-             // Currently KeycloakJwtAuthenticationConverter uses UsernamePasswordAuthenticationToken(principal, jwt, authorities)
-             // So getCredentials() should return the Jwt object.
-             if (authentication.getCredentials() instanceof org.springframework.security.oauth2.jwt.Jwt jwt) {
-                 return Optional.of(jwt.getTokenValue());
-             }
-        }
-        return Optional.empty();
+  public static Optional<String> currentAccessToken() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication != null && authentication.getCredentials() instanceof String token) {
+      return Optional.of(token);
     }
+    // In case of standard Spring OAuth2 Resource Server, credentials might be Jwt
+    // object
+    if (authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser) {
+      // We need to store the token in the authentication object.
+      // Currently KeycloakJwtAuthenticationConverter uses
+      // UsernamePasswordAuthenticationToken(principal, jwt, authorities)
+      // So getCredentials() should return the Jwt object.
+      if (authentication.getCredentials()
+          instanceof org.springframework.security.oauth2.jwt.Jwt jwt) {
+        return Optional.of(jwt.getTokenValue());
+      }
+    }
+    return Optional.empty();
+  }
 }

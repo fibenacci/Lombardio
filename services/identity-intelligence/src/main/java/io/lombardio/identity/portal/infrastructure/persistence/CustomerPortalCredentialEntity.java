@@ -1,47 +1,56 @@
+/*
+ * Lombardio Source-Available No-Distribution License 1.0
+ *
+ * Copyright (c) 2026 Benjamin Letzel. All rights reserved.
+ *
+ * This project is source-available for educational and review purposes only.
+ * Redistribution, sublicensing, or commercial use is strictly prohibited.
+ *
+ * For partnership or cooperation inquiries, please contact the author.
+ */
 package io.lombardio.identity.portal.infrastructure.persistence;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
 import java.time.Instant;
 
 @Entity
 @Table(name = "customer_portal_credentials", schema = "customer")
 public class CustomerPortalCredentialEntity {
 
-    @Id
-    @Column(name = "customer_id", nullable = false)
-    private String customerId;
+  @Id
+  @Column(name = "customer_id", nullable = false)
+  private String customerId;
 
-    @Column(name = "password_hash", nullable = false)
-    private String passwordHash;
+  @Column(name = "password_hash", nullable = false)
+  private String passwordHash;
 
-    @Column(name = "activated_at", nullable = false)
-    private Instant activatedAt;
+  @Column(name = "activated_at", nullable = false)
+  private Instant activatedAt;
 
-    public String getCustomerId() {
-        return customerId;
-    }
+  public String getCustomerId() {
+    return customerId;
+  }
 
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
+  public void setCustomerId(String customerId) {
+    this.customerId = customerId;
+  }
 
-    public String getPasswordHash() {
-        return passwordHash;
-    }
+  public String getPasswordHash() {
+    return passwordHash;
+  }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
+  public void setPasswordHash(String passwordHash) {
+    this.passwordHash = passwordHash;
+  }
 
-    public Instant getActivatedAt() {
-        return activatedAt;
-    }
+  public Instant getActivatedAt() {
+    return activatedAt;
+  }
 
-    public void setActivatedAt(Instant activatedAt) {
-        this.activatedAt = activatedAt;
-    }
+  public void setActivatedAt(Instant activatedAt) {
+    this.activatedAt = activatedAt;
+  }
 }

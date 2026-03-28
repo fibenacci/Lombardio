@@ -5,6 +5,7 @@ metadata:
 data:
   PAWN_TICKET_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=pawn_ticket
   PAWN_TICKET_DB_USERNAME: lombardio
+---
 apiVersion: v1
 kind: Service
 metadata:

@@ -3,8 +3,9 @@ kind: ConfigMap
 metadata:
   name: auction-config
 data:
-  AUCTION_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity?currentSchema=auction
+  AUCTION_DB_URL: jdbc:postgresql://postgres:5432/lombardio_auction?currentSchema=auction
   AUCTION_DB_USERNAME: lombardio
+---
 apiVersion: v1
 kind: Service
 metadata:
