@@ -88,6 +88,14 @@ export const useAuthStore = defineStore("auth", {
       this.token = null;
       localStorage.removeItem("lombardio_token");
       localStorage.removeItem("lombardio_user");
+    },
+
+    resetForTests() {
+      this.authenticated = false;
+      this.user = null;
+      this.token = null;
+      this.ready = false;
+      localStorage.clear();
     }
   }
 });

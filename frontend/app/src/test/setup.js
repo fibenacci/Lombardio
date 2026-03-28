@@ -263,9 +263,14 @@ beforeEach(() => {
     value: screenOrientationMock
   });
   window.localStorage.clear();
-  authStore.resetForTests();
-  customerPortalStore.resetForTests();
-  tenantStore.resetForTests();
+  
+  const auth = useAuthStore();
+  const customerPortal = useCustomerPortalStore();
+  const tenant = useTenantStore();
+  
+  auth.resetForTests();
+  customerPortal.resetForTests();
+  tenant.resetForTests();
 });
 
 afterEach(() => {
