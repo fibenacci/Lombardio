@@ -8,8 +8,8 @@ resource "null_resource" "k3s_install" {
 
   provisioner "remote-exec" {
     inline = [
-      "curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC='--tls-san ${var.target_ip}' sh -",
-      "sudo wait && sudo chmod 644 /etc/rancher/k3s/k3s.yaml"
+      "curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC='--tls-san ${var.target_ip}' sudo sh -",
+      "sudo chmod 644 /etc/rancher/k3s/k3s.yaml"
     ]
   }
 }
