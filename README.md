@@ -1,5 +1,8 @@
 # 💎 Lombardio
 
+> [!IMPORTANT]
+> **Development Status:** Lombardio is currently in the active implementation phase following its architectural and conceptual design. It is **not yet a production-ready product**. This repository serves to demonstrate the current progress, architectural patterns, and technical direction.
+
 **Lombardio** is a modular, high-security cloud platform specifically engineered for modern pawnshops (*Pfandleiher*). It transforms complex regulated workflows—from customer identity and pawn-ticket issuance to realtime auctions and multi-channel sales—into a seamless, auditable, and tenant-aware digital experience.
 
 ---
