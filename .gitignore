@@ -8,5 +8,5 @@ target/
 **/target
 GWG_*
 cloud-config.yml
-AGEENTS.md
+AGENTS.md
 GEMINI.md
