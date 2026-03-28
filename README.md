@@ -13,7 +13,7 @@
 - 🔄 **Full Lifecycle Coverage**: Integrated handling of KYC/AML, Loan Origination, Pawn Tickets, and Realtime Auctions.
 - 🌐 **Omnichannel Ready**: Support for local POS sales and external commerce channels like **Shopware** and **eBay**.
 - 📊 **Deep Observability**: Full-stack monitoring with **Prometheus**, **Grafana**, and **Alertmanager**.
-- 🛠️ **Developer Experience**: Hochoptimierter Workflow mit **Makefile**-Unterstützung, Docker Compose und einer strikten **TDD**-Kultur.
+- 🛠️ **Developer Experience**: Highly optimized workflow with **Makefile** support, Docker Compose, and a strict **TDD** culture.
 
 ---
 
@@ -86,8 +86,8 @@ We build according to the **Lombardio Way**:
 
 ### 1️⃣ Prerequisites
 - **Docker & Docker Compose**
-- **Java 21 & Maven** (für lokale Service-Entwicklung)
-- **Node.js 20+** (für das Frontend)
+- **Java 21 & Maven** (for local service development)
+- **Node.js 20+** (for frontend development)
 
 ### 2️⃣ Up in 2 Minutes
 ```bash
@@ -101,13 +101,13 @@ make up
 ### 3️⃣ Common Commands
 | Command | Description |
 | :--- | :--- |
-| `make up` | Startet den kompletten lokalen Stack (alle Profile) |
-| `make lean` | Startet nur den Kern-Stack (ressourcenschonend) |
-| `make debug` | Startet im Debug-Modus (JDWP Ports 5005-5011) |
-| `make down` | Stoppt alle Container |
-| `make reset` | Stoppt Container und löscht Volumes (DB Reset) |
-| `make test` | Führt alle Backend-Tests aus |
-| `make help` | Zeigt alle verfügbaren Makefile-Befehle an |
+| `make up` | Start the full local stack (all profiles) |
+| `make lean` | Start the lean core stack (resource efficient) |
+| `make debug` | Start in Java Debug mode (JDWP ports 5005-5011) |
+| `make down` | Stop all local containers |
+| `make reset` | Stop containers and remove volumes (DB Reset) |
+| `make test` | Run all backend tests via Maven |
+| `make help` | Show all available Makefile commands |
 
 ### 4️⃣ Local Access
 - 🖥️ **Frontend**: [http://localhost:5173](http://localhost:5173)
