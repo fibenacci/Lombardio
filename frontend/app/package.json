@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
+    "@amiceli/vitest-cucumber": "^1.11.0",
     "@vue/test-utils": "^2.4.6",
     "jsdom": "^26.1.0",
     "sass": "^1.89.2",

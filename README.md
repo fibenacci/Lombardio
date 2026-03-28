@@ -13,7 +13,7 @@
 - 🔄 **Full Lifecycle Coverage**: Integrated handling of KYC/AML, Loan Origination, Pawn Tickets, and Realtime Auctions.
 - 🌐 **Omnichannel Ready**: Support for local POS sales and external commerce channels like **Shopware** and **eBay**.
 - 📊 **Deep Observability**: Full-stack monitoring with **Prometheus**, **Grafana**, and **Alertmanager**.
-- 🛠️ **Developer Experience**: One-command local setup with Docker Compose and a strict **TDD** culture.
+- 🛠️ **Developer Experience**: Hochoptimierter Workflow mit **Makefile**-Unterstützung, Docker Compose und einer strikten **TDD**-Kultur.
 
 ---
 
@@ -86,19 +86,30 @@ We build according to the **Lombardio Way**:
 
 ### 1️⃣ Prerequisites
 - **Docker & Docker Compose**
-- **Java 21 & Maven** (for local service runs)
-- **Node.js 20+** (for frontend development)
+- **Java 21 & Maven** (für lokale Service-Entwicklung)
+- **Node.js 20+** (für das Frontend)
 
-### 2️⃣ Up in 5 Minutes
+### 2️⃣ Up in 2 Minutes
 ```bash
 # 1. Setup environment
 cp .env.example .env
 
-# 2. Fire up the stack
-docker compose up --build
+# 2. Fire up the stack (full stack)
+make up
 ```
 
-### 3️⃣ Local Access
+### 3️⃣ Common Commands
+| Command | Description |
+| :--- | :--- |
+| `make up` | Startet den kompletten lokalen Stack (alle Profile) |
+| `make lean` | Startet nur den Kern-Stack (ressourcenschonend) |
+| `make debug` | Startet im Debug-Modus (JDWP Ports 5005-5011) |
+| `make down` | Stoppt alle Container |
+| `make reset` | Stoppt Container und löscht Volumes (DB Reset) |
+| `make test` | Führt alle Backend-Tests aus |
+| `make help` | Zeigt alle verfügbaren Makefile-Befehle an |
+
+### 4️⃣ Local Access
 - 🖥️ **Frontend**: [http://localhost:5173](http://localhost:5173)
 - 🔑 **Keycloak**: [http://localhost:8080](http://localhost:8080)
 - 📈 **Grafana**: [http://localhost:3000](http://localhost:3000)
