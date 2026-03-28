@@ -43,7 +43,7 @@
                             <file>${maven.multiModuleProjectDirectory}/license-header.txt</file>
                         </licenseHeader>
                         <googleJavaFormat>
-                            <version>1.25.0</version>
+                            <version>1.35.0</version>
                             <style>GOOGLE</style>
                         </googleJavaFormat>
                         <removeUnusedImports/>
