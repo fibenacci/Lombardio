@@ -10,9 +10,9 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>customer-service</artifactId>
+    <artifactId>identity-intelligence</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>customer-service</name>
+    <name>identity-intelligence</name>
     <description>Lombardio customer service</description>
 
     <dependencies>

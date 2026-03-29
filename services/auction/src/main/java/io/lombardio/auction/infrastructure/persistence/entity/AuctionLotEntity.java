@@ -24,7 +24,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "auction_lots", schema = "auction")
+@Table(name = "auction_lots")
 public class AuctionLotEntity {
 
   @Id private String id;

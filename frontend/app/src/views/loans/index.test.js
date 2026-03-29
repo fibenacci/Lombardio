@@ -1,11 +1,19 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import LoansView from ".";
 import router from "../../router";
-import { authStore } from "../../stores/auth";
-import { tenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import * as originationApi from "../../services/api/origination";
 
 describe("LoansView", () => {
+  let authStore;
+  let tenantStore;
+
+  beforeEach(() => {
+    authStore = useAuthStore();
+    tenantStore = useTenantStore();
+  });
+
   it("loads the chronological pledge register from the API layer", async () => {
     authStore.token = "token-123";
     tenantStore.selectedTenantId = "tenant-default";

@@ -130,6 +130,10 @@ function matchesCustomerQuery(customer, query) {
     .some((value) => String(value).toLowerCase().includes(normalizedQuery));
 }
 
+function isRecoverableStartupError(error) {
+  return [502, 503, 504].includes(Number(error?.status));
+}
+
 export default defineComponent({
   name: "TenantHomeView",
   setup() {
@@ -311,16 +315,37 @@ export default defineComponent({
 
       isLoading.value = true;
       fieldErrors.value = [];
+      errorMessage.value = "";
 
-      try {
-        const [guidelineResponse, customerResponse] = await Promise.all([
+      const [guidelineResult, customerResult] = await Promise.allSettled([
           fetchValuationGuidelines(tenantStore.selectedTenantId, authStore.token),
           searchCustomers(tenantStore.selectedTenantId, "", authStore.token)
-        ]);
+      ]);
 
-        guidelines.value = guidelineResponse;
-        customers.value = await Promise.all(customerResponse.map((customer) => enrichCustomerCompliance(customer)));
+      try {
+        if (guidelineResult.status === "fulfilled") {
+          guidelines.value = guidelineResult.value;
+        } else {
+          guidelines.value = [];
+        }
+
+        if (customerResult.status === "fulfilled") {
+          customers.value = await Promise.all(customerResult.value.map((customer) => enrichCustomerCompliance(customer)));
+        } else {
+          customers.value = [];
+        }
+
         customerSuggestions.value = customerOptions.value;
+        const startupErrors = [guidelineResult, customerResult]
+          .filter((result) => result.status === "rejected")
+          .map((result) => result.reason);
+
+        if (startupErrors.some((error) => isRecoverableStartupError(error))) {
+          errorMessage.value = "Einige Fachservices sind noch nicht bereit. Die Ansicht wurde mit Teildaten geladen.";
+        } else if (startupErrors.length > 0) {
+          handleError(startupErrors[0]);
+        }
+
         await loadReportingOverview();
         await refreshQuote();
       } catch (error) {

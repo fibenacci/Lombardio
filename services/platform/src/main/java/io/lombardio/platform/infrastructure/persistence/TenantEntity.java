@@ -17,7 +17,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 
 @Entity
-@Table(name = "tenants", schema = "platform")
+@Table(name = "tenants")
 public class TenantEntity {
 
   @Id private String id;

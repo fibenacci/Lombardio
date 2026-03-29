@@ -17,6 +17,5 @@ public record KeycloakProperties(
     String serverUrl,
     String realm,
     String clientId,
-    String clientSecret,
     String adminUsername,
     String adminPassword) {}

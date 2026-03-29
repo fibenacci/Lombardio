@@ -110,6 +110,7 @@ make up
 | `make down` | Stop all local containers |
 | `make reset` | Stop containers and remove volumes (DB Reset) |
 | `make test` | Run all backend tests via Maven |
+| `make fix` | Run all available auto-formatters (Spotless, Go, Frontend) |
 | `make help` | Show all available Makefile commands |
 
 ### 4️⃣ Local Access

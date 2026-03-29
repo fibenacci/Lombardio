@@ -1,6 +1,5 @@
-create schema if not exists loan_origination;
 
-create table if not exists loan_origination.valuation_guidelines (
+create table if not exists valuation_guidelines (
     id varchar(64) primary key,
     tenant_id varchar(64) not null,
     category varchar(120) not null,
@@ -11,9 +10,9 @@ create table if not exists loan_origination.valuation_guidelines (
 );
 
 create index if not exists idx_valuation_guidelines_tenant_id
-    on loan_origination.valuation_guidelines (tenant_id);
+    on valuation_guidelines (tenant_id);
 
-create table if not exists loan_origination.loan_cases (
+create table if not exists loan_cases (
     id varchar(64) primary key,
     tenant_id varchar(64) not null,
     customer_id varchar(64) not null,
@@ -24,7 +23,7 @@ create table if not exists loan_origination.loan_cases (
     customer_kyc_approved boolean not null
 );
 
-create table if not exists loan_origination.loan_positions (
+create table if not exists loan_positions (
     id varchar(64) primary key,
     loan_case_id varchar(64) not null,
     ticket_group integer not null,
@@ -35,10 +34,10 @@ create table if not exists loan_origination.loan_positions (
     base_loan_value numeric(19, 2) not null,
     pledged_value numeric(19, 2) not null,
     sort_order integer not null,
-    constraint fk_loan_positions_case foreign key (loan_case_id) references loan_origination.loan_cases (id) on delete cascade
+    constraint fk_loan_positions_case foreign key (loan_case_id) references loan_cases (id) on delete cascade
 );
 
-create table if not exists loan_origination.loan_pawn_tickets (
+create table if not exists loan_pawn_tickets (
     id varchar(64) primary key,
     loan_case_id varchar(64) not null,
     ticket_number varchar(64) not null,
@@ -55,5 +54,5 @@ create table if not exists loan_origination.loan_pawn_tickets (
     total_repayment_amount numeric(19, 2) not null,
     legal_text text not null,
     sort_order integer not null,
-    constraint fk_loan_pawn_tickets_case foreign key (loan_case_id) references loan_origination.loan_cases (id) on delete cascade
+    constraint fk_loan_pawn_tickets_case foreign key (loan_case_id) references loan_cases (id) on delete cascade
 );

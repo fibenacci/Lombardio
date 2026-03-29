@@ -21,7 +21,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "loan_pawn_tickets", schema = "loan_origination")
+@Table(name = "loan_pawn_tickets")
 public class LoanPawnTicketEntity {
 
   @Id private String id;

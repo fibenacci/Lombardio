@@ -24,7 +24,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 
 @Entity
-@Table(name = "bidder_registrations", schema = "online_auction")
+@Table(name = "bidder_registrations")
 public class BidderRegistrationEntity {
 
   @Id private String id;

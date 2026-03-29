@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
-@Table(name = "cash_transactions", schema = "pawn_ticket")
+@Table(name = "cash_transactions")
 public class CashTransactionEntity {
 
   @Id private String id;

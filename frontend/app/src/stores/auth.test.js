@@ -1,7 +1,13 @@
-import { authStore } from "./auth";
+import { useAuthStore } from "./auth";
 import * as authApi from "../services/api/auth";
 
 describe("authStore", () => {
+  let authStore;
+
+  beforeEach(() => {
+    authStore = useAuthStore();
+  });
+
   it("restores a stored session and loads the current user", async () => {
     window.localStorage.setItem("lombardio.auth.token", "token-123");
     vi.spyOn(authApi, "fetchCurrentUser").mockResolvedValue({

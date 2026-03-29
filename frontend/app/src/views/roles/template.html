@@ -5,14 +5,15 @@
     icon="pi pi-id-card"
     :copy="
       tenantStore.selectedTenantId
-        ? `Define role templates for tenant ${tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId}.`
-        : 'Select a tenant in the Tenants view before managing roles.'
+        ? `Review role assignments available to tenant ${tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId}.`
+        : 'Select a tenant in the Tenants view before reviewing roles.'
     "
   />
 
   <div class="panel-grid">
     <AdminPanel title="Role Directory" :subtitle="isLoading ? 'Loading...' : `${roleRows.length} roles`">
       <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
+      <PMessage v-if="successMessage" severity="info" variant="simple">{{ successMessage }}</PMessage>
       <AppDataTable v-if="tenantStore.selectedTenantId" :value="roleRows" dataKey="id" :loading="isLoading">
         <PColumn field="key" header="Key" sortable />
         <PColumn field="displayName" header="Name" sortable />
@@ -23,56 +24,14 @@
             <StatusTag :value="data.active ? 'ACTIVE' : 'INACTIVE'" />
           </template>
         </PColumn>
-        <PColumn v-if="canManageRoles" header="Actions">
-          <template #body="{ data }">
-            <PButton icon="pi pi-pencil" severity="secondary" variant="text" rounded @click="edit(data)" />
-          </template>
-        </PColumn>
       </AppDataTable>
     </AdminPanel>
 
-    <AdminPanel v-if="canManageRoles" :title="isEditing ? 'Update Role' : 'Create Role'" subtitle="Backed by live permission definitions from the API.">
-      <FormShell :errorMessage="errorMessage" :successMessage="successMessage" @submit="submit">
-          <label>
-            <span>Key</span>
-            <PInputText v-model="form.key" type="text" :disabled="isEditing" />
-          </label>
-
-          <label>
-            <span>Display name</span>
-            <PInputText v-model="form.displayName" type="text" />
-          </label>
-
-          <label>
-            <span>Description</span>
-            <PTextarea v-model="form.description" rows="4" />
-          </label>
-
-          <label>
-            <span>Role state</span>
-            <div class="inline-switch">
-              <PToggleSwitch v-model="form.active" />
-              <span>{{ form.active ? "Role is active" : "Role is inactive" }}</span>
-            </div>
-          </label>
-
-          <label>
-            <span>Permissions</span>
-            <PMultiSelect
-              v-model="form.permissionKeys"
-              :options="permissions"
-              optionLabel="key"
-              optionValue="key"
-              filter
-              display="chip"
-            />
-          </label>
-
-        <template #actions>
-          <PButton v-if="isEditing" label="Cancel" severity="secondary" variant="text" @click="cancelEdit" />
-          <PButton :disabled="!tenantStore.selectedTenantId" :label="isEditing ? 'Update role' : 'Create role'" :icon="isEditing ? 'pi pi-check' : 'pi pi-plus'" type="submit" />
-        </template>
-      </FormShell>
+    <AdminPanel title="Role Management" subtitle="Current platform API support">
+      <PMessage severity="info" variant="simple">
+        This screen reflects the live tenant-accessible role catalog. Role CRUD is still not exposed by the current platform service.
+      </PMessage>
+      <PButton :disabled="!tenantStore.selectedTenantId || isLoading" icon="pi pi-refresh" label="Reload roles" severity="secondary" @click="reload" />
     </AdminPanel>
   </div>
 </section>

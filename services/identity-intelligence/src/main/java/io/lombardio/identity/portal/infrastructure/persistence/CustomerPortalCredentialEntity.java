@@ -17,7 +17,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 
 @Entity
-@Table(name = "customer_portal_credentials", schema = "customer")
+@Table(name = "customer_portal_credentials")
 public class CustomerPortalCredentialEntity {
 
   @Id

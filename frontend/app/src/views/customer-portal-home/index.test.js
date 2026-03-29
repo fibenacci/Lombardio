@@ -1,7 +1,7 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import CustomerPortalHomeView from ".";
 import { setLocale } from "../../i18n";
-import { customerPortalStore } from "../../stores/customerPortal";
+import { useCustomerPortalStore } from "../../stores/customerPortal";
 import * as customerPortalApi from "../../services/api/customerPortal";
 
 const push = vi.fn();
@@ -13,7 +13,10 @@ vi.mock("vue-router", () => ({
 }));
 
 describe("CustomerPortalHomeView", () => {
+  let customerPortalStore;
+
   beforeEach(() => {
+    customerPortalStore = useCustomerPortalStore();
     setLocale("de");
     push.mockReset();
     customerPortalStore.token = "portal-token";

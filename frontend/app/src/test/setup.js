@@ -29,9 +29,19 @@ import FormShell from "../components/form-shell";
 import PageHeader from "../components/page-header";
 import SectionActions from "../components/section-actions";
 import StatusTag from "../components/status-tag";
-import { authStore } from "../stores/auth";
-import { customerPortalStore } from "../stores/customerPortal";
-import { tenantStore } from "../stores/tenant";
+import { createPinia, setActivePinia } from "pinia";
+import { useAuthStore } from "../stores/auth";
+import { useCustomerPortalStore } from "../stores/customerPortal";
+import { useTenantStore } from "../stores/tenant";
+import * as platformApi from "../services/api/platform";
+
+vi.mock("../services/api/platform", () => ({
+  fetchTenants: vi.fn(() => Promise.resolve([])),
+  fetchTenantFeatures: vi.fn(() => Promise.resolve([])),
+  createTenant: vi.fn((data) => Promise.resolve({ id: "mock-id", ...data })),
+  createTenantUser: vi.fn((tenantId, data) => Promise.resolve({ id: "mock-user-id", tenantId, ...data })),
+  upsertTenantFeature: vi.fn(() => Promise.resolve({}))
+}));
 
 const resolveOptions = (props) => props.options ?? [];
 
@@ -256,6 +266,7 @@ const screenOrientationMock = {
 };
 
 beforeEach(() => {
+  setActivePinia(createPinia());
   window.matchMedia = matchMediaMock;
   globalThis.matchMedia = matchMediaMock;
   Object.defineProperty(window.screen, "orientation", {

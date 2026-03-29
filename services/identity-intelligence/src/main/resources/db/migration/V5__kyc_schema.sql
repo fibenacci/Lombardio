@@ -1,4 +1,3 @@
-create schema if not exists kyc;
 
 create table if not exists kyc_records (
     id varchar(64) primary key,

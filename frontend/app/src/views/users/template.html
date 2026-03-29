@@ -13,6 +13,7 @@
   <div class="panel-grid">
     <AdminPanel title="User Directory" :subtitle="isLoading ? 'Loading...' : `${userRows.length} records`">
       <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
+      <PMessage v-if="successMessage" severity="info" variant="simple">{{ successMessage }}</PMessage>
       <AppDataTable v-if="tenantStore.selectedTenantId" :value="userRows" dataKey="id" :loading="isLoading">
         <PColumn field="username" header="Username" sortable />
         <PColumn field="email" header="Email" sortable />
@@ -53,7 +54,7 @@
       </AppDataTable>
     </AdminPanel>
 
-    <AdminPanel v-if="canManageUsers" :title="editingUserId ? 'Edit User' : 'Create User'" subtitle="Writes directly to the live identity service.">
+    <AdminPanel v-if="canManageUsers" :title="editingUserId ? 'Edit User' : 'Create User'" subtitle="Writes to the tenant identity provisioning API.">
       <FormShell :errorMessage="errorMessage" :successMessage="successMessage" @submit="submit">
           <label>
             <span>Username</span>
@@ -89,13 +90,13 @@
           </label>
 
           <label>
-            <span>Assign branches</span>
-            <PMultiSelect v-model="form.branchIds" :options="branchOptions" optionLabel="label" optionValue="value" display="chip" />
+            <span>Assign tenant roles</span>
+            <PMultiSelect v-model="form.roleIds" :options="roleOptions" optionLabel="label" optionValue="value" display="chip" />
           </label>
 
           <label>
-            <span>Assign roles</span>
-            <PMultiSelect v-model="form.roleIds" :options="roleOptions" optionLabel="label" optionValue="value" display="chip" />
+            <span>Assign branches</span>
+            <PMultiSelect v-model="form.branchIds" :options="branchOptions" optionLabel="label" optionValue="value" display="chip" />
           </label>
 
         <template #actions>

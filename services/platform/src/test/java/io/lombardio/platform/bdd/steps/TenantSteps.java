@@ -33,6 +33,8 @@ public class TenantSteps {
       new InMemoryTenantRepositories.Tenants();
   private final InMemoryTenantRepositories.Features features =
       new InMemoryTenantRepositories.Features();
+  private final InMemoryTenantRepositories.Branches branches =
+      new InMemoryTenantRepositories.Branches();
   private final InMemoryTenantRepositories.OutboxEvents outboxEvents =
       new InMemoryTenantRepositories.OutboxEvents();
   private final KeycloakService keycloakService = mock(KeycloakService.class);
@@ -46,6 +48,7 @@ public class TenantSteps {
         new TenantCatalogService(
             tenants,
             features,
+            branches,
             new PlatformOutboxService(outboxEvents, Clock.systemUTC()),
             keycloakService,
             new ObjectMapper(),

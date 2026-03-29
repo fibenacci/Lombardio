@@ -1,7 +1,7 @@
 import { computed, defineComponent, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { fetchCustomerPortalDocument, fetchCustomerPortalPawnTickets } from "../../services/api/customerPortal";
-import { customerPortalStore } from "../../stores/customerPortal";
+import { useCustomerPortalStore } from "../../stores/customerPortal";
 import { useI18n } from "../../i18n";
 import template from "./template.html?raw";
 import "./styles.scss";
@@ -16,6 +16,7 @@ function formatCurrency(value) {
 export default defineComponent({
   name: "CustomerPortalHomeView",
   setup() {
+    const customerPortalStore = useCustomerPortalStore();
     const router = useRouter();
     const { t } = useI18n();
     const tickets = ref([]);

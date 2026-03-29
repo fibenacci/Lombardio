@@ -19,7 +19,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "loan_positions", schema = "loan_origination")
+@Table(name = "loan_positions")
 public class LoanPositionEntity {
 
   @Id private String id;

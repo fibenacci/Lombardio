@@ -1,6 +1,6 @@
 import { defineComponent, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import { customerPortalStore } from "../../stores/customerPortal";
+import { useCustomerPortalStore } from "../../stores/customerPortal";
 import { useI18n } from "../../i18n";
 import template from "./template.html?raw";
 import "./styles.scss";
@@ -8,6 +8,7 @@ import "./styles.scss";
 export default defineComponent({
   name: "CustomerPortalLoginView",
   setup() {
+    const customerPortalStore = useCustomerPortalStore();
     const router = useRouter();
     const { t } = useI18n();
     const form = reactive({

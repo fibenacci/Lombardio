@@ -18,4 +18,5 @@ public record CreateTenantUserRequest(
     @NotBlank @Email String email,
     @NotBlank String password,
     @NotBlank String displayName,
-    List<String> roles) {}
+    List<String> roles,
+    List<String> branchIds) {}

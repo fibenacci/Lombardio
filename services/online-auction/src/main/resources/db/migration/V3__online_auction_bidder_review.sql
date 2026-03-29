@@ -1,4 +1,4 @@
-alter table online_auction.bidder_registrations
+alter table bidder_registrations
     add column if not exists legal_name varchar(255) not null default '',
     add column if not exists birth_date varchar(40) not null default '',
     add column if not exists iban varchar(80) not null default '',

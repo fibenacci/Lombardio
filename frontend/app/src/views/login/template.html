@@ -11,37 +11,54 @@
       </div>
 
       <form @submit.prevent="submit" class="login-form">
-        <div class="form-field">
-          <label for="username">{{ t('login.username') }}</label>
-          <PInputText 
-            id="username" 
-            v-model="form.username" 
-            :placeholder="t('login.usernamePlaceholder')"
-            class="w-full"
-            required
-            :disabled="isSubmitting"
-          />
-        </div>
+        <template v-if="!authStore.pendingMfaChallengeId">
+          <div class="form-field">
+            <label for="username">{{ t('login.username') }}</label>
+            <PInputText 
+              id="username" 
+              v-model="form.username" 
+              :placeholder="t('login.usernamePlaceholder')"
+              class="w-full"
+              required
+              :disabled="isSubmitting"
+            />
+          </div>
 
-        <div class="form-field">
-          <label for="password">{{ t('login.password') }}</label>
-          <PPassword 
-            id="password" 
-            v-model="form.password" 
-            :placeholder="t('login.passwordPlaceholder')"
-            class="w-full"
-            :feedback="false"
-            toggle-mask
-            required
-            :disabled="isSubmitting"
-          />
-        </div>
+          <div class="form-field">
+            <label for="password">{{ t('login.password') }}</label>
+            <PPassword 
+              id="password" 
+              v-model="form.password" 
+              :placeholder="t('login.passwordPlaceholder')"
+              class="w-full"
+              :feedback="false"
+              toggle-mask
+              required
+              :disabled="isSubmitting"
+            />
+          </div>
+        </template>
+
+        <template v-else>
+          <div class="form-field">
+            <label for="mfaCode">{{ t('login.verifyCode') }}</label>
+            <PInputText 
+              id="mfaCode" 
+              v-model="form.mfaCode" 
+              placeholder="000 000"
+              class="w-full"
+              inputmode="numeric"
+              required
+              :disabled="isSubmitting"
+            />
+          </div>
+        </template>
 
         <div class="login-actions">
           <PButton 
             type="submit" 
             class="w-full p-button-lg"
-            :label="isSubmitting ? t('login.isLoggingIn') : t('login.submit')"
+            :label="isSubmitting ? t('login.signingIn') : (authStore.pendingMfaChallengeId ? t('login.verifyCode') : t('login.signIn'))"
             :loading="isSubmitting"
           />
         </div>

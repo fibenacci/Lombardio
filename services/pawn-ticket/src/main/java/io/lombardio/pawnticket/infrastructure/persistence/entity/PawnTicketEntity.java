@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "pawn_tickets", schema = "pawn_ticket")
+@Table(name = "pawn_tickets")
 public class PawnTicketEntity {
 
   @Id private String id;

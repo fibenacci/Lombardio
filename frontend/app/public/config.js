@@ -9,5 +9,8 @@ window.__LOMBARDIO_CONFIG__ = {
   AUCTION_API_BASE_URL: "http://localhost:8081",
   ONLINE_AUCTION_API_BASE_URL: "http://localhost:8081",
   REPORTING_API_BASE_URL: "http://localhost:8081",
+  KEYCLOAK_BASE_URL: "http://localhost:8080",
+  KEYCLOAK_REALM: "lombardio",
+  KEYCLOAK_CLIENT_ID: "lombardio-app",
   CENTRIFUGO_WS_URL: "ws://localhost:8000/connection/websocket"
 };

@@ -21,7 +21,6 @@ export default defineComponent({
       displayName: "",
       status: "ACTIVE"
     });
-
     const canManageBranches = computed(
       () =>
         authStore.hasPermission("platform.tenants.write")
@@ -52,17 +51,9 @@ export default defineComponent({
       errorMessage.value = "";
 
       try {
-        await createBranch(
-          tenantStore.selectedTenantId,
-          {
-            key: form.key,
-            displayName: form.displayName,
-            status: form.status
-          },
-          authStore.token
-        );
+        await createBranch(tenantStore.selectedTenantId, { ...form }, authStore.token);
+        toast.success("Branch created", `${form.displayName} is now available for tenant assignments.`);
         successMessage.value = "Branch created";
-        toast.success("Branch created", `${form.displayName || form.key} is available for staff assignment.`);
         form.key = "";
         form.displayName = "";
         form.status = "ACTIVE";
@@ -90,8 +81,9 @@ export default defineComponent({
       errorMessage,
       form,
       isLoading,
-      submit,
+      reload: loadData,
       successMessage,
+      submit,
       tenantStore
     };
   },

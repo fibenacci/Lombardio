@@ -1,7 +1,7 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import CustomerPortalActivateView from ".";
 import { setLocale } from "../../i18n";
-import { customerPortalStore } from "../../stores/customerPortal";
+import { useCustomerPortalStore } from "../../stores/customerPortal";
 import * as customerPortalApi from "../../services/api/customerPortal";
 
 const push = vi.fn();
@@ -18,9 +18,12 @@ vi.mock("vue-router", () => ({
 }));
 
 describe("CustomerPortalActivateView", () => {
+  let customerPortalStore;
+
   beforeEach(() => {
     setLocale("de");
     push.mockReset();
+    customerPortalStore = useCustomerPortalStore();
   });
 
   it("loads the invitation and activates the access", async () => {

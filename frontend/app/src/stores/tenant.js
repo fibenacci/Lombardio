@@ -38,7 +38,7 @@ export const useTenantStore = defineStore("tenant", {
           }
         ];
         this.selectedTenantId = authStore.user.tenantId;
-        await this.refreshFeatures();
+        this.features = [];
         return;
       }
 
@@ -68,6 +68,11 @@ export const useTenantStore = defineStore("tenant", {
     async refreshFeatures() {
       const authStore = useAuthStore();
       if (!this.selectedTenantId) {
+        this.features = [];
+        return;
+      }
+
+      if (!authStore.canManagePlatform) {
         this.features = [];
         return;
       }

@@ -1,10 +1,18 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import TenantsView from ".";
-import { authStore } from "../../stores/auth";
-import { tenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import * as platformApi from "../../services/api/platform";
 
 describe("TenantsView", () => {
+  let authStore;
+  let tenantStore;
+
+  beforeEach(() => {
+    authStore = useAuthStore();
+    tenantStore = useTenantStore();
+  });
+
   it("loads tenants and tenant features from the platform API", async () => {
     authStore.token = "platform-token";
     authStore.user = {

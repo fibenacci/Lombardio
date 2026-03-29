@@ -11,6 +11,8 @@
 package io.lombardio.platform.demo;
 
 import io.lombardio.platform.bootstrap.PlatformSeedFixtures;
+import io.lombardio.platform.iam.application.KeycloakService;
+import io.lombardio.platform.tenant.domain.BranchRepository;
 import io.lombardio.platform.tenant.domain.TenantFeatureRepository;
 import io.lombardio.platform.tenant.domain.TenantRepository;
 import java.time.Instant;
@@ -85,22 +87,31 @@ public class ScenarioDataSeeder {
 
   private final TenantRepository tenantRepository;
   private final TenantFeatureRepository tenantFeatureRepository;
+  private final BranchRepository branchRepository;
+  private final KeycloakService keycloakService;
 
   public ScenarioDataSeeder(
-      TenantRepository tenantRepository, TenantFeatureRepository tenantFeatureRepository) {
+      TenantRepository tenantRepository,
+      TenantFeatureRepository tenantFeatureRepository,
+      BranchRepository branchRepository,
+      KeycloakService keycloakService) {
     this.tenantRepository = tenantRepository;
     this.tenantFeatureRepository = tenantFeatureRepository;
+    this.branchRepository = branchRepository;
+    this.keycloakService = keycloakService;
   }
 
   public void seed() {
     Instant timestamp = Instant.now().minusSeconds(86_400); // 24 hours ago
 
     for (var tenantDefinition : DEMO_TENANTS) {
+      keycloakService.createTenantGroup(tenantDefinition.id(), tenantDefinition.displayName());
       tenantRepository.save(PlatformSeedFixtures.toTenant(tenantDefinition, timestamp));
       for (var feature : PlatformSeedFixtures.tenantFeatures(tenantDefinition, timestamp)) {
         tenantFeatureRepository.save(feature);
       }
     }
+    PlatformSeedFixtures.defaultTenantBranches().forEach(branchRepository::save);
   }
 
   private static PlatformSeedFixtures.DemoTenant DEFAULT_TENANT() {

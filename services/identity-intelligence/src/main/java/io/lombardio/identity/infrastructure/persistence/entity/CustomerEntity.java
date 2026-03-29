@@ -17,7 +17,7 @@ import jakarta.persistence.Table;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "customers", schema = "customer")
+@Table(name = "customers")
 public class CustomerEntity {
 
   @Id private String id;

@@ -1,8 +1,8 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import TenantHomeView from ".";
 import { setLocale } from "../../i18n";
-import { tenantStore } from "../../stores/tenant";
-import { authStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
 import * as originationApi from "../../services/api/origination";
 import * as customerApi from "../../services/api/customer";
 import * as amlApi from "../../services/api/aml";
@@ -20,11 +20,14 @@ function mountView() {
 }
 
 describe("TenantHomeView", () => {
+  let authStore;
+  let tenantStore;
+
   beforeEach(() => {
     setLocale("de");
     vi.restoreAllMocks();
-    tenantStore.resetForTests();
-    authStore.resetForTests();
+    authStore = useAuthStore();
+    tenantStore = useTenantStore();
     tenantStore.features = [];
     vi.spyOn(amlApi, "fetchAmlStatus").mockResolvedValue({
       customerId: "customer-berlin-1",

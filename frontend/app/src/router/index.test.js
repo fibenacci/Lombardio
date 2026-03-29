@@ -1,8 +1,16 @@
 import { routeGuard } from ".";
-import { authStore } from "../stores/auth";
-import { customerPortalStore } from "../stores/customerPortal";
+import { useAuthStore } from "../stores/auth";
+import { useCustomerPortalStore } from "../stores/customerPortal";
 
 describe("routeGuard", () => {
+  let authStore;
+  let customerPortalStore;
+
+  beforeEach(() => {
+    authStore = useAuthStore();
+    customerPortalStore = useCustomerPortalStore();
+  });
+
   it("allows navigation while auth initialization is still pending", () => {
     authStore.ready = false;
     authStore.token = "";
@@ -11,7 +19,7 @@ describe("routeGuard", () => {
     customerPortalStore.token = "";
     customerPortalStore.customer = null;
 
-    expect(routeGuard({ meta: { requiresAuth: true } })).toBe(true);
+    expect(routeGuard({ path: "/app/dashboard", meta: { requiresAuth: true } })).toBe(true);
   });
 
   it("redirects protected routes to login when unauthenticated", () => {
@@ -22,7 +30,7 @@ describe("routeGuard", () => {
     customerPortalStore.token = "";
     customerPortalStore.customer = null;
 
-    expect(routeGuard({ meta: { requiresAuth: true } })).toEqual({ name: "login" });
+    expect(routeGuard({ path: "/app/dashboard", meta: { requiresAuth: true } })).toEqual({ name: "login" });
   });
 
   it("redirects authenticated users away from login", () => {
@@ -33,7 +41,7 @@ describe("routeGuard", () => {
     customerPortalStore.token = "";
     customerPortalStore.customer = null;
 
-    expect(routeGuard({ name: "login", meta: {} })).toEqual({ path: "/app/dashboard" });
+    expect(routeGuard({ path: "/login", name: "login", meta: {} })).toEqual({ path: "/app/dashboard" });
   });
 
   it("allows authenticated access to protected routes", () => {
@@ -44,7 +52,7 @@ describe("routeGuard", () => {
     customerPortalStore.token = "";
     customerPortalStore.customer = null;
 
-    expect(routeGuard({ name: "tenant-users", meta: { requiresAuth: true } })).toBe(true);
+    expect(routeGuard({ path: "/app/users", name: "tenant-users", meta: { requiresAuth: true } })).toBe(true);
   });
 
   it("redirects tenant users away from platform routes", () => {
@@ -55,7 +63,7 @@ describe("routeGuard", () => {
     customerPortalStore.token = "";
     customerPortalStore.customer = null;
 
-    expect(routeGuard({ name: "platform-tenants", meta: { requiresAuth: true, requiresPlatformAccess: true } })).toEqual({
+    expect(routeGuard({ path: "/platform/tenants", name: "platform-tenants", meta: { requiresAuth: true, requiresPlatformAccess: true } })).toEqual({
       path: "/app/dashboard"
     });
   });
@@ -68,7 +76,7 @@ describe("routeGuard", () => {
     customerPortalStore.token = "";
     customerPortalStore.customer = null;
 
-    expect(routeGuard({ name: "customer-portal-home", meta: { requiresCustomerPortalAuth: true } })).toEqual({
+    expect(routeGuard({ path: "/portal/home", name: "customer-portal-home", meta: { requiresCustomerPortalAuth: true } })).toEqual({
       name: "customer-portal-login"
     });
   });

@@ -12,6 +12,8 @@ package io.lombardio.platform.tenant.application.support;
 
 import io.lombardio.platform.integration.domain.IntegrationOutboxEvent;
 import io.lombardio.platform.integration.domain.IntegrationOutboxEventRepository;
+import io.lombardio.platform.tenant.domain.Branch;
+import io.lombardio.platform.tenant.domain.BranchRepository;
 import io.lombardio.platform.tenant.domain.Tenant;
 import io.lombardio.platform.tenant.domain.TenantFeature;
 import io.lombardio.platform.tenant.domain.TenantFeatureRepository;
@@ -73,6 +75,28 @@ public final class InMemoryTenantRepositories {
 
     private String key(String tenantId, String featureKey) {
       return tenantId + ":" + featureKey;
+    }
+  }
+
+  public static final class Branches implements BranchRepository {
+    private final Map<String, Branch> store = new LinkedHashMap<>();
+
+    @Override
+    public List<Branch> findByTenantId(String tenantId) {
+      return store.values().stream().filter(branch -> branch.tenantId().equals(tenantId)).toList();
+    }
+
+    @Override
+    public Optional<Branch> findByTenantIdAndKey(String tenantId, String key) {
+      return store.values().stream()
+          .filter(branch -> branch.tenantId().equals(tenantId) && branch.key().equals(key))
+          .findFirst();
+    }
+
+    @Override
+    public Branch save(Branch branch) {
+      store.put(branch.id(), branch);
+      return branch;
     }
   }
 

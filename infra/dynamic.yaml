@@ -44,7 +44,7 @@ http:
     
     auction:
       entryPoints: ["web"]
-      rule: "PathPrefix(`/api/v1/tenants/tenant-default/auctions`)"
+      rule: "PathPrefix(`/api/v1/tenants/tenant-default/auctions`) || PathPrefix(`/api/v1/tenants/tenant-default/surplus-cases`)"
       priority: 100
       service: auction
       middlewares: [cors]

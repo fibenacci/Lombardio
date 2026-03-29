@@ -1,11 +1,18 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import AuctionsView from ".";
-import { authStore } from "../../stores/auth";
-import { tenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import * as auctionApi from "../../services/api/auction";
-import router from "../../router";
 
 describe("AuctionsView", () => {
+  let authStore;
+  let tenantStore;
+
+  beforeEach(() => {
+    authStore = useAuthStore();
+    tenantStore = useTenantStore();
+  });
+
   it("loads auctions and surplus cases from the API layer", async () => {
     authStore.token = "token-123";
     tenantStore.selectedTenantId = "tenant-default";
@@ -40,14 +47,7 @@ describe("AuctionsView", () => {
       }
     ]);
 
-    await router.push("/app/auctions");
-    await router.isReady();
-
-    const wrapper = mount(AuctionsView, {
-      global: {
-        plugins: [router]
-      }
-    });
+    const wrapper = mount(AuctionsView);
     await flushPromises();
 
     expect(wrapper.text()).toContain("Fruehjahrsauktion");

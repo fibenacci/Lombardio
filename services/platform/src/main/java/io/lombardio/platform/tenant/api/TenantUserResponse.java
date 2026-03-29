@@ -12,4 +12,11 @@ package io.lombardio.platform.tenant.api;
 
 import java.util.List;
 
-public record TenantUserResponse(String id, String email, String displayName, List<String> roles) {}
+public record TenantUserResponse(
+    String id,
+    String username,
+    String email,
+    String displayName,
+    String status,
+    List<String> roleIds,
+    List<String> branchIds) {}

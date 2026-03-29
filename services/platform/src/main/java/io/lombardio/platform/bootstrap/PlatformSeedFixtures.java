@@ -11,6 +11,7 @@
 package io.lombardio.platform.bootstrap;
 
 import io.lombardio.platform.tenant.domain.Tenant;
+import io.lombardio.platform.tenant.domain.Branch;
 import io.lombardio.platform.tenant.domain.TenantFeature;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -142,6 +143,27 @@ public final class PlatformSeedFixtures {
   public static List<TenantFeature> defaultTenantFeatures() {
     Instant timestamp = Instant.now().minusSeconds(86_400);
     return tenantFeatures(DEFAULT_TENANT(), timestamp);
+  }
+
+  public static List<Branch> defaultTenantBranches() {
+    Instant timestamp = Instant.now().minusSeconds(86_400);
+    return List.of(
+        new Branch(
+            "branch-default-hq",
+            "tenant-default",
+            "hq",
+            "Headquarters",
+            "ACTIVE",
+            timestamp,
+            timestamp),
+        new Branch(
+            "branch-default-berlin",
+            "tenant-default",
+            "berlin-mitte",
+            "Berlin Mitte",
+            "ACTIVE",
+            timestamp,
+            timestamp));
   }
 
   private static DemoTenant DEFAULT_TENANT() {

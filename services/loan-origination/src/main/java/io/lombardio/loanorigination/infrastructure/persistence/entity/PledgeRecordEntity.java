@@ -21,7 +21,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "pledge_records", schema = "loan_origination")
+@Table(name = "pledge_records")
 public class PledgeRecordEntity {
 
   @Id private String id;

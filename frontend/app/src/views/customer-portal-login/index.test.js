@@ -1,7 +1,7 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import CustomerPortalLoginView from ".";
 import { setLocale } from "../../i18n";
-import { customerPortalStore } from "../../stores/customerPortal";
+import { useCustomerPortalStore } from "../../stores/customerPortal";
 
 const push = vi.fn();
 
@@ -12,9 +12,12 @@ vi.mock("vue-router", () => ({
 }));
 
 describe("CustomerPortalLoginView", () => {
+  let customerPortalStore;
+
   beforeEach(() => {
     setLocale("de");
     push.mockReset();
+    customerPortalStore = useCustomerPortalStore();
   });
 
   it("logs the customer in and redirects to the portal home", async () => {

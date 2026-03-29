@@ -5,14 +5,15 @@
     icon="pi pi-sitemap"
     :copy="
       tenantStore.selectedTenantId
-        ? `Manage branches for tenant ${tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId}.`
-        : 'Select a tenant before managing branches.'
+        ? `Review branch rollout status for tenant ${tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId}.`
+        : 'Select a tenant before reviewing branch rollout status.'
     "
   />
 
   <div class="panel-grid">
     <AdminPanel title="Branch Directory" :subtitle="isLoading ? 'Loading...' : `${branches.length} branches`">
       <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
+      <PMessage v-if="successMessage" severity="info" variant="simple">{{ successMessage }}</PMessage>
 
       <AppDataTable v-if="tenantStore.selectedTenantId" :value="branches" dataKey="id" :loading="isLoading">
         <PColumn field="key" header="Key" sortable />
@@ -25,10 +26,10 @@
       </AppDataTable>
     </AdminPanel>
 
-    <AdminPanel v-if="canManageBranches" title="Create Branch" subtitle="Branches will become the scope anchor for staff and permissions.">
+    <AdminPanel v-if="canManageBranches" title="Branch Management" subtitle="Create tenant branches for staff assignment">
       <FormShell :errorMessage="errorMessage" :successMessage="successMessage" @submit="submit">
         <label>
-          <span>Key</span>
+          <span>Branch key</span>
           <PInputText v-model="form.key" type="text" />
         </label>
 
@@ -51,7 +52,10 @@
         </label>
 
         <template #actions>
-          <PButton :disabled="!tenantStore.selectedTenantId" icon="pi pi-plus" label="Create branch" type="submit" />
+          <SectionActions>
+            <PButton :disabled="!tenantStore.selectedTenantId" icon="pi pi-save" label="Create branch" type="submit" />
+            <PButton :disabled="!tenantStore.selectedTenantId || isLoading" icon="pi pi-refresh" label="Reload branches" severity="secondary" outlined type="button" @click="reload" />
+          </SectionActions>
         </template>
       </FormShell>
     </AdminPanel>

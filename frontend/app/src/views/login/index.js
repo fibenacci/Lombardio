@@ -16,7 +16,8 @@ export default defineComponent({
 
     const form = reactive({
       username: "admin@lombardio.local",
-      password: "admin"
+      password: "admin",
+      mfaCode: ""
     });
     const errorMessage = ref("");
     const isSubmitting = ref(false);
@@ -32,8 +33,17 @@ export default defineComponent({
       isSubmitting.value = true;
 
       try {
-        await authStore.login(form.username, form.password);
-        await redirectAfterLogin();
+        if (authStore.pendingMfaChallengeId) {
+          const response = await authStore.verifyTotp(form.mfaCode);
+          if (response.status === "AUTHENTICATED") {
+            await redirectAfterLogin();
+          }
+        } else {
+          const response = await authStore.login(form.username, form.password);
+          if (response.status !== "MFA_REQUIRED") {
+            await redirectAfterLogin();
+          }
+        }
       } catch (error) {
         console.error("Login failed", error);
         errorMessage.value = t("login.loginFailed");

@@ -12,13 +12,33 @@ const AUCTION_API_BASE_URL = readRuntimeValue("AUCTION_API_BASE_URL", import.met
 const ONLINE_AUCTION_API_BASE_URL = readRuntimeValue("ONLINE_AUCTION_API_BASE_URL", import.meta.env.VITE_ONLINE_AUCTION_API_BASE_URL ?? "http://localhost:8080");
 const REPORTING_API_BASE_URL = readRuntimeValue("REPORTING_API_BASE_URL", import.meta.env.VITE_REPORTING_API_BASE_URL ?? "http://localhost:8080");
 
+function buildErrorMessage(response, payload, requestInfo) {
+  const traceId =
+    (typeof payload === "object" && payload !== null && "traceId" in payload ? payload.traceId : null)
+    ?? requestInfo.traceId
+    ?? null;
+
+  if (typeof payload === "object" && payload !== null && "message" in payload && payload.message) {
+    return traceId
+      ? `${payload.message} (traceId: ${traceId})`
+      : payload.message;
+  }
+
+  const requestLabel = `${requestInfo.method} ${requestInfo.url}`;
+  return traceId
+    ? `${requestLabel} failed with status ${response.status} (traceId: ${traceId})`
+    : `${requestLabel} failed with status ${response.status}`;
+}
+
 async function request(baseUrl, path, options = {}) {
   const authStore = useAuthStore();
   const { headers: customHeaders = {}, ...restOptions } = options;
 
   const token = options.token || authStore.accessToken;
+  const requestUrl = `${baseUrl}${path}`;
+  const requestMethod = restOptions.method ?? "GET";
 
-  const response = await fetch(`${baseUrl}${path}`, {
+  const response = await fetch(requestUrl, {
     ...restOptions,
     headers: {
       "Content-Type": "application/json",
@@ -45,15 +65,22 @@ async function request(baseUrl, path, options = {}) {
       typeof payload === "object" && payload !== null && Array.isArray(payload.fieldErrors)
         ? payload.fieldErrors
         : [];
-    const message =
-      typeof payload === "object" && payload !== null && "message" in payload
-        ? payload.message
-        : `Request failed with status ${response.status}`;
+    const traceId =
+      response.headers.get("X-Trace-Id")
+      ?? (typeof payload === "object" && payload !== null && "traceId" in payload ? payload.traceId : null);
+    const message = buildErrorMessage(response, payload, {
+      method: requestMethod,
+      url: requestUrl,
+      traceId
+    });
 
     const error = new Error(message);
     error.status = response.status;
     error.payload = payload;
     error.fieldErrors = fieldErrors;
+    error.traceId = traceId;
+    error.requestMethod = requestMethod;
+    error.requestUrl = requestUrl;
     throw error;
   }
 

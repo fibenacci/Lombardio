@@ -1,6 +1,6 @@
 # Lombardio - Development & Infrastructure Makefile
 
-.PHONY: help up down reset debug logs ps stats tf-plan tf-apply tf-init
+.PHONY: help up down reset debug logs ps stats tf-plan tf-apply tf-init test fix
 
 # --- Settings ---
 SCRIPTS_DIR := scripts
@@ -54,7 +54,7 @@ test: ## Run all tests (Maven)
 
 fix: ## Automatically fix code formatting (Java, Go, Frontend)
 	@echo "🎨 Fixing Java (Spotless)..."
-	mvn spotless:apply
+	./mvnw spotless:apply
 	@echo "🐹 Fixing Go (gofmt)..."
 	find services -name go.mod -execdir go fmt ./... \;
 	@echo "⚛️ Fixing Frontend (eslint/prettier)..."

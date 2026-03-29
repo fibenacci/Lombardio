@@ -17,21 +17,37 @@ export function createBranch(tenantId, payload, token) {
 }
 
 export function updateUser(id, payload, token) {
-  return patch(`/api/v1/users/${id}`, payload, token);
+  return patch(`/api/v1/tenants/${payload.tenantId}/users/${id}`, payload, token);
 }
 
 export function fetchRoles(tenantId, token) {
-  return get(`/api/v1/tenants/${tenantId}/roles`, token);
+  return get(`/api/v1/tenants/${tenantId}/roles`, token).then((roles) =>
+    roles.map((role) => ({
+      id: role,
+      key: role,
+      displayName: role,
+      description: "",
+      active: true,
+      permissionKeys: []
+    }))
+  );
 }
 
 export function createRole(tenantId, payload, token) {
-  return post(`/api/v1/tenants/${tenantId}/roles`, payload, token);
+  void tenantId;
+  void payload;
+  void token;
+  return Promise.reject(new Error("Tenant-specific role management is not implemented by the current platform API."));
 }
 
 export function updateRole(id, payload, token) {
-  return patch(`/api/v1/roles/${id}`, payload, token);
+  void id;
+  void payload;
+  void token;
+  return Promise.reject(new Error("Tenant-specific role management is not implemented by the current platform API."));
 }
 
 export function fetchPermissions(token) {
-  return get("/api/v1/permissions", token);
+  void token;
+  return Promise.resolve([]);
 }

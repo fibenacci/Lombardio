@@ -17,7 +17,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 
 @Entity
-@Table(name = "tenant_features", schema = "platform")
+@Table(name = "tenant_features")
 public class TenantFeatureEntity {
 
   @EmbeddedId private TenantFeatureId id;

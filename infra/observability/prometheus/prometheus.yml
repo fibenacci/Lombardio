@@ -21,13 +21,10 @@ scrape_configs:
     metrics_path: /actuator/prometheus
     static_configs:
       - targets:
-          - identity-access:8081
           - platform:8082
           - loan-origination:8083
-          - customer:8084
+          - identity-intelligence:8084
           - pawn-ticket:8085
-          - kyc:8086
-          - aml:8088
           - auction:8089
           - online-auction:8090
           - reporting:8091

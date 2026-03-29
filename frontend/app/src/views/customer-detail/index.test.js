@@ -2,19 +2,22 @@ import { flushPromises, mount } from "@vue/test-utils";
 import CustomerDetailView from ".";
 import { setLocale } from "../../i18n";
 import router from "../../router";
-import { authStore } from "../../stores/auth";
-import { tenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import * as customerApi from "../../services/api/customer";
 import * as kycApi from "../../services/api/kyc";
 import * as amlApi from "../../services/api/aml";
 import * as originationApi from "../../services/api/origination";
 
 describe("CustomerDetailView", () => {
+  let authStore;
+  let tenantStore;
+
   beforeEach(() => {
     setLocale("de");
     vi.restoreAllMocks();
-    tenantStore.resetForTests();
-    authStore.resetForTests();
+    authStore = useAuthStore();
+    tenantStore = useTenantStore();
   });
 
   it("loads and saves aml data for the customer file", async () => {

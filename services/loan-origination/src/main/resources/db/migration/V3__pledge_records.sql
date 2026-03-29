@@ -1,19 +1,19 @@
-alter table loan_origination.loan_cases
+alter table loan_cases
     add column if not exists customer_birth_date date;
 
-alter table loan_origination.loan_cases
+alter table loan_cases
     add column if not exists customer_street varchar(255);
 
-alter table loan_origination.loan_cases
+alter table loan_cases
     add column if not exists customer_postal_code varchar(32);
 
-alter table loan_origination.loan_cases
+alter table loan_cases
     add column if not exists customer_city varchar(120);
 
-alter table loan_origination.loan_cases
+alter table loan_cases
     add column if not exists customer_checked_document_type varchar(120);
 
-create table if not exists loan_origination.pledge_records (
+create table if not exists pledge_records (
     id varchar(64) primary key,
     loan_case_id varchar(64) not null,
     tenant_id varchar(64) not null,
@@ -33,8 +33,8 @@ create table if not exists loan_origination.pledge_records (
     bearer_city varchar(120),
     power_of_attorney_document_data_url text,
     sort_order integer not null default 0,
-    constraint fk_pledge_records_case foreign key (loan_case_id) references loan_origination.loan_cases (id) on delete cascade
+    constraint fk_pledge_records_case foreign key (loan_case_id) references loan_cases (id) on delete cascade
 );
 
 create index if not exists idx_pledge_records_tenant_recorded_at
-    on loan_origination.pledge_records (tenant_id, recorded_at);
+    on pledge_records (tenant_id, recorded_at);

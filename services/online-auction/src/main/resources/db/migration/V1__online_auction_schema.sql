@@ -1,6 +1,5 @@
-create schema if not exists online_auction;
 
-create table if not exists online_auction.online_auctions (
+create table if not exists online_auctions (
     id varchar(120) primary key,
     tenant_id varchar(120) not null,
     title varchar(255) not null,
@@ -14,9 +13,9 @@ create table if not exists online_auction.online_auctions (
     updated_at timestamp with time zone not null
 );
 
-create table if not exists online_auction.online_auction_lots (
+create table if not exists online_auction_lots (
     id varchar(120) primary key,
-    auction_id varchar(120) not null references online_auction.online_auctions(id) on delete cascade,
+    auction_id varchar(120) not null references online_auctions(id) on delete cascade,
     lot_number integer not null,
     title varchar(255) not null,
     description varchar(1000) not null,
@@ -25,9 +24,9 @@ create table if not exists online_auction.online_auction_lots (
     highest_bidder_alias varchar(255)
 );
 
-create table if not exists online_auction.bidder_registrations (
+create table if not exists bidder_registrations (
     id varchar(120) primary key,
-    auction_id varchar(120) not null references online_auction.online_auctions(id) on delete cascade,
+    auction_id varchar(120) not null references online_auctions(id) on delete cascade,
     display_name varchar(255) not null,
     email varchar(255) not null,
     paddle_number varchar(60) not null,
@@ -36,10 +35,10 @@ create table if not exists online_auction.bidder_registrations (
 );
 
 create unique index if not exists idx_online_auction_slug
-    on online_auction.online_auctions (tenant_id, slug);
+    on online_auctions (tenant_id, slug);
 
 create unique index if not exists idx_online_auction_lot_number
-    on online_auction.online_auction_lots (auction_id, lot_number);
+    on online_auction_lots (auction_id, lot_number);
 
 create unique index if not exists idx_bidder_registration_token
-    on online_auction.bidder_registrations (access_token);
+    on bidder_registrations (access_token);

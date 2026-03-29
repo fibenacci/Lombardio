@@ -1,7 +1,7 @@
 import { defineComponent, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { fetchPortalInvitation } from "../../services/api/customerPortal";
-import { customerPortalStore } from "../../stores/customerPortal";
+import { useCustomerPortalStore } from "../../stores/customerPortal";
 import { useI18n } from "../../i18n";
 import template from "./template.html?raw";
 import "./styles.scss";
@@ -9,6 +9,7 @@ import "./styles.scss";
 export default defineComponent({
   name: "CustomerPortalActivateView",
   setup() {
+    const customerPortalStore = useCustomerPortalStore();
     const route = useRoute();
     const router = useRouter();
     const { t } = useI18n();

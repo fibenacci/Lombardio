@@ -1,13 +1,18 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import CashdeskView from ".";
 import { setLocale } from "../../i18n";
-import { authStore } from "../../stores/auth";
-import { tenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import * as pawnTicketApi from "../../services/api/pawnTicket";
 
 describe("CashdeskView", () => {
+  let authStore;
+  let tenantStore;
+
   beforeEach(() => {
     setLocale("de");
+    authStore = useAuthStore();
+    tenantStore = useTenantStore();
   });
 
   it("loads tickets and calculates a redemption settlement", async () => {

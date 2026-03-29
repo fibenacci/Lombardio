@@ -14,13 +14,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lombardio.platform.iam.application.KeycloakService;
 import io.lombardio.platform.integration.application.PlatformOutboxService;
+import io.lombardio.platform.tenant.api.BranchResponse;
 import io.lombardio.platform.tenant.api.CreateTenantRequest;
+import io.lombardio.platform.tenant.api.CreateTenantBranchRequest;
 import io.lombardio.platform.tenant.api.CreateTenantUserRequest;
 import io.lombardio.platform.tenant.api.TenantFeatureResponse;
 import io.lombardio.platform.tenant.api.TenantResponse;
 import io.lombardio.platform.tenant.api.TenantUserResponse;
+import io.lombardio.platform.tenant.api.UpdateTenantUserRequest;
 import io.lombardio.platform.tenant.api.UpdateTenantRequest;
 import io.lombardio.platform.tenant.api.UpsertTenantFeatureRequest;
+import io.lombardio.platform.tenant.domain.Branch;
+import io.lombardio.platform.tenant.domain.BranchRepository;
 import io.lombardio.platform.tenant.domain.Tenant;
 import io.lombardio.platform.tenant.domain.TenantFeature;
 import io.lombardio.platform.tenant.domain.TenantFeatureRepository;
@@ -47,9 +52,23 @@ public class TenantCatalogService {
           "kyc-document-ocr",
           "auction-workflow",
           "online-auctions");
+  private static final List<String> TENANT_ASSIGNABLE_ROLE_PREFIXES =
+      List.of(
+          "users.",
+          "roles.",
+          "branches.",
+          "customers.",
+          "kyc.",
+          "aml.",
+          "loans.",
+          "auctions.",
+          "pawn-tickets.",
+          "cash-transactions.",
+          "reporting.");
 
   private final TenantRepository tenantRepository;
   private final TenantFeatureRepository tenantFeatureRepository;
+  private final BranchRepository branchRepository;
   private final PlatformOutboxService platformOutboxService;
   private final KeycloakService keycloakService;
   private final ObjectMapper objectMapper;
@@ -58,12 +77,14 @@ public class TenantCatalogService {
   public TenantCatalogService(
       TenantRepository tenantRepository,
       TenantFeatureRepository tenantFeatureRepository,
+      BranchRepository branchRepository,
       PlatformOutboxService platformOutboxService,
       KeycloakService keycloakService,
       ObjectMapper objectMapper,
       Clock clock) {
     this.tenantRepository = tenantRepository;
     this.tenantFeatureRepository = tenantFeatureRepository;
+    this.branchRepository = branchRepository;
     this.platformOutboxService = platformOutboxService;
     this.keycloakService = keycloakService;
     this.objectMapper = objectMapper;
@@ -98,14 +119,69 @@ public class TenantCatalogService {
 
   public TenantUserResponse createTenantUser(String tenantId, CreateTenantUserRequest request) {
     requireTenant(tenantId);
-    String userId =
-        keycloakService.createTenantUser(
-            tenantId, request.email(), request.password(), request.roles());
-    return new TenantUserResponse(userId, request.email(), request.displayName(), request.roles());
+    return keycloakService.createTenantUser(
+        tenantId,
+        request.email(),
+        request.password(),
+        request.displayName(),
+        request.roles(),
+        sanitizeBranchIds(tenantId, request.branchIds()));
   }
 
   public List<String> listAvailableRoles() {
     return keycloakService.getAvailableRoles();
+  }
+
+  public List<TenantUserResponse> listTenantUsers(String tenantId) {
+    requireTenant(tenantId);
+    return keycloakService.listTenantUsers(tenantId);
+  }
+
+  public TenantUserResponse updateTenantUser(
+      String tenantId, String userId, UpdateTenantUserRequest request) {
+    requireTenant(tenantId);
+    return keycloakService.updateTenantUser(
+        tenantId,
+        userId,
+        request.email(),
+        request.displayName(),
+        request.status(),
+        request.roles(),
+        sanitizeBranchIds(tenantId, request.branchIds()));
+  }
+
+  public List<String> listAvailableRolesForTenant(String tenantId) {
+    requireTenant(tenantId);
+    return keycloakService.getAvailableRoles().stream().filter(this::isTenantAssignableRole).toList();
+  }
+
+  public List<BranchResponse> listBranches(String tenantId) {
+    requireTenant(tenantId);
+    return branchRepository.findByTenantId(tenantId).stream().map(this::toBranchResponse).toList();
+  }
+
+  @Transactional
+  public BranchResponse createBranch(String tenantId, CreateTenantBranchRequest request) {
+    requireTenant(tenantId);
+    branchRepository
+        .findByTenantIdAndKey(tenantId, request.key())
+        .ifPresent(
+            branch -> {
+              throw new IllegalArgumentException("Branch key already exists: " + request.key());
+            });
+
+    Instant now = Instant.now(clock);
+    Branch saved =
+        branchRepository.save(
+            new Branch(
+                "branch-" + UUID.randomUUID(),
+                tenantId,
+                request.key(),
+                request.displayName(),
+                request.status() == null || request.status().isBlank() ? "ACTIVE" : request.status(),
+                now,
+                now));
+    return toBranchResponse(saved);
   }
 
   @Transactional
@@ -228,5 +304,24 @@ public class TenantCatalogService {
         tenantFeature.featureKey(),
         tenantFeature.enabled(),
         tenantFeature.updatedAt());
+  }
+
+  private BranchResponse toBranchResponse(Branch branch) {
+    return new BranchResponse(branch.id(), branch.key(), branch.displayName(), branch.status());
+  }
+
+  private List<String> sanitizeBranchIds(String tenantId, List<String> branchIds) {
+    List<String> allowedBranchIds = branchRepository.findByTenantId(tenantId).stream().map(Branch::id).toList();
+    List<String> requestedBranchIds = branchIds == null ? List.of() : branchIds;
+    boolean invalidBranchPresent =
+        requestedBranchIds.stream().anyMatch(branchId -> !allowedBranchIds.contains(branchId));
+    if (invalidBranchPresent) {
+      throw new IllegalArgumentException("One or more branch assignments are invalid for tenant " + tenantId);
+    }
+    return requestedBranchIds;
+  }
+
+  private boolean isTenantAssignableRole(String roleName) {
+    return TENANT_ASSIGNABLE_ROLE_PREFIXES.stream().anyMatch(roleName::startsWith);
   }
 }

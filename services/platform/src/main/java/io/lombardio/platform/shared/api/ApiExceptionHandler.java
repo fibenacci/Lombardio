@@ -10,6 +10,7 @@
  */
 package io.lombardio.platform.shared.api;
 
+import io.lombardio.platform.iam.application.IdentityProviderUnavailableException;
 import io.lombardio.platform.security.ForbiddenException;
 import io.lombardio.platform.security.UnauthorizedException;
 import jakarta.validation.ConstraintViolationException;
@@ -64,6 +65,13 @@ public class ApiExceptionHandler {
   public ResponseEntity<ApiError> handleUnauthorized(UnauthorizedException exception) {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
         .body(new ApiError("unauthorized", exception.getMessage()));
+  }
+
+  @ExceptionHandler(IdentityProviderUnavailableException.class)
+  public ResponseEntity<ApiError> handleIdentityProviderUnavailable(
+      IdentityProviderUnavailableException exception) {
+    return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+        .body(new ApiError("identity_provider_unavailable", exception.getMessage()));
   }
 
   private String formatFieldError(FieldError error) {

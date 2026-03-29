@@ -25,13 +25,8 @@ public class KeycloakAdminConfig {
     KeycloakBuilder builder =
         KeycloakBuilder.builder()
             .serverUrl(props.serverUrl())
-            .realm("master") // master realm
-            // to manage
-            // other realms
-            // if needed,
-            // or
-            // props.realm()
-            .clientId("admin-cli")
+            .realm(props.realm())
+            .clientId(props.clientId())
             .username(props.adminUsername())
             .password(props.adminPassword())
             .grantType("password");

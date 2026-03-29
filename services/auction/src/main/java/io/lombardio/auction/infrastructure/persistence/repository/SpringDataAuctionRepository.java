@@ -13,11 +13,14 @@ package io.lombardio.auction.infrastructure.persistence.repository;
 import io.lombardio.auction.infrastructure.persistence.entity.AuctionEntity;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SpringDataAuctionRepository extends JpaRepository<AuctionEntity, String> {
 
+  @EntityGraph(attributePaths = "lots")
   List<AuctionEntity> findByTenantIdOrderByCreatedAtDesc(String tenantId);
 
+  @EntityGraph(attributePaths = "lots")
   Optional<AuctionEntity> findByTenantIdAndId(String tenantId, String id);
 }

@@ -17,7 +17,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "valuation_guidelines", schema = "loan_origination")
+@Table(name = "valuation_guidelines")
 public class ValuationGuidelineEntity {
 
   @Id private String id;

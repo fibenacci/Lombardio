@@ -21,6 +21,8 @@
       { "name": "cash-transactions.read" },
       { "name": "cash-transactions.write" },
       { "name": "reporting.read" },
+      { "name": "branches.read" },
+      { "name": "branches.write" },
       { "name": "sessions.impersonate.platform" }
     ]
   },
@@ -65,7 +67,16 @@
         "platform.tenants.read",
         "platform.tenants.write",
         "sessions.impersonate.platform"
-      ]
+      ],
+      "clientRoles": {
+        "realm-management": [
+          "manage-users",
+          "view-users",
+          "query-users",
+          "query-groups",
+          "view-realm"
+        ]
+      }
     },
     {
       "username": "admin@lombardio.local",
@@ -75,6 +86,12 @@
       "lastName": "Admin",
       "credentials": [{ "type": "password", "value": "admin", "temporary": false }],
       "realmRoles": [
+        "users.read",
+        "users.write",
+        "roles.read",
+        "roles.write",
+        "branches.read",
+        "branches.write",
         "customers.read",
         "customers.write",
         "kyc.read",

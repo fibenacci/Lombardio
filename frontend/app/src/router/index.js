@@ -170,12 +170,18 @@ export function routeGuard(to) {
   const customerPortalStore = useCustomerPortalStore();
 
   // If we are navigating to public routes, allow immediately
-  if (to.name === "public-online-auction" || to.path.startsWith("/portal/activate")) {
+  if (to.name === "public-online-auction" || (to.path && to.path.startsWith("/portal/activate"))) {
+    return true;
+  }
+
+  // If auth state is not yet ready, we MUST wait for initialization
+  // but in the context of our route guard, we just allow it to let the app load
+  if (!authStore.ready || !customerPortalStore.ready) {
     return true;
   }
 
   // Handle Customer Portal Auth
-  if (to.path.startsWith("/portal")) {
+  if (to.path && to.path.startsWith("/portal")) {
     if (to.meta.requiresCustomerPortalAuth && !customerPortalStore.isAuthenticated) {
       return { name: "customer-portal-login" };
     }

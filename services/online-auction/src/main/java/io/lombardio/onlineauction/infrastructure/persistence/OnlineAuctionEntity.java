@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "online_auctions", schema = "online_auction")
+@Table(name = "online_auctions")
 public class OnlineAuctionEntity {
 
   @Id private String id;

@@ -20,7 +20,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "online_auction_lots", schema = "online_auction")
+@Table(name = "online_auction_lots")
 public class OnlineAuctionLotEntity {
 
   @Id private String id;

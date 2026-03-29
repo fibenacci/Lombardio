@@ -20,7 +20,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 
 @Entity
-@Table(name = "integration_outbox_events", schema = "platform")
+@Table(name = "integration_outbox_events")
 public class IntegrationOutboxEventEntity {
 
   @Id private String id;

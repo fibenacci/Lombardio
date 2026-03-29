@@ -1,11 +1,19 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import OnlineAuctionsView from ".";
-import { authStore } from "../../stores/auth";
-import { tenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import * as onlineAuctionApi from "../../services/api/onlineAuction";
 import router from "../../router";
 
 describe("OnlineAuctionsView", () => {
+  let authStore;
+  let tenantStore;
+
+  beforeEach(() => {
+    authStore = useAuthStore();
+    tenantStore = useTenantStore();
+  });
+
   it("loads online auctions from the API layer", async () => {
     authStore.token = "token-123";
     tenantStore.selectedTenantId = "tenant-default";

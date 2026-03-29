@@ -1,10 +1,13 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import SecurityView from ".";
-import { authStore } from "../../stores/auth";
+import { useAuthStore } from "../../stores/auth";
 import { setLocale } from "../../i18n";
 
 describe("SecurityView", () => {
+  let authStore;
+
   beforeEach(() => {
+    authStore = useAuthStore();
     setLocale("en");
   });
 

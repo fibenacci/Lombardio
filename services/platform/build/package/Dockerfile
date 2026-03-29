@@ -1,5 +1,5 @@
-ARG DEV_BASE_IMAGE=maven:3.9.9-eclipse-temurin-17
-ARG BUILD_BASE_IMAGE=maven:3.9.9-eclipse-temurin-17
+ARG DEV_BASE_IMAGE=maven:3.9.9-eclipse-temurin-21
+ARG BUILD_BASE_IMAGE=maven:3.9.9-eclipse-temurin-21
 FROM ${DEV_BASE_IMAGE} AS development
 
 WORKDIR /workspace
@@ -9,13 +9,14 @@ CMD ["mvn", "-q", "-DskipTests", "spring-boot:run"]
 FROM ${BUILD_BASE_IMAGE} AS build
 
 WORKDIR /build
-COPY services/platform/pom.xml ./pom.xml
-COPY services/platform/src ./src
-RUN mvn -q -DskipTests package
+COPY pom.xml ./pom.xml
+COPY services/platform-security ./services/platform-security
+COPY services/platform ./services/platform
+RUN mvn -q -DskipTests package -pl services/platform -am
 
-FROM eclipse-temurin:17-jre AS runtime
+FROM eclipse-temurin:21-jre AS runtime
 
 WORKDIR /app
-COPY --from=build /build/target/platform-0.0.1-SNAPSHOT.jar /app/platform.jar
+COPY --from=build /build/services/platform/target/platform-0.0.1-SNAPSHOT.jar /app/platform.jar
 EXPOSE 8082
 ENTRYPOINT ["java", "-jar", "/app/platform.jar"]

@@ -1,12 +1,20 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import CustomersView from ".";
-import { authStore } from "../../stores/auth";
-import { tenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import * as customerApi from "../../services/api/customer";
 import * as amlApi from "../../services/api/aml";
 import router from "../../router";
 
 describe("CustomersView", () => {
+  let authStore;
+  let tenantStore;
+
+  beforeEach(() => {
+    authStore = useAuthStore();
+    tenantStore = useTenantStore();
+  });
+
   it("loads customers from the API layer", async () => {
     authStore.token = "token-123";
     tenantStore.selectedTenantId = "tenant-default";

@@ -33,7 +33,7 @@ export default defineComponent({
       users.value.map((user) => ({
         ...user,
         branchCount: (user.branchIds ?? []).length,
-        roleNames: user.roleIds
+        roleNames: (user.roleIds ?? [])
           .map((roleId) => roles.value.find((role) => role.id === roleId)?.displayName ?? roleId)
           .join(", ")
       }))
@@ -57,9 +57,10 @@ export default defineComponent({
       isLoading.value = true;
       errorMessage.value = "";
 
-       if (!tenantStore.selectedTenantId) {
+      if (!tenantStore.selectedTenantId) {
         users.value = [];
         roles.value = [];
+        branches.value = [];
         isLoading.value = false;
         return;
       }
@@ -87,33 +88,35 @@ export default defineComponent({
 
       try {
         const payload = {
-          branchIds: form.branchIds,
-          username: form.username,
+          tenantId: tenantStore.selectedTenantId,
+          username: form.username || form.email,
+          password: form.initialPassword,
           email: form.email,
           displayName: form.displayName,
           status: form.status,
-          roleIds: form.roleIds
+          roleIds: form.roleIds,
+          roles: form.roleIds,
+          branchIds: form.branchIds
         };
 
         if (editingUserId.value) {
-          await updateUser(
-            editingUserId.value,
-            payload,
-            authStore.token
-          );
+          await updateUser(editingUserId.value, payload, authStore.token);
+          toast.success("User updated", `${payload.displayName || payload.email} was saved.`);
           successMessage.value = "User updated";
-          toast.success("User updated", `${payload.displayName || payload.username} was saved.`);
         } else {
           await createUser(
             tenantStore.selectedTenantId,
             {
-              ...payload,
-              initialPassword: form.initialPassword
+              email: payload.email,
+              password: payload.password,
+              displayName: payload.displayName,
+              roles: payload.roles,
+              branchIds: payload.branchIds
             },
             authStore.token
           );
+          toast.success("User created", `${payload.displayName || payload.email} is now available in the tenant realm.`);
           successMessage.value = "User created";
-          toast.success("User created", `${payload.displayName || payload.username} is now available in the directory.`);
         }
 
         resetForm();
@@ -121,6 +124,10 @@ export default defineComponent({
       } catch (error) {
         handleApiError(error);
       }
+    }
+
+    function canDelegateToUser(user) {
+      return authStore.canImpersonate() && authStore.user?.id !== user.id;
     }
 
     async function delegateToUser(userId) {
@@ -138,18 +145,14 @@ export default defineComponent({
       }
     }
 
-    function canDelegateToUser(user) {
-      return authStore.canImpersonate() && authStore.user?.id !== user.id;
-    }
-
     function startEdit(user) {
       editingUserId.value = user.id;
-      form.username = user.username;
+      form.username = user.username ?? user.email;
       form.email = user.email;
       form.initialPassword = "";
       form.displayName = user.displayName;
-      form.status = user.status;
-      form.roleIds = [...user.roleIds];
+      form.status = user.status ?? "ACTIVE";
+      form.roleIds = [...(user.roleIds ?? [])];
       form.branchIds = [...(user.branchIds ?? [])];
       successMessage.value = "";
       errorMessage.value = "";
@@ -198,10 +201,10 @@ export default defineComponent({
       startEdit,
       roles,
       roleOptions,
+      userRows,
       tenantStore,
       submit,
-      successMessage,
-      userRows
+      successMessage
     };
   },
   template

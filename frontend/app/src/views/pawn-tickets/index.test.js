@@ -1,10 +1,18 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import PawnTicketsView from ".";
-import { authStore } from "../../stores/auth";
-import { tenantStore } from "../../stores/tenant";
+import { useAuthStore } from "../../stores/auth";
+import { useTenantStore } from "../../stores/tenant";
 import * as pawnTicketApi from "../../services/api/pawnTicket";
 
 describe("PawnTicketsView", () => {
+  let authStore;
+  let tenantStore;
+
+  beforeEach(() => {
+    authStore = useAuthStore();
+    tenantStore = useTenantStore();
+  });
+
   it("loads pawn tickets from the API layer", async () => {
     authStore.token = "token-123";
     tenantStore.selectedTenantId = "tenant-default";

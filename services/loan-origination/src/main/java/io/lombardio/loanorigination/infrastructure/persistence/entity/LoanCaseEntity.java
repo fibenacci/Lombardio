@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "loan_cases", schema = "loan_origination")
+@Table(name = "loan_cases")
 public class LoanCaseEntity {
 
   @Id private String id;

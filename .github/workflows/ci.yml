@@ -14,17 +14,6 @@ env:
 jobs:
   test-java:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        service:
-          - identity-intelligence
-          - platform
-          - loan-origination
-          - pawn-ticket
-          - auction
-          - online-auction
-          - reporting
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-java@v5
@@ -32,9 +21,8 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
-      - name: Test ${{ matrix.service }}
-        run: mvn -q test
-        working-directory: services/${{ matrix.service }}
+      - name: Test all Java services
+        run: ./mvnw clean test
 
   test-go:
     runs-on: ubuntu-latest
@@ -78,25 +66,25 @@ jobs:
         include:
           - name: identity-intelligence
             context: .
-            dockerfile: services/identity-intelligence/build/package/Dockerfile
+            dockerfile: infra/docker/JavaService.Dockerfile
           - name: platform
             context: .
-            dockerfile: services/platform/build/package/Dockerfile
+            dockerfile: infra/docker/JavaService.Dockerfile
           - name: loan-origination
             context: .
-            dockerfile: services/loan-origination/build/package/Dockerfile
+            dockerfile: infra/docker/JavaService.Dockerfile
           - name: pawn-ticket
             context: .
-            dockerfile: services/pawn-ticket/build/package/Dockerfile
+            dockerfile: infra/docker/JavaService.Dockerfile
           - name: auction
             context: .
-            dockerfile: services/auction/build/package/Dockerfile
+            dockerfile: infra/docker/JavaService.Dockerfile
           - name: online-auction
             context: .
-            dockerfile: services/online-auction/build/package/Dockerfile
+            dockerfile: infra/docker/JavaService.Dockerfile
           - name: reporting
             context: .
-            dockerfile: services/reporting/build/package/Dockerfile
+            dockerfile: infra/docker/JavaService.Dockerfile
           - name: frontend
             context: .
             dockerfile: frontend/app/build/package/Dockerfile
@@ -123,3 +111,4 @@ jobs:
           build-args: |
             BUILD_BASE_IMAGE=${{ env.BUILD_BASE_IMAGE }}
             DEV_BASE_IMAGE=${{ env.BUILD_BASE_IMAGE }}
+            SERVICE_NAME=${{ matrix.name }}
