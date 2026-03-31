@@ -1,4 +1,5 @@
-import { defineComponent, ref } from "vue";
+import { computed, defineComponent, ref } from "vue";
+import { useI18n } from "../../i18n";
 import template from "./template.html?raw";
 
 export default defineComponent({
@@ -6,7 +7,7 @@ export default defineComponent({
   props: {
     label: {
       type: String,
-      default: "Confirm"
+      default: null
     },
     icon: {
       type: String,
@@ -34,7 +35,7 @@ export default defineComponent({
     },
     header: {
       type: String,
-      default: "Please confirm"
+      default: null
     },
     message: {
       type: String,
@@ -42,16 +43,21 @@ export default defineComponent({
     },
     confirmLabel: {
       type: String,
-      default: "Continue"
+      default: null
     },
     cancelLabel: {
       type: String,
-      default: "Cancel"
+      default: null
     }
   },
   emits: ["confirm"],
-  setup(_, { emit }) {
+  setup(props, { emit }) {
+    const { t } = useI18n();
     const isOpen = ref(false);
+    const resolvedLabel = computed(() => props.label ?? t("confirmAction.trigger"));
+    const resolvedHeader = computed(() => props.header ?? t("confirmAction.header"));
+    const resolvedConfirmLabel = computed(() => props.confirmLabel ?? t("confirmAction.confirm"));
+    const resolvedCancelLabel = computed(() => props.cancelLabel ?? t("confirmAction.cancel"));
 
     function open() {
       isOpen.value = true;
@@ -70,7 +76,11 @@ export default defineComponent({
       close,
       confirm,
       isOpen,
-      open
+      open,
+      resolvedCancelLabel,
+      resolvedConfirmLabel,
+      resolvedHeader,
+      resolvedLabel
     };
   },
   template

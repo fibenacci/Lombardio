@@ -1,5 +1,6 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import RolesView from ".";
+import { setLocale } from "../../i18n";
 import { useAuthStore } from "../../stores/auth";
 import { useTenantStore } from "../../stores/tenant";
 import * as accessApi from "../../services/api/access";
@@ -9,6 +10,7 @@ describe("RolesView", () => {
   let tenantStore;
 
   beforeEach(() => {
+    setLocale("en");
     authStore = useAuthStore();
     tenantStore = useTenantStore();
   });
@@ -83,6 +85,6 @@ describe("RolesView", () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain("No tenant roles are currently available.");
-    expect(wrapper.text()).toContain("Role Management");
+    expect(wrapper.text()).toContain("Role management");
   });
 });

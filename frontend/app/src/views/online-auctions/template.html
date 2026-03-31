@@ -1,13 +1,13 @@
 <section class="page online-auction-view">
-  <PageHeader eyebrow="Live Commerce" title="Online-Auktionen" icon="pi pi-megaphone" copy="Separater Live-Bieter-Kontext mit Centrifugo-Realtime" />
+  <PageHeader :eyebrow="t('onlineAuctions.eyebrow')" :title="t('onlineAuctions.title')" icon="pi pi-megaphone" :copy="t('onlineAuctions.copy')" />
 
   <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
 
   <div class="online-auction-grid">
-    <AdminPanel title="Neue Online-Auktion" subtitle="Realtime-Auktionsraum mit Bieterfreigaben und Countdown.">
+    <AdminPanel :title="t('onlineAuctions.createTitle')" :subtitle="t('onlineAuctions.createSubtitle')">
       <FormShell :errorMessage="errorMessage" @submit="submitCreate">
         <label>
-          <span>Titel</span>
+          <span>{{ t("onlineAuctions.fields.title") }}</span>
           <PInputText v-model="createForm.title" type="text" />
         </label>
         <label>
@@ -15,33 +15,33 @@
           <PInputText v-model="createForm.slug" type="text" />
         </label>
         <label>
-          <span>Mindestinkrement</span>
+          <span>{{ t("onlineAuctions.fields.minimumIncrement") }}</span>
           <PInputText v-model="createForm.minimumIncrement" type="number" min="1.00" step="0.01" />
         </label>
         <label>
-          <span>Countdown in Sekunden</span>
+          <span>{{ t("onlineAuctions.fields.countdownSeconds") }}</span>
           <PInputText v-model="createForm.countdownSeconds" type="number" min="30" step="1" />
         </label>
         <div class="lot-editor">
         <div class="lot-row header">
-          <span>Los</span>
-          <span>Beschreibung</span>
-          <span>Startgebot</span>
+          <span>{{ t("onlineAuctions.lotColumns.title") }}</span>
+          <span>{{ t("onlineAuctions.lotColumns.description") }}</span>
+          <span>{{ t("onlineAuctions.lotColumns.startingBid") }}</span>
         </div>
         <div v-for="(lot, index) in createForm.lots" :key="index" class="lot-row">
-          <PInputText v-model="lot.title" type="text" placeholder="Los titel" />
-          <PInputText v-model="lot.description" type="text" placeholder="Detailbeschreibung" />
+          <PInputText v-model="lot.title" type="text" :placeholder="t('onlineAuctions.placeholders.lotTitle')" />
+          <PInputText v-model="lot.description" type="text" :placeholder="t('onlineAuctions.placeholders.lotDescription')" />
           <PInputText v-model="lot.startingBid" type="number" min="0.01" step="0.01" />
         </div>
         </div>
         <template #actions>
-          <PButton icon="pi pi-plus" label="Los hinzufuegen" severity="secondary" outlined type="button" @click="addLot" />
-          <PButton icon="pi pi-save" label="Online-Auktion anlegen" type="submit" />
+          <PButton icon="pi pi-plus" :label="t('onlineAuctions.actions.addLot')" severity="secondary" outlined type="button" @click="addLot" />
+          <PButton icon="pi pi-save" :label="t('onlineAuctions.actions.create')" type="submit" />
         </template>
       </FormShell>
     </AdminPanel>
 
-    <AdminPanel title="Katalog" subtitle="Waehle eine Auktion fuer Freigaben und Statuswechsel.">
+    <AdminPanel :title="t('onlineAuctions.catalogTitle')" :subtitle="t('onlineAuctions.catalogSubtitle')">
       <div class="auction-list">
         <button
           v-for="auction in auctions"
@@ -59,45 +59,45 @@
     </AdminPanel>
   </div>
 
-  <AdminPanel v-if="selectedAuction" :title="selectedAuction.title" subtitle="Public URL">
+  <AdminPanel v-if="selectedAuction" :title="selectedAuction.title" :subtitle="t('onlineAuctions.publicUrlSubtitle')">
     <template #actions>
       <SectionActions>
-        <PButton icon="pi pi-send" label="Publizieren" severity="secondary" outlined type="button" @click="changeStatus('publish')" />
-        <PButton icon="pi pi-play" label="Live starten" severity="secondary" outlined type="button" @click="changeStatus('start')" />
-        <PButton icon="pi pi-stop" label="Schliessen" severity="secondary" outlined type="button" @click="changeStatus('close')" />
+        <PButton icon="pi pi-send" :label="t('onlineAuctions.actions.publish')" severity="secondary" outlined type="button" @click="changeStatus('publish')" />
+        <PButton icon="pi pi-play" :label="t('onlineAuctions.actions.start')" severity="secondary" outlined type="button" @click="changeStatus('start')" />
+        <PButton icon="pi pi-stop" :label="t('onlineAuctions.actions.close')" severity="secondary" outlined type="button" @click="changeStatus('close')" />
       </SectionActions>
     </template>
 
-    <AdminPanel title="Oeffentliche URL">
+    <AdminPanel :title="t('onlineAuctions.publicUrlTitle')">
       <p class="public-link">{{ publicUrlFor(selectedAuction) }}</p>
-      <p class="hint">Bieter registrieren sich dort selbst und erhalten Paddle-Nummer, Access-Token und Realtime-Session.</p>
-      <p class="hint">Mindestinkrement: {{ selectedAuction.minimumIncrement }} | Countdown: {{ selectedAuction.countdownSeconds }}s</p>
+      <p class="hint">{{ t("onlineAuctions.publicUrlCopy") }}</p>
+      <p class="hint">{{ t("onlineAuctions.publicUrlMeta", { increment: selectedAuction.minimumIncrement, countdown: selectedAuction.countdownSeconds }) }}</p>
     </AdminPanel>
 
-    <AdminPanel title="Lose">
+    <AdminPanel :title="t('onlineAuctions.lotsTitle')">
       <AppDataTable :value="selectedAuction.lots" dataKey="id">
-        <PColumn field="lotNumber" header="Los" sortable />
-        <PColumn field="title" header="Titel" sortable />
-        <PColumn field="startingBid" header="Start" sortable />
-        <PColumn field="currentBid" header="Aktuell" sortable />
-        <PColumn header="Hoechstbieter" field="highestBidderAlias" sortable>
+        <PColumn field="lotNumber" :header="t('onlineAuctions.tableColumns.lotNumber')" sortable />
+        <PColumn field="title" :header="t('onlineAuctions.tableColumns.title')" sortable />
+        <PColumn field="startingBid" :header="t('onlineAuctions.tableColumns.startingBid')" sortable />
+        <PColumn field="currentBid" :header="t('onlineAuctions.tableColumns.currentBid')" sortable />
+        <PColumn :header="t('onlineAuctions.tableColumns.highestBidder')" field="highestBidderAlias" sortable>
           <template #body="{ data }">{{ data.highestBidderAlias || "-" }}</template>
         </PColumn>
       </AppDataTable>
     </AdminPanel>
 
-    <AdminPanel title="Bieterfreigaben">
+    <AdminPanel :title="t('onlineAuctions.registrationsTitle')">
       <AppDataTable :value="selectedAuction.registrations" dataKey="id">
-        <PColumn field="paddleNumber" header="Paddle" sortable />
-        <PColumn field="displayName" header="Name" sortable />
-        <PColumn field="email" header="E-Mail" sortable />
-        <PColumn header="Status" field="approvalStatus" sortable>
+        <PColumn field="paddleNumber" :header="t('onlineAuctions.registrationColumns.paddleNumber')" sortable />
+        <PColumn field="displayName" :header="t('onlineAuctions.registrationColumns.displayName')" sortable />
+        <PColumn field="email" :header="t('onlineAuctions.registrationColumns.email')" sortable />
+        <PColumn :header="t('onlineAuctions.registrationColumns.status')" field="approvalStatus" sortable>
           <template #body="{ data }">
             {{ data.approvalStatus }}<br />
-            <small>KYC: {{ data.kycStatus }} | Konto: {{ data.accountCheckStatus }}</small>
+            <small>{{ t("onlineAuctions.registrationSummary", { kyc: data.kycStatus, account: data.accountCheckStatus }) }}</small>
           </template>
         </PColumn>
-        <PColumn header="Aktion">
+        <PColumn :header="t('onlineAuctions.registrationColumns.action')">
           <template #body="{ data }">
             <div class="action-stack">
               <PInputText :modelValue="data.legalName" type="text" disabled />
@@ -105,28 +105,20 @@
               <PInputText :modelValue="data.ibanMasked" type="text" disabled />
               <PSelect
                 v-model="reviewForms[data.id].kycStatus"
-                :options="[
-                  { label: 'KYC pending', value: 'PENDING' },
-                  { label: 'KYC passed', value: 'PASSED' },
-                  { label: 'KYC failed', value: 'FAILED' }
-                ]"
+                :options="registrationKycOptions"
                 optionLabel="label"
                 optionValue="value"
               />
               <PSelect
                 v-model="reviewForms[data.id].accountCheckStatus"
-                :options="[
-                  { label: 'Konto pending', value: 'PENDING' },
-                  { label: 'Konto passed', value: 'PASSED' },
-                  { label: 'Konto failed', value: 'FAILED' }
-                ]"
+                :options="registrationAccountOptions"
                 optionLabel="label"
                 optionValue="value"
               />
-              <PInputText v-model="reviewForms[data.id].reviewNote" type="text" placeholder="Review-Notiz" />
+              <PInputText v-model="reviewForms[data.id].reviewNote" type="text" :placeholder="t('onlineAuctions.placeholders.reviewNote')" />
               <SectionActions>
-                <PButton label="Freigeben" severity="secondary" outlined size="small" type="button" @click="reviewRegistration(data.id, 'APPROVE')" />
-                <PButton label="Ablehnen" severity="secondary" outlined size="small" type="button" @click="reviewRegistration(data.id, 'REJECT')" />
+                <PButton :label="t('onlineAuctions.actions.approve')" severity="secondary" outlined size="small" type="button" @click="reviewRegistration(data.id, 'APPROVE')" />
+                <PButton :label="t('onlineAuctions.actions.reject')" severity="secondary" outlined size="small" type="button" @click="reviewRegistration(data.id, 'REJECT')" />
               </SectionActions>
             </div>
           </template>

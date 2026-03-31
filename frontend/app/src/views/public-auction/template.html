@@ -1,31 +1,31 @@
 <section class="public-auction-view">
   <header class="section-header">
     <div>
-      <p class="eyebrow">Live Bidding</p>
-      <h2>{{ auction?.title ?? "Online-Auktion" }}</h2>
+      <p class="eyebrow">{{ t("publicAuction.eyebrow") }}</p>
+      <h2>{{ auction?.title ?? t("publicAuction.titleFallback") }}</h2>
     </div>
-    <p class="meta-copy">Realtime-Prototyp mit Centrifugo</p>
+    <p class="meta-copy">{{ t("publicAuction.copy") }}</p>
   </header>
 
   <p v-if="errorMessage" class="error-banner">{{ errorMessage }}</p>
 
   <div class="public-auction-grid">
     <section class="panel">
-      <h3>Bieterregistrierung</h3>
+      <h3>{{ t("publicAuction.registrationTitle") }}</h3>
       <label>
-        <span>Name</span>
+        <span>{{ t("publicAuction.fields.displayName") }}</span>
         <input v-model="registrationForm.displayName" type="text">
       </label>
       <label>
-        <span>E-Mail</span>
+        <span>{{ t("publicAuction.fields.email") }}</span>
         <input v-model="registrationForm.email" type="email">
       </label>
       <label>
-        <span>Rechtsname</span>
+        <span>{{ t("publicAuction.fields.legalName") }}</span>
         <input v-model="registrationForm.legalName" type="text">
       </label>
       <label>
-        <span>Geburtsdatum</span>
+        <span>{{ t("publicAuction.fields.birthDate") }}</span>
         <input v-model="registrationForm.birthDate" type="date">
       </label>
       <label>
@@ -33,22 +33,22 @@
         <input v-model="registrationForm.iban" type="text">
       </label>
       <div class="button-row">
-        <button type="button" @click="registerBidder">Registrieren</button>
-        <button class="secondary-button" type="button" @click="enableRealtime">Realtime verbinden</button>
+        <button type="button" @click="registerBidder">{{ t("publicAuction.actions.register") }}</button>
+        <button class="secondary-button" type="button" @click="enableRealtime">{{ t("publicAuction.actions.enableRealtime") }}</button>
       </div>
       <div v-if="bidder" class="panel nested">
         <strong>{{ bidder.paddleNumber }}</strong>
         <p>{{ bidder.displayName }}</p>
-        <p class="meta-copy">Freigabe: {{ bidder.approvalStatus }}</p>
-        <p class="meta-copy">KYC: {{ bidder.kycStatus }} | Konto: {{ bidder.accountCheckStatus }}</p>
-        <p class="meta-copy">Realtime: {{ realtimeState }}</p>
+        <p class="meta-copy">{{ t("publicAuction.approvalStatus", { status: bidder.approvalStatus }) }}</p>
+        <p class="meta-copy">{{ t("publicAuction.bidderChecks", { kyc: bidder.kycStatus, account: bidder.accountCheckStatus }) }}</p>
+        <p class="meta-copy">{{ t("publicAuction.realtimeState", { state: realtimeState }) }}</p>
       </div>
     </section>
 
     <section class="panel">
-      <h3>Gebot abgeben</h3>
+      <h3>{{ t("publicAuction.bidTitle") }}</h3>
       <label>
-        <span>Los</span>
+        <span>{{ t("publicAuction.fields.lot") }}</span>
         <select v-model="bidForm.lotId">
           <option v-for="lot in auction?.lots ?? []" :key="lot.id" :value="lot.id">
             {{ lot.lotNumber }} - {{ lot.title }}
@@ -56,29 +56,29 @@
         </select>
       </label>
       <label>
-        <span>Betrag</span>
+        <span>{{ t("publicAuction.fields.amount") }}</span>
         <input v-model="bidForm.amount" type="number" min="0.01" step="0.01">
       </label>
-      <p class="hint">Mindestinkrement: {{ auction?.minimumIncrement ?? "-" }}</p>
-      <p class="hint">Countdown endet: {{ auction?.countdownEndsAt ?? "-" }}</p>
-      <button type="button" :disabled="bidder?.approvalStatus !== 'APPROVED'" @click="submitBid">Gebot senden</button>
+      <p class="hint">{{ t("publicAuction.minimumIncrement", { amount: auction?.minimumIncrement ?? "-" }) }}</p>
+      <p class="hint">{{ t("publicAuction.countdownEndsAt", { time: auction?.countdownEndsAt ?? "-" }) }}</p>
+      <button type="button" :disabled="bidder?.approvalStatus !== 'APPROVED'" @click="submitBid">{{ t("publicAuction.actions.submitBid") }}</button>
     </section>
   </div>
 
   <section class="panel">
-    <h3>Lose</h3>
+    <h3>{{ t("publicAuction.lotsTitle") }}</h3>
     <AppDataTable :value="auction?.lots ?? []" dataKey="id">
-      <PColumn field="lotNumber" header="Los" sortable />
-      <PColumn field="title" header="Titel" sortable />
-      <PColumn field="currentBid" header="Aktuell" sortable />
-      <PColumn field="highestBidderAlias" header="Fuehrend" sortable>
+      <PColumn field="lotNumber" :header="t('publicAuction.columns.lotNumber')" sortable />
+      <PColumn field="title" :header="t('publicAuction.columns.title')" sortable />
+      <PColumn field="currentBid" :header="t('publicAuction.columns.currentBid')" sortable />
+      <PColumn field="highestBidderAlias" :header="t('publicAuction.columns.highestBidder')" sortable>
         <template #body="{ data }">{{ data.highestBidderAlias || "-" }}</template>
       </PColumn>
     </AppDataTable>
   </section>
 
   <section class="panel">
-    <h3>Realtime-Feed</h3>
+    <h3>{{ t("publicAuction.realtimeFeedTitle") }}</h3>
     <ul class="realtime-feed">
       <li v-for="(event, index) in realtimeEvents" :key="index">
         <code>{{ event.type }}</code>

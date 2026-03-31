@@ -1,10 +1,12 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import PublicAuctionView from ".";
+import { setLocale } from "../../i18n";
 import router from "../../router";
 import * as onlineAuctionApi from "../../services/api/onlineAuction";
 
 describe("PublicAuctionView", () => {
   it("loads the public auction detail", async () => {
+    setLocale("en");
     vi.spyOn(onlineAuctionApi, "fetchPublicOnlineAuction").mockResolvedValue({
       id: "oa-1",
       title: "Live Gold Auction",

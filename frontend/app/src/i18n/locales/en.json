@@ -17,6 +17,8 @@
     "no": "No",
     "notAvailable": "Not available",
     "requestFailed": "Request failed",
+    "fileReadFailed": "File could not be read",
+    "noRecordsFound": "No records found.",
     "documentTypes": {
       "passport": "Passport",
       "residencePermit": "Residence permit"
@@ -27,6 +29,12 @@
     "de": "German",
     "en": "English",
     "saved": "Language saved"
+  },
+  "confirmAction": {
+    "trigger": "Confirm",
+    "header": "Please confirm",
+    "confirm": "Continue",
+    "cancel": "Cancel"
   },
   "login": {
     "eyebrow": "Lombardio",
@@ -76,10 +84,15 @@
   },
   "platformLayout": {
     "eyebrow": "Platform",
-    "title": "Lombardio Control",
+    "title": "Lombardio Administration",
+    "copy": "Platform governance, tenant activation and secure administrative access.",
     "tenants": "Tenants",
     "security": "Security",
     "tenantApp": "Tenant App"
+  },
+  "dashboardLayout": {
+    "eyebrow": "Operations",
+    "title": "Lombardio Administration"
   },
   "tenantLayout": {
     "eyebrow": "Tenant App",
@@ -101,6 +114,371 @@
     "roles": "Roles",
     "security": "Security",
     "platform": "Platform"
+  },
+  "branches": {
+    "eyebrow": "Organization",
+    "title": "Branches",
+    "copyWithTenant": "Review branch rollout status for tenant {tenant}.",
+    "copyWithoutTenant": "Select a tenant before reviewing branch rollout status.",
+    "directoryTitle": "Branch directory",
+    "count": "{count} branches",
+    "managementTitle": "Branch management",
+    "managementSubtitle": "Create tenant branches for staff assignment.",
+    "columns": {
+      "key": "Key",
+      "name": "Name",
+      "status": "Status"
+    },
+    "fields": {
+      "key": "Branch key",
+      "displayName": "Display name",
+      "status": "Status"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive"
+    },
+    "actions": {
+      "create": "Create branch",
+      "reload": "Reload branches"
+    },
+    "messages": {
+      "branchCreatedTitle": "Branch created",
+      "branchCreatedToast": "{displayName} is now available for tenant assignments."
+    }
+  },
+  "roles": {
+    "eyebrow": "Authorization",
+    "title": "Roles",
+    "copyWithTenant": "Review role assignments available to tenant {tenant}.",
+    "copyWithoutTenant": "Select a tenant in the Tenants view before reviewing roles.",
+    "directoryTitle": "Role directory",
+    "count": "{count} roles",
+    "managementTitle": "Role management",
+    "managementSubtitle": "Current platform API support",
+    "managementCopy": "This screen reflects the live tenant-accessible role catalog. Role CRUD is still not exposed by the current platform service.",
+    "columns": {
+      "key": "Key",
+      "name": "Name",
+      "description": "Description",
+      "permissions": "Permissions",
+      "status": "Status"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive"
+    },
+    "actions": {
+      "reload": "Reload roles"
+    },
+    "messages": {
+      "empty": "No tenant roles are currently available."
+    }
+  },
+  "users": {
+    "eyebrow": "User Administration",
+    "title": "Users",
+    "copyWithTenant": "Create and maintain staff accounts for tenant {tenant}.",
+    "copyWithoutTenant": "Select a tenant in the Tenants view before managing users.",
+    "directoryTitle": "User directory",
+    "count": "{count} records",
+    "columns": {
+      "username": "Username",
+      "email": "Email",
+      "displayName": "Display name",
+      "status": "Status",
+      "branches": "Branches",
+      "roles": "Roles",
+      "actions": "Actions"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive"
+    },
+    "delegation": {
+      "header": "Start delegated session",
+      "message": "You are about to enter the application as {user}.",
+      "confirm": "Start session"
+    },
+    "form": {
+      "createTitle": "Create user",
+      "editTitle": "Edit user",
+      "subtitle": "Writes to the tenant identity provisioning API."
+    },
+    "fields": {
+      "username": "Username",
+      "email": "Email",
+      "initialPassword": "Initial password",
+      "displayName": "Display name",
+      "status": "Status",
+      "roleIds": "Assign tenant roles",
+      "branchIds": "Assign branches"
+    },
+    "actions": {
+      "create": "Create user",
+      "save": "Save user",
+      "cancel": "Cancel"
+    },
+    "messages": {
+      "userCreatedTitle": "User created",
+      "userCreatedToast": "{user} is now available in the tenant realm.",
+      "userUpdatedTitle": "User updated",
+      "userUpdatedToast": "{user} was saved.",
+      "delegatedSessionStartedTitle": "Delegated session started",
+      "delegatedSessionStartedToast": "You are now acting with the selected user context."
+    }
+  },
+  "tenants": {
+    "eyebrow": "Platform",
+    "title": "Tenants",
+    "copy": "Create tenants and enable features before tenant administrators manage users and roles.",
+    "directoryTitle": "Tenant directory",
+    "count": "{count} tenants",
+    "createTitle": "Create tenant",
+    "createSubtitle": "Platform-level tenant bootstrap.",
+    "columns": {
+      "tenant": "Tenant"
+    },
+    "fields": {
+      "key": "Key",
+      "displayName": "Display name",
+      "status": "Status"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive"
+    },
+    "actions": {
+      "create": "Create tenant"
+    },
+    "featureState": {
+      "enabled": "enabled",
+      "disabled": "disabled"
+    },
+    "features": {
+      "title": "Tenant features",
+      "currentTenant": "Current tenant: {tenant}",
+      "selectTenant": "Select a tenant to manage features.",
+      "catalog": {
+        "identity-access": {
+          "label": "User and Access Management",
+          "description": "Internal user and access management for the tenant's employees."
+        },
+        "loan-origination": {
+          "label": "Origination",
+          "description": "Automated credit assessment and pledge origination workflows."
+        },
+        "aml-compliance": {
+          "label": "AML Compliance",
+          "description": "Anti-money laundering and KYC verification."
+        },
+        "online-auctions": {
+          "label": "Online Auctions",
+          "description": "Digital auction platform for pawned items."
+        },
+        "reporting": {
+          "label": "Analytics",
+          "description": "Operational dashboards and analytical reporting."
+        }
+      }
+    },
+    "messages": {
+      "loadFailed": "Failed to load tenants",
+      "createFailed": "Failed to create tenant",
+      "featuresLoadFailed": "Failed to load tenant features",
+      "featureUpdateFailed": "Failed to update feature",
+      "createdTitle": "Tenant created",
+      "createdToast": "{tenant} is ready for configuration.",
+      "featureUpdatedTitle": "Feature state updated",
+      "featureUpdatedToast": "{feature} is now {state}."
+    }
+  },
+  "auctions": {
+    "eyebrow": "Asset Disposal",
+    "title": "Auctions and Surplus",
+    "copy": "Back-office auction flow without realtime bidder channel",
+    "createTitle": "New auction",
+    "createSubtitle": "Capture auction and lots from the in-store disposal process.",
+    "directoryTitle": "Auctions",
+    "directorySubtitle": "Select an auction for announcement and hammer price settlement.",
+    "selectedSubtitle": "Selected auction",
+    "announcementTitle": "Announcement",
+    "announcementSubtitle": "Public notice at least 1 week and at most 2 weeks before the date.",
+    "lotsTitle": "Lots",
+    "surplusCasesTitle": "Surplus cases",
+    "auctionDate": "Date: {date}",
+    "fields": {
+      "title": "Title",
+      "location": "Location",
+      "auctionDate": "Auction date",
+      "announcementReference": "Announcement reference"
+    },
+    "lotColumns": {
+      "contractNumber": "Contract",
+      "itemNumber": "Pawn item",
+      "description": "Description",
+      "estimatedValue": "Estimated value",
+      "outstandingClaim": "Outstanding claim"
+    },
+    "tableColumns": {
+      "lotNumber": "Lot",
+      "contractNumber": "Contract",
+      "description": "Description",
+      "latestBidAmount": "Current bid",
+      "hammerPrice": "Hammer price",
+      "surplusAmount": "Surplus",
+      "outstandingClaim": "Outstanding claim",
+      "authorityTransferDueDate": "Authority deadline",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "placeholders": {
+      "announcementReference": "Official Gazette 12/2026",
+      "contractNumber": "PS-5001",
+      "itemNumber": "PS-5001-01",
+      "description": "Gold ring 585",
+      "bidderDisplayName": "Bidder name",
+      "bidAmount": "Bid",
+      "hammerPrice": "Hammer price"
+    },
+    "actions": {
+      "addLot": "Add lot",
+      "create": "Create auction",
+      "startLive": "Start live",
+      "close": "Close auction",
+      "saveAnnouncement": "Save announcement",
+      "recordBid": "Bid",
+      "bookHammerPrice": "Book hammer price"
+    },
+    "messages": {
+      "createdTitle": "Auction created",
+      "createdFallback": "Auction draft created.",
+      "announcementSavedTitle": "Announcement saved",
+      "announcementSavedToast": "The public auction notice was updated.",
+      "openedTitle": "Auction opened",
+      "openedToast": "{title} is now open.",
+      "closedTitle": "Auction closed",
+      "closedToast": "{title} was closed.",
+      "bidRecordedTitle": "Bid recorded",
+      "bidRecordedToast": "The bid was added to the selected lot.",
+      "lotSettledTitle": "Lot settled",
+      "lotSettledToast": "Hammer price and surplus calculation were updated."
+    }
+  },
+  "onlineAuctions": {
+    "eyebrow": "Live Auctions",
+    "title": "Online auctions",
+    "copy": "Separate live bidder context with Centrifugo real-time messaging",
+    "createTitle": "New online auction",
+    "createSubtitle": "Real-time auction room with bidder approvals, lots and countdown.",
+    "catalogTitle": "Catalog",
+    "catalogSubtitle": "Select an auction for approvals and status changes.",
+    "publicUrlSubtitle": "Public URL",
+    "publicUrlTitle": "Public URL",
+    "publicUrlCopy": "Bidders self-register there and receive a bidder number, access token and real-time session.",
+    "publicUrlMeta": "Minimum increment: {increment} | Countdown: {countdown}s",
+    "lotsTitle": "Lots",
+    "registrationsTitle": "Bidder approvals",
+    "registrationSummary": "KYC: {kyc} | Account: {account}",
+    "fields": {
+      "title": "Title",
+      "minimumIncrement": "Minimum increment",
+      "countdownSeconds": "Countdown in seconds"
+    },
+    "lotColumns": {
+      "title": "Lot",
+      "description": "Description",
+      "startingBid": "Starting bid"
+    },
+    "tableColumns": {
+      "lotNumber": "Lot",
+      "title": "Title",
+      "startingBid": "Start",
+      "currentBid": "Current",
+      "highestBidder": "Highest bidder"
+    },
+    "registrationColumns": {
+      "paddleNumber": "Bidder number",
+      "displayName": "Name",
+      "email": "Email",
+      "status": "Status",
+      "action": "Action"
+    },
+    "registrationStatus": {
+      "kyc": {
+        "PENDING": "KYC pending",
+        "PASSED": "KYC passed",
+        "FAILED": "KYC failed"
+      },
+      "account": {
+        "PENDING": "Account pending",
+        "PASSED": "Account passed",
+        "FAILED": "Account failed"
+      }
+    },
+    "placeholders": {
+      "lotTitle": "Lot title",
+      "lotDescription": "Detailed description",
+      "reviewNote": "Review note"
+    },
+    "actions": {
+      "addLot": "Add lot",
+      "create": "Create online auction",
+      "publish": "Publish",
+      "start": "Start live",
+      "close": "Close",
+      "approve": "Approve",
+      "reject": "Reject"
+    },
+    "messages": {
+      "createdTitle": "Online auction created",
+      "createdFallback": "Online auction draft created.",
+      "bidderApprovedTitle": "Bidder approved",
+      "bidderRejectedTitle": "Bidder rejected",
+      "registrationSavedToast": "Registration review was saved.",
+      "publishedTitle": "Auction published",
+      "publishedToast": "{title} is now publicly visible.",
+      "startedTitle": "Auction started",
+      "startedToast": "{title} is now live.",
+      "closedTitle": "Auction closed",
+      "closedToast": "{title} was closed."
+    }
+  },
+  "publicAuction": {
+    "eyebrow": "Live Bidding",
+    "titleFallback": "Online auction",
+    "copy": "Real-time prototype with Centrifugo",
+    "registrationTitle": "Bidder registration",
+    "bidTitle": "Place bid",
+    "lotsTitle": "Lots",
+    "realtimeFeedTitle": "Real-time feed",
+    "approvalStatus": "Approval: {status}",
+    "bidderChecks": "KYC: {kyc} | Account: {account}",
+    "realtimeState": "Real-time: {state}",
+    "minimumIncrement": "Minimum increment: {amount}",
+    "countdownEndsAt": "Countdown ends: {time}",
+    "fields": {
+      "displayName": "Name",
+      "email": "Email",
+      "legalName": "Legal name",
+      "birthDate": "Birth date",
+      "lot": "Lot",
+      "amount": "Amount"
+    },
+    "columns": {
+      "lotNumber": "Lot",
+      "title": "Title",
+      "currentBid": "Current",
+      "highestBidder": "Leading"
+    },
+    "actions": {
+      "register": "Register",
+      "enableRealtime": "Connect real-time feed",
+      "submitBid": "Send bid"
+    },
+    "messages": {
+      "registerFirst": "Please register first."
+    }
   },
   "security": {
     "eyebrow": "Security",
@@ -135,11 +513,15 @@
     "risk": "Risk {level}",
     "noAddress": "No address stored",
     "amlLoadFailed": "AML status could not be loaded",
+    "amlUnknown": "Unknown",
+    "goamlReference": "goAML {reference}",
     "columns": {
       "customerNumber": "Customer number",
       "name": "Name",
       "phone": "Phone",
-      "address": "Address"
+      "address": "Address",
+      "kyc": "KYC",
+      "aml": "AML"
     }
   },
   "loans": {
@@ -169,7 +551,15 @@
     "overviewSubtitle": "Documents, due dates and repayment amounts at a glance.",
     "count": "{count} pawn tickets",
     "searchPlaceholder": "Pawn ticket, customer number or name",
+    "pdf": "PDF",
     "labels": "Labels",
+    "status": {
+      "ACTIVE": "Active",
+      "DUE": "Due",
+      "REDEEMED": "Redeemed",
+      "EXTENDED": "Extended",
+      "AUCTIONED": "Auctioned"
+    },
     "columns": {
       "contract": "Contract",
       "ticket": "Pawn ticket",
@@ -181,6 +571,12 @@
       "repayment": "Repayment",
       "positions": "Positions",
       "actions": "Actions"
+    },
+    "messages": {
+      "documentOpenedTitle": "Pawn ticket opened",
+      "documentOpenedToast": "{ticketNumber} was opened in a new window.",
+      "labelsOpenedTitle": "Labels opened",
+      "labelsOpenedToast": "Label sheet for {ticketNumber} was opened in a new window."
     }
   },
   "cashdesk": {
@@ -258,6 +654,8 @@
     "ocrCopy": "OCR remains optional. Manual review and approval remain mandatory.",
     "frontSide": "Front side",
     "backSide": "Back side",
+    "portrait": "Portrait",
+    "portraitExtracted": "Portrait (extracted)",
     "noDocument": "No document stored",
     "kycLegalCopy": "Automatic extraction of document number and validity will later be connected through an optional verification or OCR adapter. For now, manual capture remains the verified path.",
     "saveKyc": "Save KYC",
@@ -348,6 +746,14 @@
     "copy": "The first workspace starts directly with origination: select customer, evaluate positions, display costs transparently and issue the pawn ticket.",
     "reportingTitle": "Finance and collateral inventory",
     "reportingSubtitle": "Server-side aggregated KPIs for cash desk, inventory values and movements over the last 14 days.",
+    "reportingCards": {
+      "cashInflow": "Cash inflow",
+      "cashOutflow": "Cash outflow",
+      "netCashflow": "Net cashflow",
+      "realizedRevenue": "Realized revenue",
+      "activeLoanExposure": "Outstanding loan exposure",
+      "activeTicketCount": "Active pawn tickets"
+    },
     "financeTrend": "Finance trend",
     "inflow": "Inflow",
     "outflow": "Outflow",
@@ -356,8 +762,49 @@
     "positionCount": "{count} positions",
     "cashTransactions": "Cash transactions",
     "transactionCount": "{count} transactions",
+    "transactionTypes": {
+      "REDEEM": "Redeem",
+      "EXTEND": "Extend",
+      "PARTIAL": "Partial repayment"
+    },
     "originationTitle": "Capture origination",
     "originationSubtitle": "CRM, valuation guidelines, cash desk and pawn ticket in one first workflow step.",
+    "customerOption": "{customerNumber} - {displayName} - KYC {kycStatus}",
+    "customerSection": {
+      "title": "Customer",
+      "createNewCustomer": "Create new customer",
+      "customerSearch": "Customer search",
+      "kycStatus": "KYC status: {status}",
+      "verificationMode": "Verification mode: {mode}",
+      "providerStatus": "Provider status: {status}",
+      "amlStatus": "AML: {status}",
+      "riskLevel": "Risk {level}",
+      "kycApprovalRequired": "Origination cannot be completed without approved KYC.",
+      "amlReviewRequired": "AML review required before origination.",
+      "providerFeatureCopy": "This tenant has the optional feature for external identity verification enabled. Manual KYC review remains available."
+    },
+    "verificationModes": {
+      "MANUAL": "Manual",
+      "PROVIDER": "Provider"
+    },
+    "newCustomer": {
+      "digitalPawnTicket": "Offer online pawn ticket and prepare invitation email",
+      "digitalPawnTicketCopy": "If the online pawn ticket is enabled, a valid email address must be stored. Activation happens later only after email confirmation and password setup by the customer.",
+      "ocrCopy": "Optional OCR path for number and validity. Manual review remains mandatory.",
+      "kycLegalCopy": "For new customers, a valid identity document with front and back side is mandatory. Automatic extraction of number and validity is prepared in the KYC workflow, but values are currently confirmed manually."
+    },
+    "pledgePresentation": {
+      "title": "Pledgor and power of attorney",
+      "thirdPartyToggle": "Bearer and pledgor are not the same person",
+      "bearerName": "Bearer name",
+      "bearerStreet": "Bearer street",
+      "powerOfAttorney": "Written power of attorney",
+      "legalCopy": "If bearer and pledgor are not the same person, a written power of attorney must be stored. The record is saved immediately in German."
+    },
+    "newCustomerAml": {
+      "title": "AML review for new customer",
+      "legalCopy": "When AML compliance is enabled for the tenant, the new customer must be at least in Clear state before completion. Suspicious cases require a goAML reference and must not proceed to origination."
+    },
     "approveKyc": "Approve KYC manually",
     "updatingKyc": "Updating KYC...",
     "providerVerification": "Mark provider verification",
@@ -369,18 +816,58 @@
     "selectCustomerPlaceholder": "Select customer",
     "selectGuidelinePlaceholder": "Choose guideline",
     "prefillDocument": "Prefill document data",
+    "positionColumns": {
+      "ticketGroup": "Pawn ticket",
+      "guideline": "Valuation guideline",
+      "label": "Label",
+      "description": "Description",
+      "pledgedValue": "Pledged value"
+    },
     "removePosition": "Remove",
+    "terms": {
+      "title": "Term and cost model",
+      "termMonths": "Term in months",
+      "loanAmount": "Loan amount",
+      "legalCopy": "Interest and fees are shown transparently based on the pawnbroking regulation. For loans above 300 EUR, the monthly operating fee can no longer be derived automatically and must be set deliberately."
+    },
     "totalLoan": "Total origination",
     "submitting": "Creating origination...",
     "submit": "Complete origination",
     "ticketAndCostsTitle": "Pawn ticket and costs",
     "ticketAndCostsSubtitle": "Legally relevant transparency before contract completion.",
+    "quote": {
+      "ticketEyebrow": "Pawn ticket {group}",
+      "positionCount": "{count} position(s)",
+      "totalLoanValue": "Loan amount",
+      "earliestAuctionDate": "Earliest auction date",
+      "monthlyInterestRate": "Monthly interest",
+      "monthlyOperatingFee": "Operating fee / month",
+      "totalInterestAmount": "Total interest",
+      "totalOperatingFeeAmount": "Total operating fee",
+      "totalRepaymentAmount": "Repayment amount at due date",
+      "empty": "As soon as positions and pledged values are captured, the interest rate, operating fee, term, repayment and relevant legal notes appear here."
+    },
+    "issuedTickets": {
+      "title": "Created pawn tickets",
+      "customer": "Customer: {customer}",
+      "contract": "Contract: {contract}",
+      "dueDate": "Pawn ticket created until {dueDate}",
+      "repaymentAmount": "Repayment amount: {amount} EUR",
+      "totalInterestAmount": "Total interest: {amount} EUR",
+      "totalOperatingFeeAmount": "Total operating fee: {amount} EUR",
+      "barcode": "Barcode: {barcode}",
+      "termsVersion": "Terms version: {version}"
+    },
     "loadingTicket": "Loading pawn ticket...",
     "ticketPdf": "Pawn ticket as PDF",
+    "ticketLabels": "Pawn labels",
     "printLabels": "Print labels",
     "messages": {
       "amlLoadFailed": "AML status could not be loaded",
-      "reportingFailed": "Reporting could not be loaded"
+      "reportingFailed": "Analytics could not be loaded",
+      "partialDataLoaded": "Some business services are not ready yet. The view was loaded with partial data.",
+      "missingRequiredFields": "Please complete the customer, required position fields and a valid term.",
+      "loanCreated": "Origination captured and pawn ticket created"
     }
   }
 }

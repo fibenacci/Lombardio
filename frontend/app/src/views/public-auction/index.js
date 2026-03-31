@@ -7,6 +7,7 @@ import {
   registerPublicBidder
 } from "../../services/api/onlineAuction";
 import { connectToAuctionRealtime } from "../../services/api/centrifugo";
+import { useI18n } from "../../i18n";
 import template from "./template.html?raw";
 import "./styles.scss";
 
@@ -14,6 +15,7 @@ export default defineComponent({
   name: "PublicAuctionView",
   setup() {
     const route = useRoute();
+    const { t } = useI18n();
     const auction = ref(null);
     const bidder = ref(null);
     const errorMessage = ref("");
@@ -44,7 +46,7 @@ export default defineComponent({
         errorMessage.value = "";
         await loadAuction();
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : "Request failed";
+        errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
       }
     }
 
@@ -74,7 +76,7 @@ export default defineComponent({
 
     async function submitBid() {
       if (!bidder.value?.accessToken) {
-        errorMessage.value = "Bitte zuerst registrieren.";
+        errorMessage.value = t("publicAuction.messages.registerFirst");
         return;
       }
       auction.value = await placePublicBid(route.params.tenantId, route.params.auctionId, {
@@ -98,7 +100,8 @@ export default defineComponent({
       realtimeState,
       registerBidder,
       registrationForm,
-      submitBid
+      submitBid,
+      t
     };
   },
   template

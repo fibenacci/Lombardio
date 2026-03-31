@@ -10,6 +10,7 @@ import {
   startOnlineAuction
 } from "../../services/api/onlineAuction";
 import { useAppToast } from "../../composables/use-app-toast";
+import { useI18n } from "../../i18n";
 import template from "./template.html?raw";
 import "./styles.scss";
 
@@ -23,12 +24,13 @@ export default defineComponent({
     const authStore = useAuthStore();
     const tenantStore = useTenantStore();
     const toast = useAppToast();
+    const { t } = useI18n();
     const auctions = ref([]);
     const selectedAuctionId = ref("");
     const errorMessage = ref("");
     const createForm = reactive({
-      title: "Online Evening Sale",
-      slug: "online-evening-sale",
+      title: "",
+      slug: "",
       minimumIncrement: "10.00",
       countdownSeconds: "180",
       lots: [emptyLot()]
@@ -38,6 +40,16 @@ export default defineComponent({
     const selectedAuction = computed(() =>
       auctions.value.find((item) => item.id === selectedAuctionId.value) ?? null
     );
+    const registrationKycOptions = computed(() => [
+      { label: t("onlineAuctions.registrationStatus.kyc.PENDING"), value: "PENDING" },
+      { label: t("onlineAuctions.registrationStatus.kyc.PASSED"), value: "PASSED" },
+      { label: t("onlineAuctions.registrationStatus.kyc.FAILED"), value: "FAILED" }
+    ]);
+    const registrationAccountOptions = computed(() => [
+      { label: t("onlineAuctions.registrationStatus.account.PENDING"), value: "PENDING" },
+      { label: t("onlineAuctions.registrationStatus.account.PASSED"), value: "PASSED" },
+      { label: t("onlineAuctions.registrationStatus.account.FAILED"), value: "FAILED" }
+    ]);
 
     async function loadData() {
       if (!tenantStore.selectedTenantId) {
@@ -66,7 +78,7 @@ export default defineComponent({
         errorMessage.value = "";
         await loadData();
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : "Request failed";
+        errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
       }
     }
 
@@ -84,10 +96,13 @@ export default defineComponent({
           authStore.token
         );
         createForm.lots = [emptyLot()];
-        toast.success("Online auction created", createForm.title || "Online auction draft created.");
+        toast.success(
+          t("onlineAuctions.messages.createdTitle"),
+          createForm.title || t("onlineAuctions.messages.createdFallback")
+        );
         await reloadData();
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : "Request failed";
+        errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
       }
     }
 
@@ -108,10 +123,15 @@ export default defineComponent({
           },
           authStore.token
         );
-        toast.success(decision === "APPROVE" ? "Bidder approved" : "Bidder rejected", "Registration review was saved.");
+        toast.success(
+          decision === "APPROVE"
+            ? t("onlineAuctions.messages.bidderApprovedTitle")
+            : t("onlineAuctions.messages.bidderRejectedTitle"),
+          t("onlineAuctions.messages.registrationSavedToast")
+        );
         await reloadData();
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : "Request failed";
+        errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
       }
     }
 
@@ -124,19 +144,19 @@ export default defineComponent({
         const auctionId = selectedAuction.value.id;
         if (action === "publish") {
           await publishOnlineAuction(tenantId, auctionId, authStore.token);
-          toast.info("Auction published", `${selectedAuction.value.title} is now publicly visible.`);
+          toast.info(t("onlineAuctions.messages.publishedTitle"), t("onlineAuctions.messages.publishedToast", { title: selectedAuction.value.title }));
         }
         if (action === "start") {
           await startOnlineAuction(tenantId, auctionId, authStore.token);
-          toast.info("Auction started", `${selectedAuction.value.title} is now live.`);
+          toast.info(t("onlineAuctions.messages.startedTitle"), t("onlineAuctions.messages.startedToast", { title: selectedAuction.value.title }));
         }
         if (action === "close") {
           await closeOnlineAuction(tenantId, auctionId, authStore.token);
-          toast.info("Auction closed", `${selectedAuction.value.title} was closed.`);
+          toast.info(t("onlineAuctions.messages.closedTitle"), t("onlineAuctions.messages.closedToast", { title: selectedAuction.value.title }));
         }
         await reloadData();
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : "Request failed";
+        errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
       }
     }
 
@@ -157,11 +177,14 @@ export default defineComponent({
       createForm,
       errorMessage,
       publicUrlFor,
+      registrationAccountOptions,
+      registrationKycOptions,
       reviewForms,
       reviewRegistration,
       selectedAuction,
       selectedAuctionId,
-      submitCreate
+      submitCreate,
+      t
     };
   },
   template

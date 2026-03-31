@@ -12,6 +12,7 @@ import {
   settleAuctionLot
 } from "../../services/api/auction";
 import { useAppToast } from "../../composables/use-app-toast";
+import { useI18n } from "../../i18n";
 import template from "./template.html?raw";
 import "./styles.scss";
 
@@ -31,13 +32,14 @@ export default defineComponent({
     const authStore = useAuthStore();
     const tenantStore = useTenantStore();
     const toast = useAppToast();
+    const { t } = useI18n();
     const auctions = ref([]);
     const surplusCases = ref([]);
     const selectedAuctionId = ref("");
     const errorMessage = ref("");
     const createForm = reactive({
-      title: "Versteigerung Berlin",
-      location: "Berlin",
+      title: "",
+      location: "",
       lots: [emptyLot()]
     });
     const announceForm = reactive({
@@ -85,7 +87,7 @@ export default defineComponent({
       try {
         await loadData();
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : "Request failed";
+        errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
       }
     }
 
@@ -106,10 +108,13 @@ export default defineComponent({
           authStore.token
         );
         createForm.lots = [emptyLot()];
-        toast.success("Auction created", createForm.title || "Auction draft created.");
+        toast.success(
+          t("auctions.messages.createdTitle"),
+          createForm.title || t("auctions.messages.createdFallback")
+        );
         await reloadData();
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : "Request failed";
+        errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
       }
     }
 
@@ -122,24 +127,24 @@ export default defineComponent({
           announceForm,
           authStore.token
         );
-        toast.success("Announcement saved", "Public auction notice was updated.");
+        toast.success(t("auctions.messages.announcementSavedTitle"), t("auctions.messages.announcementSavedToast"));
         await reloadData();
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : "Request failed";
+        errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
       }
     }
 
     async function triggerOpen() {
       if (!selectedAuction.value) return;
       await openAuction(tenantStore.selectedTenantId, selectedAuction.value.id, authStore.token);
-      toast.info("Auction opened", `${selectedAuction.value.title} is now open.`);
+      toast.info(t("auctions.messages.openedTitle"), t("auctions.messages.openedToast", { title: selectedAuction.value.title }));
       await reloadData();
     }
 
     async function triggerClose() {
       if (!selectedAuction.value) return;
       await closeAuction(tenantStore.selectedTenantId, selectedAuction.value.id, authStore.token);
-      toast.info("Auction closed", `${selectedAuction.value.title} was closed.`);
+      toast.info(t("auctions.messages.closedTitle"), t("auctions.messages.closedToast", { title: selectedAuction.value.title }));
       await reloadData();
     }
 
@@ -157,10 +162,10 @@ export default defineComponent({
           authStore.token
         );
         bidForms[lotId].amount = "";
-        toast.success("Bid recorded", "The bid was added to the selected lot.");
+        toast.success(t("auctions.messages.bidRecordedTitle"), t("auctions.messages.bidRecordedToast"));
         await reloadData();
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : "Request failed";
+        errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
       }
     }
 
@@ -177,10 +182,10 @@ export default defineComponent({
           authStore.token
         );
         settleForms[lotId].hammerPrice = "";
-        toast.success("Lot settled", "Hammer price and surplus calculation were updated.");
+        toast.success(t("auctions.messages.lotSettledTitle"), t("auctions.messages.lotSettledToast"));
         await reloadData();
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : "Request failed";
+        errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
       }
     }
 
@@ -205,6 +210,7 @@ export default defineComponent({
       submitCreate,
       submitSettlement,
       surplusCases,
+      t,
       triggerClose,
       triggerOpen
     };

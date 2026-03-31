@@ -1,23 +1,24 @@
 import { computed, defineComponent, onMounted, reactive, ref } from "vue";
 import { createTenant, upsertTenantFeature } from "../../services/api/platform";
 import { useAppToast } from "../../composables/use-app-toast";
+import { useI18n } from "../../i18n";
 import { useAuthStore } from "../../stores/auth";
 import { useTenantStore } from "../../stores/tenant";
 import template from "./template.html?raw";
 import "./styles.scss";
 
 const FEATURE_CATALOG = [
-  { key: "identity-access", label: "Identity Access", description: "Internal identity and access management for the tenant's employees." },
-  { key: "loan-origination", label: "Loan Origination", description: "Automated credit scoring and loan origination workflows." },
-  { key: "aml-compliance", label: "AML Compliance", description: "Anti-money laundering and KYC verification." },
-  { key: "online-auctions", label: "Online Auctions", description: "Digital auction platform for pawned items." },
-  { key: "reporting", label: "Reporting", description: "Dashboard and business intelligence reports." }
+  { key: "identity-access" },
+  { key: "loan-origination" },
+  { key: "aml-compliance" },
+  { key: "online-auctions" },
+  { key: "reporting" }
 ];
 
 export default defineComponent({
   name: "TenantsView",
   setup() {
-    console.log("INDEX useAuthStore IDENTITY:", useAuthStore.toString().slice(0, 100));
+    const { t } = useI18n();
     const authStore = useAuthStore();
     const tenantStore = useTenantStore();
     const toast = useAppToast();
@@ -32,9 +33,15 @@ export default defineComponent({
 
     const tenants = computed(() => tenantStore.tenants);
     const selectedTenant = computed(() => tenantStore.selectedTenant);
+    const statusOptions = computed(() => [
+      { label: t("tenants.status.ACTIVE"), value: "ACTIVE" },
+      { label: t("tenants.status.INACTIVE"), value: "INACTIVE" }
+    ]);
     const tenantFeatures = computed(() =>
       FEATURE_CATALOG.map((catalogEntry) => ({
         ...catalogEntry,
+        label: t(`tenants.features.catalog.${catalogEntry.key}.label`),
+        description: t(`tenants.features.catalog.${catalogEntry.key}.description`),
         enabled:
           tenantStore.features.find((feature) => feature.featureKey === catalogEntry.key)?.enabled ?? false
       }))
@@ -51,15 +58,13 @@ export default defineComponent({
       try {
         await tenantStore.refreshTenants();
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : "Failed to load tenants";
+        errorMessage.value = error instanceof Error ? error.message : t("tenants.messages.loadFailed");
       } finally {
         isLoading.value = false;
       }
     }
 
     async function submit() {
-      console.log("SUBMITTING TENANT FORM", form);
-      console.log("SUBMITTING WITH USER:", authStore.user?.id, "CAN MANAGE:", authStore.canManagePlatform);
       successMessage.value = "";
       errorMessage.value = "";
 
@@ -69,18 +74,16 @@ export default defineComponent({
           displayName: form.displayName,
           status: form.status
         }, authStore.token);
-        console.log("TENANT CREATED BY API:", tenant);
 
         await tenantStore.refreshTenants();
-        console.log("STORE REFRESHED, TENANTS:", tenantStore.tenants);
         await tenantStore.selectTenant(tenant.id);
-        successMessage.value = "Tenant created";
-        toast.success("Tenant created", `${tenant.displayName} is ready for configuration.`);
+        successMessage.value = t("tenants.messages.createdTitle");
+        toast.success(t("tenants.messages.createdTitle"), t("tenants.messages.createdToast", { tenant: tenant.displayName }));
         form.key = "";
         form.displayName = "";
         form.status = "ACTIVE";
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : "Failed to create tenant";
+        errorMessage.value = error instanceof Error ? error.message : t("tenants.messages.createFailed");
       }
     }
 
@@ -91,7 +94,7 @@ export default defineComponent({
       try {
         await tenantStore.selectTenant(tenantId);
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : "Failed to load tenant features";
+        errorMessage.value = error instanceof Error ? error.message : t("tenants.messages.featuresLoadFailed");
       }
     }
 
@@ -106,10 +109,16 @@ export default defineComponent({
       try {
         await upsertTenantFeature(tenantStore.selectedTenantId, featureKey, { enabled }, authStore.token);
         await tenantStore.refreshFeatures();
-        successMessage.value = "Feature state updated";
-        toast.success("Feature state updated", `${featureKey} is now ${enabled ? "enabled" : "disabled"}.`);
+        successMessage.value = t("tenants.messages.featureUpdatedTitle");
+        toast.success(
+          t("tenants.messages.featureUpdatedTitle"),
+          t("tenants.messages.featureUpdatedToast", {
+            feature: t(`tenants.features.catalog.${featureKey}.label`),
+            state: enabled ? t("tenants.featureState.enabled") : t("tenants.featureState.disabled")
+          })
+        );
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : "Failed to update feature";
+        errorMessage.value = error instanceof Error ? error.message : t("tenants.messages.featureUpdateFailed");
       }
     }
 
@@ -121,8 +130,10 @@ export default defineComponent({
       isLoading,
       selectTenant,
       selectedTenant,
+      statusOptions,
       submit,
       successMessage,
+      t,
       tenantStatusSeverity,
       tenantFeatures,
       tenantStore,

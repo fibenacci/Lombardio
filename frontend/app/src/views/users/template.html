@@ -1,31 +1,31 @@
 <section class="page">
   <PageHeader
-    eyebrow="Identity Access"
-    title="Users"
+    :eyebrow="t('users.eyebrow')"
+    :title="t('users.title')"
     icon="pi pi-users"
     :copy="
       tenantStore.selectedTenantId
-        ? `Create and maintain staff accounts for tenant ${tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId}.`
-        : 'Select a tenant in the Tenants view before managing users.'
+        ? t('users.copyWithTenant', { tenant: tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId })
+        : t('users.copyWithoutTenant')
     "
   />
 
   <div class="panel-grid">
-    <AdminPanel title="User Directory" :subtitle="isLoading ? 'Loading...' : `${userRows.length} records`">
+    <AdminPanel :title="t('users.directoryTitle')" :subtitle="isLoading ? t('common.loading') : t('users.count', { count: userRows.length })">
       <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
       <PMessage v-if="successMessage" severity="info" variant="simple">{{ successMessage }}</PMessage>
       <AppDataTable v-if="tenantStore.selectedTenantId" :value="userRows" dataKey="id" :loading="isLoading">
-        <PColumn field="username" header="Username" sortable />
-        <PColumn field="email" header="Email" sortable />
-        <PColumn field="displayName" header="Display name" sortable />
-        <PColumn header="Status" field="status" sortable>
+        <PColumn field="username" :header="t('users.columns.username')" sortable />
+        <PColumn field="email" :header="t('users.columns.email')" sortable />
+        <PColumn field="displayName" :header="t('users.columns.displayName')" sortable />
+        <PColumn :header="t('users.columns.status')" field="status" sortable>
           <template #body="{ data }">
-            <StatusTag :value="data.status" />
+            <StatusTag :value="t(`users.status.${data.status}`)" />
           </template>
         </PColumn>
-        <PColumn field="branchCount" header="Branches" sortable />
-        <PColumn field="roleNames" header="Roles" sortable />
-        <PColumn header="Actions">
+        <PColumn field="branchCount" :header="t('users.columns.branches')" sortable />
+        <PColumn field="roleNames" :header="t('users.columns.roles')" sortable />
+        <PColumn :header="t('users.columns.actions')">
           <template #body="{ data }">
             <div class="table-actions">
               <PButton
@@ -43,9 +43,9 @@
                 severity="secondary"
                 variant="text"
                 rounded
-                header="Start delegated session"
-                :message="`You are about to enter the application as ${data.displayName || data.username}.`"
-                confirmLabel="Start session"
+                :header="t('users.delegation.header')"
+                :message="t('users.delegation.message', { user: data.displayName || data.username })"
+                :confirmLabel="t('users.delegation.confirm')"
                 @confirm="delegateToUser(data.id)"
               />
             </div>
@@ -54,55 +54,52 @@
       </AppDataTable>
     </AdminPanel>
 
-    <AdminPanel v-if="canManageUsers" :title="editingUserId ? 'Edit User' : 'Create User'" subtitle="Writes to the tenant identity provisioning API.">
+    <AdminPanel v-if="canManageUsers" :title="editingUserId ? t('users.form.editTitle') : t('users.form.createTitle')" :subtitle="t('users.form.subtitle')">
       <FormShell :errorMessage="errorMessage" :successMessage="successMessage" @submit="submit">
           <label>
-            <span>Username</span>
+            <span>{{ t("users.fields.username") }}</span>
             <PInputText v-model="form.username" type="text" />
           </label>
 
           <label>
-            <span>Email</span>
+            <span>{{ t("users.fields.email") }}</span>
             <PInputText v-model="form.email" type="email" />
           </label>
 
           <label v-if="!editingUserId">
-            <span>Initial password</span>
+            <span>{{ t("users.fields.initialPassword") }}</span>
             <PPassword v-model="form.initialPassword" :feedback="false" toggleMask fluid />
           </label>
 
           <label>
-            <span>Display name</span>
+            <span>{{ t("users.fields.displayName") }}</span>
             <PInputText v-model="form.displayName" type="text" />
           </label>
 
           <label>
-            <span>Status</span>
+            <span>{{ t("users.fields.status") }}</span>
             <PSelect
               v-model="form.status"
-              :options="[
-                { label: 'ACTIVE', value: 'ACTIVE' },
-                { label: 'INACTIVE', value: 'INACTIVE' }
-              ]"
+              :options="statusOptions"
               optionLabel="label"
               optionValue="value"
             />
           </label>
 
           <label>
-            <span>Assign tenant roles</span>
+            <span>{{ t("users.fields.roleIds") }}</span>
             <PMultiSelect v-model="form.roleIds" :options="roleOptions" optionLabel="label" optionValue="value" display="chip" />
           </label>
 
           <label>
-            <span>Assign branches</span>
+            <span>{{ t("users.fields.branchIds") }}</span>
             <PMultiSelect v-model="form.branchIds" :options="branchOptions" optionLabel="label" optionValue="value" display="chip" />
           </label>
 
         <template #actions>
           <SectionActions>
-            <PButton :disabled="!tenantStore.selectedTenantId" :label="editingUserId ? 'Save user' : 'Create user'" icon="pi pi-save" type="submit" />
-            <PButton v-if="editingUserId" icon="pi pi-times" label="Cancel" severity="secondary" outlined type="button" @click="resetForm" />
+            <PButton :disabled="!tenantStore.selectedTenantId" :label="editingUserId ? t('users.actions.save') : t('users.actions.create')" icon="pi pi-save" type="submit" />
+            <PButton v-if="editingUserId" icon="pi pi-times" :label="t('users.actions.cancel')" severity="secondary" outlined type="button" @click="resetForm" />
           </SectionActions>
         </template>
       </FormShell>

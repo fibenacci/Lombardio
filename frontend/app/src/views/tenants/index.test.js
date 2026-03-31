@@ -1,5 +1,6 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import TenantsView from ".";
+import { setLocale } from "../../i18n";
 import { useAuthStore } from "../../stores/auth";
 import { useTenantStore } from "../../stores/tenant";
 import * as platformApi from "../../services/api/platform";
@@ -9,6 +10,7 @@ describe("TenantsView", () => {
   let tenantStore;
 
   beforeEach(() => {
+    setLocale("en");
     authStore = useAuthStore();
     tenantStore = useTenantStore();
   });
@@ -46,6 +48,6 @@ describe("TenantsView", () => {
     expect(platformApi.fetchTenants).toHaveBeenCalledWith("platform-token");
     expect(platformApi.fetchTenantFeatures).toHaveBeenCalledWith("tenant-default", "platform-token");
     expect(wrapper.text()).toContain("Default Tenant");
-    expect(wrapper.text()).toContain("Identity Access");
+    expect(wrapper.text()).toContain("User and Access Management");
   });
 });

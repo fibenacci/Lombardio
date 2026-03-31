@@ -24,17 +24,17 @@
         <PColumn field="customerNumber" :header="t('customers.columns.customerNumber')" sortable />
         <PColumn field="displayName" :header="t('customers.columns.name')" sortable />
         <PColumn field="phone" :header="t('customers.columns.phone')" sortable />
-        <PColumn header="KYC" field="kycStatus" sortable>
+        <PColumn :header="t('customers.columns.kyc')" field="kycStatus" sortable>
           <template #body="{ data }">
-            <StatusTag :value="data.kycStatus" :activeValues="['APPROVED']" :warnValues="['PENDING']" />
+            <StatusTag :value="getKycStatusLabel(data.kycStatus)" :activeValues="[t('customerDetail.statusOptions.kyc.APPROVED')]" :warnValues="[t('customerDetail.statusOptions.kyc.IN_PROGRESS')]" />
           </template>
         </PColumn>
-        <PColumn header="AML" field="amlStatus" sortable>
+        <PColumn :header="t('customers.columns.aml')" field="amlStatus" sortable>
           <template #body="{ data }">
             <div class="compliance-cell">
-              <StatusTag :value="data.amlStatus ?? 'UNKNOWN'" :activeValues="['CLEAR']" :warnValues="['REVIEW_REQUIRED']" />
+              <StatusTag :value="getAmlStatusLabel(data.amlStatus ?? 'UNKNOWN')" :activeValues="[t('customerDetail.statusOptions.aml.CLEAR')]" :warnValues="[t('customerDetail.statusOptions.aml.REVIEW_REQUIRED')]" />
               <small v-if="data.amlRiskLevel" class="muted-copy">{{ t("customers.risk", { level: data.amlRiskLevel }) }}</small>
-              <small v-if="data.goamlReference" class="muted-copy">goAML {{ data.goamlReference }}</small>
+              <small v-if="data.goamlReference" class="muted-copy">{{ t("customers.goamlReference", { reference: data.goamlReference }) }}</small>
             </div>
           </template>
         </PColumn>

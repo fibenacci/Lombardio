@@ -1,51 +1,48 @@
 <section class="page">
   <PageHeader
-    eyebrow="Organization"
-    title="Branches"
+    :eyebrow="t('branches.eyebrow')"
+    :title="t('branches.title')"
     icon="pi pi-sitemap"
     :copy="
       tenantStore.selectedTenantId
-        ? `Review branch rollout status for tenant ${tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId}.`
-        : 'Select a tenant before reviewing branch rollout status.'
+        ? t('branches.copyWithTenant', { tenant: tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId })
+        : t('branches.copyWithoutTenant')
     "
   />
 
   <div class="panel-grid">
-    <AdminPanel title="Branch Directory" :subtitle="isLoading ? 'Loading...' : `${branches.length} branches`">
+    <AdminPanel :title="t('branches.directoryTitle')" :subtitle="isLoading ? t('common.loading') : t('branches.count', { count: branches.length })">
       <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
       <PMessage v-if="successMessage" severity="info" variant="simple">{{ successMessage }}</PMessage>
 
       <AppDataTable v-if="tenantStore.selectedTenantId" :value="branches" dataKey="id" :loading="isLoading">
-        <PColumn field="key" header="Key" sortable />
-        <PColumn field="displayName" header="Name" sortable />
-        <PColumn header="Status" field="status" sortable>
+        <PColumn field="key" :header="t('branches.columns.key')" sortable />
+        <PColumn field="displayName" :header="t('branches.columns.name')" sortable />
+        <PColumn :header="t('branches.columns.status')" field="status" sortable>
           <template #body="{ data }">
-            <StatusTag :value="data.status" />
+            <StatusTag :value="t(`branches.status.${data.status}`)" />
           </template>
         </PColumn>
       </AppDataTable>
     </AdminPanel>
 
-    <AdminPanel v-if="canManageBranches" title="Branch Management" subtitle="Create tenant branches for staff assignment">
+    <AdminPanel v-if="canManageBranches" :title="t('branches.managementTitle')" :subtitle="t('branches.managementSubtitle')">
       <FormShell :errorMessage="errorMessage" :successMessage="successMessage" @submit="submit">
         <label>
-          <span>Branch key</span>
+          <span>{{ t("branches.fields.key") }}</span>
           <PInputText v-model="form.key" type="text" />
         </label>
 
         <label>
-          <span>Display name</span>
+          <span>{{ t("branches.fields.displayName") }}</span>
           <PInputText v-model="form.displayName" type="text" />
         </label>
 
         <label>
-          <span>Status</span>
+          <span>{{ t("branches.fields.status") }}</span>
           <PSelect
             v-model="form.status"
-            :options="[
-              { label: 'ACTIVE', value: 'ACTIVE' },
-              { label: 'INACTIVE', value: 'INACTIVE' }
-            ]"
+            :options="statusOptions"
             optionLabel="label"
             optionValue="value"
           />
@@ -53,8 +50,8 @@
 
         <template #actions>
           <SectionActions>
-            <PButton :disabled="!tenantStore.selectedTenantId" icon="pi pi-save" label="Create branch" type="submit" />
-            <PButton :disabled="!tenantStore.selectedTenantId || isLoading" icon="pi pi-refresh" label="Reload branches" severity="secondary" outlined type="button" @click="reload" />
+            <PButton :disabled="!tenantStore.selectedTenantId" icon="pi pi-save" :label="t('branches.actions.create')" type="submit" />
+            <PButton :disabled="!tenantStore.selectedTenantId || isLoading" icon="pi pi-refresh" :label="t('branches.actions.reload')" severity="secondary" outlined type="button" @click="reload" />
           </SectionActions>
         </template>
       </FormShell>

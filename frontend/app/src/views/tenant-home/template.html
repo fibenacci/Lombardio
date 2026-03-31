@@ -21,27 +21,27 @@
 
     <div v-else-if="reportingOverview" class="reporting-grid">
       <div class="reporting-card">
-        <p class="meta-label">Kassenzufluss</p>
+        <p class="meta-label">{{ t("tenantHome.reportingCards.cashInflow") }}</p>
         <strong>{{ formatCurrency(reportingOverview.finance.cashInflow) }}</strong>
       </div>
       <div class="reporting-card">
-        <p class="meta-label">Kassenausfluss</p>
+        <p class="meta-label">{{ t("tenantHome.reportingCards.cashOutflow") }}</p>
         <strong>{{ formatCurrency(reportingOverview.finance.cashOutflow) }}</strong>
       </div>
       <div class="reporting-card">
-        <p class="meta-label">Netto Cashflow</p>
+        <p class="meta-label">{{ t("tenantHome.reportingCards.netCashflow") }}</p>
         <strong>{{ formatCurrency(reportingOverview.finance.netCashflow) }}</strong>
       </div>
       <div class="reporting-card">
-        <p class="meta-label">Realisierte Ertraege</p>
+        <p class="meta-label">{{ t("tenantHome.reportingCards.realizedRevenue") }}</p>
         <strong>{{ formatCurrency(reportingOverview.finance.realizedRevenue) }}</strong>
       </div>
       <div class="reporting-card">
-        <p class="meta-label">Offenes Darlehensvolumen</p>
+        <p class="meta-label">{{ t("tenantHome.reportingCards.activeLoanExposure") }}</p>
         <strong>{{ formatCurrency(reportingOverview.finance.activeLoanExposure) }}</strong>
       </div>
       <div class="reporting-card">
-        <p class="meta-label">Aktive Pfandscheine</p>
+        <p class="meta-label">{{ t("tenantHome.reportingCards.activeTicketCount") }}</p>
         <strong>{{ reportingOverview.finance.activeTicketCount }}</strong>
       </div>
 
@@ -92,7 +92,7 @@
         <div class="inventory-list">
           <div v-for="transaction in reportingOverview.transactionMix" :key="transaction.type" class="inventory-row">
             <div class="inventory-row-head">
-              <strong>{{ transaction.type }}</strong>
+              <strong>{{ getTransactionTypeLabel(transaction.type) }}</strong>
               <span>{{ formatCurrency(transaction.totalAmount) }}</span>
             </div>
             <p class="muted-copy">{{ t("tenantHome.transactionCount", { count: transaction.transactionCount }) }}</p>
@@ -117,16 +117,16 @@
       <div class="workflow-stack">
         <section class="subpanel">
           <div class="subpanel-header">
-            <h4>Kunde</h4>
+            <h4>{{ t("tenantHome.customerSection.title") }}</h4>
             <label class="toggle">
-              <span>Neukunde anlegen</span>
+              <span>{{ t("tenantHome.customerSection.createNewCustomer") }}</span>
               <PToggleSwitch v-model="useNewCustomer" />
             </label>
           </div>
 
           <div v-if="!useNewCustomer" class="stack-form">
             <label>
-              <span>Bestandssuche</span>
+              <span>{{ t("tenantHome.customerSection.customerSearch") }}</span>
               <PAutoComplete
                 id="customer-search"
                 v-model="selectedCustomerOption"
@@ -147,20 +147,20 @@
               :class="{ 'is-approved': selectedCustomer.kycApproved && (!amlFeatureEnabled || selectedCustomer.amlOriginationAllowed) }"
             >
               <div>
-                <strong>KYC-Status: {{ selectedCustomer.kycStatus ?? "NOT_STARTED" }}</strong>
+                <strong>{{ t("tenantHome.customerSection.kycStatus", { status: getKycStatusLabel(selectedCustomer.kycStatus) }) }}</strong>
                 <p v-if="selectedCustomer.verificationMode" class="muted-copy">
-                  Pruefmodus: {{ selectedCustomer.verificationMode }}
-                  <span v-if="selectedCustomer.providerStatus"> · Provider-Status: {{ selectedCustomer.providerStatus }}</span>
+                  {{ t("tenantHome.customerSection.verificationMode", { mode: getVerificationModeLabel(selectedCustomer.verificationMode) }) }}
+                  <span v-if="selectedCustomer.providerStatus"> · {{ t("tenantHome.customerSection.providerStatus", { status: selectedCustomer.providerStatus }) }}</span>
                 </p>
                 <p v-if="amlFeatureEnabled" class="muted-copy">
-                  AML: {{ selectedCustomer.amlStatus ?? "UNKNOWN" }}
-                  <span v-if="selectedCustomer.amlRiskLevel"> · Risiko {{ selectedCustomer.amlRiskLevel }}</span>
+                  {{ t("tenantHome.customerSection.amlStatus", { status: getAmlStatusLabel(selectedCustomer.amlStatus) }) }}
+                  <span v-if="selectedCustomer.amlRiskLevel"> · {{ t("tenantHome.customerSection.riskLevel", { level: getRiskLevelLabel(selectedCustomer.amlRiskLevel) }) }}</span>
                 </p>
                 <p v-if="!selectedCustomer.kycApproved" class="muted-copy">
-                  Ohne freigegebenes KYC kann keine Beleihung abgeschlossen werden.
+                  {{ t("tenantHome.customerSection.kycApprovalRequired") }}
                 </p>
                 <p v-else-if="amlFeatureEnabled && !selectedCustomer.amlOriginationAllowed" class="muted-copy">
-                  {{ selectedCustomer.amlDecisionReason ?? "AML-Review erforderlich vor der Beleihung." }}
+                  {{ selectedCustomer.amlDecisionReason ?? t("tenantHome.customerSection.amlReviewRequired") }}
                 </p>
               </div>
               <div class="inline-row">
@@ -195,56 +195,56 @@
               </div>
             </div>
             <p v-if="providerVerificationAvailable" class="legal-copy">
-              Dieser Tenant hat das optionale Feature fuer externe Ausweispruefung aktiviert. Die manuelle KYC-Pruefung bleibt weiterhin verfuegbar.
+              {{ t("tenantHome.customerSection.providerFeatureCopy") }}
             </p>
           </div>
 
           <div v-else class="stack-form two-column-grid">
             <label>
-              <span>Kundennummer</span>
+              <span>{{ t("customerDetail.fields.customerNumber") }}</span>
               <PInputText v-model="newCustomer.customerNumber" required class="form-field" />
             </label>
             <label>
-              <span>Telefon</span>
+              <span>{{ t("customerDetail.fields.phone") }}</span>
               <PInputText v-model="newCustomer.phone" required class="form-field" />
             </label>
             <label>
-              <span>E-Mail</span>
+              <span>{{ t("customerDetail.fields.email") }}</span>
               <PInputText v-model="newCustomer.email" type="email" class="form-field" />
             </label>
             <label>
-              <span>Vorname</span>
+              <span>{{ t("customerDetail.fields.firstName") }}</span>
               <PInputText v-model="newCustomer.firstName" required class="form-field" />
             </label>
             <label>
-              <span>Nachname</span>
+              <span>{{ t("customerDetail.fields.lastName") }}</span>
               <PInputText v-model="newCustomer.lastName" required class="form-field" />
             </label>
             <label>
-              <span>Geburtsdatum</span>
+              <span>{{ t("customerDetail.fields.birthDate") }}</span>
               <PInputText v-model="newCustomer.birthDate" required type="date" class="form-field" />
             </label>
             <label>
-              <span>Strasse</span>
+              <span>{{ t("customerDetail.fields.street") }}</span>
               <PInputText v-model="newCustomer.street" class="form-field" />
             </label>
             <label>
-              <span>PLZ</span>
+              <span>{{ t("customerDetail.fields.postalCode") }}</span>
               <PInputText v-model="newCustomer.postalCode" class="form-field" />
             </label>
             <label class="full-span">
-              <span>Ort</span>
+              <span>{{ t("customerDetail.fields.city") }}</span>
               <PInputText v-model="newCustomer.city" class="form-field" />
             </label>
             <div class="checkbox-field full-span">
-              <span>Online-Pfandschein anbieten und Einladungs-E-Mail vorbereiten</span>
+              <span>{{ t("tenantHome.newCustomer.digitalPawnTicket") }}</span>
               <PToggleSwitch v-model="newCustomer.wantsDigitalPawnTicket" />
             </div>
             <p class="legal-copy full-span">
-              Wird der Online-Pfandschein aktiviert, muss eine gueltige E-Mail-Adresse hinterlegt werden. Die spaetere Aktivierung erfolgt erst nach E-Mail-Bestaetigung und Passwortvergabe durch den Endkunden.
+              {{ t("tenantHome.newCustomer.digitalPawnTicketCopy") }}
             </p>
             <label>
-              <span>Dokumenttyp</span>
+              <span>{{ t("customerDetail.kycFields.documentType") }}</span>
               <PSelect
                 v-model="newCustomerKyc.documentType"
                 :options="documentTypeOptions"
@@ -254,23 +254,23 @@
               />
             </label>
             <label>
-              <span>Ausweisnummer</span>
+              <span>{{ t("customerDetail.kycFields.documentNumber") }}</span>
               <PInputText v-model="newCustomerKyc.documentNumber" required class="form-field" />
             </label>
             <label class="full-span">
-              <span>Gueltig bis</span>
+              <span>{{ t("customerDetail.kycFields.documentValidUntil") }}</span>
               <PInputText v-model="newCustomerKyc.documentValidUntil" required type="date" class="form-field" />
             </label>
             <label>
-              <span>Ausweis Vorderseite</span>
+              <span>{{ t("customerDetail.kycFields.frontImage") }}</span>
               <input accept="image/*" required type="file" @change="updateNewCustomerDocument('documentFrontImageDataUrl', $event)" />
             </label>
             <label>
-              <span>Ausweis Rueckseite</span>
+              <span>{{ t("customerDetail.kycFields.backImage") }}</span>
               <input accept="image/*" required type="file" @change="updateNewCustomerDocument('documentBackImageDataUrl', $event)" />
             </label>
             <div class="full-span" v-if="newCustomerKyc.portraitImageDataUrl">
-              <p class="meta-label">Portraet (Extrahiert)</p>
+              <p class="meta-label">{{ t("customerDetail.portraitExtracted") }}</p>
               <img :src="newCustomerKyc.portraitImageDataUrl" alt="Portrait" style="max-width: 120px; border-radius: 4px; border: 1px solid var(--border-color);" />
             </div>
             <div v-if="documentOcrAvailable" class="full-span inline-row">
@@ -282,54 +282,54 @@
                 type="button"
                 @click="prefillNewCustomerDocumentData"
               />
-              <span class="muted-copy">Optionaler OCR-Pfad fuer Nummer und Gueltigkeit. Manuelle Pruefung bleibt verpflichtend.</span>
+              <span class="muted-copy">{{ t("tenantHome.newCustomer.ocrCopy") }}</span>
             </div>
             <p class="legal-copy full-span">
-              Fuer Neukunden ist ein gueltiges Ausweisdokument mit Vorder- und Rueckseite zwingend. Die automatische Auslesung von Nummer und Gueltigkeit wird im KYC-Kontext vorbereitet, aktuell werden die Werte manuell bestaetigt.
+              {{ t("tenantHome.newCustomer.kycLegalCopy") }}
             </p>
             <div class="full-span aml-inline-panel">
               <div class="subpanel-header">
-                <h4>Verpfaender und Vollmacht</h4>
+                <h4>{{ t("tenantHome.pledgePresentation.title") }}</h4>
               </div>
               <div class="stack-form two-column-grid">
                 <div class="checkbox-field full-span">
-                  <span>Ueberbringer und Verpfaender sind nicht identisch</span>
+                  <span>{{ t("tenantHome.pledgePresentation.thirdPartyToggle") }}</span>
                   <PToggleSwitch v-model="pledgePresentation.thirdPartyPledgorPresentation" />
                 </div>
                 <template v-if="pledgePresentation.thirdPartyPledgorPresentation">
                   <label>
-                    <span>Name des Ueberbringers</span>
+                    <span>{{ t("tenantHome.pledgePresentation.bearerName") }}</span>
                     <PInputText v-model="pledgePresentation.bearerName" required class="form-field" />
                   </label>
                   <label>
-                    <span>Strasse des Ueberbringers</span>
+                    <span>{{ t("tenantHome.pledgePresentation.bearerStreet") }}</span>
                     <PInputText v-model="pledgePresentation.bearerStreet" class="form-field" />
                   </label>
                   <label>
-                    <span>PLZ</span>
+                    <span>{{ t("customerDetail.fields.postalCode") }}</span>
                     <PInputText v-model="pledgePresentation.bearerPostalCode" class="form-field" />
                   </label>
                   <label>
-                    <span>Ort</span>
+                    <span>{{ t("customerDetail.fields.city") }}</span>
                     <PInputText v-model="pledgePresentation.bearerCity" class="form-field" />
                   </label>
                   <label class="full-span">
-                    <span>Schriftliche Vollmacht</span>
+                    <span>{{ t("tenantHome.pledgePresentation.powerOfAttorney") }}</span>
                     <input accept=".pdf,image/*" required type="file" @change="updatePowerOfAttorneyDocument($event)" />
                   </label>
                 </template>
               </div>
               <p class="legal-copy">
-                Wenn Ueberbringer und Verpfaender nicht identisch sind, muss eine schriftliche Vollmacht hinterlegt werden. Die Aufzeichnung wird unverzueglich in deutscher Sprache gespeichert.
+                {{ t("tenantHome.pledgePresentation.legalCopy") }}
               </p>
             </div>
             <div v-if="amlFeatureEnabled" class="full-span aml-inline-panel">
               <div class="subpanel-header">
-                <h4>AML-Pruefung fuer Neukunde</h4>
+                <h4>{{ t("tenantHome.newCustomerAml.title") }}</h4>
               </div>
               <div class="stack-form two-column-grid">
                 <label>
-                  <span>AML-Status</span>
+                  <span>{{ t("customerDetail.amlFields.status") }}</span>
                   <PSelect
                     v-model="newCustomerAml.status"
                     :options="amlStatusOptions"
@@ -339,7 +339,7 @@
                   />
                 </label>
                 <label>
-                  <span>Risikolevel</span>
+                  <span>{{ t("customerDetail.amlFields.riskLevel") }}</span>
                   <PSelect
                     v-model="newCustomerAml.riskLevel"
                     :options="amlRiskLevelOptions"
@@ -349,36 +349,36 @@
                   />
                 </label>
                 <div class="checkbox-field">
-                  <span>PEP-Treffer</span>
+                  <span>{{ t("customerDetail.amlFields.pepFlag") }}</span>
                   <PToggleSwitch v-model="newCustomerAml.pepFlag" />
                 </div>
                 <div class="checkbox-field">
-                  <span>Sanktions-Treffer</span>
+                  <span>{{ t("customerDetail.amlFields.sanctionsHit") }}</span>
                   <PToggleSwitch v-model="newCustomerAml.sanctionsHit" />
                 </div>
                 <div class="checkbox-field">
-                  <span>Ungewoehnliche Transaktion</span>
+                  <span>{{ t("customerDetail.amlFields.unusualTransactionFlag") }}</span>
                   <PToggleSwitch v-model="newCustomerAml.unusualTransactionFlag" />
                 </div>
                 <div class="checkbox-field">
-                  <span>Source of Funds geprueft</span>
+                  <span>{{ t("customerDetail.amlFields.sourceOfFundsChecked") }}</span>
                   <PToggleSwitch v-model="newCustomerAml.sourceOfFundsChecked" />
                 </div>
                 <div class="checkbox-field full-span">
-                  <span>Verdachtsmeldung erstellt</span>
+                  <span>{{ t("customerDetail.amlFields.suspiciousActivityReported") }}</span>
                   <PToggleSwitch v-model="newCustomerAml.suspiciousActivityReported" />
                 </div>
                 <label v-if="newCustomerAml.suspiciousActivityReported" class="full-span">
-                  <span>goAML-Referenz</span>
+                  <span>{{ t("customerDetail.amlFields.goamlReference") }}</span>
                   <PInputText v-model="newCustomerAml.goamlReference" class="form-field" />
                 </label>
                 <label class="full-span">
-                  <span>AML-Notiz</span>
+                  <span>{{ t("customerDetail.amlFields.decisionNote") }}</span>
                   <PTextarea v-model="newCustomerAml.decisionNote" rows="3" class="form-field" />
                 </label>
               </div>
               <p class="legal-copy">
-                Wenn AML-Compliance fuer den Tenant aktiv ist, muss der Neukunde vor Abschluss mindestens auf CLEAR stehen. Verdachtsfaelle erfordern eine goAML-Referenz und duerfen nicht in die Beleihung laufen.
+                {{ t("tenantHome.newCustomerAml.legalCopy") }}
               </p>
             </div>
           </div>
@@ -401,11 +401,11 @@
             <table class="data-table positions-table">
               <thead>
                 <tr>
-                  <th>Pfandschein</th>
-                  <th>Bewertungsrichtlinie</th>
-                  <th>Bezeichnung</th>
-                  <th>Beschreibung</th>
-                  <th>Beleihwert</th>
+                  <th>{{ t("tenantHome.positionColumns.ticketGroup") }}</th>
+                  <th>{{ t("tenantHome.positionColumns.guideline") }}</th>
+                  <th>{{ t("tenantHome.positionColumns.label") }}</th>
+                  <th>{{ t("tenantHome.positionColumns.description") }}</th>
+                  <th>{{ t("tenantHome.positionColumns.pledgedValue") }}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -466,28 +466,28 @@
 
         <section class="subpanel">
           <div class="subpanel-header">
-            <h4>Laufzeit und Kostenmodell</h4>
+            <h4>{{ t("tenantHome.terms.title") }}</h4>
           </div>
 
           <div class="stack-form two-column-grid">
             <label>
-              <span>Laufzeit in Monaten</span>
+              <span>{{ t("tenantHome.terms.termMonths") }}</span>
               <PInputText v-model="terms.termMonths" min="3" step="1" type="number" class="form-field" />
             </label>
 
             <label>
-              <span>Beleihsumme</span>
+              <span>{{ t("tenantHome.terms.loanAmount") }}</span>
               <PInputText :value="`${totalLoanValue} EUR`" readonly type="text" class="form-field" />
             </label>
 
             <label v-if="loanQuotes.some((quote) => quote.manualMonthlyOperatingFeeRequired)" class="full-span">
-              <span>Monatliche Betriebsverguetung</span>
+              <span>{{ t("cashdesk.fields.manualMonthlyOperatingFee") }}</span>
               <PInputText v-model="terms.manualMonthlyOperatingFee" min="0" step="0.01" type="number" class="form-field" />
             </label>
           </div>
 
           <p class="legal-copy">
-            Zinsen und Verguetungen werden transparent nach PfandlV dargestellt. Bei Darlehen ueber 300 EUR ist die monatliche Betriebsverguetung nicht mehr automatisch aus der Anlage ableitbar und muss bewusst gesetzt werden.
+            {{ t("tenantHome.terms.legalCopy") }}
           </p>
         </section>
 
@@ -518,39 +518,39 @@
 
         <div v-if="loanQuotes.length" class="ticket-preview">
           <article v-for="quote in loanQuotes" :key="quote.ticketGroup" class="ticket-card">
-            <p class="eyebrow">Pfandschein {{ quote.ticketGroup }}</p>
-            <p>{{ quote.positionCount }} Position(en)</p>
+            <p class="eyebrow">{{ t("tenantHome.quote.ticketEyebrow", { group: quote.ticketGroup }) }}</p>
+            <p>{{ t("tenantHome.quote.positionCount", { count: quote.positionCount }) }}</p>
             <div class="quote-grid">
               <div>
-                <p class="meta-label">Beleihsumme</p>
+                <p class="meta-label">{{ t("tenantHome.quote.totalLoanValue") }}</p>
                 <strong>{{ quote.totalLoanValue }} EUR</strong>
               </div>
               <div>
-                <p class="meta-label">Faelligkeit</p>
+                <p class="meta-label">{{ t("pawnTickets.columns.dueDate") }}</p>
                 <strong>{{ quote.dueDate }}</strong>
               </div>
               <div>
-                <p class="meta-label">Frueheste Versteigerung</p>
+                <p class="meta-label">{{ t("tenantHome.quote.earliestAuctionDate") }}</p>
                 <strong>{{ quote.earliestAuctionDate }}</strong>
               </div>
               <div>
-                <p class="meta-label">Monatszins</p>
+                <p class="meta-label">{{ t("tenantHome.quote.monthlyInterestRate") }}</p>
                 <strong>{{ quote.monthlyInterestRate }} %</strong>
               </div>
               <div>
-                <p class="meta-label">Betriebsverguetung / Monat</p>
+                <p class="meta-label">{{ t("tenantHome.quote.monthlyOperatingFee") }}</p>
                 <strong>{{ quote.monthlyOperatingFee }} EUR</strong>
               </div>
               <div>
-                <p class="meta-label">Zinsen gesamt</p>
+                <p class="meta-label">{{ t("tenantHome.quote.totalInterestAmount") }}</p>
                 <strong>{{ quote.totalInterestAmount }} EUR</strong>
               </div>
               <div>
-                <p class="meta-label">Verguetung gesamt</p>
+                <p class="meta-label">{{ t("tenantHome.quote.totalOperatingFeeAmount") }}</p>
                 <strong>{{ quote.totalOperatingFeeAmount }} EUR</strong>
               </div>
               <div class="full-span">
-                <p class="meta-label">Rueckzahlungsbetrag bei Faelligkeit</p>
+                <p class="meta-label">{{ t("tenantHome.quote.totalRepaymentAmount") }}</p>
                 <strong>{{ quote.totalRepaymentAmount }} EUR</strong>
               </div>
             </div>
@@ -558,23 +558,23 @@
           </article>
         </div>
         <p v-else class="placeholder-copy">
-          Sobald Positionen und Beleihwerte erfasst sind, erscheinen hier Zinssatz, Betriebsverguetung, Laufzeit, Rueckzahlung und die relevanten Rechtshinweise.
+          {{ t("tenantHome.quote.empty") }}
         </p>
 
         <div v-if="createdLoan" ref="issuedTicketRef" class="issued-ticket">
-          <h4>Erzeugte Pfandscheine</h4>
+          <h4>{{ t("tenantHome.issuedTickets.title") }}</h4>
           <p v-if="createdLoan.customer" class="muted-copy">
-            Kunde: {{ createdLoan.customer.displayName }}<span v-if="createdLoan.customer.customerNumber"> · {{ createdLoan.customer.customerNumber }}</span>
+            {{ t("tenantHome.issuedTickets.customer", { customer: createdLoan.customer.displayName }) }}<span v-if="createdLoan.customer.customerNumber"> · {{ createdLoan.customer.customerNumber }}</span>
           </p>
           <article v-for="pawnTicket in createdLoan.pawnTickets" :key="pawnTicket.ticketNumber" class="ticket-card">
             <p class="eyebrow">{{ pawnTicket.ticketNumber }}</p>
-            <p>Vertrag: {{ pawnTicket.contractNumber }}</p>
-            <p>Pfandschein erstellt bis {{ pawnTicket.dueDate }}</p>
-            <p>Rueckzahlungsbetrag: {{ pawnTicket.totalRepaymentAmount }} EUR</p>
-            <p>Zinsen gesamt: {{ pawnTicket.totalInterestAmount }} EUR</p>
-            <p>Betriebsverguetung gesamt: {{ pawnTicket.totalOperatingFeeAmount }} EUR</p>
-            <p>Barcode: {{ pawnTicket.contractBarcode }}</p>
-            <p>AGB-Version: {{ pawnTicket.termsVersion }}</p>
+            <p>{{ t("tenantHome.issuedTickets.contract", { contract: pawnTicket.contractNumber }) }}</p>
+            <p>{{ t("tenantHome.issuedTickets.dueDate", { dueDate: pawnTicket.dueDate }) }}</p>
+            <p>{{ t("tenantHome.issuedTickets.repaymentAmount", { amount: pawnTicket.totalRepaymentAmount }) }}</p>
+            <p>{{ t("tenantHome.issuedTickets.totalInterestAmount", { amount: pawnTicket.totalInterestAmount }) }}</p>
+            <p>{{ t("tenantHome.issuedTickets.totalOperatingFeeAmount", { amount: pawnTicket.totalOperatingFeeAmount }) }}</p>
+            <p>{{ t("tenantHome.issuedTickets.barcode", { barcode: pawnTicket.contractBarcode }) }}</p>
+            <p>{{ t("tenantHome.issuedTickets.termsVersion", { version: pawnTicket.termsVersion }) }}</p>
             <div v-if="pawnTicket.positions?.length" class="position-list">
               <div v-for="position in pawnTicket.positions" :key="position.itemNumber" class="position-pill">
                 <strong>{{ position.itemNumber }}</strong> · {{ position.label }} · {{ position.description }}
@@ -602,7 +602,7 @@
                 severity="secondary"
                 outlined
                 :disabled="isDownloadingTicket"
-                label="Pfandetiketten"
+                :label="t('tenantHome.ticketLabels')"
                 type="button"
                 @click="openPawnTicketLabels(pawnTicket.ticketNumber, false)"
               />

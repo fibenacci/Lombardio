@@ -13,13 +13,6 @@ import FormFeedback from "../../components/form-feedback";
 import template from "./template.html?raw";
 import "./styles.scss";
 
-const MODULES = [
-  { key: "crm", title: "CRM", copy: "Kundenstammdaten und Beleihhistorie." },
-  { key: "inventory", title: "Warenwirtschaft", copy: "Pfandgegenstaende, Lager und Bewegungen." },
-  { key: "cashdesk", title: "Kasse", copy: "Auszahlung, Ruecknahme und Verlaengerung." },
-  { key: "pawn-tickets", title: "Pfandscheine", copy: "Fristen, Zinsen, Texte und Dokumente." }
-];
-
 function createEmptyNewCustomerKyc() {
   return {
     documentType: "PERSONALAUSWEIS",
@@ -87,11 +80,11 @@ function createEmptyNewCustomerAml() {
   };
 }
 
-function readFileAsDataUrl(file) {
+function readFileAsDataUrl(file, t) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
-    reader.onerror = () => reject(new Error("Datei konnte nicht gelesen werden"));
+    reader.onerror = () => reject(new Error(t("common.fileReadFailed")));
     reader.readAsDataURL(file);
   });
 }
@@ -103,12 +96,15 @@ function formatCurrency(value) {
   }).format(Number(value ?? 0));
 }
 
-function formatCustomerOption(customer) {
+function formatCustomerOption(customer, t) {
+  const kycStatus = customer.kycStatus ?? "NOT_STARTED";
   return {
     value: customer.id,
-    label: `${customer.customerNumber ?? ""} - ${customer.displayName ?? `${customer.firstName ?? ""} ${customer.lastName ?? ""}`.trim()} - KYC ${
-      customer.kycStatus ?? "NOT_STARTED"
-    }`
+    label: t("tenantHome.customerOption", {
+      customerNumber: customer.customerNumber ?? "",
+      displayName: customer.displayName ?? `${customer.firstName ?? ""} ${customer.lastName ?? ""}`.trim(),
+      kycStatus: t(`customerDetail.statusOptions.kyc.${kycStatus}`)
+    })
   };
 }
 
@@ -146,7 +142,7 @@ export default defineComponent({
     const customers = ref([]);
     const customerSuggestions = ref([]);
     const customerOptions = computed(() =>
-      customers.value.map((customer) => formatCustomerOption(customer))
+      customers.value.map((customer) => formatCustomerOption(customer, t))
     );
     const selectedCustomerId = ref("");
     const selectedCustomerOption = ref(null);
@@ -286,6 +282,32 @@ export default defineComponent({
       const values = reportingOverview.value?.inventoryByCategory?.map((category) => Number(category.pledgedValue ?? 0)) ?? [];
       return Math.max(1, ...values);
     });
+    const verificationModeLabels = {
+      MANUAL: () => t("tenantHome.verificationModes.MANUAL"),
+      PROVIDER: () => t("tenantHome.verificationModes.PROVIDER")
+    };
+
+    function getKycStatusLabel(status) {
+      return t(`customerDetail.statusOptions.kyc.${status ?? "NOT_STARTED"}`);
+    }
+
+    function getAmlStatusLabel(status) {
+      return t(`customerDetail.statusOptions.aml.${status ?? "NOT_REVIEWED"}`);
+    }
+
+    function getRiskLevelLabel(level) {
+      return t(`customerDetail.riskLevels.${level ?? "MEDIUM"}`);
+    }
+
+    function getVerificationModeLabel(mode) {
+      return verificationModeLabels[mode]?.() ?? mode ?? t("common.notAvailable");
+    }
+
+    function getTransactionTypeLabel(type) {
+      const key = `tenantHome.transactionTypes.${type}`;
+      const translated = t(key);
+      return translated === key ? (type ?? t("common.notAvailable")) : translated;
+    }
 
     async function enrichCustomerCompliance(customer) {
       try {
@@ -341,7 +363,7 @@ export default defineComponent({
           .map((result) => result.reason);
 
         if (startupErrors.some((error) => isRecoverableStartupError(error))) {
-          errorMessage.value = "Einige Fachservices sind noch nicht bereit. Die Ansicht wurde mit Teildaten geladen.";
+          errorMessage.value = t("tenantHome.messages.partialDataLoaded");
         } else if (startupErrors.length > 0) {
           handleError(startupErrors[0]);
         }
@@ -383,7 +405,7 @@ export default defineComponent({
         if (query.trim().length < 2) {
           customerSuggestions.value = customers.value
             .filter((customer) => matchesCustomerQuery(customer, query))
-            .map((customer) => formatCustomerOption(customer));
+            .map((customer) => formatCustomerOption(customer, t));
           return;
         }
 
@@ -497,7 +519,7 @@ export default defineComponent({
       successMessage.value = "";
 
       if (!canSubmitLoan.value) {
-        errorMessage.value = "Bitte Kunde, Pflichtfelder der Positionen und gueltige Laufzeit vollstaendig erfassen.";
+        errorMessage.value = t("tenantHome.messages.missingRequiredFields");
         return;
       }
 
@@ -519,7 +541,7 @@ export default defineComponent({
               documentValidUntil: newCustomerKyc.documentValidUntil,
               documentFrontImageDataUrl: newCustomerKyc.documentFrontImageDataUrl,
               documentBackImageDataUrl: newCustomerKyc.documentBackImageDataUrl,
-              decisionNote: "Manuell im Beleihungsprozess geprueft",
+              decisionNote: "Manuell im Beleihungsprozess geprüft",
               providerName: null,
               providerReference: null,
               providerStatus: null
@@ -576,7 +598,7 @@ export default defineComponent({
 
         createdLoan.value = await createLoan(tenantStore.selectedTenantId, payload, authStore.token);
         await loadReportingOverview();
-        successMessage.value = "Beleihung erfasst und Pfandschein erzeugt";
+        successMessage.value = t("tenantHome.messages.loanCreated");
         positions.value = [createEmptyPosition()];
         selectedCustomerId.value = "";
         selectedCustomerOption.value = null;
@@ -620,7 +642,7 @@ export default defineComponent({
                 verificationMode: "PROVIDER",
                 verifiedUntil: null,
                 documentType: "PERSONALAUSWEIS",
-                decisionNote: "Provider-Pruefung im Tenant-Dashboard vorgemerkt",
+                decisionNote: "Provider-Prüfung im Tenant-Dashboard vorgemerkt",
                 providerName: "configured-provider",
                 providerReference: `provider-${selectedCustomerId.value}`,
                 providerStatus: "PENDING"
@@ -683,7 +705,7 @@ export default defineComponent({
         );
 
         if (!result.available || !result.matched) {
-          errorMessage.value = "Keine OCR-Vorbefuellung verfuegbar. Bitte Werte manuell erfassen.";
+          errorMessage.value = t("customerDetail.messages.ocrUnavailable");
           return;
         }
 
@@ -743,7 +765,7 @@ export default defineComponent({
         return;
       }
       try {
-        newCustomerKyc[side] = await readFileAsDataUrl(file);
+        newCustomerKyc[side] = await readFileAsDataUrl(file, t);
         
         if (documentOcrAvailable.value && newCustomerKyc.documentFrontImageDataUrl) {
           await prefillNewCustomerDocumentData();
@@ -761,7 +783,7 @@ export default defineComponent({
       }
 
       try {
-        pledgePresentation.powerOfAttorneyDocumentDataUrl = await readFileAsDataUrl(file);
+        pledgePresentation.powerOfAttorneyDocumentDataUrl = await readFileAsDataUrl(file, t);
       } catch (error) {
         handleError(error);
       }
@@ -856,7 +878,6 @@ export default defineComponent({
       isUpdatingAml,
       issuedTicketRef,
       loanQuotes,
-      modules: MODULES,
       newCustomer,
       newCustomerAml,
       newCustomerKyc,
@@ -882,6 +903,11 @@ export default defineComponent({
       documentOcrAvailable,
       financeTrendMax,
       formatCurrency,
+      getAmlStatusLabel,
+      getKycStatusLabel,
+      getRiskLevelLabel,
+      getTransactionTypeLabel,
+      getVerificationModeLabel,
       inventoryMax,
       canSubmitLoan,
       terms,

@@ -206,8 +206,8 @@
           <p v-else class="placeholder-copy">{{ t("customerDetail.noDocument") }}</p>
         </article>
         <article class="document-card portrait-preview" v-if="kyc.portraitImageDataUrl">
-          <p class="meta-label">Portrait</p>
-          <img :src="kyc.portraitImageDataUrl" alt="Portrait" />
+          <p class="meta-label">{{ t("customerDetail.portrait") }}</p>
+          <img :src="kyc.portraitImageDataUrl" :alt="t('customerDetail.portrait')" />
         </article>
       </div>
 

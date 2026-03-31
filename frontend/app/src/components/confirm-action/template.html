@@ -1,7 +1,7 @@
 <span class="confirm-action">
   <PButton
     :icon="icon"
-    :label="label"
+    :label="resolvedLabel"
     :severity="severity"
     :outlined="outlined"
     :rounded="rounded"
@@ -11,13 +11,13 @@
     @click="open"
   />
 
-  <PDialog v-model:visible="isOpen" modal :header="header" :style="{ width: '28rem', maxWidth: 'calc(100vw - 2rem)' }">
+  <PDialog v-model:visible="isOpen" modal :header="resolvedHeader" :style="{ width: '28rem', maxWidth: 'calc(100vw - 2rem)' }">
     <p class="muted-copy">{{ message }}</p>
 
     <template #footer>
       <SectionActions>
-        <PButton :label="cancelLabel" severity="secondary" outlined type="button" @click="close" />
-        <PButton :label="confirmLabel" type="button" @click="confirm" />
+        <PButton :label="resolvedCancelLabel" severity="secondary" outlined type="button" @click="close" />
+        <PButton :label="resolvedConfirmLabel" type="button" @click="confirm" />
       </SectionActions>
     </template>
   </PDialog>

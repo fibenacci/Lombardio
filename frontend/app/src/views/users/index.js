@@ -1,6 +1,7 @@
 import { computed, defineComponent, onMounted, reactive, ref } from "vue";
 import { createUser, fetchBranches, fetchRoles, fetchUsers, updateUser } from "../../services/api/access";
 import { useAppToast } from "../../composables/use-app-toast";
+import { useI18n } from "../../i18n";
 import { useAuthStore } from "../../stores/auth";
 import { useTenantStore } from "../../stores/tenant";
 import template from "./template.html?raw";
@@ -12,6 +13,7 @@ export default defineComponent({
     const authStore = useAuthStore();
     const tenantStore = useTenantStore();
     const toast = useAppToast();
+    const { t } = useI18n();
     const users = ref([]);
     const roles = ref([]);
     const branches = ref([]);
@@ -52,6 +54,10 @@ export default defineComponent({
         value: role.id
       }))
     );
+    const statusOptions = computed(() => [
+      { label: t("users.status.ACTIVE"), value: "ACTIVE" },
+      { label: t("users.status.INACTIVE"), value: "INACTIVE" }
+    ]);
 
     async function loadData() {
       isLoading.value = true;
@@ -101,8 +107,11 @@ export default defineComponent({
 
         if (editingUserId.value) {
           await updateUser(editingUserId.value, payload, authStore.token);
-          toast.success("User updated", `${payload.displayName || payload.email} was saved.`);
-          successMessage.value = "User updated";
+          toast.success(
+            t("users.messages.userUpdatedTitle"),
+            t("users.messages.userUpdatedToast", { user: payload.displayName || payload.email })
+          );
+          successMessage.value = t("users.messages.userUpdatedTitle");
         } else {
           await createUser(
             tenantStore.selectedTenantId,
@@ -115,8 +124,11 @@ export default defineComponent({
             },
             authStore.token
           );
-          toast.success("User created", `${payload.displayName || payload.email} is now available in the tenant realm.`);
-          successMessage.value = "User created";
+          toast.success(
+            t("users.messages.userCreatedTitle"),
+            t("users.messages.userCreatedToast", { user: payload.displayName || payload.email })
+          );
+          successMessage.value = t("users.messages.userCreatedTitle");
         }
 
         resetForm();
@@ -138,8 +150,11 @@ export default defineComponent({
         await authStore.startDelegation(userId);
         await tenantStore.refreshTenants();
         await loadData();
-        successMessage.value = "Delegated session started";
-        toast.info("Delegated session started", "You are now acting with the selected user context.");
+        successMessage.value = t("users.messages.delegatedSessionStartedTitle");
+        toast.info(
+          t("users.messages.delegatedSessionStartedTitle"),
+          t("users.messages.delegatedSessionStartedToast")
+        );
       } catch (error) {
         handleApiError(error);
       }
@@ -182,7 +197,7 @@ export default defineComponent({
         return;
       }
 
-      errorMessage.value = error instanceof Error ? error.message : "Request failed";
+      errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
     }
 
     onMounted(loadData);
@@ -194,6 +209,7 @@ export default defineComponent({
       errorMessage,
       form,
       isLoading,
+      statusOptions,
       canManageUsers,
       canDelegateToUser,
       delegateToUser,
@@ -201,6 +217,7 @@ export default defineComponent({
       startEdit,
       roles,
       roleOptions,
+      t,
       userRows,
       tenantStore,
       submit,

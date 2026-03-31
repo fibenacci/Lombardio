@@ -1,5 +1,6 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import OnlineAuctionsView from ".";
+import { setLocale } from "../../i18n";
 import { useAuthStore } from "../../stores/auth";
 import { useTenantStore } from "../../stores/tenant";
 import * as onlineAuctionApi from "../../services/api/onlineAuction";
@@ -10,6 +11,7 @@ describe("OnlineAuctionsView", () => {
   let tenantStore;
 
   beforeEach(() => {
+    setLocale("en");
     authStore = useAuthStore();
     tenantStore = useTenantStore();
   });

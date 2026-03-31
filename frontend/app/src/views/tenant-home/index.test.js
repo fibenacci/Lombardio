@@ -444,9 +444,9 @@ describe("TenantHomeView", () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain("Finanzen und Pfandbestand");
-    expect(wrapper.text()).toContain("Realisierte Ertraege");
+    expect(wrapper.text()).toContain("Realisierte Erträge");
     expect(wrapper.text()).toContain("Apple iPhone 14");
-    expect(wrapper.text()).toContain("EXTEND");
+    expect(wrapper.text()).toContain("Verlängerung");
   });
 
   it("shows a separate quote preview per pawn-ticket group", async () => {
@@ -683,7 +683,7 @@ describe("TenantHomeView", () => {
     wrapper.vm.handleCustomerSelection({ value: wrapper.vm.customerOptions[0] });
     await flushPromises();
 
-    expect(wrapper.text()).toContain("optionale Feature fuer externe Ausweispruefung");
+    expect(wrapper.text()).toContain("optionale Feature für externe Ausweisprüfung");
 
     const providerButton = wrapper.findAll("button").find((button) => button.text().includes("Provider-Prüfung vormerken"));
     await providerButton.trigger("click");

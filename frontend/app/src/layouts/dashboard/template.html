@@ -1,8 +1,8 @@
 <div class="app-shell">
   <aside class="sidebar">
     <div>
-      <p class="eyebrow">Operations</p>
-      <h1>Lombardio Admin</h1>
+      <p class="eyebrow">{{ t("dashboardLayout.eyebrow") }}</p>
+      <h1>{{ t("dashboardLayout.title") }}</h1>
     </div>
 
     <nav class="nav">
@@ -11,24 +11,24 @@
         :class="{ active: route.name === 'tenants' }"
         to="/tenants"
       >
-        Tenants
+        {{ t("platformLayout.tenants") }}
       </RouterLink>
-      <RouterLink :class="{ active: route.name === 'users' }" to="/users">Users</RouterLink>
-      <RouterLink :class="{ active: route.name === 'roles' }" to="/roles">Roles</RouterLink>
+      <RouterLink :class="{ active: route.name === 'users' }" to="/users">{{ t("tenantLayout.users") }}</RouterLink>
+      <RouterLink :class="{ active: route.name === 'roles' }" to="/roles">{{ t("tenantLayout.roles") }}</RouterLink>
     </nav>
 
     <div class="sidebar-footer">
       <div v-if="isImpersonating" class="support-banner">
-        <p class="meta-label">Support session</p>
-        <strong>Delegated access</strong>
-        <button class="secondary-button" type="button" @click="endDelegation">Return to base session</button>
+        <p class="meta-label">{{ t("common.supportSession") }}</p>
+        <strong>{{ t("common.delegatedAccess") }}</strong>
+        <button class="secondary-button" type="button" @click="endDelegation">{{ t("common.returnToBaseSession") }}</button>
       </div>
       <div>
-        <p class="meta-label">Signed in as</p>
+        <p class="meta-label">{{ t("common.signedInAs") }}</p>
         <strong>{{ user?.displayName }}</strong>
         <p class="meta-copy">{{ user?.email }}</p>
       </div>
-      <button class="secondary-button" type="button" @click="logout">Sign out</button>
+      <button class="secondary-button" type="button" @click="logout">{{ t("common.signOut") }}</button>
     </div>
   </aside>
 

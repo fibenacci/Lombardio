@@ -1,5 +1,6 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import BranchesView from ".";
+import { setLocale } from "../../i18n";
 import { useAuthStore } from "../../stores/auth";
 import { useTenantStore } from "../../stores/tenant";
 import * as accessApi from "../../services/api/access";
@@ -9,6 +10,7 @@ describe("BranchesView", () => {
   let tenantStore;
 
   beforeEach(() => {
+    setLocale("en");
     authStore = useAuthStore();
     tenantStore = useTenantStore();
   });

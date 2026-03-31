@@ -17,6 +17,8 @@
     "no": "Nein",
     "notAvailable": "Nicht hinterlegt",
     "requestFailed": "Anfrage fehlgeschlagen",
+    "fileReadFailed": "Datei konnte nicht gelesen werden",
+    "noRecordsFound": "Keine Einträge gefunden.",
     "documentTypes": {
       "passport": "Reisepass",
       "residencePermit": "Aufenthaltstitel"
@@ -27,6 +29,12 @@
     "de": "Deutsch",
     "en": "Englisch",
     "saved": "Sprache gespeichert"
+  },
+  "confirmAction": {
+    "trigger": "Bestätigen",
+    "header": "Bitte bestätigen",
+    "confirm": "Fortfahren",
+    "cancel": "Abbrechen"
   },
   "login": {
     "eyebrow": "Lombardio",
@@ -75,35 +83,405 @@
     }
   },
   "platformLayout": {
-    "eyebrow": "Platform",
-    "title": "Lombardio Control",
-    "tenants": "Tenants",
-    "security": "Security",
-    "tenantApp": "Tenant-App"
+    "eyebrow": "Plattform",
+    "title": "Lombardio Verwaltung",
+    "copy": "Plattformsteuerung, Mandantenaktivierung und sicherer administrativer Zugriff.",
+    "tenants": "Mandanten",
+    "security": "Sicherheit",
+    "tenantApp": "Mandanten-App"
+  },
+  "dashboardLayout": {
+    "eyebrow": "Betrieb",
+    "title": "Lombardio Verwaltung"
   },
   "tenantLayout": {
-    "eyebrow": "Tenant App",
-    "fallbackTitle": "Tenant Workspace",
+    "eyebrow": "Mandanten-App",
+    "fallbackTitle": "Mandantenbereich",
     "subtitle": "Schneller Zugriff auf Betrieb, Kasse und Verwaltung.",
-    "workspace": "Workspace",
+    "workspace": "Arbeitsbereich",
     "operations": "Betrieb",
     "live": "Live",
     "admin": "Verwaltung",
-    "dashboard": "Dashboard",
+    "dashboard": "Übersicht",
     "customers": "Kunden",
     "loans": "Verpfändungen",
     "pawnTickets": "Pfandscheine",
     "cashdesk": "Kasse",
     "auctions": "Auktionen",
     "onlineAuctions": "Online-Auktionen",
-    "branches": "Branches",
-    "users": "Users",
-    "roles": "Roles",
-    "security": "Security",
-    "platform": "Platform"
+    "branches": "Filialen",
+    "users": "Benutzer",
+    "roles": "Rollen",
+    "security": "Sicherheit",
+    "platform": "Plattform"
+  },
+  "branches": {
+    "eyebrow": "Organisation",
+    "title": "Filialen",
+    "copyWithTenant": "Filialstatus und Rollout für {tenant} prüfen.",
+    "copyWithoutTenant": "Wähle zuerst einen Mandanten, bevor du Filialen prüfst.",
+    "directoryTitle": "Filialverzeichnis",
+    "count": "{count} Filialen",
+    "managementTitle": "Filialverwaltung",
+    "managementSubtitle": "Filialen für die Mitarbeiterzuweisung dieses Mandanten anlegen.",
+    "columns": {
+      "key": "Schlüssel",
+      "name": "Name",
+      "status": "Status"
+    },
+    "fields": {
+      "key": "Filialschlüssel",
+      "displayName": "Anzeigename",
+      "status": "Status"
+    },
+    "status": {
+      "ACTIVE": "Aktiv",
+      "INACTIVE": "Inaktiv"
+    },
+    "actions": {
+      "create": "Filiale anlegen",
+      "reload": "Filialen neu laden"
+    },
+    "messages": {
+      "branchCreatedTitle": "Filiale angelegt",
+      "branchCreatedToast": "{displayName} ist jetzt für Mandantenzuweisungen verfügbar."
+    }
+  },
+  "roles": {
+    "eyebrow": "Berechtigungen",
+    "title": "Rollen",
+    "copyWithTenant": "Verfügbare Rollenzuweisungen für {tenant} prüfen.",
+    "copyWithoutTenant": "Wähle zuerst im Mandantenbereich einen Mandanten aus, bevor du Rollen prüfst.",
+    "directoryTitle": "Rollenverzeichnis",
+    "count": "{count} Rollen",
+    "managementTitle": "Rollenverwaltung",
+    "managementSubtitle": "Aktuelle Unterstützung der Plattform-API",
+    "managementCopy": "Diese Ansicht zeigt den live verfügbaren, mandantenseitig erreichbaren Rollenkatalog. Rollen-CRUD wird vom aktuellen Plattform-Service noch nicht bereitgestellt.",
+    "columns": {
+      "key": "Schlüssel",
+      "name": "Name",
+      "description": "Beschreibung",
+      "permissions": "Berechtigungen",
+      "status": "Status"
+    },
+    "status": {
+      "ACTIVE": "Aktiv",
+      "INACTIVE": "Inaktiv"
+    },
+    "actions": {
+      "reload": "Rollen neu laden"
+    },
+    "messages": {
+      "empty": "Aktuell sind keine Rollen für diesen Mandanten verfügbar."
+    }
+  },
+  "users": {
+    "eyebrow": "Benutzerverwaltung",
+    "title": "Benutzer",
+    "copyWithTenant": "Mitarbeiterkonten für {tenant} anlegen und pflegen.",
+    "copyWithoutTenant": "Wähle zuerst im Mandantenbereich einen Mandanten aus, bevor du Benutzer verwaltest.",
+    "directoryTitle": "Benutzerverzeichnis",
+    "count": "{count} Einträge",
+    "columns": {
+      "username": "Benutzername",
+      "email": "E-Mail",
+      "displayName": "Anzeigename",
+      "status": "Status",
+      "branches": "Filialen",
+      "roles": "Rollen",
+      "actions": "Aktionen"
+    },
+    "status": {
+      "ACTIVE": "Aktiv",
+      "INACTIVE": "Inaktiv"
+    },
+    "delegation": {
+      "header": "Delegierte Sitzung starten",
+      "message": "Du bist dabei, die Anwendung als {user} zu betreten.",
+      "confirm": "Sitzung starten"
+    },
+    "form": {
+      "createTitle": "Benutzer anlegen",
+      "editTitle": "Benutzer bearbeiten",
+      "subtitle": "Schreibt in die API zur Mandanten-Benutzerverwaltung."
+    },
+    "fields": {
+      "username": "Benutzername",
+      "email": "E-Mail",
+      "initialPassword": "Initiales Passwort",
+      "displayName": "Anzeigename",
+      "status": "Status",
+      "roleIds": "Rollen zuweisen",
+      "branchIds": "Filialen zuweisen"
+    },
+    "actions": {
+      "create": "Benutzer anlegen",
+      "save": "Benutzer speichern",
+      "cancel": "Abbrechen"
+    },
+    "messages": {
+      "userCreatedTitle": "Benutzer angelegt",
+      "userCreatedToast": "{user} ist jetzt für diesen Mandanten verfügbar.",
+      "userUpdatedTitle": "Benutzer gespeichert",
+      "userUpdatedToast": "{user} wurde gespeichert.",
+      "delegatedSessionStartedTitle": "Delegierte Sitzung gestartet",
+      "delegatedSessionStartedToast": "Du arbeitest jetzt im Kontext des ausgewählten Benutzers."
+    }
+  },
+  "tenants": {
+    "eyebrow": "Plattform",
+    "title": "Mandanten",
+    "copy": "Mandanten anlegen und Funktionen aktivieren, bevor Mandantenadministratoren Benutzer und Rollen verwalten.",
+    "directoryTitle": "Mandantenverzeichnis",
+    "count": "{count} Mandanten",
+    "createTitle": "Mandant anlegen",
+    "createSubtitle": "Mandanten-Bootstrap auf Plattformebene.",
+    "columns": {
+      "tenant": "Mandant"
+    },
+    "fields": {
+      "key": "Schlüssel",
+      "displayName": "Anzeigename",
+      "status": "Status"
+    },
+    "status": {
+      "ACTIVE": "Aktiv",
+      "INACTIVE": "Inaktiv"
+    },
+    "actions": {
+      "create": "Mandant anlegen"
+    },
+    "featureState": {
+      "enabled": "aktiviert",
+      "disabled": "deaktiviert"
+    },
+    "features": {
+      "title": "Mandantenfunktionen",
+      "currentTenant": "Aktueller Mandant: {tenant}",
+      "selectTenant": "Wähle einen Mandanten aus, um Funktionen zu verwalten.",
+      "catalog": {
+        "identity-access": {
+          "label": "Benutzer- und Rechteverwaltung",
+          "description": "Interne Benutzer- und Rechteverwaltung für die Mitarbeiter des Mandanten."
+        },
+        "loan-origination": {
+          "label": "Beleihung",
+          "description": "Automatisierte Kreditbewertung und Beleihungsabläufe."
+        },
+        "aml-compliance": {
+          "label": "AML Compliance",
+          "description": "Prüfungen zu Geldwäscheprävention und KYC."
+        },
+        "online-auctions": {
+          "label": "Online-Auktionen",
+          "description": "Digitale Auktionsplattform für verpfändete Gegenstände."
+        },
+        "reporting": {
+          "label": "Auswertungen",
+          "description": "Übersichten und betriebliche Auswertungen."
+        }
+      }
+    },
+    "messages": {
+      "loadFailed": "Mandanten konnten nicht geladen werden.",
+      "createFailed": "Mandant konnte nicht angelegt werden.",
+      "featuresLoadFailed": "Mandantenfunktionen konnten nicht geladen werden.",
+      "featureUpdateFailed": "Feature konnte nicht aktualisiert werden.",
+      "createdTitle": "Mandant angelegt",
+      "createdToast": "{tenant} ist für die Konfiguration bereit.",
+      "featureUpdatedTitle": "Feature-Status aktualisiert",
+      "featureUpdatedToast": "{feature} ist jetzt {state}."
+    }
+  },
+  "auctions": {
+    "eyebrow": "Verwertung",
+    "title": "Auktionen und Überschüsse",
+    "copy": "Backoffice-Versteigerung ohne Echtzeit-Bieterkanal",
+    "createTitle": "Neue Auktion",
+    "createSubtitle": "Auktion und Posten aus dem stationären Verwertungsprozess erfassen.",
+    "directoryTitle": "Versteigerungen",
+    "directorySubtitle": "Eine Auktion für Bekanntmachung und Zuschlag auswählen.",
+    "selectedSubtitle": "Ausgewählte Auktion",
+    "announcementTitle": "Bekanntmachung",
+    "announcementSubtitle": "Öffentliche Bekanntmachung mindestens 1 Woche und höchstens 2 Wochen vor Termin.",
+    "lotsTitle": "Posten",
+    "surplusCasesTitle": "Überschussfälle",
+    "auctionDate": "Termin: {date}",
+    "fields": {
+      "title": "Titel",
+      "location": "Ort",
+      "auctionDate": "Auktionstermin",
+      "announcementReference": "Bekanntmachungsreferenz"
+    },
+    "lotColumns": {
+      "contractNumber": "Vertrag",
+      "itemNumber": "Pfandnummer",
+      "description": "Beschreibung",
+      "estimatedValue": "Schätzwert",
+      "outstandingClaim": "Forderung"
+    },
+    "tableColumns": {
+      "lotNumber": "Posten",
+      "contractNumber": "Vertrag",
+      "description": "Beschreibung",
+      "latestBidAmount": "Aktuelles Gebot",
+      "hammerPrice": "Zuschlag",
+      "surplusAmount": "Überschuss",
+      "outstandingClaim": "Forderung",
+      "authorityTransferDueDate": "Behördenfrist",
+      "status": "Status",
+      "actions": "Aktionen"
+    },
+    "placeholders": {
+      "announcementReference": "Amtsblatt 12/2026",
+      "contractNumber": "PS-5001",
+      "itemNumber": "PS-5001-01",
+      "description": "Goldring 585",
+      "bidderDisplayName": "Bietername",
+      "bidAmount": "Gebot",
+      "hammerPrice": "Zuschlag"
+    },
+    "actions": {
+      "addLot": "Posten hinzufügen",
+      "create": "Auktion anlegen",
+      "startLive": "Live starten",
+      "close": "Auktion schließen",
+      "saveAnnouncement": "Bekanntmachung speichern",
+      "recordBid": "Gebot",
+      "bookHammerPrice": "Zuschlag buchen"
+    },
+    "messages": {
+      "createdTitle": "Auktion angelegt",
+      "createdFallback": "Auktionsentwurf angelegt.",
+      "announcementSavedTitle": "Bekanntmachung gespeichert",
+      "announcementSavedToast": "Die öffentliche Bekanntmachung wurde aktualisiert.",
+      "openedTitle": "Auktion geöffnet",
+      "openedToast": "{title} ist jetzt geöffnet.",
+      "closedTitle": "Auktion geschlossen",
+      "closedToast": "{title} wurde geschlossen.",
+      "bidRecordedTitle": "Gebot erfasst",
+      "bidRecordedToast": "Das Gebot wurde dem ausgewählten Posten hinzugefügt.",
+      "lotSettledTitle": "Posten verbucht",
+      "lotSettledToast": "Zuschlag und Überschussberechnung wurden aktualisiert."
+    }
+  },
+  "onlineAuctions": {
+    "eyebrow": "Live-Auktionen",
+    "title": "Online-Auktionen",
+    "copy": "Separater Live-Bieter-Kontext mit Centrifugo-Echtzeitkommunikation",
+    "createTitle": "Neue Online-Auktion",
+    "createSubtitle": "Echtzeit-Auktionsraum mit Bieterfreigaben, Posten und Countdown.",
+    "catalogTitle": "Katalog",
+    "catalogSubtitle": "Eine Auktion für Freigaben und Statuswechsel auswählen.",
+    "publicUrlSubtitle": "Öffentliche URL",
+    "publicUrlTitle": "Öffentliche URL",
+    "publicUrlCopy": "Bieter registrieren sich dort selbst und erhalten Bieternummer, Zugangstoken und Echtzeit-Sitzung.",
+    "publicUrlMeta": "Mindestinkrement: {increment} | Countdown: {countdown}s",
+    "lotsTitle": "Posten",
+    "registrationsTitle": "Bieterfreigaben",
+    "registrationSummary": "KYC: {kyc} | Konto: {account}",
+    "fields": {
+      "title": "Titel",
+      "minimumIncrement": "Mindestinkrement",
+      "countdownSeconds": "Countdown in Sekunden"
+    },
+    "lotColumns": {
+      "title": "Posten",
+      "description": "Beschreibung",
+      "startingBid": "Startgebot"
+    },
+    "tableColumns": {
+      "lotNumber": "Posten",
+      "title": "Titel",
+      "startingBid": "Start",
+      "currentBid": "Aktuell",
+      "highestBidder": "Höchstbieter"
+    },
+    "registrationColumns": {
+      "paddleNumber": "Bieternummer",
+      "displayName": "Name",
+      "email": "E-Mail",
+      "status": "Status",
+      "action": "Aktion"
+    },
+    "registrationStatus": {
+      "kyc": {
+        "PENDING": "KYC ausstehend",
+        "PASSED": "KYC bestanden",
+        "FAILED": "KYC fehlgeschlagen"
+      },
+      "account": {
+        "PENDING": "Konto ausstehend",
+        "PASSED": "Konto bestanden",
+        "FAILED": "Konto fehlgeschlagen"
+      }
+    },
+    "placeholders": {
+      "lotTitle": "Posten-Titel",
+      "lotDescription": "Detailbeschreibung",
+      "reviewNote": "Review-Notiz"
+    },
+    "actions": {
+      "addLot": "Posten hinzufügen",
+      "create": "Online-Auktion anlegen",
+      "publish": "Publizieren",
+      "start": "Live starten",
+      "close": "Schließen",
+      "approve": "Freigeben",
+      "reject": "Ablehnen"
+    },
+    "messages": {
+      "createdTitle": "Online-Auktion angelegt",
+      "createdFallback": "Online-Auktionsentwurf angelegt.",
+      "bidderApprovedTitle": "Bieter freigegeben",
+      "bidderRejectedTitle": "Bieter abgelehnt",
+      "registrationSavedToast": "Die Registrierungsprüfung wurde gespeichert.",
+      "publishedTitle": "Auktion publiziert",
+      "publishedToast": "{title} ist jetzt öffentlich sichtbar.",
+      "startedTitle": "Auktion gestartet",
+      "startedToast": "{title} ist jetzt live.",
+      "closedTitle": "Auktion geschlossen",
+      "closedToast": "{title} wurde geschlossen."
+    }
+  },
+  "publicAuction": {
+    "eyebrow": "Live-Bieten",
+    "titleFallback": "Online-Auktion",
+    "copy": "Echtzeit-Prototyp mit Centrifugo",
+    "registrationTitle": "Bieterregistrierung",
+    "bidTitle": "Gebot abgeben",
+    "lotsTitle": "Posten",
+    "realtimeFeedTitle": "Echtzeit-Feed",
+    "approvalStatus": "Freigabe: {status}",
+    "bidderChecks": "KYC: {kyc} | Konto: {account}",
+    "realtimeState": "Echtzeit: {state}",
+    "minimumIncrement": "Mindestinkrement: {amount}",
+    "countdownEndsAt": "Countdown endet: {time}",
+    "fields": {
+      "displayName": "Name",
+      "email": "E-Mail",
+      "legalName": "Rechtsname",
+      "birthDate": "Geburtsdatum",
+      "lot": "Posten",
+      "amount": "Betrag"
+    },
+    "columns": {
+      "lotNumber": "Posten",
+      "title": "Titel",
+      "currentBid": "Aktuell",
+      "highestBidder": "Führend"
+    },
+    "actions": {
+      "register": "Registrieren",
+      "enableRealtime": "Echtzeit verbinden",
+      "submitBid": "Gebot senden"
+    },
+    "messages": {
+      "registerFirst": "Bitte zuerst registrieren."
+    }
   },
   "security": {
-    "eyebrow": "Security",
+    "eyebrow": "Sicherheit",
     "title": "Multi-Faktor-Authentifizierung",
     "copy": "Privilegierte Zugriffe heute mit TOTP absichern. WebAuthn- und YubiKey-Support baut auf diesem Flow auf.",
     "totpStatusTitle": "TOTP-Status",
@@ -135,11 +513,15 @@
     "risk": "Risiko {level}",
     "noAddress": "Keine Adresse hinterlegt",
     "amlLoadFailed": "AML-Status konnte nicht geladen werden",
+    "amlUnknown": "Unbekannt",
+    "goamlReference": "goAML {reference}",
     "columns": {
       "customerNumber": "Kundennummer",
       "name": "Name",
       "phone": "Telefon",
-      "address": "Adresse"
+      "address": "Adresse",
+      "kyc": "KYC",
+      "aml": "AML"
     }
   },
   "loans": {
@@ -169,7 +551,15 @@
     "overviewSubtitle": "Dokumente, Fälligkeiten und Rückzahlungsbeträge auf einen Blick.",
     "count": "{count} Pfandscheine",
     "searchPlaceholder": "Pfandschein, Kundennummer oder Name",
+    "pdf": "PDF",
     "labels": "Etiketten",
+    "status": {
+      "ACTIVE": "Aktiv",
+      "DUE": "Fällig",
+      "REDEEMED": "Ausgelöst",
+      "EXTENDED": "Verlängert",
+      "AUCTIONED": "Versteigert"
+    },
     "columns": {
       "contract": "Vertrag",
       "ticket": "Pfandschein",
@@ -181,6 +571,12 @@
       "repayment": "Rückzahlung",
       "positions": "Positionen",
       "actions": "Aktionen"
+    },
+    "messages": {
+      "documentOpenedTitle": "Pfandschein geöffnet",
+      "documentOpenedToast": "{ticketNumber} wurde in einem neuen Fenster geöffnet.",
+      "labelsOpenedTitle": "Etiketten geöffnet",
+      "labelsOpenedToast": "Das Etikettenblatt für {ticketNumber} wurde in einem neuen Fenster geöffnet."
     }
   },
   "cashdesk": {
@@ -258,6 +654,8 @@
     "ocrCopy": "OCR bleibt optional. Manuelle Kontrolle und Freigabe bleiben verbindlich.",
     "frontSide": "Vorderseite",
     "backSide": "Rückseite",
+    "portrait": "Porträt",
+    "portraitExtracted": "Porträt (extrahiert)",
     "noDocument": "Kein Dokument hinterlegt",
     "kycLegalCopy": "Automatische Auslesung von Ausweisnummer und Gültigkeit wird später über einen optionalen Verification- oder OCR-Adapter angebunden. Aktuell bleibt die manuelle Erfassung der verifizierte Pfad.",
     "saveKyc": "KYC speichern",
@@ -348,6 +746,14 @@
     "copy": "Die erste Arbeitsmaske startet direkt mit der Beleihung: Kunde auswählen, Positionen bewerten, Kosten transparent anzeigen und Pfandschein erzeugen.",
     "reportingTitle": "Finanzen und Pfandbestand",
     "reportingSubtitle": "Serverseitig aggregierte Kennzahlen für Kasse, Bestandswerte und Bewegungen der letzten 14 Tage.",
+    "reportingCards": {
+      "cashInflow": "Kassenzufluss",
+      "cashOutflow": "Kassenausfluss",
+      "netCashflow": "Netto-Cashflow",
+      "realizedRevenue": "Realisierte Erträge",
+      "activeLoanExposure": "Offenes Darlehensvolumen",
+      "activeTicketCount": "Aktive Pfandscheine"
+    },
     "financeTrend": "Finanztrend",
     "inflow": "Zufluss",
     "outflow": "Ausfluss",
@@ -356,8 +762,49 @@
     "positionCount": "{count} Positionen",
     "cashTransactions": "Kassenvorgänge",
     "transactionCount": "{count} Vorgänge",
+    "transactionTypes": {
+      "REDEEM": "Auslösung",
+      "EXTEND": "Verlängerung",
+      "PARTIAL": "Teilrückzahlung"
+    },
     "originationTitle": "Beleihung erfassen",
     "originationSubtitle": "CRM, Bewertungsrichtlinien, Kasse und Pfandschein in einem ersten Prozessschritt.",
+    "customerOption": "{customerNumber} - {displayName} - KYC {kycStatus}",
+    "customerSection": {
+      "title": "Kunde",
+      "createNewCustomer": "Neukunde anlegen",
+      "customerSearch": "Bestandssuche",
+      "kycStatus": "KYC-Status: {status}",
+      "verificationMode": "Prüfmodus: {mode}",
+      "providerStatus": "Provider-Status: {status}",
+      "amlStatus": "AML: {status}",
+      "riskLevel": "Risiko {level}",
+      "kycApprovalRequired": "Ohne freigegebenes KYC kann keine Beleihung abgeschlossen werden.",
+      "amlReviewRequired": "AML-Review erforderlich vor der Beleihung.",
+      "providerFeatureCopy": "Dieser Tenant hat das optionale Feature für externe Ausweisprüfung aktiviert. Die manuelle KYC-Prüfung bleibt weiterhin verfügbar."
+    },
+    "verificationModes": {
+      "MANUAL": "Manuell",
+      "PROVIDER": "Provider"
+    },
+    "newCustomer": {
+      "digitalPawnTicket": "Online-Pfandschein anbieten und Einladungs-E-Mail vorbereiten",
+      "digitalPawnTicketCopy": "Wird der Online-Pfandschein aktiviert, muss eine gültige E-Mail-Adresse hinterlegt werden. Die spätere Aktivierung erfolgt erst nach E-Mail-Bestätigung und Passwortvergabe durch den Endkunden.",
+      "ocrCopy": "Optionaler OCR-Pfad für Nummer und Gültigkeit. Manuelle Prüfung bleibt verpflichtend.",
+      "kycLegalCopy": "Für Neukunden ist ein gültiges Ausweisdokument mit Vorder- und Rückseite zwingend. Die automatische Auslesung von Nummer und Gültigkeit wird im KYC-Kontext vorbereitet, aktuell werden die Werte manuell bestätigt."
+    },
+    "pledgePresentation": {
+      "title": "Verpfänder und Vollmacht",
+      "thirdPartyToggle": "Überbringer und Verpfänder sind nicht identisch",
+      "bearerName": "Name des Überbringers",
+      "bearerStreet": "Straße des Überbringers",
+      "powerOfAttorney": "Schriftliche Vollmacht",
+      "legalCopy": "Wenn Überbringer und Verpfänder nicht identisch sind, muss eine schriftliche Vollmacht hinterlegt werden. Die Aufzeichnung wird unverzüglich in deutscher Sprache gespeichert."
+    },
+    "newCustomerAml": {
+      "title": "AML-Prüfung für Neukunde",
+      "legalCopy": "Wenn AML-Compliance für den Tenant aktiv ist, muss der Neukunde vor Abschluss mindestens auf Freigegeben stehen. Verdachtsfälle erfordern eine goAML-Referenz und dürfen nicht in die Beleihung laufen."
+    },
     "approveKyc": "KYC manuell freigeben",
     "updatingKyc": "KYC wird bearbeitet...",
     "providerVerification": "Provider-Prüfung vormerken",
@@ -369,19 +816,59 @@
     "selectCustomerPlaceholder": "Kundenbestand wählen",
     "selectGuidelinePlaceholder": "Richtlinie wählen",
     "prefillDocument": "Ausweisdaten vorbefüllen",
+    "positionColumns": {
+      "ticketGroup": "Pfandschein",
+      "guideline": "Bewertungsrichtlinie",
+      "label": "Bezeichnung",
+      "description": "Beschreibung",
+      "pledgedValue": "Beleihwert"
+    },
     "removePosition": "Entfernen",
+    "terms": {
+      "title": "Laufzeit und Kostenmodell",
+      "termMonths": "Laufzeit in Monaten",
+      "loanAmount": "Beleihsumme",
+      "legalCopy": "Zinsen und Vergütungen werden transparent nach PfandlV dargestellt. Bei Darlehen über 300 EUR ist die monatliche Betriebsvergütung nicht mehr automatisch aus der Anlage ableitbar und muss bewusst gesetzt werden."
+    },
     "totalLoan": "Summe Beleihung",
     "submitting": "Beleihung wird erstellt...",
     "submit": "Beleihung abschließen",
     "ticketAndCostsTitle": "Pfandschein und Kosten",
     "ticketAndCostsSubtitle": "Rechtlich relevante Transparenz vor Vertragsabschluss.",
+    "quote": {
+      "ticketEyebrow": "Pfandschein {group}",
+      "positionCount": "{count} Position(en)",
+      "totalLoanValue": "Beleihsumme",
+      "earliestAuctionDate": "Früheste Versteigerung",
+      "monthlyInterestRate": "Monatszins",
+      "monthlyOperatingFee": "Betriebsvergütung / Monat",
+      "totalInterestAmount": "Zinsen gesamt",
+      "totalOperatingFeeAmount": "Vergütung gesamt",
+      "totalRepaymentAmount": "Rückzahlungsbetrag bei Fälligkeit",
+      "empty": "Sobald Positionen und Beleihwerte erfasst sind, erscheinen hier Zinssatz, Betriebsvergütung, Laufzeit, Rückzahlung und die relevanten Rechtshinweise."
+    },
+    "issuedTickets": {
+      "title": "Erzeugte Pfandscheine",
+      "customer": "Kunde: {customer}",
+      "contract": "Vertrag: {contract}",
+      "dueDate": "Pfandschein erstellt bis {dueDate}",
+      "repaymentAmount": "Rückzahlungsbetrag: {amount} EUR",
+      "totalInterestAmount": "Zinsen gesamt: {amount} EUR",
+      "totalOperatingFeeAmount": "Betriebsvergütung gesamt: {amount} EUR",
+      "barcode": "Barcode: {barcode}",
+      "termsVersion": "AGB-Version: {version}"
+    },
     "loadingTicket": "Pfandschein wird geladen...",
     "ticketPdf": "Pfandschein als PDF",
+    "ticketLabels": "Pfandetiketten",
     "printLabels": "Etiketten drucken",
     "modulesSubtitle": "Nächste Ausbaustufen rund um die Beleihung.",
     "messages": {
       "amlLoadFailed": "AML-Status konnte nicht geladen werden",
-      "reportingFailed": "Reporting konnte nicht geladen werden"
+      "reportingFailed": "Auswertungen konnten nicht geladen werden",
+      "partialDataLoaded": "Einige Fachservices sind noch nicht bereit. Die Ansicht wurde mit Teildaten geladen.",
+      "missingRequiredFields": "Bitte Kunde, Pflichtfelder der Positionen und eine gültige Laufzeit vollständig erfassen.",
+      "loanCreated": "Beleihung erfasst und Pfandschein erzeugt"
     }
   }
 }

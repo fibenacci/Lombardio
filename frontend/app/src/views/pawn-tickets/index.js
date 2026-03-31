@@ -23,6 +23,13 @@ export default defineComponent({
     const isLoading = ref(true);
     const errorMessage = ref("");
     const isDownloading = ref(false);
+    const statusLabels = {
+      ACTIVE: () => t("pawnTickets.status.ACTIVE"),
+      DUE: () => t("pawnTickets.status.DUE"),
+      REDEEMED: () => t("pawnTickets.status.REDEEMED"),
+      EXTENDED: () => t("pawnTickets.status.EXTENDED"),
+      AUCTIONED: () => t("pawnTickets.status.AUCTIONED")
+    };
 
     const filteredTickets = computed(() => {
       const normalizedQuery = query.value.trim().toLowerCase();
@@ -72,7 +79,10 @@ export default defineComponent({
             popup.print();
           }, { once: true });
         }
-        toast.info("Pawn ticket opened", `${ticketNumber} was opened in a new window.`);
+        toast.info(
+          t("pawnTickets.messages.documentOpenedTitle"),
+          t("pawnTickets.messages.documentOpenedToast", { ticketNumber })
+        );
       } catch (error) {
         errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
       } finally {
@@ -93,7 +103,10 @@ export default defineComponent({
             popup.print();
           }, { once: true });
         }
-        toast.info("Labels opened", `Label sheet for ${ticketNumber} was opened in a new window.`);
+        toast.info(
+          t("pawnTickets.messages.labelsOpenedTitle"),
+          t("pawnTickets.messages.labelsOpenedToast", { ticketNumber })
+        );
       } catch (error) {
         errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
       } finally {
@@ -106,6 +119,7 @@ export default defineComponent({
     return {
       errorMessage,
       filteredTickets,
+      getTicketStatusLabel: (status) => statusLabels[status]?.() ?? status ?? t("common.notAvailable"),
       isDownloading,
       isLoading,
       openDocument,

@@ -1,20 +1,20 @@
 <section class="page">
   <PageHeader
-    eyebrow="Platform"
-    title="Tenants"
+    :eyebrow="t('tenants.eyebrow')"
+    :title="t('tenants.title')"
     icon="pi pi-building"
-    copy="Create tenants and enable features before tenant administrators manage users and roles."
+    :copy="t('tenants.copy')"
   />
 
   <div class="panel-grid">
-    <AdminPanel title="Tenant Directory" :subtitle="isLoading ? 'Loading...' : `${tenants.length} tenants`">
+    <AdminPanel :title="t('tenants.directoryTitle')" :subtitle="isLoading ? t('common.loading') : t('tenants.count', { count: tenants.length })">
       <template #actions>
         <PTag v-if="selectedTenant" severity="info" :value="selectedTenant.displayName" />
       </template>
 
       <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
       <AppDataTable :value="tenants" dataKey="id" :loading="isLoading">
-        <PColumn field="displayName" header="Tenant" sortable>
+        <PColumn field="displayName" :header="t('tenants.columns.tenant')" sortable>
           <template #body="{ data }">
             <button
               :class="['tenant-row-action', { active: tenantStore.selectedTenantId === data.id }]"
@@ -25,54 +25,51 @@
                 <strong>{{ data.displayName }}</strong>
                 <span class="muted-copy">{{ data.key }}</span>
               </span>
-              <PTag :severity="tenantStatusSeverity(data.status)" :value="data.status" />
+              <PTag :severity="tenantStatusSeverity(data.status)" :value="t(`tenants.status.${data.status}`)" />
             </button>
           </template>
         </PColumn>
       </AppDataTable>
     </AdminPanel>
 
-    <AdminPanel title="Create Tenant" subtitle="Platform-level tenant bootstrap.">
+    <AdminPanel :title="t('tenants.createTitle')" :subtitle="t('tenants.createSubtitle')">
       <FormShell :errorMessage="errorMessage" :successMessage="successMessage" @submit="submit">
           <label>
-            <span>Key</span>
+            <span>{{ t("tenants.fields.key") }}</span>
             <PInputText v-model="form.key" type="text" />
           </label>
 
           <label>
-            <span>Display name</span>
+            <span>{{ t("tenants.fields.displayName") }}</span>
             <PInputText v-model="form.displayName" type="text" />
           </label>
 
           <label>
-            <span>Status</span>
+            <span>{{ t("tenants.fields.status") }}</span>
             <PSelect
               v-model="form.status"
-              :options="[
-                { label: 'ACTIVE', value: 'ACTIVE' },
-                { label: 'INACTIVE', value: 'INACTIVE' }
-              ]"
+              :options="statusOptions"
               optionLabel="label"
               optionValue="value"
             />
           </label>
 
         <template #actions>
-          <PButton icon="pi pi-plus" label="Create tenant" type="submit" />
+          <PButton icon="pi pi-plus" :label="t('tenants.actions.create')" type="submit" />
         </template>
       </FormShell>
     </AdminPanel>
   </div>
 
   <AdminPanel
-    title="Tenant Features"
-    :subtitle="selectedTenant ? `Current tenant: ${selectedTenant.displayName}` : 'Select a tenant to manage features.'"
+    :title="t('tenants.features.title')"
+    :subtitle="selectedTenant ? t('tenants.features.currentTenant', { tenant: selectedTenant.displayName }) : t('tenants.features.selectTenant')"
   >
     <div v-if="selectedTenant" class="feature-grid">
         <div v-for="feature in tenantFeatures" :key="feature.key" class="feature-card">
           <div>
             <strong>{{ feature.label }}</strong>
-            <p class="muted-copy">{{ feature.key }}</p>
+            <p class="muted-copy">{{ feature.description }}</p>
           </div>
           <PToggleSwitch
             :modelValue="feature.enabled"
@@ -80,6 +77,6 @@
           />
         </div>
     </div>
-    <PMessage v-else severity="secondary" variant="simple">Select a tenant to manage features.</PMessage>
+    <PMessage v-else severity="secondary" variant="simple">{{ t("tenants.features.selectTenant") }}</PMessage>
   </AdminPanel>
 </section>

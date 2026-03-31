@@ -1,4 +1,5 @@
 import { computed, defineComponent } from "vue";
+import { useI18n } from "../../i18n";
 import template from "./template.html?raw";
 import "./styles.scss";
 
@@ -56,16 +57,21 @@ export default defineComponent({
     },
     emptyMessage: {
       type: String,
-      default: "No records found."
+      default: null
     }
   },
   setup(props) {
+    const { t } = useI18n();
     const loadingRowIndexes = computed(() => Array.from({ length: props.loadingRows }, (_, index) => index));
     const loadingColumnIndexes = computed(() => Array.from({ length: props.loadingColumns }, (_, index) => index));
+    const resolvedEmptyMessage = computed(() =>
+      props.emptyMessage ?? t("common.noRecordsFound")
+    );
 
     return {
       loadingColumnIndexes,
-      loadingRowIndexes
+      loadingRowIndexes,
+      resolvedEmptyMessage
     };
   },
   template

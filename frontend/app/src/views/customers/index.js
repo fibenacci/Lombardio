@@ -20,6 +20,20 @@ export default defineComponent({
     const query = ref("");
     const isLoading = ref(true);
     const errorMessage = ref("");
+    const kycStatusLabels = {
+      NOT_STARTED: () => t("customerDetail.statusOptions.kyc.NOT_STARTED"),
+      IN_PROGRESS: () => t("customerDetail.statusOptions.kyc.IN_PROGRESS"),
+      APPROVED: () => t("customerDetail.statusOptions.kyc.APPROVED"),
+      REJECTED: () => t("customerDetail.statusOptions.kyc.REJECTED")
+    };
+    const amlStatusLabels = {
+      NOT_REVIEWED: () => t("customerDetail.statusOptions.aml.NOT_REVIEWED"),
+      CLEAR: () => t("customerDetail.statusOptions.aml.CLEAR"),
+      REVIEW_REQUIRED: () => t("customerDetail.statusOptions.aml.REVIEW_REQUIRED"),
+      BLOCKED: () => t("customerDetail.statusOptions.aml.BLOCKED"),
+      REPORTED: () => t("customerDetail.statusOptions.aml.REPORTED"),
+      UNKNOWN: () => t("customers.amlUnknown")
+    };
 
     async function loadAmlSnapshot(tenantId, customer) {
       try {
@@ -83,6 +97,8 @@ export default defineComponent({
     return {
       customers,
       errorMessage,
+      getAmlStatusLabel: (status) => amlStatusLabels[status]?.() ?? status ?? t("common.notAvailable"),
+      getKycStatusLabel: (status) => kycStatusLabels[status]?.() ?? status ?? t("common.notAvailable"),
       isLoading,
       openCustomer,
       query,

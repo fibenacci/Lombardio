@@ -1,5 +1,6 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import CustomersView from ".";
+import { setLocale } from "../../i18n";
 import { useAuthStore } from "../../stores/auth";
 import { useTenantStore } from "../../stores/tenant";
 import * as customerApi from "../../services/api/customer";
@@ -11,6 +12,7 @@ describe("CustomersView", () => {
   let tenantStore;
 
   beforeEach(() => {
+    setLocale("en");
     authStore = useAuthStore();
     tenantStore = useTenantStore();
   });
@@ -55,8 +57,8 @@ describe("CustomersView", () => {
 
     expect(customerApi.searchCustomers).toHaveBeenCalledWith("tenant-default", "", "token-123");
     expect(wrapper.text()).toContain("Anna Becker");
-    expect(wrapper.text()).toContain("APPROVED");
-    expect(wrapper.text()).toContain("CLEAR");
+    expect(wrapper.text()).toContain("Approved");
+    expect(wrapper.text()).toContain("Clear");
     expect(wrapper.text()).toContain("Details");
   });
 });

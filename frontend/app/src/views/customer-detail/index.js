@@ -11,11 +11,11 @@ import FormFeedback from "../../components/form-feedback";
 import template from "./template.html?raw";
 import "./styles.scss";
 
-function readFileAsDataUrl(file) {
+function readFileAsDataUrl(file, t) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
-    reader.onerror = () => reject(new Error("Datei konnte nicht gelesen werden"));
+    reader.onerror = () => reject(new Error(t("common.fileReadFailed")));
     reader.readAsDataURL(file);
   });
 }
@@ -335,7 +335,7 @@ export default defineComponent({
         return;
       }
       try {
-        kyc[side] = await readFileAsDataUrl(file);
+        kyc[side] = await readFileAsDataUrl(file, t);
         
         // Automatically trigger OCR if feature is available
         if (documentOcrAvailable.value) {

@@ -41,7 +41,7 @@
       <PColumn field="dueDate" :header="t('pawnTickets.columns.dueDate')" sortable />
       <PColumn :header="t('pawnTickets.columns.status')" field="status" sortable>
         <template #body="{ data }">
-          <StatusTag :value="data.status" :activeValues="['ACTIVE']" :warnValues="['DUE']" />
+          <StatusTag :value="getTicketStatusLabel(data.status)" :activeValues="[t('pawnTickets.status.ACTIVE')]" :warnValues="[t('pawnTickets.status.DUE')]" />
         </template>
       </PColumn>
       <PColumn :header="t('pawnTickets.columns.loan')" field="totalLoanValue" sortable>
@@ -54,7 +54,7 @@
       <PColumn :header="t('pawnTickets.columns.actions')">
         <template #body="{ data }">
           <div class="action-row">
-            <PButton :disabled="isDownloading" label="PDF" severity="secondary" outlined size="small" type="button" @click="openDocument(data.ticketNumber, false)" />
+            <PButton :disabled="isDownloading" :label="t('pawnTickets.pdf')" severity="secondary" outlined size="small" type="button" @click="openDocument(data.ticketNumber, false)" />
             <PButton :disabled="isDownloading" :label="t('common.print')" severity="secondary" outlined size="small" type="button" @click="openDocument(data.ticketNumber, true)" />
             <PButton :disabled="isDownloading" :label="t('pawnTickets.labels')" severity="secondary" outlined size="small" type="button" @click="openLabels(data.ticketNumber, false)" />
           </div>

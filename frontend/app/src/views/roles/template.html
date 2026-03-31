@@ -1,37 +1,37 @@
 <section class="page">
   <PageHeader
-    eyebrow="Authorization"
-    title="Roles"
+    :eyebrow="t('roles.eyebrow')"
+    :title="t('roles.title')"
     icon="pi pi-id-card"
     :copy="
       tenantStore.selectedTenantId
-        ? `Review role assignments available to tenant ${tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId}.`
-        : 'Select a tenant in the Tenants view before reviewing roles.'
+        ? t('roles.copyWithTenant', { tenant: tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId })
+        : t('roles.copyWithoutTenant')
     "
   />
 
   <div class="panel-grid">
-    <AdminPanel title="Role Directory" :subtitle="isLoading ? 'Loading...' : `${roleRows.length} roles`">
+    <AdminPanel :title="t('roles.directoryTitle')" :subtitle="isLoading ? t('common.loading') : t('roles.count', { count: roleRows.length })">
       <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
       <PMessage v-if="successMessage" severity="info" variant="simple">{{ successMessage }}</PMessage>
       <AppDataTable v-if="tenantStore.selectedTenantId" :value="roleRows" dataKey="id" :loading="isLoading">
-        <PColumn field="key" header="Key" sortable />
-        <PColumn field="displayName" header="Name" sortable />
-        <PColumn field="description" header="Description" sortable />
-        <PColumn field="permissionCount" header="Permissions" sortable />
-        <PColumn header="Status" field="active" sortable>
+        <PColumn field="key" :header="t('roles.columns.key')" sortable />
+        <PColumn field="displayName" :header="t('roles.columns.name')" sortable />
+        <PColumn field="description" :header="t('roles.columns.description')" sortable />
+        <PColumn field="permissionCount" :header="t('roles.columns.permissions')" sortable />
+        <PColumn :header="t('roles.columns.status')" field="active" sortable>
           <template #body="{ data }">
-            <StatusTag :value="data.active ? 'ACTIVE' : 'INACTIVE'" />
+            <StatusTag :value="t(data.active ? 'roles.status.ACTIVE' : 'roles.status.INACTIVE')" />
           </template>
         </PColumn>
       </AppDataTable>
     </AdminPanel>
 
-    <AdminPanel title="Role Management" subtitle="Current platform API support">
+    <AdminPanel :title="t('roles.managementTitle')" :subtitle="t('roles.managementSubtitle')">
       <PMessage severity="info" variant="simple">
-        This screen reflects the live tenant-accessible role catalog. Role CRUD is still not exposed by the current platform service.
+        {{ t("roles.managementCopy") }}
       </PMessage>
-      <PButton :disabled="!tenantStore.selectedTenantId || isLoading" icon="pi pi-refresh" label="Reload roles" severity="secondary" @click="reload" />
+      <PButton :disabled="!tenantStore.selectedTenantId || isLoading" icon="pi pi-refresh" :label="t('roles.actions.reload')" severity="secondary" @click="reload" />
     </AdminPanel>
   </div>
 </section>
