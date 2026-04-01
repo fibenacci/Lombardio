@@ -10,6 +10,8 @@
  */
 package io.lombardio.identity.kyc.infrastructure;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.lombardio.identity.kyc.domain.DocumentOcrProvider;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -36,7 +38,8 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
 
   public HttpDocumentOcrProvider(
       RestClient.Builder restClientBuilder,
-      @Value("${document-ocr.base-url:http://localhost:8087}") String baseUrl) {
+      @Value("${regula.base-url:${document-ocr.base-url:http://localhost:8087}}")
+          String baseUrl) {
     log.info("[OCR] Initializing HttpDocumentOcrProvider with base URL: {}", baseUrl);
     this.restClient = restClientBuilder.baseUrl(baseUrl).build();
   }
@@ -73,16 +76,20 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
   }
 
   private ProcessRequest buildRequest(String frontUrl, String backUrl) {
-    List<ProcessRequestImage> images = new ArrayList<>();
+    List<ProcessRequestItem> images = new ArrayList<>();
     if (frontUrl != null && frontUrl.contains(",")) {
-      images.add(new ProcessRequestImage(frontUrl.split(",")[1], 6, 0)); // 6=White, 0=Front
+      images.add(
+          new ProcessRequestItem(
+              new ProcessRequestImageData(frontUrl.split(",", 2)[1]), 6, 0)); // 6=White, 0=Front
     }
 
     if (backUrl != null && backUrl.contains(",")) {
-      images.add(new ProcessRequestImage(backUrl.split(",")[1], 6, 1)); // 6=White, 1=Back
+      images.add(
+          new ProcessRequestItem(
+              new ProcessRequestImageData(backUrl.split(",", 2)[1]), 6, 1)); // 6=White, 1=Back
     }
 
-    return new ProcessRequest(new ProcessParams("FullProcess", true), images);
+    return new ProcessRequest(new ProcessParams("FullProcess", new AuthParams(false)), images);
   }
 
   private Optional<DocumentOcrResult> mapResponse(ProcessResponse response) {
@@ -92,6 +99,7 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
     String docNumber = null;
     String expiryStr = null;
     String docType = "UNKNOWN";
+    String candidateDocumentName = null;
     String portraitBase64 = null;
     double confidence = 0.0;
 
@@ -106,34 +114,72 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
           if (value == null) continue;
 
           int type = field.fieldType();
+          String normalizedFieldName = normalizeFieldName(field.fieldName());
           double fieldConf = getBestConfidence(field);
 
-          // Map based on Regula eVisualFieldType
+          // Map based on Regula TextFieldType enum
           switch (type) {
-            case 1 -> lastName = coalesce(lastName, value);
-            case 2 -> firstName = coalesce(firstName, value);
-            case 3 -> birthDateStr = coalesce(birthDateStr, value);
-            case 5 -> expiryStr = coalesce(expiryStr, value);
-            case 9 -> {
+            case 2, 27, 191 -> {
               docNumber = coalesce(docNumber, value);
               confidence = Math.max(confidence, fieldConf);
             }
-            case 11 -> docType = coalesce(docType, value);
+            case 3, 91, 102, 251, 339, 637 -> expiryStr = coalesce(expiryStr, value);
+            case 5, 110, 592 -> birthDateStr = coalesce(birthDateStr, value);
+            case 8 -> lastName = coalesce(lastName, value);
+            case 9, 645 -> firstName = coalesce(firstName, value);
+            case 25 -> {
+              if (lastName == null || firstName == null) {
+                String[] parts = value.split("<<|<|,\\s*", 2);
+                if (parts.length > 0) {
+                  lastName = coalesce(lastName, parts[0].replace("<", " ").trim());
+                }
+                if (parts.length > 1) {
+                  firstName = coalesce(firstName, parts[1].replace("<", " ").trim());
+                }
+              }
+            }
+            case 0, 37 -> docType = coalesce(docType, value);
+          }
+
+          if (matchesAny(normalizedFieldName, "surname", "lastname", "familyname", "nachname")) {
+            lastName = coalesce(lastName, value);
+          }
+          if (matchesAny(normalizedFieldName, "firstname", "givenname", "name", "vorname", "givennames")) {
+            firstName = coalesce(firstName, value);
+          }
+          if (matchesAny(normalizedFieldName, "birthdate", "dateofbirth", "geburtsdatum")) {
+            birthDateStr = coalesce(birthDateStr, value);
+          }
+          if (matchesAny(normalizedFieldName, "documentnumber", "docnumber", "idnumber", "documentno", "ausweisnummer")) {
+            docNumber = coalesce(docNumber, value);
+            confidence = Math.max(confidence, fieldConf);
+          }
+          if (matchesAny(normalizedFieldName, "expirydate", "dateofexpiry", "validuntil", "ablaufdatum", "gueltigbis")) {
+            expiryStr = coalesce(expiryStr, value);
+          }
+          if (matchesAny(normalizedFieldName, "documentclasscode", "documentclassname", "documenttype", "doctype")) {
+            docType = coalesce(docType, value);
           }
         }
       }
 
-      if (item.Graphics() != null && item.Graphics().fieldList() != null) {
+      ImageFields imageFields = getImageFields(item);
+      if (imageFields != null && imageFields.fieldList() != null) {
         log.info(
-            "[OCR] Parsing graphics container type: {} with {} fields",
+            "[OCR] Parsing image container type: {} with {} fields",
             item.result_type(),
-            item.Graphics().fieldList().size());
-        for (GraphicField field : item.Graphics().fieldList()) {
-          if (field.fieldType() == 201 && field.value() != null) {
+            imageFields.fieldList().size());
+        for (ImageField field : imageFields.fieldList()) {
+          String value = getBestValue(field);
+          if (field.fieldType() == 201 && value != null) {
             log.info("[OCR] Found portrait image");
-            portraitBase64 = "data:image/jpeg;base64," + field.value();
+            portraitBase64 = "data:image/jpeg;base64," + value;
           }
         }
+      }
+
+      if (item.OneCandidate() != null && item.OneCandidate().DocumentName() != null) {
+        candidateDocumentName = coalesce(candidateDocumentName, item.OneCandidate().DocumentName());
       }
     }
 
@@ -150,7 +196,10 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
             firstName,
             lastName,
             parseDate(birthDateStr),
-            docType,
+            normalizeDocumentType(
+                candidateDocumentName != null && !candidateDocumentName.isBlank()
+                    ? candidateDocumentName
+                    : docType),
             docNumber,
             parseDate(expiryStr),
             portraitBase64,
@@ -162,7 +211,44 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
     return (existing == null || existing.isBlank()) ? newValue : existing;
   }
 
+  private String normalizeFieldName(String fieldName) {
+    if (fieldName == null) {
+      return "";
+    }
+    return fieldName.replaceAll("[^A-Za-z0-9]", "").toLowerCase();
+  }
+
+  private boolean matchesAny(String value, String... candidates) {
+    for (String candidate : candidates) {
+      if (value.equals(candidate)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private String normalizeDocumentType(String documentType) {
+    if (documentType == null || documentType.isBlank()) {
+      return "PERSONALAUSWEIS";
+    }
+
+    String normalized = documentType.trim().toUpperCase();
+    if (normalized.contains("PASSPORT") || normalized.contains("REISEPASS")) {
+      return "REISEPASS";
+    }
+    if (normalized.contains("RESIDENCE") || normalized.contains("PERMIT") || normalized.contains("AUFENTHALT")) {
+      return "AUFENTHALTSTITEL";
+    }
+    if (normalized.contains("ID") || normalized.contains("IDENTITY") || normalized.contains("PERSONALAUSWEIS")) {
+      return "PERSONALAUSWEIS";
+    }
+    return "PERSONALAUSWEIS";
+  }
+
   private String getBestValue(TextField field) {
+    if (field.value() != null && !field.value().isBlank()) {
+      return field.value();
+    }
     if (field.values() == null || field.values().isEmpty()) return null;
     return field.values().get(0).value();
   }
@@ -170,6 +256,21 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
   private double getBestConfidence(TextField field) {
     if (field.values() == null || field.values().isEmpty()) return 0.0;
     return field.values().get(0).confidence() / 100.0;
+  }
+
+  private String getBestValue(ImageField field) {
+    if (field.value() != null && !field.value().isBlank()) {
+      return field.value();
+    }
+    if (field.values() == null || field.values().isEmpty()) return null;
+    return field.values().get(0).value();
+  }
+
+  private ImageFields getImageFields(ResultItem item) {
+    if (item.Images() != null) {
+      return item.Images();
+    }
+    return item.Graphics();
   }
 
   private LocalDate parseDate(String dateStr) {
@@ -192,25 +293,50 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
 
   // --- Official Regula OpenAPI Models ---
 
-  private record ProcessRequest(ProcessParams processParam, List<ProcessRequestImage> List) {}
+  private record ProcessRequest(ProcessParams processParam, List<ProcessRequestItem> List) {}
 
-  private record ProcessParams(String scenario, boolean doublePageSpread) {}
+  private record ProcessParams(String scenario, AuthParams authParams) {}
 
-  private record ProcessRequestImage(String ImageData, int light, int page_idx) {}
+  private record AuthParams(boolean checkLiveness) {}
+
+  private record ProcessRequestItem(ProcessRequestImageData ImageData, int light, int page_idx) {}
+
+  private record ProcessRequestImageData(String image) {}
 
   private record ProcessResponse(ContainerList ContainerList) {}
 
   private record ContainerList(List<ResultItem> List) {}
 
-  private record ResultItem(int result_type, TextFields Text, GraphicsFields Graphics) {}
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  private record ResultItem(
+      int result_type, TextFields Text, ImageFields Images, ImageFields Graphics, OneCandidate OneCandidate) {}
 
+  @JsonIgnoreProperties(ignoreUnknown = true)
   private record TextFields(List<TextField> fieldList) {}
 
-  private record TextField(String fieldName, int fieldType, List<StringResultValue> values) {}
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  private record TextField(
+      String fieldName,
+      int fieldType,
+      String value,
+      @JsonAlias("valueList") List<StringResultValue> values) {}
 
-  private record StringResultValue(String value, int sourceType, int confidence) {}
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  private record StringResultValue(
+      String value,
+      int sourceType,
+      @JsonAlias({"confidence", "probability"}) int confidence) {}
 
-  private record GraphicsFields(List<GraphicField> fieldList) {}
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  private record ImageFields(List<ImageField> fieldList) {}
 
-  private record GraphicField(String fieldName, int fieldType, String value) {}
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  private record ImageField(
+      String fieldName,
+      int fieldType,
+      String value,
+      @JsonAlias("valueList") List<StringResultValue> values) {}
+
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  private record OneCandidate(String DocumentName) {}
 }

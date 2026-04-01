@@ -13,6 +13,7 @@ package io.lombardio.identity.kyc.application;
 import io.lombardio.identity.domain.port.TenantFeatureDirectory;
 import io.lombardio.identity.kyc.api.DocumentPrefillRequest;
 import io.lombardio.identity.kyc.api.DocumentPrefillResponse;
+import io.lombardio.identity.kyc.api.KycDocumentImagesResponse;
 import io.lombardio.identity.kyc.api.KycStatusResponse;
 import io.lombardio.identity.kyc.api.UpdateKycStatusRequest;
 import io.lombardio.identity.kyc.domain.DocumentOcrProvider;
@@ -89,6 +90,35 @@ public class KycService {
     return toResponse(record, providerVerificationAvailable(tenantId));
   }
 
+  public KycDocumentImagesResponse getDocumentImages(String tenantId, String customerId) {
+    KycRecord record =
+        kycRepository
+            .findByTenantIdAndCustomerId(tenantId, customerId)
+            .orElseGet(
+                () ->
+                    new KycRecord(
+                        "kyc-" + UUID.randomUUID(),
+                        tenantId,
+                        customerId,
+                        KycVerificationMode.MANUAL,
+                        KycStatus.NOT_STARTED,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null));
+
+    return new KycDocumentImagesResponse(
+        record.customerId(),
+        normalizeDocumentImageDataUrl(record.documentFrontImageDataUrl()),
+        normalizeDocumentImageDataUrl(record.documentBackImageDataUrl()));
+  }
+
   public KycStatusResponse updateStatus(
       String tenantId, String customerId, UpdateKycStatusRequest request) {
     KycVerificationMode verificationMode =
@@ -125,6 +155,11 @@ public class KycService {
 
     validateManualDocumentData(request, verificationMode);
 
+    String normalizedFrontImageDataUrl =
+        normalizeDocumentImageDataUrl(request.documentFrontImageDataUrl());
+    String normalizedBackImageDataUrl =
+        normalizeDocumentImageDataUrl(request.documentBackImageDataUrl());
+
     KycRecord updated =
         new KycRecord(
             existing.id(),
@@ -136,8 +171,8 @@ public class KycService {
             request.documentType(),
             request.documentNumber(),
             request.documentValidUntil(),
-            request.documentFrontImageDataUrl(),
-            request.documentBackImageDataUrl(),
+            normalizedFrontImageDataUrl,
+            normalizedBackImageDataUrl,
             request.decisionNote(),
             verificationMode == KycVerificationMode.PROVIDER ? request.providerName() : null,
             verificationMode == KycVerificationMode.PROVIDER ? request.providerReference() : null,
@@ -169,7 +204,9 @@ public class KycService {
     DocumentPrefillResponse response =
         documentOcrProvider
             .prefill(
-                tenantId, request.documentFrontImageDataUrl(), request.documentBackImageDataUrl())
+                tenantId,
+                normalizeDocumentImageDataUrl(request.documentFrontImageDataUrl()),
+                normalizeDocumentImageDataUrl(request.documentBackImageDataUrl()))
             .map(
                 result ->
                     new DocumentPrefillResponse(
@@ -205,13 +242,40 @@ public class KycService {
         record.documentType(),
         record.documentNumber(),
         record.documentValidUntil(),
-        record.documentFrontImageDataUrl(),
-        record.documentBackImageDataUrl(),
         record.decisionNote(),
         record.providerName(),
         record.providerReference(),
         record.providerStatus(),
         providerVerificationAvailable);
+  }
+
+  private String normalizeDocumentImageDataUrl(String value) {
+    if (value == null) {
+      return null;
+    }
+
+    String normalizedValue = value.trim();
+    if (normalizedValue.isEmpty() || normalizedValue.startsWith("data:")) {
+      return normalizedValue;
+    }
+
+    return "data:" + inferMimeType(normalizedValue) + ";base64," + normalizedValue;
+  }
+
+  private String inferMimeType(String base64Value) {
+    if (base64Value.startsWith("/9j/")) {
+      return "image/jpeg";
+    }
+    if (base64Value.startsWith("iVBOR")) {
+      return "image/png";
+    }
+    if (base64Value.startsWith("R0lGOD")) {
+      return "image/gif";
+    }
+    if (base64Value.startsWith("UklGR")) {
+      return "image/webp";
+    }
+    return "image/png";
   }
 
   private void validateManualDocumentData(

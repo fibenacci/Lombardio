@@ -1,0 +1,12 @@
+cluster_name = "lombardio-staging"
+location     = "nbg1"
+
+# Germany/Finland Hetzner Cloud line that matches the current EU pricing docs.
+control_plane_type = "cpx22"
+worker_node_type   = "cpx22"
+
+# Provide these via environment variables or a local, untracked tfvars file.
+# Example:
+# export TF_VAR_hcloud_token=...
+# export TF_VAR_ssh_public_key="$(cat ~/.ssh/id_ed25519.pub)"
+# export TF_VAR_ssh_private_key="$(cat ~/.ssh/id_ed25519)"

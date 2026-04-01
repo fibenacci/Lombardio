@@ -25,8 +25,8 @@ spring:
 external-crm:
   base-url: http://localhost:8081
 
-document-ocr:
-  base-url: http://localhost:8087
+regula:
+  base-url: ${REGULA_BASE_URL:http://localhost:8087}
 
 pawn-ticket:
   base-url: http://localhost:8085

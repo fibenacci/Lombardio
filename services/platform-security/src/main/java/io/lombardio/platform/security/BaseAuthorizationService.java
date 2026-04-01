@@ -14,11 +14,22 @@ public abstract class BaseAuthorizationService {
 
   protected void requireTenantAccess(
       AuthenticatedUser user, String tenantId, String permission, String crossTenantPermission) {
+    requireTenantAccessAny(user, tenantId, crossTenantPermission, permission);
+  }
+
+  protected void requireTenantAccessAny(
+      AuthenticatedUser user,
+      String tenantId,
+      String crossTenantPermission,
+      String... permissions) {
     if (user == null) {
       throw new UnauthorizedException("Authentication required");
     }
-    if (!user.hasPermission(permission)) {
-      throw new ForbiddenException("Missing permission: " + permission);
+    if (crossTenantPermission != null && user.hasPermission(crossTenantPermission)) {
+      return;
+    }
+    if (!hasAnyPermission(user, permissions)) {
+      throw new ForbiddenException("Missing permission: " + firstPermission(permissions));
     }
     if (tenantId != null && !tenantId.equals(user.tenantId())) {
       if (crossTenantPermission == null || !user.hasPermission(crossTenantPermission)) {
@@ -34,5 +45,37 @@ public abstract class BaseAuthorizationService {
     if (!user.hasPermission(permission)) {
       throw new ForbiddenException("Missing permission: " + permission);
     }
+  }
+
+  protected void requireTenantMatchOrPermission(
+      AuthenticatedUser user, String tenantId, String permission) {
+    if (user == null) {
+      throw new UnauthorizedException("Authentication required");
+    }
+    if (user.hasPermission(permission)) {
+      return;
+    }
+    if (tenantId != null && tenantId.equals(user.tenantId())) {
+      return;
+    }
+    throw new ForbiddenException("Tenant access is limited to the effective tenant");
+  }
+
+  private boolean hasAnyPermission(AuthenticatedUser user, String... permissions) {
+    for (String permission : permissions) {
+      if (permission != null && user.hasPermission(permission)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private String firstPermission(String... permissions) {
+    for (String permission : permissions) {
+      if (permission != null && !permission.isBlank()) {
+        return permission;
+      }
+    }
+    return "unknown";
   }
 }

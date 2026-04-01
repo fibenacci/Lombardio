@@ -70,6 +70,13 @@ public class TenantAdministrationController {
     return tenantCatalogService.listAvailableRolesForTenant(tenantId);
   }
 
+  @GetMapping("/features")
+  public List<TenantFeatureResponse> listFeatures(
+      @PathVariable String tenantId, @AuthenticationPrincipal AuthenticatedUser user) {
+    authorizationService.requireTenantFeatureRead(user, tenantId);
+    return tenantCatalogService.listFeatures(tenantId);
+  }
+
   @GetMapping("/branches")
   public List<BranchResponse> listBranches(
       @PathVariable String tenantId, @AuthenticationPrincipal AuthenticatedUser user) {

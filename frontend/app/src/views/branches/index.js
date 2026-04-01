@@ -4,6 +4,7 @@ import { useAppToast } from "../../composables/use-app-toast";
 import { useI18n } from "../../i18n";
 import { useAuthStore } from "../../stores/auth";
 import { useTenantStore } from "../../stores/tenant";
+import { getRequestErrorMessage } from "../../utils/request-error";
 import template from "./template.html?raw";
 import "./styles.scss";
 
@@ -47,7 +48,7 @@ export default defineComponent({
       try {
         branches.value = await fetchBranches(tenantStore.selectedTenantId, authStore.token);
       } catch (error) {
-        handleApiError(error);
+        errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
       } finally {
         isLoading.value = false;
       }
@@ -69,18 +70,8 @@ export default defineComponent({
         form.status = "ACTIVE";
         await loadData();
       } catch (error) {
-        handleApiError(error);
+        errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
       }
-    }
-
-    function handleApiError(error) {
-      if (error?.status === 401) {
-        authStore.clearSession();
-        window.location.assign("/login");
-        return;
-      }
-
-      errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
     }
 
     onMounted(loadData);

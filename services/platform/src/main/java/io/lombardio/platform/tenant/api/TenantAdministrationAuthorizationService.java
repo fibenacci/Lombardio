@@ -11,12 +11,11 @@
 package io.lombardio.platform.tenant.api;
 
 import io.lombardio.platform.security.AuthenticatedUser;
-import io.lombardio.platform.security.ForbiddenException;
-import io.lombardio.platform.security.UnauthorizedException;
+import io.lombardio.platform.security.BaseAuthorizationService;
 import org.springframework.stereotype.Service;
 
 @Service
-public class TenantAdministrationAuthorizationService {
+public class TenantAdministrationAuthorizationService extends BaseAuthorizationService {
 
   public void requireTenantUserRead(AuthenticatedUser user, String tenantId) {
     requireTenantAccess(user, tenantId, "users.read", "platform.tenants.read");
@@ -38,19 +37,7 @@ public class TenantAdministrationAuthorizationService {
     requireTenantAccess(user, tenantId, "branches.write", "platform.tenants.write");
   }
 
-  private void requireTenantAccess(
-      AuthenticatedUser user, String tenantId, String tenantPermission, String platformPermission) {
-    if (user == null) {
-      throw new UnauthorizedException("Authentication required");
-    }
-    if (user.hasPermission(platformPermission)) {
-      return;
-    }
-    if (!user.hasPermission(tenantPermission)) {
-      throw new ForbiddenException("Missing permission: " + tenantPermission);
-    }
-    if (tenantId != null && !tenantId.equals(user.tenantId())) {
-      throw new ForbiddenException("Tenant access is limited to the effective tenant");
-    }
+  public void requireTenantFeatureRead(AuthenticatedUser user, String tenantId) {
+    requireTenantMatchOrPermission(user, tenantId, "platform.tenants.read");
   }
 }

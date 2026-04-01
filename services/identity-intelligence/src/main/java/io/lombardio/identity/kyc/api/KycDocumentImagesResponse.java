@@ -8,9 +8,7 @@
  *
  * For partnership or cooperation inquiries, please contact the author.
  */
-package io.lombardio.pawnticket.api.http.error;
+package io.lombardio.identity.kyc.api;
 
-import java.util.List;
-
-public record ApiError(
-    String code, String message, String traceId, List<ApiFieldError> fieldErrors) {}
+public record KycDocumentImagesResponse(
+    String customerId, String documentFrontImageDataUrl, String documentBackImageDataUrl) {}

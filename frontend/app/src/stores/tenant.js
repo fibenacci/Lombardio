@@ -57,6 +57,7 @@ export const useTenantStore = defineStore("tenant", {
         }
       } catch (error) {
         console.error("Failed to fetch tenants", error);
+        throw error;
       }
     },
 
@@ -81,6 +82,7 @@ export const useTenantStore = defineStore("tenant", {
         this.features = await fetchTenantFeatures(this.selectedTenantId, authStore.token);
       } catch (error) {
         console.error("Failed to fetch tenant features", error);
+        throw error;
       }
     },
 

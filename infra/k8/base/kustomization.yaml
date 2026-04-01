@@ -6,7 +6,7 @@ resources:
   - external-secrets.yaml
   - postgres.yaml
   - redis.yaml
-  - document-ocr.yaml
+  - regula.yaml
   - centrifugo.yaml
   - customer.yaml
   - pawn-ticket.yaml

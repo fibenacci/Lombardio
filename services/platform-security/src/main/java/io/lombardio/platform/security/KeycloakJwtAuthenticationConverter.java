@@ -40,7 +40,13 @@ public class KeycloakJwtAuthenticationConverter
             jwt.getClaimAsString("name"), // Keycloak default for displayName
             authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
 
-    return new UsernamePasswordAuthenticationToken(principal, jwt, authorities);
+    return new UsernamePasswordAuthenticationToken(principal, jwt, authorities) {
+      @Override
+      public void eraseCredentials() {
+        // Downstream services still need the bearer token to call other internal APIs
+        // on behalf of the current user, for example tenant-scoped feature lookups.
+      }
+    };
   }
 
   private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {

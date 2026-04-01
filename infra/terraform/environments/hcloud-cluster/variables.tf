@@ -19,13 +19,13 @@ variable "location" {
 variable "control_plane_type" {
   description = "Server type for control plane nodes"
   type        = string
-  default     = "cpx21"
+  default     = "cpx22"
 }
 
 variable "worker_node_type" {
   description = "Server type for worker nodes"
   type        = string
-  default     = "cpx21"
+  default     = "cpx22"
 }
 
 variable "ssh_public_key" {

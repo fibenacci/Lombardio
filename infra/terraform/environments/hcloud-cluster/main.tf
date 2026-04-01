@@ -1,14 +1,21 @@
+provider "hcloud" {
+  token = var.hcloud_token
+}
+
 module "kube_hetzner" {
-  source  = "mysticaltech/kube-hetzner/hcloud"
+  source  = "kube-hetzner/kube-hetzner/hcloud"
   version = ">= 2.11.0"
+
+  providers = {
+    hcloud = hcloud
+  }
 
   hcloud_token = var.hcloud_token
 
   cluster_name = var.cluster_name
-  location     = var.location
   
   # Base K3s configuration
-  k3s_version = "v1.30.0+k3s1"
+  install_k3s_version = "v1.30.0+k3s1"
 
   # Infrastructure
   network_region = "eu-central"
@@ -19,6 +26,8 @@ module "kube_hetzner" {
       name        = "main",
       server_type = var.control_plane_type,
       location    = var.location,
+      labels      = [],
+      taints      = [],
       count       = 1
     }
   ]
@@ -28,6 +37,8 @@ module "kube_hetzner" {
       name        = "workers",
       server_type = var.worker_node_type,
       location    = var.location,
+      labels      = [],
+      taints      = [],
       count       = 1
     }
   ]
@@ -46,5 +57,5 @@ output "kubeconfig" {
 }
 
 output "cluster_ipv4" {
-  value = module.kube_hetzner.control_plane_public_ipv4
+  value = module.kube_hetzner.control_planes_public_ipv4[0]
 }

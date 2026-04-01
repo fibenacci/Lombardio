@@ -261,7 +261,7 @@ services:
       IDENTITY_INTELLIGENCE_DB_PASSWORD: ${POSTGRES_PASSWORD:-lombardio}
       PAWN_TICKET_BASE_URL: http://pawn-ticket:8085
       INTEGRATION_BASE_URL: http://integration:8092
-      DOCUMENT_OCR_BASE_URL: http://regula:8087
+      REGULA_BASE_URL: http://regula:8080
       PLATFORM_BASE_URL: http://platform:8082
       SPRING_PROFILES_ACTIVE: bootstrap
       INTEGRATION_RABBITMQ_PUBLISHER_ENABLED: "true"
@@ -418,8 +418,19 @@ services:
     image: regulaforensics/docreader:latest
     container_name: lombardio-regula
     restart: unless-stopped
+    entrypoint:
+      - /bin/bash
+      - -lc
+      - |
+        if [ -f /licenses/regula.license ]; then
+          cp /licenses/regula.license /app/extBin/unix/regula.license
+          echo "Loaded local Regula license from /licenses/regula.license"
+        fi
+        exec ./entrypoint.sh
     ports:
       - "8087:8080"
+    volumes:
+      - ./infra/regula:/licenses:ro
 
   integration:
     profiles: ["aux"]

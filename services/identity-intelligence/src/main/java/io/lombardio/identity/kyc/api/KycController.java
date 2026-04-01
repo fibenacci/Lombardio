@@ -44,6 +44,15 @@ public class KycController {
     return kycService.getStatus(tenantId, customerId);
   }
 
+  @GetMapping("/documents")
+  public KycDocumentImagesResponse getDocuments(
+      @AuthenticationPrincipal AuthenticatedUser principal,
+      @PathVariable String tenantId,
+      @PathVariable String customerId) {
+    authorizationService.requireDocumentRead(principal, tenantId);
+    return kycService.getDocumentImages(tenantId, customerId);
+  }
+
   @PostMapping
   public KycStatusResponse updateStatus(
       @AuthenticationPrincipal AuthenticatedUser principal,

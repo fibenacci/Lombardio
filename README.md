@@ -81,7 +81,7 @@ We build according to the **Lombardio Way**:
 
 ### 🧪 Supporting
 - **`reporting`**: Aggregated read-models for business intelligence.
-- **`document-ocr`**: Python-based worker for automated document processing.
+- **`regula`**: OCR worker for automated document processing via Regula.
 
 ---
 
@@ -118,6 +118,16 @@ make up
 - 🔑 **Keycloak**: [http://localhost:8080](http://localhost:8080)
 - 📈 **Grafana**: [http://localhost:3000](http://localhost:3000)
 - 🐰 **RabbitMQ**: [http://localhost:15672](http://localhost:15672)
+
+### Regula OCR License
+
+For local OCR document prefilling, place your Regula license file at:
+
+`infra/regula/regula.license`
+
+The local Compose stack mounts this file into the `regula` container on startup.
+Without it, Regula starts in unlicensed mode and OCR requests return HTTP `403`
+with `permission denied. Bad license`.
 
 ---
 

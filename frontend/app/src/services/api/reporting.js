@@ -1,5 +1,7 @@
-import { reportingGet } from "./client";
+import { BASE_URLS, createApiClient } from "./client";
+
+const apiClient = createApiClient(BASE_URLS.reporting);
 
 export function fetchDashboardOverview(tenantId, token, rangeDays = 14) {
-  return reportingGet(`/api/v1/tenants/${tenantId}/reporting/dashboard?rangeDays=${rangeDays}`, token);
+  return apiClient.get(`/api/v1/tenants/${tenantId}/reporting/dashboard?rangeDays=${rangeDays}`, token);
 }

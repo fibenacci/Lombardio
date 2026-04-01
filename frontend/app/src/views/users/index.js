@@ -4,6 +4,7 @@ import { useAppToast } from "../../composables/use-app-toast";
 import { useI18n } from "../../i18n";
 import { useAuthStore } from "../../stores/auth";
 import { useTenantStore } from "../../stores/tenant";
+import { getRequestErrorMessage } from "../../utils/request-error";
 import template from "./template.html?raw";
 import "./styles.scss";
 
@@ -82,7 +83,7 @@ export default defineComponent({
         roles.value = roleResponse;
         branches.value = branchResponse;
       } catch (error) {
-        handleApiError(error);
+        errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
       } finally {
         isLoading.value = false;
       }
@@ -134,7 +135,7 @@ export default defineComponent({
         resetForm();
         await loadData();
       } catch (error) {
-        handleApiError(error);
+        errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
       }
     }
 
@@ -156,7 +157,7 @@ export default defineComponent({
           t("users.messages.delegatedSessionStartedToast")
         );
       } catch (error) {
-        handleApiError(error);
+        errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
       }
     }
 
@@ -188,16 +189,6 @@ export default defineComponent({
       form.status = "ACTIVE";
       form.roleIds = [];
       form.branchIds = [];
-    }
-
-    function handleApiError(error) {
-      if (error?.status === 401) {
-        authStore.clearSession();
-        window.location.assign("/login");
-        return;
-      }
-
-      errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
     }
 
     onMounted(loadData);

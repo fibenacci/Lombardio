@@ -12,7 +12,7 @@ This directory contains a small base deployment layout for Lombardio.
 - `platform` as a scalable `Deployment`
 - `reporting` as a scalable `Deployment`
 - `customer`, `loan-origination`, `pawn-ticket`, `kyc`, `aml`, `auction`, and `online-auction` as domain service `Deployment`s
-- `document-ocr` as a supporting OCR worker `Deployment`
+- `regula` as a supporting OCR worker `Deployment`
 - `centrifugo` as the realtime broker for online auctions
 - `frontend` as a scalable `Deployment`
 - a basic `Ingress`

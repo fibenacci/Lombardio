@@ -93,4 +93,49 @@ public class IdentityIntelligencePipelineIntegrationTest {
     // Default might be allowed if no flags are present and loan amount is low
     assertTrue(amlResponse.originationAllowed());
   }
+
+  @Test
+  public void shouldNormalizeLegacyBase64DocumentValuesInKycResponses() {
+    String tenantId = "test-tenant";
+
+    CreateCustomerRequest createRequest =
+        new CreateCustomerRequest(
+            "C12346",
+            "Jane",
+            "Doe",
+            LocalDate.of(1990, 5, 10),
+            "+49111111111",
+            "jane.doe@example.com",
+            false,
+            "Beispielstraße 2",
+            "54321",
+            "Beispielstadt");
+    CustomerResponse customer = customerService.create(tenantId, createRequest);
+
+    String pngBase64 =
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO7Z4xkAAAAASUVORK5CYII=";
+
+    UpdateKycStatusRequest kycRequest =
+        new UpdateKycStatusRequest(
+            KycStatus.APPROVED,
+            KycVerificationMode.MANUAL,
+            LocalDate.now().plusYears(1),
+            "PERSONALAUSWEIS",
+            "987654321",
+            LocalDate.now().plusYears(5),
+            pngBase64,
+            pngBase64,
+            "Manual approval",
+            null,
+            null,
+            null);
+
+    kycService.updateStatus(tenantId, customer.id(), kycRequest);
+    var loadedImages = kycService.getDocumentImages(tenantId, customer.id());
+
+    assertEquals(
+        "data:image/png;base64," + pngBase64, loadedImages.documentFrontImageDataUrl());
+    assertEquals(
+        "data:image/png;base64," + pngBase64, loadedImages.documentBackImageDataUrl());
+  }
 }

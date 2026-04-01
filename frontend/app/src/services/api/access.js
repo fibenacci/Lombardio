@@ -1,27 +1,27 @@
-import { get, patch, post } from "./client";
+import { apiClient } from "./client";
 
 export function fetchUsers(tenantId, token) {
-  return get(`/api/v1/tenants/${tenantId}/users`, token);
+  return apiClient.get(`/api/v1/tenants/${tenantId}/users`, token);
 }
 
 export function createUser(tenantId, payload, token) {
-  return post(`/api/v1/tenants/${tenantId}/users`, payload, token);
+  return apiClient.post(`/api/v1/tenants/${tenantId}/users`, payload, token);
 }
 
 export function fetchBranches(tenantId, token) {
-  return get(`/api/v1/tenants/${tenantId}/branches`, token);
+  return apiClient.get(`/api/v1/tenants/${tenantId}/branches`, token);
 }
 
 export function createBranch(tenantId, payload, token) {
-  return post(`/api/v1/tenants/${tenantId}/branches`, payload, token);
+  return apiClient.post(`/api/v1/tenants/${tenantId}/branches`, payload, token);
 }
 
 export function updateUser(id, payload, token) {
-  return patch(`/api/v1/tenants/${payload.tenantId}/users/${id}`, payload, token);
+  return apiClient.patch(`/api/v1/tenants/${payload.tenantId}/users/${id}`, payload, token);
 }
 
 export function fetchRoles(tenantId, token) {
-  return get(`/api/v1/tenants/${tenantId}/roles`, token).then((roles) =>
+  return apiClient.get(`/api/v1/tenants/${tenantId}/roles`, token).then((roles) =>
     roles.map((role) => ({
       id: role,
       key: role,
@@ -31,23 +31,4 @@ export function fetchRoles(tenantId, token) {
       permissionKeys: []
     }))
   );
-}
-
-export function createRole(tenantId, payload, token) {
-  void tenantId;
-  void payload;
-  void token;
-  return Promise.reject(new Error("Tenant-specific role management is not implemented by the current platform API."));
-}
-
-export function updateRole(id, payload, token) {
-  void id;
-  void payload;
-  void token;
-  return Promise.reject(new Error("Tenant-specific role management is not implemented by the current platform API."));
-}
-
-export function fetchPermissions(token) {
-  void token;
-  return Promise.resolve([]);
 }

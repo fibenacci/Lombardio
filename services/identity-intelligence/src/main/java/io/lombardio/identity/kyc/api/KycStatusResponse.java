@@ -22,8 +22,6 @@ public record KycStatusResponse(
     String documentType,
     String documentNumber,
     LocalDate documentValidUntil,
-    String documentFrontImageDataUrl,
-    String documentBackImageDataUrl,
     String decisionNote,
     String providerName,
     String providerReference,

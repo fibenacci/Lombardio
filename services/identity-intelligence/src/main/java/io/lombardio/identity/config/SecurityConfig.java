@@ -44,9 +44,7 @@ public class SecurityConfig {
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers("/api/v1/tenants/*/customers/*/kyc/document-prefill")
-                    .permitAll()
-                    .requestMatchers("/api/v1/tenants/*/customers/portal/**")
+                auth.requestMatchers("/api/v1/tenants/*/customers/portal/**")
                     .permitAll()
                     .requestMatchers("/api/v1/customers/health")
                     .permitAll()

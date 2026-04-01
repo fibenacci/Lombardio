@@ -1,4 +1,6 @@
-import { customerGet, customerPost, customerPut } from "./client";
+import { BASE_URLS, createApiClient } from "./client";
+
+const apiClient = createApiClient(BASE_URLS.customer);
 
 function normalizeCustomerCollection(payload) {
   if (Array.isArray(payload)) {
@@ -21,18 +23,21 @@ function normalizeCustomerCollection(payload) {
 }
 
 export async function searchCustomers(tenantId, query, token) {
-  const payload = await customerGet(`/api/v1/tenants/${tenantId}/customers?query=${encodeURIComponent(query ?? "")}`, token);
+  const payload = await apiClient.get(
+    `/api/v1/tenants/${tenantId}/customers?query=${encodeURIComponent(query ?? "")}`,
+    token
+  );
   return normalizeCustomerCollection(payload);
 }
 
 export function createCustomer(tenantId, payload, token) {
-  return customerPost(`/api/v1/tenants/${tenantId}/customers`, payload, token);
+  return apiClient.post(`/api/v1/tenants/${tenantId}/customers`, payload, token);
 }
 
 export function fetchCustomer(tenantId, customerId, token) {
-  return customerGet(`/api/v1/tenants/${tenantId}/customers/${customerId}`, token);
+  return apiClient.get(`/api/v1/tenants/${tenantId}/customers/${customerId}`, token);
 }
 
 export function updateCustomer(tenantId, customerId, payload, token) {
-  return customerPut(`/api/v1/tenants/${tenantId}/customers/${customerId}`, payload, token);
+  return apiClient.put(`/api/v1/tenants/${tenantId}/customers/${customerId}`, payload, token);
 }

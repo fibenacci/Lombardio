@@ -1,5 +1,5 @@
 import { readRuntimeValue } from "../../config/runtime-config";
-import { post } from "./client";
+import { apiClient } from "./client";
 
 const KEYCLOAK_BASE_URL = readRuntimeValue(
   "KEYCLOAK_BASE_URL",
@@ -93,17 +93,17 @@ export async function fetchCurrentUser(token) {
 }
 
 export function createDelegation(userId, token) {
-  return post("/api/v1/auth/delegations", { userId }, token);
+  return apiClient.post("/api/v1/auth/delegations", { userId }, token);
 }
 
 export function verifyTotpChallenge(payload) {
-  return post("/api/v1/auth/mfa/totp/verify", payload);
+  return apiClient.post("/api/v1/auth/mfa/totp/verify", payload);
 }
 
 export function startTotpEnrollment(token) {
-  return post("/api/v1/auth/mfa/totp/enroll", {}, token);
+  return apiClient.post("/api/v1/auth/mfa/totp/enroll", {}, token);
 }
 
 export function activateTotp(payload, token) {
-  return post("/api/v1/auth/mfa/totp/activate", payload, token);
+  return apiClient.post("/api/v1/auth/mfa/totp/activate", payload, token);
 }

@@ -170,7 +170,7 @@ images:
 - name: ghcr.io/example/lombardio/customer:latest
   newName: nginx
   newTag: alpine
-- name: ghcr.io/example/lombardio/document-ocr:latest
+- name: ghcr.io/example/lombardio/regula:latest
   newName: nginx
   newTag: alpine
 - name: ghcr.io/example/lombardio/frontend:latest

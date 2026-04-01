@@ -82,4 +82,34 @@ class TenantAdministrationAuthorizationServiceTest {
 
     assertDoesNotThrow(() -> service.requireTenantBranchWrite(user, "tenant-default"));
   }
+
+  @Test
+  void allowsTenantScopedUserToReadOwnTenantFeatures() {
+    AuthenticatedUser user =
+        new AuthenticatedUser(
+            "customer-agent",
+            "customer-agent",
+            "tenant-default",
+            false,
+            "agent@lombardio.local",
+            "Customer Agent",
+            List.of("customers.read"));
+
+    assertDoesNotThrow(() -> service.requireTenantFeatureRead(user, "tenant-default"));
+  }
+
+  @Test
+  void rejectsTenantScopedUserReadingAnotherTenantsFeatures() {
+    AuthenticatedUser user =
+        new AuthenticatedUser(
+            "customer-agent",
+            "customer-agent",
+            "tenant-default",
+            false,
+            "agent@lombardio.local",
+            "Customer Agent",
+            List.of("customers.read"));
+
+    assertThrows(ForbiddenException.class, () -> service.requireTenantFeatureRead(user, "tenant-hamburg"));
+  }
 }

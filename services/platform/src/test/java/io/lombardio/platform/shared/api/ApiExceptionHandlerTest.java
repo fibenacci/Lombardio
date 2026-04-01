@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import io.lombardio.platform.iam.application.IdentityProviderUnavailableException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 class ApiExceptionHandlerTest {
 
@@ -24,7 +25,8 @@ class ApiExceptionHandlerTest {
   void mapsIdentityProviderFailuresToBadGateway() {
     var response =
         handler.handleIdentityProviderUnavailable(
-            new IdentityProviderUnavailableException("Keycloak admin access failed", null));
+            new IdentityProviderUnavailableException("Keycloak admin access failed", null),
+            new MockHttpServletRequest());
 
     assertEquals(HttpStatus.BAD_GATEWAY, response.getStatusCode());
     assertEquals("identity_provider_unavailable", response.getBody().code());

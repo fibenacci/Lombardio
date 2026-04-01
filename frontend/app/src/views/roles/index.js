@@ -3,6 +3,7 @@ import { fetchRoles } from "../../services/api/access";
 import { useI18n } from "../../i18n";
 import { useAuthStore } from "../../stores/auth";
 import { useTenantStore } from "../../stores/tenant";
+import { getRequestErrorMessage } from "../../utils/request-error";
 import template from "./template.html?raw";
 import "./styles.scss";
 
@@ -41,20 +42,10 @@ export default defineComponent({
           successMessage.value = t("roles.messages.empty");
         }
       } catch (error) {
-        handleApiError(error);
+        errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
       } finally {
         isLoading.value = false;
       }
-    }
-
-    function handleApiError(error) {
-      if (error?.status === 401) {
-        authStore.clearSession();
-        window.location.assign("/login");
-        return;
-      }
-
-      errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
     }
 
     onMounted(loadData);

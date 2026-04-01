@@ -26,6 +26,8 @@ Terraform should not manage:
   Staging foundation entry point
 - `environments/production`
   Production foundation entry point
+- `environments/hcloud-cluster`
+  Hetzner Cloud cluster provisioning entry point
 - `modules/platform-namespaces`
   Shared namespaces for add-ons
 - `modules/platform-addons`
@@ -44,6 +46,13 @@ The current repository already deploys Lombardio services to an existing Kuberne
 - `infra/k8` continues to deploy Lombardio services
 
 If cluster provisioning is later required for a specific cloud provider, provider-specific modules can be added without changing the application deployment model.
+
+The current staging deployment path provisions the Kubernetes cluster separately from the cluster foundations:
+
+- `environments/hcloud-cluster`
+  Creates the Hetzner-hosted Kubernetes cluster and exposes kubeconfig output
+- `environments/staging`
+  Installs cluster add-ons and shared platform foundations into that cluster
 
 ## Secret Backend
 
@@ -88,17 +97,43 @@ Before applying:
 - ensure the target cluster is reachable through the configured kubeconfig
 - adjust namespaces, chart versions, and ingress settings
 - provide Vault values only if `enable_vault_cluster_secret_store = true`
+- use a remote Terraform backend for repeated CI applies on GitHub-hosted runners; the default local backend is not durable across workflow runs
+
+### Hetzner cluster plan
+
+For a local plan against Hetzner Cloud:
+
+```bash
+cd infra/terraform/environments/hcloud-cluster
+cp terraform.tfvars.example terraform.tfvars
+export TF_VAR_hcloud_token=...
+export TF_VAR_ssh_public_key="$(cat ~/.ssh/id_ed25519.pub)"
+export TF_VAR_ssh_private_key="$(cat ~/.ssh/id_ed25519)"
+terraform init
+terraform plan
+```
 
 ## GitHub Actions Inputs
 
 The deployment workflows expect environment-specific GitHub secrets for Terraform, including:
 
-- `KUBE_CONFIG_STAGING` / `KUBE_CONFIG_PRODUCTION`
-- `KUBE_CONTEXT_STAGING` / `KUBE_CONTEXT_PRODUCTION`
 - `ACME_EMAIL_STAGING` / `ACME_EMAIL_PRODUCTION`
 - `VAULT_SERVER_STAGING` / `VAULT_SERVER_PRODUCTION`
 - `VAULT_ROLE_STAGING` / `VAULT_ROLE_PRODUCTION`
 - `VAULT_TOKEN_STAGING` / `VAULT_TOKEN_PRODUCTION`
+
+For Hetzner-backed staging provisioning:
+
+- `HCLOUD_TOKEN_STAGING`
+- `HCLOUD_SSH_PUBLIC_KEY_STAGING`
+- `HCLOUD_SSH_PRIVATE_KEY_STAGING`
+
+Optional Hetzner overrides:
+
+- `HCLOUD_CLUSTER_NAME_STAGING`
+- `HCLOUD_LOCATION_STAGING`
+- `HCLOUD_CONTROL_PLANE_TYPE_STAGING`
+- `HCLOUD_WORKER_NODE_TYPE_STAGING`
 
 Optional toggles and overrides:
 
