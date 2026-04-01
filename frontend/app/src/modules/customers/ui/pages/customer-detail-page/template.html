@@ -1,0 +1,73 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">{{ t("customerDetail.eyebrow") }}</p>
+      <h2>{{ t("customerDetail.title") }}</h2>
+    </div>
+    <p class="page-copy">
+      {{
+        tenantStore?.selectedTenantId
+          ? t("customerDetail.copyWithTenant", { tenant: tenant?.displayName ?? tenantStore.selectedTenantId })
+          : t("customerDetail.copyWithoutTenant")
+      }}
+    </p>
+  </header>
+
+  <FormFeedback :field-errors="fieldErrors" :message="errorMessage" />
+  <p v-if="successMessage" class="form-success">{{ successMessage }}</p>
+
+  <div v-if="isLoading" class="panel">
+    <p class="placeholder-copy">{{ t("customerDetail.loading") }}</p>
+  </div>
+
+  <div v-else class="customer-detail-layout">
+    <CustomerMasterDataSection
+      :customer="customer"
+      :is-saving-customer="isSavingCustomer"
+      :save-customer="saveCustomer"
+      :subtitle="t('customerDetail.masterDataSubtitle')"
+      :t="t"
+      :title="t('customerDetail.masterDataTitle')"
+    />
+
+    <CustomerLoansSection
+      :format-currency="formatCurrency"
+      :format-date="formatDate"
+      :format-date-time="formatDateTime"
+      :loans="loans"
+      :subtitle="t('customerDetail.loansSubtitle')"
+      :t="t"
+      :title="t('customerDetail.loansTitle')"
+    />
+
+    <CustomerKycSection
+      :can-prefill-document="canPrefillDocument"
+      :clear-document="clearDocument"
+      :document-ocr-available="documentOcrAvailable"
+      :is-prefilling-kyc="isPrefillingKyc"
+      :is-saving-kyc="isSavingKyc"
+      :kyc="kyc"
+      :kyc-document-type-options="kycDocumentTypeOptions"
+      :kyc-status-options="kycStatusOptions"
+      :prefill-document="prefillDocument"
+      :resolve-document-image-src="resolveDocumentImageSrc"
+      :save-kyc="saveKyc"
+      :subtitle="t('customerDetail.kycSubtitle')"
+      :t="t"
+      :title="t('customerDetail.kycTitle')"
+      :update-document="updateDocument"
+    />
+
+    <CustomerAmlSection
+      v-if="amlFeatureEnabled"
+      :aml="aml"
+      :aml-risk-level-options="amlRiskLevelOptions"
+      :aml-status-options="amlStatusOptions"
+      :is-saving-aml="isSavingAml"
+      :save-aml="saveAml"
+      :subtitle="t('customerDetail.amlSubtitle')"
+      :t="t"
+      :title="t('customerDetail.amlTitle')"
+    />
+  </div>
+</section>

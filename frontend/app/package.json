@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
     "@primeuix/themes": "~2.0.3",
@@ -20,13 +21,15 @@
     "vue-router": "~4.5.0"
   },
   "devDependencies": {
+    "@types/node": "^25.5.0",
     "@vitejs/plugin-vue": "~5.2.1",
-    "@amiceli/vitest-cucumber": "~5.2.1",
     "@vue/test-utils": "~2.4.6",
     "jsdom": "~26.1.0",
     "sass": "~1.89.2",
+    "typescript": "^6.0.2",
     "vite": "~6.2.0",
-    "vitest": "~3.2.4"
+    "vitest": "~3.2.4",
+    "vue-tsc": "^3.2.6"
   },
   "overrides": {
     "picomatch": "4.0.4",

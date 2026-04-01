@@ -63,6 +63,9 @@ Das System läuft als Microservice-Landschaft in Kubernetes. Die Kommunikation e
 3.  **Domain-Driven Design (DDD):** Fokus auf die Gemeinsamkeiten der Sachwert-Verwaltung (Bewertung, Identität, Bestand).
 4.  **Events:** Nutzung des Outbox-Patterns für konsistente Datenhaltung und Audit-Logs.
 5.  **Multi-Jurisdiction Policy Engine:** Zentralisierte Verwaltung länderspezifischer Compliance-Regeln.
+6.  **Single Responsibility Principle:** Backend-Bausteine, Frontend-Views und UI-Section-Module sollen jeweils nur einen klaren fachlichen oder technischen Verantwortungsbereich besitzen.
+7.  **Leichte UI-Komposition:** Im Frontend werden wiederkehrende Bereichsstrukturen über kleine Basis-Komponenten oder lokale Factories zusammengesetzt; eine schwere globale Registry wird nur bei echtem Plugin- oder Override-Bedarf eingeführt.
+8.  **Feature-First Frontend mit innerer Hexagon-Struktur:** Frontend-Features werden entlang fachlicher Bereiche geschnitten. Innerhalb eines Features werden Domain, Application, Ports/Adapter, Composables, Stores, Komponenten und Views sauber getrennt.
 
 ---
 
@@ -77,6 +80,23 @@ Das System läuft als Microservice-Landschaft in Kubernetes. Die Kommunikation e
 *   **`services/reporting`:** Zentrale Erfassung von Finanzdaten, Dashboard-Metriken und DATEV-Exporten.
 *   **`services/buy-in`:** (Geplant) Eigenständiger Service für den allgemeinen Warenankauf (Juweliere, Gebrauchtwarenhandel) inklusive Differenzbesteuerung (§ 25a UStG).
 *   **`frontend/app`:** Zentrales Back-Office Interface.
+
+### 5.2 Frontend-Bausteinprinzipien
+Für das Back-Office-Frontend gelten ergänzend folgende Strukturregeln:
+
+*   **`app / shared / modules` als Einstiegsschnitt:** `app` enthält Bootstrapping, Router, Provider und Session-/Security-Flows. `shared` enthält technische Kernel-Bausteine und UI-Grundbausteine. `modules` enthält die fachlichen Features.
+*   **Feature-basierte Ordnerstruktur innerhalb von `modules`:** Nicht-triviale Frontend-Funktionalität wird pro Modul unter `domain`, `application`, `infrastructure`, `state` und `ui` organisiert.
+*   **Hexagonal inside:** Jedes Frontend-Feature trennt fachliche Modelle, Use Cases und technische Adapter. Views und Komponenten sprechen nicht direkt mit Transport- oder Persistenzdetails.
+*   **Views als Composition Roots:** Routen-Views koordinieren Datenfluss und Bereichskomposition, sollen aber keine großen Mischdateien für Stammdaten, Compliance, Reporting, Upload-Logik und Styling sein.
+*   **Render-Komponenten bleiben schmal:** Komponenten rendern Daten und emittieren Benutzerintentionen. Sie führen keine direkten HTTP-Calls aus, importieren keine rohen DTOs und enthalten keine komplexen Business-Regeln.
+*   **Sections mit klarer Zuständigkeit:** Komplexe Arbeitsbereiche werden in fachlich getrennte Section-Module mit eigener Struktur (`index.js`, `template.html`, `styles.scss`) zerlegt.
+*   **Composables für wiederverwendbare UI-Logik:** Wiederkehrende, view-nahe Logik wird in kleine Composables ausgelagert. Catch-all-Composables für komplette Features sind zu vermeiden.
+*   **Stores nur für globalen oder featureweiten State:** Pinia dient App- und Feature-State, nicht als Infrastruktur- oder API-Schicht und nicht als Sammelstelle für komplette Use Cases.
+*   **Application Services für Use Cases:** Fachliche Abläufe im Frontend werden in Application Services oder gleichwertigen Use-Case-Modulen gekapselt. Diese sprechen nur Ports und bleiben frei von PrimeVue- oder Rendering-Abhängigkeiten.
+*   **Adapter kapseln Transport und DTO-Mapping:** REST-, `fetch`-, `axios`- oder Persistenzdetails leben ausschließlich in Adaptern. Die Abbildung von DTOs auf Domain- oder View-Modelle erfolgt dort oder in dedizierten Mappern an dieser Grenze.
+*   **Strikte Trennung von DTO und Domain:** Rohe DTOs dürfen nicht ungefiltert bis in die UI gelangen. Vor der Verwendung in Views oder Komponenten werden sie in stabile Domain- oder View-Modelle übersetzt.
+*   **PrimeVue als UI-Implementierungsdetail:** PrimeVue wird hinter app-eigenen Base-Komponenten oder dünnen Wrappers gekapselt, damit fachliche Features nicht direkt an die Bibliothek gekoppelt sind.
+*   **Wiederverwendung über Basisbausteine:** Gemeinsame Hüllen oder wiederkehrende UI-Strukturen werden über kleine Basis-Komponenten oder lokale Factories realisiert, nicht über Copy-Paste oder globale Magie.
 
 ---
 

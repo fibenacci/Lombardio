@@ -1,0 +1,14 @@
+<PAutoComplete
+  v-bind="$attrs"
+  :model-value="modelValue"
+  :suggestions="suggestions"
+  :option-label="optionLabel"
+  :dropdown="dropdown"
+  :force-selection="forceSelection"
+  @update:model-value="$emit('update:modelValue', $event)"
+  @complete="$emit('complete', $event)"
+  @item-select="$emit('item-select', $event)"
+  @clear="$emit('clear', $event)"
+>
+  <slot />
+</PAutoComplete>

@@ -1,0 +1,521 @@
+<DetailSection :title="title" :subtitle="subtitle" panel-class="tenant-home-origination-workflow">
+  <FormFeedback :field-errors="fieldErrors" :message="errorMessage" />
+  <p v-if="successMessage" class="form-success">{{ successMessage }}</p>
+
+  <div class="workflow-stack">
+    <section class="subpanel">
+      <div class="subpanel-header">
+        <h4>{{ t("tenantHome.customerSection.title") }}</h4>
+        <label class="toggle">
+          <span>{{ t("tenantHome.customerSection.createNewCustomer") }}</span>
+          <BaseToggleSwitch v-model="useNewCustomerModel" />
+        </label>
+      </div>
+
+      <div v-if="!useNewCustomerModel" class="stack-form">
+        <label>
+          <span>{{ t("tenantHome.customerSection.customerSearch") }}</span>
+          <BaseAutoComplete
+            id="customer-search"
+            v-model="selectedCustomerOptionModel"
+            :suggestions="customerSuggestions"
+            optionLabel="label"
+            class="form-field"
+            :placeholder="t('tenantHome.customerSearchPlaceholder')"
+            dropdown
+            forceSelection
+            @complete="searchCustomerSuggestions"
+            @item-select="handleCustomerSelection"
+          />
+        </label>
+
+        <div
+          v-if="selectedCustomer"
+          class="kyc-banner"
+          :class="{ 'is-approved': selectedCustomer.kycApproved && (!amlFeatureEnabled || selectedCustomer.amlOriginationAllowed) }"
+        >
+          <div>
+            <strong>{{ t("tenantHome.customerSection.kycStatus", { status: getKycStatusLabel(selectedCustomer.kycStatus) }) }}</strong>
+            <p v-if="selectedCustomer.verificationMode" class="muted-copy">
+              {{ t("tenantHome.customerSection.verificationMode", { mode: getVerificationModeLabel(selectedCustomer.verificationMode) }) }}
+              <span v-if="selectedCustomer.providerStatus"> · {{ t("tenantHome.customerSection.providerStatus", { status: selectedCustomer.providerStatus }) }}</span>
+            </p>
+            <p v-if="amlFeatureEnabled" class="muted-copy">
+              {{ t("tenantHome.customerSection.amlStatus", { status: getAmlStatusLabel(selectedCustomer.amlStatus) }) }}
+              <span v-if="selectedCustomer.amlRiskLevel"> · {{ t("tenantHome.customerSection.riskLevel", { level: getRiskLevelLabel(selectedCustomer.amlRiskLevel) }) }}</span>
+            </p>
+            <p v-if="!selectedCustomer.kycApproved" class="muted-copy">
+              {{ t("tenantHome.customerSection.kycApprovalRequired") }}
+            </p>
+            <p v-else-if="amlFeatureEnabled && !selectedCustomer.amlOriginationAllowed" class="muted-copy">
+              {{ selectedCustomer.amlDecisionReason ?? t("tenantHome.customerSection.amlReviewRequired") }}
+            </p>
+          </div>
+          <div class="inline-row">
+            <BaseButton
+              v-if="!selectedCustomer.kycApproved"
+              class="secondary-button"
+              severity="secondary"
+              outlined
+              :label="isUpdatingKyc ? t('tenantHome.updatingKyc') : t('tenantHome.approveKyc')"
+              :disabled="isUpdatingKyc"
+              type="button"
+              @click="approveSelectedCustomerKyc"
+            />
+            <BaseButton
+              v-if="!selectedCustomer.kycApproved && providerVerificationAvailable"
+              class="secondary-button"
+              severity="secondary"
+              outlined
+              :label="isUpdatingKyc ? t('tenantHome.startingProvider') : t('tenantHome.providerVerification')"
+              :disabled="isUpdatingKyc"
+              type="button"
+              @click="startProviderVerification"
+            />
+            <BaseButton
+              class="secondary-button"
+              severity="secondary"
+              outlined
+              :label="t('tenantHome.customerProfile')"
+              type="button"
+              @click="openSelectedCustomerDetails"
+            />
+          </div>
+        </div>
+        <p v-if="providerVerificationAvailable" class="legal-copy">
+          {{ t("tenantHome.customerSection.providerFeatureCopy") }}
+        </p>
+      </div>
+
+      <div v-else class="stack-form two-column-grid">
+        <label>
+          <span>{{ t("customerDetail.fields.customerNumber") }}</span>
+          <BaseInputText v-model="newCustomer.customerNumber" required class="form-field" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.fields.phone") }}</span>
+          <BaseInputText v-model="newCustomer.phone" required class="form-field" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.fields.email") }}</span>
+          <BaseInputText v-model="newCustomer.email" type="email" class="form-field" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.fields.firstName") }}</span>
+          <BaseInputText v-model="newCustomer.firstName" required class="form-field" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.fields.lastName") }}</span>
+          <BaseInputText v-model="newCustomer.lastName" required class="form-field" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.fields.birthDate") }}</span>
+          <BaseInputText v-model="newCustomer.birthDate" required type="date" class="form-field" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.fields.street") }}</span>
+          <BaseInputText v-model="newCustomer.street" class="form-field" />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.fields.postalCode") }}</span>
+          <BaseInputText v-model="newCustomer.postalCode" class="form-field" />
+        </label>
+        <label class="full-span">
+          <span>{{ t("customerDetail.fields.city") }}</span>
+          <BaseInputText v-model="newCustomer.city" class="form-field" />
+        </label>
+        <div class="checkbox-field full-span">
+          <span>{{ t("tenantHome.newCustomer.digitalPawnTicket") }}</span>
+          <BaseToggleSwitch v-model="newCustomer.wantsDigitalPawnTicket" />
+        </div>
+        <p class="legal-copy full-span">
+          {{ t("tenantHome.newCustomer.digitalPawnTicketCopy") }}
+        </p>
+        <label>
+          <span>{{ t("customerDetail.kycFields.documentType") }}</span>
+          <BaseSelect
+            v-model="newCustomerKyc.documentType"
+            :options="documentTypeOptions"
+            optionLabel="label"
+            optionValue="value"
+            class="form-field"
+          />
+        </label>
+        <label>
+          <span>{{ t("customerDetail.kycFields.documentNumber") }}</span>
+          <BaseInputText v-model="newCustomerKyc.documentNumber" required class="form-field" />
+        </label>
+        <label class="full-span">
+          <span>{{ t("customerDetail.kycFields.documentValidUntil") }}</span>
+          <BaseInputText v-model="newCustomerKyc.documentValidUntil" required type="date" class="form-field" />
+        </label>
+        <div class="file-dropzone-field">
+          <span>{{ t("customerDetail.kycFields.frontImage") }}</span>
+          <BaseFileUpload
+            mode="advanced"
+            accept="image/*"
+            :multiple="false"
+            customUpload
+            :showUploadButton="false"
+            :showCancelButton="false"
+            class="upload-dropzone"
+            @select="updateNewCustomerDocument('documentFrontImageDataUrl', $event)"
+          >
+            <template #header="{ chooseCallback, clearCallback }">
+              <div class="upload-dropzone__header">
+                <BaseButton severity="secondary" outlined type="button" :label="t('common.chooseFile')" @click="chooseCallback()" />
+                <BaseButton
+                  v-if="newCustomerKyc.documentFrontImageDataUrl"
+                  severity="danger"
+                  outlined
+                  type="button"
+                  :label="t('common.removeFile')"
+                  @click="clearCallback(); clearNewCustomerDocument('documentFrontImageDataUrl')"
+                />
+              </div>
+            </template>
+            <template #content="{ files }">
+              <div class="upload-dropzone__content">
+                <div v-if="files?.length" class="upload-dropzone__file">{{ t("common.fileSelected", { name: files[0].name }) }}</div>
+                <div v-else-if="newCustomerKyc.documentFrontImageDataUrl" class="upload-dropzone__file">{{ t("common.documentAttached") }}</div>
+                <img
+                  v-if="newCustomerKyc.documentFrontImageDataUrl"
+                  :src="resolveDocumentImageSrc(newCustomerKyc.documentFrontImageDataUrl)"
+                  :alt="t('customerDetail.frontSide')"
+                  class="upload-dropzone__preview-image"
+                />
+              </div>
+            </template>
+            <template #empty>
+              <div class="upload-dropzone__empty">
+                <i class="pi pi-cloud-upload upload-dropzone__icon" />
+                <strong>{{ t("common.imageDropzoneTitle") }}</strong>
+                <p>{{ t("common.imageDropzoneCopy") }}</p>
+              </div>
+            </template>
+          </BaseFileUpload>
+        </div>
+        <div class="file-dropzone-field">
+          <span>{{ t("customerDetail.kycFields.backImage") }}</span>
+          <BaseFileUpload
+            mode="advanced"
+            accept="image/*"
+            :multiple="false"
+            customUpload
+            :showUploadButton="false"
+            :showCancelButton="false"
+            class="upload-dropzone"
+            @select="updateNewCustomerDocument('documentBackImageDataUrl', $event)"
+          >
+            <template #header="{ chooseCallback, clearCallback }">
+              <div class="upload-dropzone__header">
+                <BaseButton severity="secondary" outlined type="button" :label="t('common.chooseFile')" @click="chooseCallback()" />
+                <BaseButton
+                  v-if="newCustomerKyc.documentBackImageDataUrl"
+                  severity="danger"
+                  outlined
+                  type="button"
+                  :label="t('common.removeFile')"
+                  @click="clearCallback(); clearNewCustomerDocument('documentBackImageDataUrl')"
+                />
+              </div>
+            </template>
+            <template #content="{ files }">
+              <div class="upload-dropzone__content">
+                <div v-if="files?.length" class="upload-dropzone__file">{{ t("common.fileSelected", { name: files[0].name }) }}</div>
+                <div v-else-if="newCustomerKyc.documentBackImageDataUrl" class="upload-dropzone__file">{{ t("common.documentAttached") }}</div>
+                <img
+                  v-if="newCustomerKyc.documentBackImageDataUrl"
+                  :src="resolveDocumentImageSrc(newCustomerKyc.documentBackImageDataUrl)"
+                  :alt="t('customerDetail.backSide')"
+                  class="upload-dropzone__preview-image"
+                />
+              </div>
+            </template>
+            <template #empty>
+              <div class="upload-dropzone__empty">
+                <i class="pi pi-cloud-upload upload-dropzone__icon" />
+                <strong>{{ t("common.imageDropzoneTitle") }}</strong>
+                <p>{{ t("common.imageDropzoneCopy") }}</p>
+              </div>
+            </template>
+          </BaseFileUpload>
+        </div>
+        <div v-if="newCustomerKyc.portraitImageDataUrl" class="full-span">
+          <p class="meta-label">{{ t("customerDetail.portraitExtracted") }}</p>
+          <img
+            :src="resolveDocumentImageSrc(newCustomerKyc.portraitImageDataUrl)"
+            :alt="t('customerDetail.portrait')"
+            style="max-width: 120px; border-radius: 4px; border: 1px solid var(--border-color);"
+          />
+        </div>
+        <div v-if="documentOcrAvailable" class="full-span inline-row">
+          <BaseButton
+            class="secondary-button"
+            severity="secondary"
+            outlined
+            :disabled="!canPrefillNewCustomerDocument"
+            :label="t('tenantHome.prefillDocument')"
+            type="button"
+            @click="prefillNewCustomerDocumentData"
+          />
+          <span class="muted-copy">{{ t("tenantHome.newCustomer.ocrCopy") }}</span>
+        </div>
+        <p class="legal-copy full-span">
+          {{ t("tenantHome.newCustomer.kycLegalCopy") }}
+        </p>
+        <div class="full-span aml-inline-panel">
+          <div class="subpanel-header">
+            <h4>{{ t("tenantHome.pledgePresentation.title") }}</h4>
+          </div>
+          <div class="stack-form two-column-grid">
+            <div class="checkbox-field full-span">
+              <span>{{ t("tenantHome.pledgePresentation.thirdPartyToggle") }}</span>
+              <BaseToggleSwitch v-model="pledgePresentation.thirdPartyPledgorPresentation" />
+            </div>
+            <template v-if="pledgePresentation.thirdPartyPledgorPresentation">
+              <label>
+                <span>{{ t("tenantHome.pledgePresentation.bearerName") }}</span>
+                <BaseInputText v-model="pledgePresentation.bearerName" required class="form-field" />
+              </label>
+              <label>
+                <span>{{ t("tenantHome.pledgePresentation.bearerStreet") }}</span>
+                <BaseInputText v-model="pledgePresentation.bearerStreet" class="form-field" />
+              </label>
+              <label>
+                <span>{{ t("customerDetail.fields.postalCode") }}</span>
+                <BaseInputText v-model="pledgePresentation.bearerPostalCode" class="form-field" />
+              </label>
+              <label>
+                <span>{{ t("customerDetail.fields.city") }}</span>
+                <BaseInputText v-model="pledgePresentation.bearerCity" class="form-field" />
+              </label>
+              <div class="file-dropzone-field full-span">
+                <span>{{ t("tenantHome.pledgePresentation.powerOfAttorney") }}</span>
+                <BaseFileUpload
+                  mode="advanced"
+                  accept=".pdf,image/*"
+                  :multiple="false"
+                  customUpload
+                  :showUploadButton="false"
+                  :showCancelButton="false"
+                  class="upload-dropzone"
+                  @select="updatePowerOfAttorneyDocument($event)"
+                >
+                  <template #header="{ chooseCallback, clearCallback }">
+                    <div class="upload-dropzone__header">
+                      <BaseButton severity="secondary" outlined type="button" :label="t('common.chooseFile')" @click="chooseCallback()" />
+                      <BaseButton
+                        v-if="pledgePresentation.powerOfAttorneyDocumentDataUrl"
+                        severity="danger"
+                        outlined
+                        type="button"
+                        :label="t('common.removeFile')"
+                        @click="clearCallback(); clearPowerOfAttorneyDocument()"
+                      />
+                    </div>
+                  </template>
+                  <template #content="{ files }">
+                    <div class="upload-dropzone__content">
+                      <div v-if="files?.length" class="upload-dropzone__file">{{ t("common.fileSelected", { name: files[0].name }) }}</div>
+                      <div v-else-if="pledgePresentation.powerOfAttorneyDocumentDataUrl" class="upload-dropzone__file">{{ t("common.documentAttached") }}</div>
+                    </div>
+                  </template>
+                  <template #empty>
+                    <div class="upload-dropzone__empty">
+                      <i class="pi pi-cloud-upload upload-dropzone__icon" />
+                      <strong>{{ t("common.documentDropzoneTitle") }}</strong>
+                      <p>{{ t("common.documentDropzoneCopy") }}</p>
+                    </div>
+                  </template>
+                </BaseFileUpload>
+              </div>
+            </template>
+          </div>
+          <p class="legal-copy">
+            {{ t("tenantHome.pledgePresentation.legalCopy") }}
+          </p>
+        </div>
+        <div v-if="amlFeatureEnabled" class="full-span aml-inline-panel">
+          <div class="subpanel-header">
+            <h4>{{ t("tenantHome.newCustomerAml.title") }}</h4>
+          </div>
+          <div class="stack-form two-column-grid">
+            <label>
+              <span>{{ t("customerDetail.amlFields.status") }}</span>
+              <BaseSelect
+                v-model="newCustomerAml.status"
+                :options="amlStatusOptions"
+                optionLabel="label"
+                optionValue="value"
+                class="form-field"
+              />
+            </label>
+            <label>
+              <span>{{ t("customerDetail.amlFields.riskLevel") }}</span>
+              <BaseSelect
+                v-model="newCustomerAml.riskLevel"
+                :options="amlRiskLevelOptions"
+                optionLabel="label"
+                optionValue="value"
+                class="form-field"
+              />
+            </label>
+            <div class="checkbox-field">
+              <span>{{ t("customerDetail.amlFields.pepFlag") }}</span>
+              <BaseToggleSwitch v-model="newCustomerAml.pepFlag" />
+            </div>
+            <div class="checkbox-field">
+              <span>{{ t("customerDetail.amlFields.sanctionsHit") }}</span>
+              <BaseToggleSwitch v-model="newCustomerAml.sanctionsHit" />
+            </div>
+            <div class="checkbox-field">
+              <span>{{ t("customerDetail.amlFields.unusualTransactionFlag") }}</span>
+              <BaseToggleSwitch v-model="newCustomerAml.unusualTransactionFlag" />
+            </div>
+            <div class="checkbox-field">
+              <span>{{ t("customerDetail.amlFields.sourceOfFundsChecked") }}</span>
+              <BaseToggleSwitch v-model="newCustomerAml.sourceOfFundsChecked" />
+            </div>
+            <div class="checkbox-field full-span">
+              <span>{{ t("customerDetail.amlFields.suspiciousActivityReported") }}</span>
+              <BaseToggleSwitch v-model="newCustomerAml.suspiciousActivityReported" />
+            </div>
+            <label v-if="newCustomerAml.suspiciousActivityReported" class="full-span">
+              <span>{{ t("customerDetail.amlFields.goamlReference") }}</span>
+              <BaseInputText v-model="newCustomerAml.goamlReference" class="form-field" />
+            </label>
+            <label class="full-span">
+              <span>{{ t("customerDetail.amlFields.decisionNote") }}</span>
+              <BaseTextarea v-model="newCustomerAml.decisionNote" rows="3" class="form-field" />
+            </label>
+          </div>
+          <p class="legal-copy">
+            {{ t("tenantHome.newCustomerAml.legalCopy") }}
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="subpanel">
+      <div class="subpanel-header">
+        <h4>{{ t("tenantHome.positionsTitle") }}</h4>
+        <BaseButton
+          class="secondary-button"
+          severity="secondary"
+          outlined
+          :label="t('tenantHome.addPosition')"
+          type="button"
+          @click="addPosition"
+        />
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table positions-table">
+          <thead>
+            <tr>
+              <th>{{ t("tenantHome.positionColumns.ticketGroup") }}</th>
+              <th>{{ t("tenantHome.positionColumns.guideline") }}</th>
+              <th>{{ t("tenantHome.positionColumns.label") }}</th>
+              <th>{{ t("tenantHome.positionColumns.description") }}</th>
+              <th>{{ t("tenantHome.positionColumns.pledgedValue") }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(position, index) in positions" :key="index">
+              <td>
+                <BaseInputText
+                  v-model="position.ticketGroup"
+                  min="1"
+                  required
+                  step="1"
+                  type="number"
+                  class="form-field"
+                />
+              </td>
+              <td>
+                <BaseSelect
+                  v-model="position.guidelineId"
+                  :options="guidelineOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  class="form-field"
+                  :placeholder="t('tenantHome.selectGuidelinePlaceholder')"
+                  @change="(event) => applyGuideline(index, event.value)"
+                />
+              </td>
+              <td>
+                <BaseInputText v-model="position.label" required class="form-field" />
+              </td>
+              <td>
+                <BaseInputText v-model="position.description" required class="form-field" />
+              </td>
+              <td>
+                <BaseInputText
+                  v-model="position.pledgedValue"
+                  min="0.01"
+                  required
+                  step="0.01"
+                  type="number"
+                  class="form-field"
+                />
+              </td>
+              <td>
+                <BaseButton
+                  class="secondary-button"
+                  severity="secondary"
+                  outlined
+                  :label="t('tenantHome.removePosition')"
+                  type="button"
+                  @click="removePosition(index)"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="subpanel">
+      <div class="subpanel-header">
+        <h4>{{ t("tenantHome.terms.title") }}</h4>
+      </div>
+
+      <div class="stack-form two-column-grid">
+        <label>
+          <span>{{ t("tenantHome.terms.termMonths") }}</span>
+          <BaseInputText v-model="terms.termMonths" min="3" step="1" type="number" class="form-field" />
+        </label>
+
+        <label>
+          <span>{{ t("tenantHome.terms.loanAmount") }}</span>
+          <BaseInputText :value="formatCurrency(totalLoanValue)" readonly type="text" class="form-field" />
+        </label>
+
+        <label v-if="loanQuotes.some((quote) => quote.manualMonthlyOperatingFeeRequired)" class="full-span">
+          <span>{{ t("cashdesk.fields.manualMonthlyOperatingFee") }}</span>
+          <BaseInputText v-model="terms.manualMonthlyOperatingFee" min="0" step="0.01" type="number" class="form-field" />
+        </label>
+      </div>
+
+      <p class="legal-copy">
+        {{ t("tenantHome.terms.legalCopy") }}
+      </p>
+    </section>
+
+    <section class="summary-strip">
+      <div>
+        <p class="meta-label">{{ t("tenantHome.totalLoan") }}</p>
+        <strong>{{ formatCurrency(totalLoanValue) }}</strong>
+      </div>
+      <BaseButton
+        :disabled="isLoading || isSubmitting || !canSubmitLoan"
+        severity="primary"
+        :label="isSubmitting ? t('tenantHome.submitting') : t('tenantHome.submit')"
+        type="button"
+        @click="submitLoan"
+      />
+    </section>
+  </div>
+</DetailSection>

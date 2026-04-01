@@ -1,0 +1,63 @@
+<DetailSection :title="title" :subtitle="subtitle" panel-class="customer-aml-section">
+  <div class="stack-form two-column-grid">
+    <label>
+      <span>{{ t("customerDetail.amlFields.status") }}</span>
+      <BaseSelect v-model="aml.status" :options="amlStatusOptions" optionLabel="label" optionValue="value" class="form-field" />
+    </label>
+    <label>
+      <span>{{ t("customerDetail.amlFields.riskLevel") }}</span>
+      <BaseSelect v-model="aml.riskLevel" :options="amlRiskLevelOptions" optionLabel="label" optionValue="value" class="form-field" />
+    </label>
+    <label class="checkbox-field">
+      <span>{{ t("customerDetail.amlFields.pepFlag") }}</span>
+      <BaseToggleSwitch v-model="aml.pepFlag" />
+    </label>
+    <label class="checkbox-field">
+      <span>{{ t("customerDetail.amlFields.sanctionsHit") }}</span>
+      <BaseToggleSwitch v-model="aml.sanctionsHit" />
+    </label>
+    <label class="checkbox-field">
+      <span>{{ t("customerDetail.amlFields.unusualTransactionFlag") }}</span>
+      <BaseToggleSwitch v-model="aml.unusualTransactionFlag" />
+    </label>
+    <label class="checkbox-field">
+      <span>{{ t("customerDetail.amlFields.sourceOfFundsChecked") }}</span>
+      <BaseToggleSwitch v-model="aml.sourceOfFundsChecked" />
+    </label>
+    <label class="checkbox-field full-span">
+      <span>{{ t("customerDetail.amlFields.suspiciousActivityReported") }}</span>
+      <BaseToggleSwitch v-model="aml.suspiciousActivityReported" />
+    </label>
+    <label v-if="aml.suspiciousActivityReported" class="full-span">
+      <span>{{ t("customerDetail.amlFields.goamlReference") }}</span>
+      <BaseInputText v-model="aml.goamlReference" class="form-field" />
+    </label>
+    <label>
+      <span>{{ t("customerDetail.amlFields.lastScreenedAt") }}</span>
+      <BaseInputText v-model="aml.lastScreenedAt" type="datetime-local" class="form-field" />
+    </label>
+    <label>
+      <span>{{ t("customerDetail.amlFields.reviewedAt") }}</span>
+      <BaseInputText v-model="aml.reviewedAt" type="datetime-local" class="form-field" />
+    </label>
+    <label class="full-span">
+      <span>{{ t("customerDetail.amlFields.decisionNote") }}</span>
+      <BaseTextarea v-model="aml.decisionNote" rows="3" class="form-field" />
+    </label>
+  </div>
+
+  <div class="compliance-summary">
+    <div>
+      <p class="meta-label">{{ t("customerDetail.amlFields.originationAllowed") }}</p>
+      <strong>{{ aml.originationAllowed ? t("common.yes") : t("common.no") }}</strong>
+    </div>
+    <div class="full-span">
+      <p class="meta-label">{{ t("customerDetail.amlFields.decisionReason") }}</p>
+      <p>{{ aml.decisionReason || t("customerDetail.noAmlDecision") }}</p>
+    </div>
+  </div>
+
+  <div class="detail-actions">
+    <BaseButton :disabled="isSavingAml" type="button" @click="saveAml" :label="isSavingAml ? t('common.saving') : t('customerDetail.saveAml')" />
+  </div>
+</DetailSection>

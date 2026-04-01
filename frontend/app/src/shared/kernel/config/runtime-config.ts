@@ -1,0 +1,18 @@
+function readRuntimeConfig(): Record<string, string | undefined> {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  return window.__LOMBARDIO_CONFIG__ ?? {};
+}
+
+export function readRuntimeValue(key: string, fallback: string): string {
+  const runtimeConfig = readRuntimeConfig();
+  const runtimeValue = runtimeConfig[key];
+
+  if (typeof runtimeValue === "string" && runtimeValue.trim() !== "") {
+    return runtimeValue;
+  }
+
+  return fallback;
+}

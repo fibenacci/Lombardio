@@ -1,0 +1,6 @@
+<PSelect
+  v-bind="$attrs"
+  :model-value="modelValue"
+  @update:model-value="$emit('update:modelValue', $event)"
+  @change="$emit('change', $event)"
+/>

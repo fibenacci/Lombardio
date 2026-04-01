@@ -20,22 +20,30 @@ import Textarea from "primevue/textarea";
 import Toast from "primevue/toast";
 import ToggleSwitch from "primevue/toggleswitch";
 import Toolbar from "primevue/toolbar";
-import AdminPanel from "../components/admin-panel";
-import AppDataTable from "../components/app-data-table";
-import ConfirmAction from "../components/confirm-action";
-import FilterBar from "../components/filter-bar";
-import FormFeedback from "../components/form-feedback";
-import FormShell from "../components/form-shell";
-import PageHeader from "../components/page-header";
-import SectionActions from "../components/section-actions";
-import StatusTag from "../components/status-tag";
+import {
+  AdminPanel,
+  AppDataTable,
+  BaseAutoComplete,
+  BaseButton,
+  BaseFileUpload,
+  BaseInputText,
+  BaseSelect,
+  BaseTextarea,
+  BaseToggleSwitch,
+  ConfirmAction,
+  FilterBar,
+  FormShell,
+  PageHeader,
+  SectionActions,
+  StatusTag
+} from "../shared/ui/base";
+import { FormFeedback } from "../shared/ui/feedback";
 import { createPinia, setActivePinia } from "pinia";
-import { useAuthStore } from "../stores/auth";
-import { useCustomerPortalStore } from "../stores/customerPortal";
-import { useTenantStore } from "../stores/tenant";
-import * as platformApi from "../services/api/platform";
+import { useAuthStore, useCustomerPortalStore } from "../app/session/state";
+import { useTenantStore } from "../app/tenant-context/state";
+import * as platformApi from "../modules/tenants/infrastructure/api/tenants.api";
 
-vi.mock("../services/api/platform", () => ({
+vi.mock("../modules/tenants/infrastructure/api/tenants.api", () => ({
   fetchTenants: vi.fn(() => Promise.resolve([])),
   fetchTenantFeatures: vi.fn(() => Promise.resolve([])),
   createTenant: vi.fn((data) => Promise.resolve({ id: "mock-id", ...data })),
@@ -242,6 +250,13 @@ config.global.plugins = [
 config.global.components = {
   AdminPanel,
   AppDataTable,
+  BaseAutoComplete,
+  BaseButton,
+  BaseFileUpload,
+  BaseInputText,
+  BaseSelect,
+  BaseTextarea,
+  BaseToggleSwitch,
   ConfirmAction,
   PAutoComplete: TestAutoComplete,
   PAvatar: Avatar,

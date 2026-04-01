@@ -1,0 +1,104 @@
+<DetailSection :title="title" :subtitle="subtitle" panel-class="tenant-home-ticket-panel">
+  <div v-if="loanQuotes.length" class="ticket-preview">
+    <article v-for="quote in loanQuotes" :key="quote.ticketGroup" class="ticket-card">
+      <p class="eyebrow">{{ t("tenantHome.quote.ticketEyebrow", { group: quote.ticketGroup }) }}</p>
+      <p>{{ t("tenantHome.quote.positionCount", { count: quote.positionCount }) }}</p>
+      <div class="quote-grid">
+        <div>
+          <p class="meta-label">{{ t("tenantHome.quote.totalLoanValue") }}</p>
+          <strong>{{ formatCurrency(quote.totalLoanValue) }}</strong>
+        </div>
+        <div>
+          <p class="meta-label">{{ t("pawnTickets.columns.dueDate") }}</p>
+          <strong>{{ formatDate(quote.dueDate) }}</strong>
+        </div>
+        <div>
+          <p class="meta-label">{{ t("tenantHome.quote.earliestAuctionDate") }}</p>
+          <strong>{{ formatDate(quote.earliestAuctionDate) }}</strong>
+        </div>
+        <div>
+          <p class="meta-label">{{ t("tenantHome.quote.monthlyInterestRate") }}</p>
+          <strong>{{ quote.monthlyInterestRate }} %</strong>
+        </div>
+        <div>
+          <p class="meta-label">{{ t("tenantHome.quote.monthlyOperatingFee") }}</p>
+          <strong>{{ formatCurrency(quote.monthlyOperatingFee) }}</strong>
+        </div>
+        <div>
+          <p class="meta-label">{{ t("tenantHome.quote.totalInterestAmount") }}</p>
+          <strong>{{ formatCurrency(quote.totalInterestAmount) }}</strong>
+        </div>
+        <div>
+          <p class="meta-label">{{ t("tenantHome.quote.totalOperatingFeeAmount") }}</p>
+          <strong>{{ formatCurrency(quote.totalOperatingFeeAmount) }}</strong>
+        </div>
+        <div class="full-span">
+          <p class="meta-label">{{ t("tenantHome.quote.totalRepaymentAmount") }}</p>
+          <strong>{{ formatCurrency(quote.totalRepaymentAmount) }}</strong>
+        </div>
+      </div>
+      <p class="legal-copy">{{ quote.legalText }}</p>
+    </article>
+  </div>
+  <p v-else class="placeholder-copy">
+    {{ t("tenantHome.quote.empty") }}
+  </p>
+
+  <div v-if="createdLoan" class="issued-ticket">
+    <h4>{{ t("tenantHome.issuedTickets.title") }}</h4>
+    <p v-if="createdLoan.customer" class="muted-copy">
+      {{ t("tenantHome.issuedTickets.customer", { customer: createdLoan.customer.displayName }) }}<span v-if="createdLoan.customer.customerNumber"> · {{ createdLoan.customer.customerNumber }}</span>
+    </p>
+    <article v-for="pawnTicket in createdLoan.pawnTickets" :key="pawnTicket.ticketNumber" class="ticket-card">
+      <p class="eyebrow">{{ pawnTicket.ticketNumber }}</p>
+      <p>{{ t("tenantHome.issuedTickets.contract", { contract: pawnTicket.contractNumber }) }}</p>
+      <p>{{ t("tenantHome.issuedTickets.dueDate", { dueDate: formatDate(pawnTicket.dueDate) }) }}</p>
+      <p>{{ t("tenantHome.issuedTickets.repaymentAmount", { amount: formatCurrency(pawnTicket.totalRepaymentAmount) }) }}</p>
+      <p>{{ t("tenantHome.issuedTickets.totalInterestAmount", { amount: formatCurrency(pawnTicket.totalInterestAmount) }) }}</p>
+      <p>{{ t("tenantHome.issuedTickets.totalOperatingFeeAmount", { amount: formatCurrency(pawnTicket.totalOperatingFeeAmount) }) }}</p>
+      <p>{{ t("tenantHome.issuedTickets.barcode", { barcode: pawnTicket.contractBarcode }) }}</p>
+      <p>{{ t("tenantHome.issuedTickets.termsVersion", { version: pawnTicket.termsVersion }) }}</p>
+      <div v-if="pawnTicket.positions?.length" class="position-list">
+        <div v-for="position in pawnTicket.positions" :key="position.itemNumber" class="position-pill">
+          <strong>{{ position.itemNumber }}</strong> · {{ position.label }} · {{ position.description }}
+        </div>
+      </div>
+      <div class="inline-row">
+        <BaseButton
+          :disabled="isDownloadingTicket"
+          severity="secondary"
+          :label="isDownloadingTicket ? t('tenantHome.loadingTicket') : t('tenantHome.ticketPdf')"
+          type="button"
+          @click="openPawnTicketDocument(pawnTicket.ticketNumber, false)"
+        />
+        <BaseButton
+          class="secondary-button"
+          severity="secondary"
+          outlined
+          :disabled="isDownloadingTicket"
+          :label="t('common.print')"
+          type="button"
+          @click="openPawnTicketDocument(pawnTicket.ticketNumber, true)"
+        />
+        <BaseButton
+          class="secondary-button"
+          severity="secondary"
+          outlined
+          :disabled="isDownloadingTicket"
+          :label="t('tenantHome.ticketLabels')"
+          type="button"
+          @click="openPawnTicketLabels(pawnTicket.ticketNumber, false)"
+        />
+        <BaseButton
+          class="secondary-button"
+          severity="secondary"
+          outlined
+          :disabled="isDownloadingTicket"
+          :label="t('tenantHome.printLabels')"
+          type="button"
+          @click="openPawnTicketLabels(pawnTicket.ticketNumber, true)"
+        />
+      </div>
+    </article>
+  </div>
+</DetailSection>

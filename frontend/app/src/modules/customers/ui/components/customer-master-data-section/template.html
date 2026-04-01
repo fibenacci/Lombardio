@@ -1,0 +1,57 @@
+<DetailSection :title="title" :subtitle="subtitle" panel-class="customer-master-data-section" header-class="header">
+  <div class="stack-form two-column-grid">
+    <label>
+      <span>{{ t("customerDetail.fields.customerNumber") }}</span>
+      <BaseInputText v-model="customer.customerNumber" class="form-field" />
+    </label>
+    <label>
+      <span>{{ t("customerDetail.fields.phone") }}</span>
+      <BaseInputText v-model="customer.phone" class="form-field" />
+    </label>
+    <label>
+      <span>{{ t("customerDetail.fields.email") }}</span>
+      <BaseInputText v-model="customer.email" type="email" class="form-field" />
+    </label>
+    <label>
+      <span>{{ t("customerDetail.fields.firstName") }}</span>
+      <BaseInputText v-model="customer.firstName" class="form-field" />
+    </label>
+    <label>
+      <span>{{ t("customerDetail.fields.lastName") }}</span>
+      <BaseInputText v-model="customer.lastName" class="form-field" />
+    </label>
+    <label>
+      <span>{{ t("customerDetail.fields.birthDate") }}</span>
+      <BaseInputText v-model="customer.birthDate" type="date" class="form-field" />
+    </label>
+    <label>
+      <span>{{ t("customerDetail.fields.street") }}</span>
+      <BaseInputText v-model="customer.street" class="form-field" />
+    </label>
+    <label>
+      <span>{{ t("customerDetail.fields.postalCode") }}</span>
+      <BaseInputText v-model="customer.postalCode" class="form-field" />
+    </label>
+    <label class="full-span">
+      <span>{{ t("customerDetail.fields.city") }}</span>
+      <BaseInputText v-model="customer.city" class="form-field" />
+    </label>
+    <div class="checkbox-field full-span">
+      <span>{{ t("customerDetail.fields.wantsDigitalPawnTicket") }}</span>
+      <BaseToggleSwitch v-model="customer.wantsDigitalPawnTicket" />
+    </div>
+  </div>
+
+  <p class="legal-copy">
+    {{ t("customerDetail.onlineAccessStatus", { status: customer.onlineAccessStatus || "NOT_REQUESTED" }) }}
+  </p>
+
+  <div class="detail-actions">
+    <BaseButton
+      :disabled="isSavingCustomer"
+      type="button"
+      @click="saveCustomer"
+      :label="isSavingCustomer ? t('common.saving') : t('customerDetail.saveCustomer')"
+    />
+  </div>
+</DetailSection>

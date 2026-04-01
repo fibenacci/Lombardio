@@ -1,0 +1,85 @@
+<DetailSection :title="title" :subtitle="subtitle" panel-class="tenant-home-reporting-section">
+  <p v-if="reportingError" class="legal-copy">{{ reportingError }}</p>
+
+  <div v-else-if="reportingOverview" class="reporting-grid">
+    <div class="reporting-card">
+      <p class="meta-label">{{ t("tenantHome.reportingCards.cashInflow") }}</p>
+      <strong>{{ formatCurrency(reportingOverview.finance.cashInflow) }}</strong>
+    </div>
+    <div class="reporting-card">
+      <p class="meta-label">{{ t("tenantHome.reportingCards.cashOutflow") }}</p>
+      <strong>{{ formatCurrency(reportingOverview.finance.cashOutflow) }}</strong>
+    </div>
+    <div class="reporting-card">
+      <p class="meta-label">{{ t("tenantHome.reportingCards.netCashflow") }}</p>
+      <strong>{{ formatCurrency(reportingOverview.finance.netCashflow) }}</strong>
+    </div>
+    <div class="reporting-card">
+      <p class="meta-label">{{ t("tenantHome.reportingCards.realizedRevenue") }}</p>
+      <strong>{{ formatCurrency(reportingOverview.finance.realizedRevenue) }}</strong>
+    </div>
+    <div class="reporting-card">
+      <p class="meta-label">{{ t("tenantHome.reportingCards.activeLoanExposure") }}</p>
+      <strong>{{ formatCurrency(reportingOverview.finance.activeLoanExposure) }}</strong>
+    </div>
+    <div class="reporting-card">
+      <p class="meta-label">{{ t("tenantHome.reportingCards.activeTicketCount") }}</p>
+      <strong>{{ reportingOverview.finance.activeTicketCount }}</strong>
+    </div>
+
+    <div class="reporting-panel full-span">
+      <div class="subpanel-header">
+        <h4>{{ t("tenantHome.financeTrend") }}</h4>
+        <span class="muted-copy">{{ formatDate(reportingOverview.rangeStart) }} bis {{ formatDate(reportingOverview.rangeEnd) }}</span>
+      </div>
+      <div class="trend-chart">
+        <div v-for="point in reportingOverview.financeTrend" :key="point.date" class="trend-day">
+          <div class="trend-bars">
+            <span class="trend-bar is-inflow" :style="{ height: `${(Number(point.cashInflow) / financeTrendMax) * 100}%` }"></span>
+            <span class="trend-bar is-outflow" :style="{ height: `${(Number(point.cashOutflow) / financeTrendMax) * 100}%` }"></span>
+            <span class="trend-bar is-revenue" :style="{ height: `${(Number(point.realizedRevenue) / financeTrendMax) * 100}%` }"></span>
+          </div>
+          <span class="trend-label">{{ formatDate(point.date, { formatOptions: { day: "2-digit", month: "2-digit" } }) }}</span>
+        </div>
+      </div>
+      <div class="trend-legend">
+        <span><i class="legend-dot is-inflow"></i> {{ t("tenantHome.inflow") }}</span>
+        <span><i class="legend-dot is-outflow"></i> {{ t("tenantHome.outflow") }}</span>
+        <span><i class="legend-dot is-revenue"></i> {{ t("tenantHome.revenue") }}</span>
+      </div>
+    </div>
+
+    <div class="reporting-panel">
+      <div class="subpanel-header">
+        <h4>{{ t("tenantHome.inventoryByCategory") }}</h4>
+      </div>
+      <div class="inventory-list">
+        <div v-for="category in reportingOverview.inventoryByCategory" :key="category.category" class="inventory-row">
+          <div class="inventory-row-head">
+            <strong>{{ category.category }}</strong>
+            <span>{{ formatCurrency(category.pledgedValue) }}</span>
+          </div>
+          <div class="inventory-bar-track">
+            <span class="inventory-bar-fill" :style="{ width: `${(Number(category.pledgedValue) / inventoryMax) * 100}%` }"></span>
+          </div>
+          <p class="muted-copy">{{ t("tenantHome.positionCount", { count: category.itemCount }) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="reporting-panel">
+      <div class="subpanel-header">
+        <h4>{{ t("tenantHome.cashTransactions") }}</h4>
+      </div>
+      <div class="inventory-list">
+        <div v-for="transaction in reportingOverview.transactionMix" :key="transaction.type" class="inventory-row">
+          <div class="inventory-row-head">
+            <strong>{{ getTransactionTypeLabel(transaction.type) }}</strong>
+            <span>{{ formatCurrency(transaction.totalAmount) }}</span>
+          </div>
+          <p class="muted-copy">{{ t("tenantHome.transactionCount", { count: transaction.transactionCount }) }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</DetailSection>

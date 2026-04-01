@@ -32,14 +32,47 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
       - uses: imranismail/setup-kustomize@v2
       - uses: azure/setup-kubectl@v5
-      - name: Configure kubeconfig
+      - name: Terraform init Hetzner staging cluster
+        working-directory: infra/terraform/environments/hcloud-cluster
+        env:
+          TF_VAR_hcloud_token: ${{ secrets.HCLOUD_TOKEN_STAGING }}
+          TF_VAR_cluster_name: ${{ secrets.HCLOUD_CLUSTER_NAME_STAGING || 'lombardio-staging' }}
+          TF_VAR_location: ${{ secrets.HCLOUD_LOCATION_STAGING || 'nbg1' }}
+          TF_VAR_control_plane_type: ${{ secrets.HCLOUD_CONTROL_PLANE_TYPE_STAGING || 'cpx22' }}
+          TF_VAR_worker_node_type: ${{ secrets.HCLOUD_WORKER_NODE_TYPE_STAGING || 'cpx22' }}
+          TF_VAR_ssh_public_key: ${{ secrets.HCLOUD_SSH_PUBLIC_KEY_STAGING }}
+          TF_VAR_ssh_private_key: ${{ secrets.HCLOUD_SSH_PRIVATE_KEY_STAGING }}
+        run: terraform init
+      - name: Terraform apply Hetzner staging cluster
+        working-directory: infra/terraform/environments/hcloud-cluster
+        env:
+          TF_VAR_hcloud_token: ${{ secrets.HCLOUD_TOKEN_STAGING }}
+          TF_VAR_cluster_name: ${{ secrets.HCLOUD_CLUSTER_NAME_STAGING || 'lombardio-staging' }}
+          TF_VAR_location: ${{ secrets.HCLOUD_LOCATION_STAGING || 'nbg1' }}
+          TF_VAR_control_plane_type: ${{ secrets.HCLOUD_CONTROL_PLANE_TYPE_STAGING || 'cpx22' }}
+          TF_VAR_worker_node_type: ${{ secrets.HCLOUD_WORKER_NODE_TYPE_STAGING || 'cpx22' }}
+          TF_VAR_ssh_public_key: ${{ secrets.HCLOUD_SSH_PUBLIC_KEY_STAGING }}
+          TF_VAR_ssh_private_key: ${{ secrets.HCLOUD_SSH_PRIVATE_KEY_STAGING }}
+        run: terraform apply -auto-approve
+      - name: Export kubeconfig from Hetzner staging cluster
+        id: kubeconfig
+        working-directory: infra/terraform/environments/hcloud-cluster
+        env:
+          TF_VAR_hcloud_token: ${{ secrets.HCLOUD_TOKEN_STAGING }}
+          TF_VAR_cluster_name: ${{ secrets.HCLOUD_CLUSTER_NAME_STAGING || 'lombardio-staging' }}
+          TF_VAR_location: ${{ secrets.HCLOUD_LOCATION_STAGING || 'nbg1' }}
+          TF_VAR_control_plane_type: ${{ secrets.HCLOUD_CONTROL_PLANE_TYPE_STAGING || 'cpx22' }}
+          TF_VAR_worker_node_type: ${{ secrets.HCLOUD_WORKER_NODE_TYPE_STAGING || 'cpx22' }}
+          TF_VAR_ssh_public_key: ${{ secrets.HCLOUD_SSH_PUBLIC_KEY_STAGING }}
+          TF_VAR_ssh_private_key: ${{ secrets.HCLOUD_SSH_PRIVATE_KEY_STAGING }}
         run: |
           mkdir -p ~/.kube
-          printf '%s' '${{ secrets.KUBE_CONFIG_STAGING }}' > ~/.kube/config
-      - name: Terraform init staging
+          terraform output -raw kubeconfig > ~/.kube/config
+          echo "context=$(kubectl config current-context)" >> "$GITHUB_OUTPUT"
+      - name: Terraform init staging foundations
         working-directory: infra/terraform/environments/staging
         env:
-          TF_VAR_kubeconfig_context: ${{ secrets.KUBE_CONTEXT_STAGING }}
+          TF_VAR_kubeconfig_context: ${{ steps.kubeconfig.outputs.context }}
           TF_VAR_cluster_issuer_email: ${{ secrets.ACME_EMAIL_STAGING }}
           TF_VAR_enable_cluster_issuer: ${{ secrets.TF_ENABLE_CLUSTER_ISSUER_STAGING || 'true' }}
           TF_VAR_enable_vault_cluster_secret_store: ${{ secrets.TF_ENABLE_VAULT_CLUSTER_SECRET_STORE_STAGING || 'true' }}
@@ -51,7 +84,7 @@ jobs:
       - name: Terraform apply staging foundations
         working-directory: infra/terraform/environments/staging
         env:
-          TF_VAR_kubeconfig_context: ${{ secrets.KUBE_CONTEXT_STAGING }}
+          TF_VAR_kubeconfig_context: ${{ steps.kubeconfig.outputs.context }}
           TF_VAR_cluster_issuer_email: ${{ secrets.ACME_EMAIL_STAGING }}
           TF_VAR_enable_cluster_issuer: ${{ secrets.TF_ENABLE_CLUSTER_ISSUER_STAGING || 'true' }}
           TF_VAR_enable_vault_cluster_secret_store: ${{ secrets.TF_ENABLE_VAULT_CLUSTER_SECRET_STORE_STAGING || 'true' }}

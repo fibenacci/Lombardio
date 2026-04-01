@@ -1,0 +1,93 @@
+<DetailSection :title="title" :subtitle="subtitle" panel-class="customer-kyc-section">
+  <div class="stack-form two-column-grid">
+    <label>
+      <span>{{ t("customerDetail.kycFields.status") }}</span>
+      <BaseSelect v-model="kyc.status" :options="kycStatusOptions" optionLabel="label" optionValue="value" class="form-field" />
+    </label>
+    <label>
+      <span>{{ t("customerDetail.kycFields.documentType") }}</span>
+      <BaseSelect v-model="kyc.documentType" :options="kycDocumentTypeOptions" optionLabel="label" optionValue="value" class="form-field" />
+    </label>
+    <label>
+      <span>{{ t("customerDetail.kycFields.documentNumber") }}</span>
+      <BaseInputText v-model="kyc.documentNumber" class="form-field" />
+    </label>
+    <label>
+      <span>{{ t("customerDetail.kycFields.documentValidUntil") }}</span>
+      <BaseInputText v-model="kyc.documentValidUntil" type="date" class="form-field" />
+    </label>
+    <label>
+      <span>{{ t("customerDetail.kycFields.verifiedUntil") }}</span>
+      <BaseInputText v-model="kyc.verifiedUntil" type="date" class="form-field" />
+    </label>
+    <label class="full-span">
+      <span>{{ t("customerDetail.kycFields.decisionNote") }}</span>
+      <BaseTextarea v-model="kyc.decisionNote" rows="3" class="form-field" />
+    </label>
+    <div class="file-dropzone-field">
+      <span>{{ t("customerDetail.kycFields.frontImage") }}</span>
+      <PFileUpload mode="advanced" accept="image/*" :multiple="false" customUpload :showUploadButton="false" :showCancelButton="false" class="upload-dropzone" @select="updateDocument('documentFrontImageDataUrl', $event)">
+        <template #header="{ chooseCallback, clearCallback }">
+          <div class="upload-dropzone__header">
+            <BaseButton severity="secondary" outlined type="button" :label="t('common.chooseFile')" @click="chooseCallback()" />
+            <BaseButton v-if="kyc.documentFrontImageDataUrl" severity="danger" outlined type="button" :label="t('common.removeFile')" @click="clearCallback(); clearDocument('documentFrontImageDataUrl')" />
+          </div>
+        </template>
+        <template #content="{ files }">
+          <div class="upload-dropzone__content">
+            <div v-if="files?.length" class="upload-dropzone__file">{{ t("common.fileSelected", { name: files[0].name }) }}</div>
+            <div v-else-if="kyc.documentFrontImageDataUrl" class="upload-dropzone__file">{{ t("common.documentAttached") }}</div>
+            <img v-if="kyc.documentFrontImageDataUrl" :src="resolveDocumentImageSrc(kyc.documentFrontImageDataUrl)" :alt="t('customerDetail.frontSide')" class="upload-dropzone__preview-image" />
+          </div>
+        </template>
+        <template #empty>
+          <div class="upload-dropzone__empty">
+            <i class="pi pi-cloud-upload upload-dropzone__icon" />
+            <strong>{{ t("common.imageDropzoneTitle") }}</strong>
+            <p>{{ t("common.imageDropzoneCopy") }}</p>
+          </div>
+        </template>
+      </PFileUpload>
+    </div>
+    <div class="file-dropzone-field">
+      <span>{{ t("customerDetail.kycFields.backImage") }}</span>
+      <PFileUpload mode="advanced" accept="image/*" :multiple="false" customUpload :showUploadButton="false" :showCancelButton="false" class="upload-dropzone" @select="updateDocument('documentBackImageDataUrl', $event)">
+        <template #header="{ chooseCallback, clearCallback }">
+          <div class="upload-dropzone__header">
+            <BaseButton severity="secondary" outlined type="button" :label="t('common.chooseFile')" @click="chooseCallback()" />
+            <BaseButton v-if="kyc.documentBackImageDataUrl" severity="danger" outlined type="button" :label="t('common.removeFile')" @click="clearCallback(); clearDocument('documentBackImageDataUrl')" />
+          </div>
+        </template>
+        <template #content="{ files }">
+          <div class="upload-dropzone__content">
+            <div v-if="files?.length" class="upload-dropzone__file">{{ t("common.fileSelected", { name: files[0].name }) }}</div>
+            <div v-else-if="kyc.documentBackImageDataUrl" class="upload-dropzone__file">{{ t("common.documentAttached") }}</div>
+            <img v-if="kyc.documentBackImageDataUrl" :src="resolveDocumentImageSrc(kyc.documentBackImageDataUrl)" :alt="t('customerDetail.backSide')" class="upload-dropzone__preview-image" />
+          </div>
+        </template>
+        <template #empty>
+          <div class="upload-dropzone__empty">
+            <i class="pi pi-cloud-upload upload-dropzone__icon" />
+            <strong>{{ t("common.imageDropzoneTitle") }}</strong>
+            <p>{{ t("common.imageDropzoneCopy") }}</p>
+          </div>
+        </template>
+      </PFileUpload>
+    </div>
+    <div v-if="documentOcrAvailable" class="full-span inline-row">
+      <BaseButton class="secondary-button" :disabled="isPrefillingKyc || !canPrefillDocument" :label="isPrefillingKyc ? t('customerDetail.ocrRunning') : t('customerDetail.prefillDocument')" type="button" @click="prefillDocument" />
+      <span class="muted-copy">{{ t("customerDetail.ocrCopy") }}</span>
+    </div>
+  </div>
+
+  <article v-if="kyc.portraitImageDataUrl" class="document-card portrait-preview">
+    <p class="meta-label">{{ t("customerDetail.portrait") }}</p>
+    <img :src="resolveDocumentImageSrc(kyc.portraitImageDataUrl)" :alt="t('customerDetail.portrait')" />
+  </article>
+
+  <p class="legal-copy">{{ t("customerDetail.kycLegalCopy") }}</p>
+
+  <div class="detail-actions">
+    <BaseButton :disabled="isSavingKyc" type="button" @click="saveKyc" :label="isSavingKyc ? t('common.saving') : t('customerDetail.saveKyc')" />
+  </div>
+</DetailSection>

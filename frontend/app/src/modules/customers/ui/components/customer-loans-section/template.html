@@ -1,0 +1,35 @@
+<DetailSection :title="title" :subtitle="subtitle" panel-class="customer-loans-section">
+  <div v-if="loans.length" class="stack-form">
+    <article v-for="loan in loans" :key="loan.id" class="ticket-card">
+      <p class="eyebrow">{{ t("customerDetail.loanEyebrow", { timestamp: formatDateTime(loan.pledgeRecord.recordedAt) }) }}</p>
+      <div class="quote-grid">
+        <div>
+          <p class="meta-label">{{ t("customerDetail.loanColumns.recordedAt") }}</p>
+          <strong>{{ formatDateTime(loan.pledgeRecord.recordedAt) }}</strong>
+        </div>
+        <div>
+          <p class="meta-label">{{ t("customerDetail.loanColumns.language") }}</p>
+          <strong>{{ loan.pledgeRecord.languageCode }}</strong>
+        </div>
+        <div>
+          <p class="meta-label">{{ t("customerDetail.loanColumns.retentionUntil") }}</p>
+          <strong>{{ loan.pledgeRecord.retentionUntil }}</strong>
+        </div>
+        <div>
+          <p class="meta-label">{{ t("customerDetail.loanColumns.documentType") }}</p>
+          <strong>{{ loan.pledgeRecord.checkedDocumentType ?? t("common.notAvailable") }}</strong>
+        </div>
+      </div>
+      <p class="muted-copy">{{ t("customerDetail.loanSummary", { positions: loan.positions.length, tickets: loan.pawnTickets.length }) }}</p>
+      <ul class="document-list">
+        <li v-for="ticket in loan.pawnTickets" :key="ticket.ticketNumber">
+          {{ t("customerDetail.ticketLine", { number: ticket.ticketNumber, loanValue: formatCurrency(ticket.totalLoanValue), dueDate: formatDate(ticket.dueDate) }) }}
+        </li>
+      </ul>
+      <p v-if="loan.pledgeRecord.powerOfAttorneyRequired" class="legal-copy">
+        {{ t("customerDetail.powerOfAttorneyLine", { bearerName: loan.pledgeRecord.bearerName }) }}
+      </p>
+    </article>
+  </div>
+  <p v-else class="placeholder-copy">{{ t("customerDetail.noLoans") }}</p>
+</DetailSection>

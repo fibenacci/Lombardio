@@ -1,0 +1,96 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">{{ t("tenantHome.eyebrow") }}</p>
+      <h2>{{ selectedTenant?.displayName ?? t("tenantHome.titleFallback") }}</h2>
+    </div>
+    <p class="page-copy">
+      {{ t("tenantHome.copy") }}
+    </p>
+  </header>
+
+  <TenantHomeReportingSection
+    :finance-trend-max="financeTrendMax"
+    :format-currency="formatCurrency"
+    :format-date="formatDate"
+    :get-transaction-type-label="getTransactionTypeLabel"
+    :inventory-max="inventoryMax"
+    :reporting-error="reportingError"
+    :reporting-overview="reportingOverview"
+    :subtitle="t('tenantHome.reportingSubtitle')"
+    :t="t"
+    :title="t('tenantHome.reportingTitle')"
+  />
+
+  <div class="origination-layout">
+    <TenantHomeOriginationWorkflow
+      :add-position="addPosition"
+      :aml-feature-enabled="amlFeatureEnabled"
+      :aml-risk-level-options="amlRiskLevelOptions"
+      :aml-status-options="amlStatusOptions"
+      :apply-guideline="applyGuideline"
+      :approve-selected-customer-kyc="approveSelectedCustomerKyc"
+      :can-prefill-new-customer-document="canPrefillNewCustomerDocument"
+      :can-submit-loan="canSubmitLoan"
+      :clear-new-customer-document="clearNewCustomerDocument"
+      :clear-power-of-attorney-document="clearPowerOfAttorneyDocument"
+      :customer-suggestions="customerSuggestions"
+      :document-ocr-available="documentOcrAvailable"
+      :document-type-options="documentTypeOptions"
+      :error-message="errorMessage"
+      :field-errors="fieldErrors"
+      :format-currency="formatCurrency"
+      :get-aml-status-label="getAmlStatusLabel"
+      :get-kyc-status-label="getKycStatusLabel"
+      :get-risk-level-label="getRiskLevelLabel"
+      :get-verification-mode-label="getVerificationModeLabel"
+      :guideline-options="guidelineOptions"
+      :handle-customer-selection="handleCustomerSelection"
+      :is-loading="isLoading"
+      :is-submitting="isSubmitting"
+      :is-updating-kyc="isUpdatingKyc"
+      :loan-quotes="loanQuotes"
+      :new-customer="newCustomer"
+      :new-customer-aml="newCustomerAml"
+      :new-customer-kyc="newCustomerKyc"
+      :open-selected-customer-details="openSelectedCustomerDetails"
+      :positions="positions"
+      :prefill-new-customer-document-data="prefillNewCustomerDocumentData"
+      :pledge-presentation="pledgePresentation"
+      :provider-verification-available="providerVerificationAvailable"
+      :remove-position="removePosition"
+      :resolve-document-image-src="resolveDocumentImageSrc"
+      :search-customer-suggestions="searchCustomerSuggestions"
+      :selected-customer="selectedCustomer"
+      :selected-customer-option="selectedCustomerOption"
+      :start-provider-verification="startProviderVerification"
+      :subtitle="t('tenantHome.originationSubtitle')"
+      :submit-loan="submitLoan"
+      :success-message="successMessage"
+      :t="t"
+      :terms="terms"
+      :title="t('tenantHome.originationTitle')"
+      :total-loan-value="totalLoanValue"
+      :update-new-customer-document="updateNewCustomerDocument"
+      :update-power-of-attorney-document="updatePowerOfAttorneyDocument"
+      :use-new-customer="useNewCustomer"
+      @update:selected-customer-option="selectedCustomerOption = $event"
+      @update:use-new-customer="useNewCustomer = $event"
+    />
+
+    <section ref="issuedTicketRef" class="stack-column">
+      <TenantHomeTicketPanel
+        :created-loan="createdLoan"
+        :format-currency="formatCurrency"
+        :format-date="formatDate"
+        :is-downloading-ticket="isDownloadingTicket"
+        :loan-quotes="loanQuotes"
+        :open-pawn-ticket-document="openPawnTicketDocument"
+        :open-pawn-ticket-labels="openPawnTicketLabels"
+        :subtitle="t('tenantHome.ticketAndCostsSubtitle')"
+        :t="t"
+        :title="t('tenantHome.ticketAndCostsTitle')"
+      />
+    </section>
+  </div>
+</section>

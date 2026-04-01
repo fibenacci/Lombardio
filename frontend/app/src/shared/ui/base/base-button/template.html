@@ -1,0 +1,11 @@
+<PButton
+  v-bind="$attrs"
+  :disabled="disabled"
+  :label="label"
+  :outlined="outlined"
+  :severity="severity"
+  :type="type"
+  @click="$emit('click', $event)"
+>
+  <slot />
+</PButton>

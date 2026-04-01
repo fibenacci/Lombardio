@@ -1,0 +1,21 @@
+<PFileUpload
+  v-bind="$attrs"
+  :accept="accept"
+  :custom-upload="customUpload"
+  :mode="mode"
+  :multiple="multiple"
+  :show-cancel-button="showCancelButton"
+  :show-upload-button="showUploadButton"
+  @select="$emit('select', $event)"
+  @clear="$emit('clear', $event)"
+>
+  <template v-if="$slots.header" #header="slotProps">
+    <slot name="header" v-bind="slotProps || {}" />
+  </template>
+  <template v-if="$slots.content" #content="slotProps">
+    <slot name="content" v-bind="slotProps || {}" />
+  </template>
+  <template v-if="$slots.empty" #empty="slotProps">
+    <slot name="empty" v-bind="slotProps || {}" />
+  </template>
+</PFileUpload>

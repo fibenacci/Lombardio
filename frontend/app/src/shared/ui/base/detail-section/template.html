@@ -1,0 +1,13 @@
+<section class="panel detail-section" :class="panelClass">
+  <div class="panel-header" :class="headerClass">
+    <div>
+      <h3>{{ title }}</h3>
+      <p v-if="subtitle" class="panel-subtitle">{{ subtitle }}</p>
+    </div>
+    <slot name="header-actions" />
+  </div>
+
+  <slot />
+
+  <slot name="footer" />
+</section>
