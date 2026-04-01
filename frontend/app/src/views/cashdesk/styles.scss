@@ -31,3 +31,9 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
+
+.stack-form .p-inputtext,
+.stack-form .p-select,
+.stack-form .p-button {
+  width: 100%;
+}

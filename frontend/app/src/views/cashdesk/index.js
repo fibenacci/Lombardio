@@ -10,6 +10,7 @@ import {
   redeemPawnTicket
 } from "../../services/api/pawnTicket";
 import { useI18n } from "../../i18n";
+import { useFormatters } from "../../utils/formatters";
 import FormFeedback from "../../components/form-feedback";
 import template from "./template.html?raw";
 import "./styles.scss";
@@ -21,6 +22,7 @@ export default defineComponent({
   },
   setup() {
     const { t } = useI18n();
+    const { formatCurrency, formatDate, formatDateTime } = useFormatters();
     const authStore = useAuthStore();
     const tenantStore = useTenantStore();
     
@@ -43,6 +45,11 @@ export default defineComponent({
     const selectedTicket = computed(() =>
       tickets.value.find((ticket) => ticket.ticketNumber === selectedTicketNumber.value) ?? null
     );
+    const actionOptions = computed(() => [
+      { label: t("cashdesk.actions.redeem"), value: "redeem" },
+      { label: t("cashdesk.actions.extend"), value: "extend" },
+      { label: t("cashdesk.actions.partial"), value: "partial" }
+    ]);
 
     async function loadData() {
       isLoading.value = true;
@@ -170,15 +177,24 @@ export default defineComponent({
       fieldErrors.value = Array.isArray(error?.fieldErrors) ? error.fieldErrors : [];
     }
 
+    function getTransactionTypeLabel(type) {
+      return t(`cashdesk.transactionTypes.${type}`);
+    }
+
     onMounted(loadData);
 
     return {
       activeAction,
+      actionOptions,
       calculate,
       execute,
       errorMessage,
       fieldErrors,
       form,
+      formatCurrency,
+      formatDate,
+      formatDateTime,
+      getTransactionTypeLabel,
       isLoading,
       isSubmitting,
       selectedTicket,

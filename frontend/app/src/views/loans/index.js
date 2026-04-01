@@ -3,6 +3,7 @@ import { fetchLoans } from "../../services/api/origination";
 import { useAuthStore } from "../../stores/auth";
 import { useTenantStore } from "../../stores/tenant";
 import { useI18n } from "../../i18n";
+import { useFormatters } from "../../utils/formatters";
 import template from "./template.html?raw";
 import "./styles.scss";
 
@@ -12,6 +13,7 @@ export default defineComponent({
     const authStore = useAuthStore();
     const tenantStore = useTenantStore();
     const { t } = useI18n();
+    const { formatCurrency, formatDate, formatDateTime } = useFormatters();
     const loans = ref([]);
     const isLoading = ref(true);
     const errorMessage = ref("");
@@ -51,6 +53,9 @@ export default defineComponent({
     return {
       errorMessage,
       filteredLoans,
+      formatCurrency,
+      formatDate,
+      formatDateTime,
       isLoading,
       query,
       t,

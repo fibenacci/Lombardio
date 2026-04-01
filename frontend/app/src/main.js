@@ -10,6 +10,7 @@ import Column from "primevue/column";
 import DataTable from "primevue/datatable";
 import Dialog from "primevue/dialog";
 import Divider from "primevue/divider";
+import FileUpload from "primevue/fileupload";
 import InputText from "primevue/inputtext";
 import Message from "primevue/message";
 import MultiSelect from "primevue/multiselect";
@@ -63,6 +64,7 @@ async function bootstrap() {
   app.component("PDataTable", DataTable);
   app.component("PDialog", Dialog);
   app.component("PDivider", Divider);
+  app.component("PFileUpload", FileUpload);
   app.component("PInputText", InputText);
   app.component("PMessage", Message);
   app.component("PMultiSelect", MultiSelect);

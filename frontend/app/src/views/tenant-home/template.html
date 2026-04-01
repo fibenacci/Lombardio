@@ -48,7 +48,7 @@
       <div class="reporting-panel full-span">
         <div class="subpanel-header">
         <h4>{{ t("tenantHome.financeTrend") }}</h4>
-          <span class="muted-copy">{{ reportingOverview.rangeStart }} bis {{ reportingOverview.rangeEnd }}</span>
+          <span class="muted-copy">{{ formatDate(reportingOverview.rangeStart) }} bis {{ formatDate(reportingOverview.rangeEnd) }}</span>
         </div>
         <div class="trend-chart">
           <div v-for="point in reportingOverview.financeTrend" :key="point.date" class="trend-day">
@@ -57,7 +57,7 @@
               <span class="trend-bar is-outflow" :style="{ height: `${(Number(point.cashOutflow) / financeTrendMax) * 100}%` }"></span>
               <span class="trend-bar is-revenue" :style="{ height: `${(Number(point.realizedRevenue) / financeTrendMax) * 100}%` }"></span>
             </div>
-            <span class="trend-label">{{ point.date.slice(5) }}</span>
+            <span class="trend-label">{{ formatDate(point.date, { formatOptions: { day: '2-digit', month: '2-digit' } }) }}</span>
           </div>
         </div>
         <div class="trend-legend">
@@ -261,23 +261,112 @@
               <span>{{ t("customerDetail.kycFields.documentValidUntil") }}</span>
               <PInputText v-model="newCustomerKyc.documentValidUntil" required type="date" class="form-field" />
             </label>
-            <label>
+            <div class="file-dropzone-field">
               <span>{{ t("customerDetail.kycFields.frontImage") }}</span>
-              <input accept="image/*" required type="file" @change="updateNewCustomerDocument('documentFrontImageDataUrl', $event)" />
-            </label>
-            <label>
+              <PFileUpload
+                mode="advanced"
+                accept="image/*"
+                :multiple="false"
+                customUpload
+                :showUploadButton="false"
+                :showCancelButton="false"
+                class="upload-dropzone"
+                @select="updateNewCustomerDocument('documentFrontImageDataUrl', $event)"
+              >
+                <template #header="{ chooseCallback, clearCallback }">
+                  <div class="upload-dropzone__header">
+                    <PButton severity="secondary" outlined type="button" :label="t('common.chooseFile')" @click="chooseCallback()" />
+                    <PButton
+                      v-if="newCustomerKyc.documentFrontImageDataUrl"
+                      severity="danger"
+                      outlined
+                      type="button"
+                      :label="t('common.removeFile')"
+                      @click="clearCallback(); clearNewCustomerDocument('documentFrontImageDataUrl')"
+                    />
+                  </div>
+                </template>
+                <template #content="{ files }">
+                  <div class="upload-dropzone__content">
+                    <div v-if="files?.length" class="upload-dropzone__file">{{ t("common.fileSelected", { name: files[0].name }) }}</div>
+                    <div v-else-if="newCustomerKyc.documentFrontImageDataUrl" class="upload-dropzone__file">{{ t("common.documentAttached") }}</div>
+                    <img
+                      v-if="newCustomerKyc.documentFrontImageDataUrl"
+                      :src="resolveDocumentImageSrc(newCustomerKyc.documentFrontImageDataUrl)"
+                      :alt="t('customerDetail.frontSide')"
+                      class="upload-dropzone__preview-image"
+                    />
+                  </div>
+                </template>
+                <template #empty>
+                  <div class="upload-dropzone__empty">
+                    <i class="pi pi-cloud-upload upload-dropzone__icon" />
+                    <strong>{{ t("common.imageDropzoneTitle") }}</strong>
+                    <p>{{ t("common.imageDropzoneCopy") }}</p>
+                  </div>
+                </template>
+              </PFileUpload>
+            </div>
+            <div class="file-dropzone-field">
               <span>{{ t("customerDetail.kycFields.backImage") }}</span>
-              <input accept="image/*" required type="file" @change="updateNewCustomerDocument('documentBackImageDataUrl', $event)" />
-            </label>
+              <PFileUpload
+                mode="advanced"
+                accept="image/*"
+                :multiple="false"
+                customUpload
+                :showUploadButton="false"
+                :showCancelButton="false"
+                class="upload-dropzone"
+                @select="updateNewCustomerDocument('documentBackImageDataUrl', $event)"
+              >
+                <template #header="{ chooseCallback, clearCallback }">
+                  <div class="upload-dropzone__header">
+                    <PButton severity="secondary" outlined type="button" :label="t('common.chooseFile')" @click="chooseCallback()" />
+                    <PButton
+                      v-if="newCustomerKyc.documentBackImageDataUrl"
+                      severity="danger"
+                      outlined
+                      type="button"
+                      :label="t('common.removeFile')"
+                      @click="clearCallback(); clearNewCustomerDocument('documentBackImageDataUrl')"
+                    />
+                  </div>
+                </template>
+                <template #content="{ files }">
+                  <div class="upload-dropzone__content">
+                    <div v-if="files?.length" class="upload-dropzone__file">{{ t("common.fileSelected", { name: files[0].name }) }}</div>
+                    <div v-else-if="newCustomerKyc.documentBackImageDataUrl" class="upload-dropzone__file">{{ t("common.documentAttached") }}</div>
+                    <img
+                      v-if="newCustomerKyc.documentBackImageDataUrl"
+                      :src="resolveDocumentImageSrc(newCustomerKyc.documentBackImageDataUrl)"
+                      :alt="t('customerDetail.backSide')"
+                      class="upload-dropzone__preview-image"
+                    />
+                  </div>
+                </template>
+                <template #empty>
+                  <div class="upload-dropzone__empty">
+                    <i class="pi pi-cloud-upload upload-dropzone__icon" />
+                    <strong>{{ t("common.imageDropzoneTitle") }}</strong>
+                    <p>{{ t("common.imageDropzoneCopy") }}</p>
+                  </div>
+                </template>
+              </PFileUpload>
+            </div>
             <div class="full-span" v-if="newCustomerKyc.portraitImageDataUrl">
               <p class="meta-label">{{ t("customerDetail.portraitExtracted") }}</p>
-              <img :src="newCustomerKyc.portraitImageDataUrl" alt="Portrait" style="max-width: 120px; border-radius: 4px; border: 1px solid var(--border-color);" />
+              <img
+                :src="resolveDocumentImageSrc(newCustomerKyc.portraitImageDataUrl)"
+                :alt="t('customerDetail.portrait')"
+                style="max-width: 120px; border-radius: 4px; border: 1px solid var(--border-color);"
+              />
             </div>
             <div v-if="documentOcrAvailable" class="full-span inline-row">
               <PButton
                 class="secondary-button"
                 severity="secondary"
                 outlined
+                :disabled="!canPrefillNewCustomerDocument"
                 :label="t('tenantHome.prefillDocument')"
                 type="button"
                 @click="prefillNewCustomerDocumentData"
@@ -313,10 +402,46 @@
                     <span>{{ t("customerDetail.fields.city") }}</span>
                     <PInputText v-model="pledgePresentation.bearerCity" class="form-field" />
                   </label>
-                  <label class="full-span">
+                  <div class="file-dropzone-field full-span">
                     <span>{{ t("tenantHome.pledgePresentation.powerOfAttorney") }}</span>
-                    <input accept=".pdf,image/*" required type="file" @change="updatePowerOfAttorneyDocument($event)" />
-                  </label>
+                    <PFileUpload
+                      mode="advanced"
+                      accept=".pdf,image/*"
+                      :multiple="false"
+                      customUpload
+                      :showUploadButton="false"
+                      :showCancelButton="false"
+                      class="upload-dropzone"
+                      @select="updatePowerOfAttorneyDocument($event)"
+                    >
+                      <template #header="{ chooseCallback, clearCallback }">
+                        <div class="upload-dropzone__header">
+                          <PButton severity="secondary" outlined type="button" :label="t('common.chooseFile')" @click="chooseCallback()" />
+                          <PButton
+                            v-if="pledgePresentation.powerOfAttorneyDocumentDataUrl"
+                            severity="danger"
+                            outlined
+                            type="button"
+                            :label="t('common.removeFile')"
+                            @click="clearCallback(); clearPowerOfAttorneyDocument()"
+                          />
+                        </div>
+                      </template>
+                      <template #content="{ files }">
+                        <div class="upload-dropzone__content">
+                          <div v-if="files?.length" class="upload-dropzone__file">{{ t("common.fileSelected", { name: files[0].name }) }}</div>
+                          <div v-else-if="pledgePresentation.powerOfAttorneyDocumentDataUrl" class="upload-dropzone__file">{{ t("common.documentAttached") }}</div>
+                        </div>
+                      </template>
+                      <template #empty>
+                        <div class="upload-dropzone__empty">
+                          <i class="pi pi-cloud-upload upload-dropzone__icon" />
+                          <strong>{{ t("common.documentDropzoneTitle") }}</strong>
+                          <p>{{ t("common.documentDropzoneCopy") }}</p>
+                        </div>
+                      </template>
+                    </PFileUpload>
+                  </div>
                 </template>
               </div>
               <p class="legal-copy">
@@ -477,7 +602,7 @@
 
             <label>
               <span>{{ t("tenantHome.terms.loanAmount") }}</span>
-              <PInputText :value="`${totalLoanValue} EUR`" readonly type="text" class="form-field" />
+              <PInputText :value="formatCurrency(totalLoanValue)" readonly type="text" class="form-field" />
             </label>
 
             <label v-if="loanQuotes.some((quote) => quote.manualMonthlyOperatingFeeRequired)" class="full-span">
@@ -494,7 +619,7 @@
         <section class="summary-strip">
           <div>
             <p class="meta-label">{{ t("tenantHome.totalLoan") }}</p>
-            <strong>{{ totalLoanValue }} EUR</strong>
+            <strong>{{ formatCurrency(totalLoanValue) }}</strong>
           </div>
           <PButton
             :disabled="isLoading || isSubmitting || !canSubmitLoan"
@@ -523,15 +648,15 @@
             <div class="quote-grid">
               <div>
                 <p class="meta-label">{{ t("tenantHome.quote.totalLoanValue") }}</p>
-                <strong>{{ quote.totalLoanValue }} EUR</strong>
+                <strong>{{ formatCurrency(quote.totalLoanValue) }}</strong>
               </div>
               <div>
                 <p class="meta-label">{{ t("pawnTickets.columns.dueDate") }}</p>
-                <strong>{{ quote.dueDate }}</strong>
+                <strong>{{ formatDate(quote.dueDate) }}</strong>
               </div>
               <div>
                 <p class="meta-label">{{ t("tenantHome.quote.earliestAuctionDate") }}</p>
-                <strong>{{ quote.earliestAuctionDate }}</strong>
+                <strong>{{ formatDate(quote.earliestAuctionDate) }}</strong>
               </div>
               <div>
                 <p class="meta-label">{{ t("tenantHome.quote.monthlyInterestRate") }}</p>
@@ -539,19 +664,19 @@
               </div>
               <div>
                 <p class="meta-label">{{ t("tenantHome.quote.monthlyOperatingFee") }}</p>
-                <strong>{{ quote.monthlyOperatingFee }} EUR</strong>
+                <strong>{{ formatCurrency(quote.monthlyOperatingFee) }}</strong>
               </div>
               <div>
                 <p class="meta-label">{{ t("tenantHome.quote.totalInterestAmount") }}</p>
-                <strong>{{ quote.totalInterestAmount }} EUR</strong>
+                <strong>{{ formatCurrency(quote.totalInterestAmount) }}</strong>
               </div>
               <div>
                 <p class="meta-label">{{ t("tenantHome.quote.totalOperatingFeeAmount") }}</p>
-                <strong>{{ quote.totalOperatingFeeAmount }} EUR</strong>
+                <strong>{{ formatCurrency(quote.totalOperatingFeeAmount) }}</strong>
               </div>
               <div class="full-span">
                 <p class="meta-label">{{ t("tenantHome.quote.totalRepaymentAmount") }}</p>
-                <strong>{{ quote.totalRepaymentAmount }} EUR</strong>
+                <strong>{{ formatCurrency(quote.totalRepaymentAmount) }}</strong>
               </div>
             </div>
             <p class="legal-copy">{{ quote.legalText }}</p>
@@ -569,10 +694,10 @@
           <article v-for="pawnTicket in createdLoan.pawnTickets" :key="pawnTicket.ticketNumber" class="ticket-card">
             <p class="eyebrow">{{ pawnTicket.ticketNumber }}</p>
             <p>{{ t("tenantHome.issuedTickets.contract", { contract: pawnTicket.contractNumber }) }}</p>
-            <p>{{ t("tenantHome.issuedTickets.dueDate", { dueDate: pawnTicket.dueDate }) }}</p>
-            <p>{{ t("tenantHome.issuedTickets.repaymentAmount", { amount: pawnTicket.totalRepaymentAmount }) }}</p>
-            <p>{{ t("tenantHome.issuedTickets.totalInterestAmount", { amount: pawnTicket.totalInterestAmount }) }}</p>
-            <p>{{ t("tenantHome.issuedTickets.totalOperatingFeeAmount", { amount: pawnTicket.totalOperatingFeeAmount }) }}</p>
+            <p>{{ t("tenantHome.issuedTickets.dueDate", { dueDate: formatDate(pawnTicket.dueDate) }) }}</p>
+            <p>{{ t("tenantHome.issuedTickets.repaymentAmount", { amount: formatCurrency(pawnTicket.totalRepaymentAmount) }) }}</p>
+            <p>{{ t("tenantHome.issuedTickets.totalInterestAmount", { amount: formatCurrency(pawnTicket.totalInterestAmount) }) }}</p>
+            <p>{{ t("tenantHome.issuedTickets.totalOperatingFeeAmount", { amount: formatCurrency(pawnTicket.totalOperatingFeeAmount) }) }}</p>
             <p>{{ t("tenantHome.issuedTickets.barcode", { barcode: pawnTicket.contractBarcode }) }}</p>
             <p>{{ t("tenantHome.issuedTickets.termsVersion", { version: pawnTicket.termsVersion }) }}</p>
             <div v-if="pawnTicket.positions?.length" class="position-list">

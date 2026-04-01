@@ -18,6 +18,14 @@
     "notAvailable": "Nicht hinterlegt",
     "requestFailed": "Anfrage fehlgeschlagen",
     "fileReadFailed": "Datei konnte nicht gelesen werden",
+    "chooseFile": "Datei auswählen",
+    "removeFile": "Datei entfernen",
+    "imageDropzoneTitle": "Bild hier ablegen",
+    "imageDropzoneCopy": "Datei hineinziehen oder per Klick auswählen.",
+    "documentDropzoneTitle": "Dokument hier ablegen",
+    "documentDropzoneCopy": "PDF oder Bild hineinziehen oder per Klick auswählen.",
+    "fileSelected": "Ausgewählt: {name}",
+    "documentAttached": "Dokument hinterlegt",
     "noRecordsFound": "Keine Einträge gefunden.",
     "documentTypes": {
       "passport": "Reisepass",
@@ -40,9 +48,14 @@
     "eyebrow": "Lombardio",
     "title": "Admin-Anmeldung",
     "intro": "Mit dem Live-Identity-Service authentifizieren und den geschützten Arbeitsbereich öffnen.",
+    "welcomeMessage": "Mit deinem Arbeitskonto anmelden und den geschützten Verwaltungsbereich öffnen.",
+    "username": "Benutzername",
     "email": "E-Mail",
+    "usernamePlaceholder": "benutzer@lombardio.local",
     "password": "Passwort",
+    "passwordPlaceholder": "Passwort eingeben",
     "authenticatorCode": "Authenticator-Code",
+    "mfaCodePlaceholder": "000 000",
     "signIn": "Anmelden",
     "signingIn": "Anmeldung läuft...",
     "verifyCode": "Code prüfen",
@@ -307,6 +320,12 @@
     "lotsTitle": "Posten",
     "surplusCasesTitle": "Überschussfälle",
     "auctionDate": "Termin: {date}",
+    "status": {
+      "DRAFT": "Entwurf",
+      "ANNOUNCED": "Bekanntgemacht",
+      "LIVE": "Live",
+      "CLOSED": "Geschlossen"
+    },
     "fields": {
       "title": "Titel",
       "location": "Ort",
@@ -380,6 +399,13 @@
     "lotsTitle": "Posten",
     "registrationsTitle": "Bieterfreigaben",
     "registrationSummary": "KYC: {kyc} | Konto: {account}",
+    "status": {
+      "DRAFT": "Entwurf",
+      "ANNOUNCED": "Bekanntgemacht",
+      "LIVE": "Live",
+      "PUBLISHED": "Veröffentlicht",
+      "CLOSED": "Geschlossen"
+    },
     "fields": {
       "title": "Titel",
       "minimumIncrement": "Mindestinkrement",
@@ -405,6 +431,11 @@
       "action": "Aktion"
     },
     "registrationStatus": {
+      "approval": {
+        "PENDING": "Ausstehend",
+        "APPROVED": "Freigegeben",
+        "REJECTED": "Abgelehnt"
+      },
       "kyc": {
         "PENDING": "KYC ausstehend",
         "PASSED": "KYC bestanden",
@@ -475,6 +506,20 @@
       "register": "Registrieren",
       "enableRealtime": "Echtzeit verbinden",
       "submitBid": "Gebot senden"
+    },
+    "status": {
+      "approval": {
+        "PENDING": "Ausstehend",
+        "APPROVED": "Freigegeben",
+        "REJECTED": "Abgelehnt"
+      },
+      "realtime": {
+        "idle": "Inaktiv",
+        "connecting": "Verbindet",
+        "connected": "Verbunden",
+        "disconnected": "Getrennt",
+        "error": "Fehler"
+      }
     },
     "messages": {
       "registerFirst": "Bitte zuerst registrieren."
@@ -588,7 +633,7 @@
     "ticketCount": "{count} Tickets",
     "actionTitle": "Kassenaktion",
     "actionSubtitle": "Settlement-Vorschau auf Basis des ausgewählten Pfandscheins.",
-    "ticketSummary": "Darlehen {loanValue} EUR · Fälligkeit {dueDate}",
+    "ticketSummary": "Darlehen {loanValue} · Fälligkeit {dueDate}",
     "calculating": "Berechnung läuft...",
     "calculate": "Settlement berechnen",
     "resultEyebrow": "Ergebnis",
@@ -598,6 +643,11 @@
     "journalSubtitle": "Persistierte Kassenvorgänge für den aktuellen Tenant.",
     "entryCount": "{count} Einträge",
     "transactionNote": "Im Kassenarbeitsplatz erfasst",
+    "transactionTypes": {
+      "REDEEM": "Auslösung",
+      "EXTEND": "Verlängerung",
+      "PARTIAL_REPAYMENT": "Teilrückzahlung"
+    },
     "actions": {
       "redeem": "Auslösung",
       "extend": "Verlängerung",
@@ -644,7 +694,7 @@
     "loansSubtitle": "Chronologische Vertrags- und Pfandscheinhistorie des Kunden.",
     "loanEyebrow": "Verpfändung {timestamp}",
     "loanSummary": "{positions} Position(en), {tickets} Pfandschein(e)",
-    "ticketLine": "{number} · Darlehen {loanValue} EUR · Fällig {dueDate}",
+    "ticketLine": "{number} · Darlehen {loanValue} · Fällig {dueDate}",
     "powerOfAttorneyLine": "Überbringer: {bearerName} · Vollmacht hinterlegt",
     "noLoans": "Noch keine Pfandverträge oder Beleihungen für diesen Kunden vorhanden.",
     "kycTitle": "KYC und Ausweisdokument",
@@ -852,9 +902,9 @@
       "customer": "Kunde: {customer}",
       "contract": "Vertrag: {contract}",
       "dueDate": "Pfandschein erstellt bis {dueDate}",
-      "repaymentAmount": "Rückzahlungsbetrag: {amount} EUR",
-      "totalInterestAmount": "Zinsen gesamt: {amount} EUR",
-      "totalOperatingFeeAmount": "Betriebsvergütung gesamt: {amount} EUR",
+      "repaymentAmount": "Rückzahlungsbetrag: {amount}",
+      "totalInterestAmount": "Zinsen gesamt: {amount}",
+      "totalOperatingFeeAmount": "Betriebsvergütung gesamt: {amount}",
       "barcode": "Barcode: {barcode}",
       "termsVersion": "AGB-Version: {version}"
     },

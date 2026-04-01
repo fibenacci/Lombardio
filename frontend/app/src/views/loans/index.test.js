@@ -1,6 +1,7 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import LoansView from ".";
 import router from "../../router";
+import { setLocale } from "../../i18n";
 import { useAuthStore } from "../../stores/auth";
 import { useTenantStore } from "../../stores/tenant";
 import * as originationApi from "../../services/api/origination";
@@ -10,6 +11,7 @@ describe("LoansView", () => {
   let tenantStore;
 
   beforeEach(() => {
+    setLocale("en");
     authStore = useAuthStore();
     tenantStore = useTenantStore();
   });
@@ -55,6 +57,6 @@ describe("LoansView", () => {
     expect(originationApi.fetchLoans).toHaveBeenCalledWith("tenant-default", "token-123");
     expect(wrapper.text()).toContain("Anna Becker");
     expect(wrapper.text()).toContain("PS-1001");
-    expect(wrapper.text()).toContain("2030-03-18");
+    expect(wrapper.text()).toContain("18 Mar 2030");
   });
 });

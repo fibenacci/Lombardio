@@ -8,6 +8,7 @@ import {
 } from "../../services/api/onlineAuction";
 import { connectToAuctionRealtime } from "../../services/api/centrifugo";
 import { useI18n } from "../../i18n";
+import { useFormatters } from "../../utils/formatters";
 import template from "./template.html?raw";
 import "./styles.scss";
 
@@ -16,6 +17,7 @@ export default defineComponent({
   setup() {
     const route = useRoute();
     const { t } = useI18n();
+    const { formatCurrency, formatDateTime } = useFormatters();
     const auction = ref(null);
     const bidder = ref(null);
     const errorMessage = ref("");
@@ -87,6 +89,21 @@ export default defineComponent({
       bidForm.amount = "";
     }
 
+    function getApprovalStatusLabel(status) {
+      return t(`publicAuction.status.approval.${status}`);
+    }
+
+    function getRealtimeStateLabel(state) {
+      return t(`publicAuction.status.realtime.${state}`);
+    }
+
+    function getBidderCheckSummary(currentBidder) {
+      return t("publicAuction.bidderChecks", {
+        kyc: t(`onlineAuctions.registrationStatus.kyc.${currentBidder.kycStatus}`),
+        account: t(`onlineAuctions.registrationStatus.account.${currentBidder.accountCheckStatus}`)
+      });
+    }
+
     onMounted(reloadAuction);
     onBeforeUnmount(() => closeRealtime?.());
 
@@ -96,6 +113,11 @@ export default defineComponent({
       bidder,
       enableRealtime,
       errorMessage,
+      formatCurrency,
+      formatDateTime,
+      getApprovalStatusLabel,
+      getBidderCheckSummary,
+      getRealtimeStateLabel,
       realtimeEvents,
       realtimeState,
       registerBidder,

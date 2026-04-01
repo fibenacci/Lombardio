@@ -11,6 +11,7 @@ import {
 } from "../../services/api/onlineAuction";
 import { useAppToast } from "../../composables/use-app-toast";
 import { useI18n } from "../../i18n";
+import { useFormatters } from "../../utils/formatters";
 import template from "./template.html?raw";
 import "./styles.scss";
 
@@ -25,6 +26,7 @@ export default defineComponent({
     const tenantStore = useTenantStore();
     const toast = useAppToast();
     const { t } = useI18n();
+    const { formatCurrency } = useFormatters();
     const auctions = ref([]);
     const selectedAuctionId = ref("");
     const errorMessage = ref("");
@@ -50,6 +52,21 @@ export default defineComponent({
       { label: t("onlineAuctions.registrationStatus.account.PASSED"), value: "PASSED" },
       { label: t("onlineAuctions.registrationStatus.account.FAILED"), value: "FAILED" }
     ]);
+
+    function getAuctionStatusLabel(status) {
+      return t(`onlineAuctions.status.${status}`);
+    }
+
+    function getApprovalStatusLabel(status) {
+      return t(`onlineAuctions.registrationStatus.approval.${status}`);
+    }
+
+    function getRegistrationSummary(registration) {
+      return t("onlineAuctions.registrationSummary", {
+        kyc: t(`onlineAuctions.registrationStatus.kyc.${registration.kycStatus}`),
+        account: t(`onlineAuctions.registrationStatus.account.${registration.accountCheckStatus}`)
+      });
+    }
 
     async function loadData() {
       if (!tenantStore.selectedTenantId) {
@@ -176,6 +193,10 @@ export default defineComponent({
       changeStatus,
       createForm,
       errorMessage,
+      formatCurrency,
+      getApprovalStatusLabel,
+      getAuctionStatusLabel,
+      getRegistrationSummary,
       publicUrlFor,
       registrationAccountOptions,
       registrationKycOptions,

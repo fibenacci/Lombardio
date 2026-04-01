@@ -65,9 +65,12 @@ describe("TenantHomeView", () => {
       documentType: "PERSONALAUSWEIS",
       documentNumber: "L01X00T47",
       documentValidUntil: "2030-03-18",
-      documentFrontImageDataUrl: "data:image/png;base64,front",
-      documentBackImageDataUrl: "data:image/png;base64,back",
       decisionNote: "Freigegeben"
+    });
+    vi.spyOn(kycApi, "fetchKycDocuments").mockResolvedValue({
+      customerId: "customer-berlin-1",
+      documentFrontImageDataUrl: "data:image/png;base64,front",
+      documentBackImageDataUrl: "data:image/png;base64,back"
     });
     vi.spyOn(reportingApi, "fetchDashboardOverview").mockResolvedValue({
       rangeStart: "2026-03-05",
@@ -346,7 +349,7 @@ describe("TenantHomeView", () => {
     expect(wrapper.text()).toContain("PS-1001-01");
     expect(wrapper.text()).toContain("PS-1002");
     expect(wrapper.text()).toContain("Anna Becker");
-    expect(wrapper.text()).toContain("219.5 EUR");
+    expect(wrapper.text()).toContain("219,50");
 
     const pdfButton = wrapper.findAll("button").find((button) => button.text().includes("Pfandschein als PDF"));
     await pdfButton.trigger("click");
@@ -575,8 +578,6 @@ describe("TenantHomeView", () => {
       documentType: "PERSONALAUSWEIS",
       documentNumber: "L02X00T48",
       documentValidUntil: "2030-03-18",
-      documentFrontImageDataUrl: "data:image/png;base64,front-2",
-      documentBackImageDataUrl: "data:image/png;base64,back-2",
       decisionNote: "Dokument geprueft"
     });
     vi.spyOn(pawnTicketApi, "fetchPawnTicketQuote").mockResolvedValue({
@@ -645,8 +646,6 @@ describe("TenantHomeView", () => {
       documentType: "PERSONALAUSWEIS",
       documentNumber: "L02X00T48",
       documentValidUntil: "2030-03-18",
-      documentFrontImageDataUrl: "data:image/png;base64,front-2",
-      documentBackImageDataUrl: "data:image/png;base64,back-2",
       decisionNote: ""
     });
     const updateKycSpy = vi.spyOn(kycApi, "updateKycStatus").mockResolvedValue({

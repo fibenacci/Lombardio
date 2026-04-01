@@ -18,6 +18,14 @@
     "notAvailable": "Not available",
     "requestFailed": "Request failed",
     "fileReadFailed": "File could not be read",
+    "chooseFile": "Choose file",
+    "removeFile": "Remove file",
+    "imageDropzoneTitle": "Drop image here",
+    "imageDropzoneCopy": "Drag a file here or click to select one.",
+    "documentDropzoneTitle": "Drop document here",
+    "documentDropzoneCopy": "Drag a PDF or image here or click to select one.",
+    "fileSelected": "Selected: {name}",
+    "documentAttached": "Document attached",
     "noRecordsFound": "No records found.",
     "documentTypes": {
       "passport": "Passport",
@@ -40,9 +48,14 @@
     "eyebrow": "Lombardio",
     "title": "Admin Login",
     "intro": "Authenticate against the live identity service and open the secured admin workspace.",
+    "welcomeMessage": "Sign in with your work account to open the secured administration workspace.",
+    "username": "Username",
     "email": "Email",
+    "usernamePlaceholder": "user@lombardio.local",
     "password": "Password",
+    "passwordPlaceholder": "Enter password",
     "authenticatorCode": "Authenticator code",
+    "mfaCodePlaceholder": "000 000",
     "signIn": "Sign in",
     "signingIn": "Signing in...",
     "verifyCode": "Verify code",
@@ -307,6 +320,12 @@
     "lotsTitle": "Lots",
     "surplusCasesTitle": "Surplus cases",
     "auctionDate": "Date: {date}",
+    "status": {
+      "DRAFT": "Draft",
+      "ANNOUNCED": "Announced",
+      "LIVE": "Live",
+      "CLOSED": "Closed"
+    },
     "fields": {
       "title": "Title",
       "location": "Location",
@@ -380,6 +399,13 @@
     "lotsTitle": "Lots",
     "registrationsTitle": "Bidder approvals",
     "registrationSummary": "KYC: {kyc} | Account: {account}",
+    "status": {
+      "DRAFT": "Draft",
+      "ANNOUNCED": "Announced",
+      "LIVE": "Live",
+      "PUBLISHED": "Published",
+      "CLOSED": "Closed"
+    },
     "fields": {
       "title": "Title",
       "minimumIncrement": "Minimum increment",
@@ -405,6 +431,11 @@
       "action": "Action"
     },
     "registrationStatus": {
+      "approval": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      },
       "kyc": {
         "PENDING": "KYC pending",
         "PASSED": "KYC passed",
@@ -475,6 +506,20 @@
       "register": "Register",
       "enableRealtime": "Connect real-time feed",
       "submitBid": "Send bid"
+    },
+    "status": {
+      "approval": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      },
+      "realtime": {
+        "idle": "Idle",
+        "connecting": "Connecting",
+        "connected": "Connected",
+        "disconnected": "Disconnected",
+        "error": "Error"
+      }
     },
     "messages": {
       "registerFirst": "Please register first."
@@ -588,7 +633,7 @@
     "ticketCount": "{count} tickets",
     "actionTitle": "Cash action",
     "actionSubtitle": "Settlement preview based on the selected pawn ticket.",
-    "ticketSummary": "Loan {loanValue} EUR · Due date {dueDate}",
+    "ticketSummary": "Loan {loanValue} · Due date {dueDate}",
     "calculating": "Calculating...",
     "calculate": "Calculate settlement",
     "resultEyebrow": "Result",
@@ -598,6 +643,11 @@
     "journalSubtitle": "Persisted cash transactions for the current tenant.",
     "entryCount": "{count} entries",
     "transactionNote": "Captured in cash desk workspace",
+    "transactionTypes": {
+      "REDEEM": "Redeem",
+      "EXTEND": "Extend",
+      "PARTIAL_REPAYMENT": "Partial repayment"
+    },
     "actions": {
       "redeem": "Redeem",
       "extend": "Extend",
@@ -644,7 +694,7 @@
     "loansSubtitle": "Chronological contract and pawn-ticket history for the customer.",
     "loanEyebrow": "Pledge {timestamp}",
     "loanSummary": "{positions} position(s), {tickets} pawn ticket(s)",
-    "ticketLine": "{number} · Loan {loanValue} EUR · Due {dueDate}",
+    "ticketLine": "{number} · Loan {loanValue} · Due {dueDate}",
     "powerOfAttorneyLine": "Bearer: {bearerName} · Power of attorney stored",
     "noLoans": "No pawn contracts or originations stored for this customer yet.",
     "kycTitle": "KYC and identity document",
@@ -852,9 +902,9 @@
       "customer": "Customer: {customer}",
       "contract": "Contract: {contract}",
       "dueDate": "Pawn ticket created until {dueDate}",
-      "repaymentAmount": "Repayment amount: {amount} EUR",
-      "totalInterestAmount": "Total interest: {amount} EUR",
-      "totalOperatingFeeAmount": "Total operating fee: {amount} EUR",
+      "repaymentAmount": "Repayment amount: {amount}",
+      "totalInterestAmount": "Total interest: {amount}",
+      "totalOperatingFeeAmount": "Total operating fee: {amount}",
       "barcode": "Barcode: {barcode}",
       "termsVersion": "Terms version: {version}"
     },

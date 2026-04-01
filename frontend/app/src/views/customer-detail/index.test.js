@@ -75,9 +75,12 @@ describe("CustomerDetailView", () => {
       documentType: "PERSONALAUSWEIS",
       documentNumber: "L01X00T47",
       documentValidUntil: "2030-03-18",
-      documentFrontImageDataUrl: "data:image/png;base64,front",
-      documentBackImageDataUrl: "data:image/png;base64,back",
       decisionNote: "Freigegeben"
+    });
+    vi.spyOn(kycApi, "fetchKycDocuments").mockResolvedValue({
+      customerId: "customer-1",
+      documentFrontImageDataUrl: "data:image/png;base64,front",
+      documentBackImageDataUrl: "data:image/png;base64,back"
     });
     vi.spyOn(amlApi, "fetchAmlStatus").mockResolvedValue({
       status: "REVIEW_REQUIRED",

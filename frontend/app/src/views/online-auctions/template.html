@@ -52,7 +52,7 @@
           @click="selectedAuctionId = auction.id"
         >
           <strong>{{ auction.title }}</strong>
-          <span>{{ auction.status }}</span>
+          <span>{{ getAuctionStatusLabel(auction.status) }}</span>
           <span>{{ auction.slug }}</span>
         </button>
       </div>
@@ -71,15 +71,19 @@
     <AdminPanel :title="t('onlineAuctions.publicUrlTitle')">
       <p class="public-link">{{ publicUrlFor(selectedAuction) }}</p>
       <p class="hint">{{ t("onlineAuctions.publicUrlCopy") }}</p>
-      <p class="hint">{{ t("onlineAuctions.publicUrlMeta", { increment: selectedAuction.minimumIncrement, countdown: selectedAuction.countdownSeconds }) }}</p>
+      <p class="hint">{{ t("onlineAuctions.publicUrlMeta", { increment: formatCurrency(selectedAuction.minimumIncrement), countdown: selectedAuction.countdownSeconds }) }}</p>
     </AdminPanel>
 
     <AdminPanel :title="t('onlineAuctions.lotsTitle')">
       <AppDataTable :value="selectedAuction.lots" dataKey="id">
         <PColumn field="lotNumber" :header="t('onlineAuctions.tableColumns.lotNumber')" sortable />
         <PColumn field="title" :header="t('onlineAuctions.tableColumns.title')" sortable />
-        <PColumn field="startingBid" :header="t('onlineAuctions.tableColumns.startingBid')" sortable />
-        <PColumn field="currentBid" :header="t('onlineAuctions.tableColumns.currentBid')" sortable />
+        <PColumn field="startingBid" :header="t('onlineAuctions.tableColumns.startingBid')" sortable>
+          <template #body="{ data }">{{ formatCurrency(data.startingBid) }}</template>
+        </PColumn>
+        <PColumn field="currentBid" :header="t('onlineAuctions.tableColumns.currentBid')" sortable>
+          <template #body="{ data }">{{ data.currentBid == null ? "-" : formatCurrency(data.currentBid) }}</template>
+        </PColumn>
         <PColumn :header="t('onlineAuctions.tableColumns.highestBidder')" field="highestBidderAlias" sortable>
           <template #body="{ data }">{{ data.highestBidderAlias || "-" }}</template>
         </PColumn>
@@ -93,8 +97,8 @@
         <PColumn field="email" :header="t('onlineAuctions.registrationColumns.email')" sortable />
         <PColumn :header="t('onlineAuctions.registrationColumns.status')" field="approvalStatus" sortable>
           <template #body="{ data }">
-            {{ data.approvalStatus }}<br />
-            <small>{{ t("onlineAuctions.registrationSummary", { kyc: data.kycStatus, account: data.accountCheckStatus }) }}</small>
+            {{ getApprovalStatusLabel(data.approvalStatus) }}<br />
+            <small>{{ getRegistrationSummary(data) }}</small>
           </template>
         </PColumn>
         <PColumn :header="t('onlineAuctions.registrationColumns.action')">

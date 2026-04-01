@@ -29,12 +29,14 @@
       >
         <PColumn field="ticketNumber" :header="t('cashdesk.columns.ticket')" sortable />
         <PColumn field="customerDisplayName" :header="t('cashdesk.columns.customer')" sortable />
-        <PColumn field="dueDate" :header="t('cashdesk.columns.dueDate')" sortable />
+        <PColumn field="dueDate" :header="t('cashdesk.columns.dueDate')" sortable>
+          <template #body="{ data }">{{ formatDate(data.dueDate) }}</template>
+        </PColumn>
         <PColumn field="totalLoanValue" :header="t('cashdesk.columns.loan')" sortable>
-          <template #body="{ data }">{{ data.totalLoanValue }} EUR</template>
+          <template #body="{ data }">{{ formatCurrency(data.totalLoanValue) }}</template>
         </PColumn>
         <PColumn field="totalRepaymentAmount" :header="t('cashdesk.columns.repayment')" sortable>
-          <template #body="{ data }">{{ data.totalRepaymentAmount }} EUR</template>
+          <template #body="{ data }">{{ formatCurrency(data.totalRepaymentAmount) }}</template>
         </PColumn>
       </AppDataTable>
     </section>
@@ -51,41 +53,46 @@
         <div class="ticket-summary">
           <strong>{{ selectedTicket.ticketNumber }}</strong>
           <span>{{ selectedTicket.customerDisplayName }}</span>
-          <span class="muted-copy">{{ t("cashdesk.ticketSummary", { loanValue: selectedTicket.totalLoanValue, dueDate: selectedTicket.dueDate }) }}</span>
+          <span class="muted-copy">{{ t("cashdesk.ticketSummary", { loanValue: formatCurrency(selectedTicket.totalLoanValue), dueDate: formatDate(selectedTicket.dueDate) }) }}</span>
         </div>
 
         <label>
           <span>{{ t("cashdesk.fields.action") }}</span>
-          <select v-model="activeAction">
-            <option value="redeem">{{ t("cashdesk.actions.redeem") }}</option>
-            <option value="extend">{{ t("cashdesk.actions.extend") }}</option>
-            <option value="partial">{{ t("cashdesk.actions.partial") }}</option>
-          </select>
+          <PSelect
+            v-model="activeAction"
+            :options="actionOptions"
+            optionLabel="label"
+            optionValue="value"
+            class="form-field"
+          />
         </label>
 
         <label v-if="activeAction === 'extend'">
           <span>{{ t("cashdesk.fields.extensionMonths") }}</span>
-          <input v-model="form.extensionMonths" min="1" step="1" type="number" />
+          <PInputText v-model="form.extensionMonths" min="1" step="1" type="number" class="form-field" />
         </label>
 
         <label v-if="activeAction === 'partial'">
           <span>{{ t("cashdesk.fields.repaymentAmount") }}</span>
-          <input v-model="form.repaymentAmount" min="0.01" step="0.01" type="number" />
+          <PInputText v-model="form.repaymentAmount" min="0.01" step="0.01" type="number" class="form-field" />
         </label>
 
         <label v-if="activeAction !== 'extend'">
           <span>{{ t("cashdesk.fields.remainingTermMonths") }}</span>
-          <input v-model="form.remainingTermMonths" min="1" step="1" type="number" />
+          <PInputText v-model="form.remainingTermMonths" min="1" step="1" type="number" class="form-field" />
         </label>
 
         <label>
           <span>{{ t("cashdesk.fields.manualMonthlyOperatingFee") }}</span>
-          <input v-model="form.manualMonthlyOperatingFee" min="0" step="0.01" type="number" />
+          <PInputText v-model="form.manualMonthlyOperatingFee" min="0" step="0.01" type="number" class="form-field" />
         </label>
 
-        <button :disabled="isSubmitting || !selectedTicket" type="button" @click="calculate">
-          {{ isSubmitting ? t("cashdesk.calculating") : t("cashdesk.calculate") }}
-        </button>
+        <PButton
+          :disabled="isSubmitting || !selectedTicket"
+          :label="isSubmitting ? t('cashdesk.calculating') : t('cashdesk.calculate')"
+          type="button"
+          @click="calculate"
+        />
       </div>
 
       <div v-if="settlement" class="settlement-card">
@@ -93,25 +100,28 @@
         <div class="settlement-grid">
           <div>
             <p class="meta-label">{{ t("cashdesk.settlement.outstandingLoanAmount") }}</p>
-            <strong>{{ settlement.outstandingLoanAmount }} EUR</strong>
+            <strong>{{ formatCurrency(settlement.outstandingLoanAmount) }}</strong>
           </div>
           <div>
             <p class="meta-label">{{ t("cashdesk.settlement.interestAmount") }}</p>
-            <strong>{{ settlement.interestAmount }} EUR</strong>
+            <strong>{{ formatCurrency(settlement.interestAmount) }}</strong>
           </div>
           <div>
             <p class="meta-label">{{ t("cashdesk.settlement.operatingFeeAmount") }}</p>
-            <strong>{{ settlement.operatingFeeAmount }} EUR</strong>
+            <strong>{{ formatCurrency(settlement.operatingFeeAmount) }}</strong>
           </div>
           <div>
             <p class="meta-label">{{ t("cashdesk.settlement.totalDueAmount") }}</p>
-            <strong>{{ settlement.totalDueAmount }} EUR</strong>
+            <strong>{{ formatCurrency(settlement.totalDueAmount) }}</strong>
           </div>
         </div>
         <p class="legal-copy">{{ settlement.legalText }}</p>
-        <button :disabled="isSubmitting" type="button" @click="execute">
-          {{ isSubmitting ? t("cashdesk.executing") : t("cashdesk.execute") }}
-        </button>
+        <PButton
+          :disabled="isSubmitting"
+          :label="isSubmitting ? t('cashdesk.executing') : t('cashdesk.execute')"
+          type="button"
+          @click="execute"
+        />
       </div>
 
       <div class="journal-card">
@@ -124,13 +134,15 @@
         </div>
         <AppDataTable :value="transactions" dataKey="id" :loading="isLoading">
           <PColumn field="createdAt" :header="t('cashdesk.journalColumns.createdAt')" sortable>
-            <template #body="{ data }">{{ data.createdAt?.slice(0, 16).replace('T', ' ') }}</template>
+            <template #body="{ data }">{{ formatDateTime(data.createdAt) }}</template>
           </PColumn>
           <PColumn field="ticketNumber" :header="t('cashdesk.journalColumns.ticket')" sortable />
           <PColumn field="customerDisplayName" :header="t('cashdesk.journalColumns.customer')" sortable />
-          <PColumn field="type" :header="t('cashdesk.journalColumns.type')" sortable />
+          <PColumn field="type" :header="t('cashdesk.journalColumns.type')" sortable>
+            <template #body="{ data }">{{ getTransactionTypeLabel(data.type) }}</template>
+          </PColumn>
           <PColumn field="totalAmount" :header="t('cashdesk.journalColumns.amount')" sortable>
-            <template #body="{ data }">{{ data.totalAmount }} EUR</template>
+            <template #body="{ data }">{{ formatCurrency(data.totalAmount) }}</template>
           </PColumn>
         </AppDataTable>
       </div>

@@ -11,7 +11,7 @@ describe("tenantStore", () => {
     authStore = useAuthStore();
   });
 
-  it("does not fetch platform tenant features for tenant-scoped users", async () => {
+  it("loads tenant features for tenant-scoped users", async () => {
     authStore.user = {
       id: "user-admin",
       tenantId: "tenant-default",
@@ -19,12 +19,16 @@ describe("tenantStore", () => {
     };
     authStore.token = "token-123";
 
-    const fetchFeaturesSpy = vi.spyOn(platformApi, "fetchTenantFeatures");
+    const fetchFeaturesSpy = vi.spyOn(platformApi, "fetchTenantFeatures").mockResolvedValue([
+      { tenantId: "tenant-default", featureKey: "kyc-document-ocr", enabled: true }
+    ]);
 
     await tenantStore.initialize();
 
-    expect(fetchFeaturesSpy).not.toHaveBeenCalled();
+    expect(fetchFeaturesSpy).toHaveBeenCalledWith("tenant-default", "token-123");
     expect(tenantStore.selectedTenantId).toBe("tenant-default");
-    expect(tenantStore.features).toEqual([]);
+    expect(tenantStore.features).toEqual([
+      { tenantId: "tenant-default", featureKey: "kyc-document-ocr", enabled: true }
+    ]);
   });
 });

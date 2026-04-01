@@ -22,7 +22,9 @@
     <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
 
     <AppDataTable v-if="tenantStore.selectedTenantId" :value="filteredLoans" dataKey="id" :loading="isLoading">
-      <PColumn field="pledgeRecord.recordedAt" :header="t('loans.columns.recordedAt')" sortable />
+      <PColumn field="pledgeRecord.recordedAt" :header="t('loans.columns.recordedAt')" sortable>
+        <template #body="{ data }">{{ formatDateTime(data.pledgeRecord.recordedAt) }}</template>
+      </PColumn>
       <PColumn :header="t('loans.columns.customer')" field="customer.displayName" sortable>
         <template #body="{ data }">
           <div>{{ data.customer.displayName }}</div>
@@ -37,7 +39,7 @@
       <PColumn :header="t('loans.columns.tickets')">
         <template #body="{ data }">
           <div v-for="ticket in data.pawnTickets" :key="ticket.ticketNumber">
-            {{ ticket.ticketNumber }} · {{ ticket.totalLoanValue }} EUR
+            {{ ticket.ticketNumber }} · {{ formatCurrency(ticket.totalLoanValue) }}
           </div>
         </template>
       </PColumn>
@@ -46,7 +48,9 @@
           {{ data.pledgeRecord.powerOfAttorneyRequired ? t("common.yes") : t("common.no") }}
         </template>
       </PColumn>
-      <PColumn field="pledgeRecord.retentionUntil" :header="t('loans.columns.retentionUntil')" sortable />
+      <PColumn field="pledgeRecord.retentionUntil" :header="t('loans.columns.retentionUntil')" sortable>
+        <template #body="{ data }">{{ formatDate(data.pledgeRecord.retentionUntil) }}</template>
+      </PColumn>
     </AppDataTable>
   </AdminPanel>
 </section>

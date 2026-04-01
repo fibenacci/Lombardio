@@ -3,10 +3,12 @@ import { useRoute } from "vue-router";
 import { fetchCustomer, updateCustomer } from "../../services/api/customer";
 import { fetchLoans } from "../../services/api/origination";
 import { fetchAmlStatus, updateAmlStatus } from "../../services/api/aml";
-import { fetchKycStatus, prefillKycDocument, updateKycStatus } from "../../services/api/kyc";
+import { fetchKycDocuments, fetchKycStatus, prefillKycDocument, updateKycStatus } from "../../services/api/kyc";
 import { useAuthStore } from "../../stores/auth";
 import { useTenantStore } from "../../stores/tenant";
 import { useI18n } from "../../i18n";
+import { normalizeDocumentImageSrc } from "../../utils/documentDataUrl";
+import { useFormatters } from "../../utils/formatters";
 import FormFeedback from "../../components/form-feedback";
 import template from "./template.html?raw";
 import "./styles.scss";
@@ -18,6 +20,10 @@ function readFileAsDataUrl(file, t) {
     reader.onerror = () => reject(new Error(t("common.fileReadFailed")));
     reader.readAsDataURL(file);
   });
+}
+
+function firstSelectedFile(event) {
+  return event?.files?.[0] ?? event?.target?.files?.[0] ?? null;
 }
 
 function toDateTimeLocal(value) {
@@ -50,7 +56,8 @@ export default defineComponent({
     FormFeedback
   },
   setup() {
-    const { locale, t } = useI18n();
+    const { t } = useI18n();
+    const { formatCurrency, formatDate, formatDateTime } = useFormatters();
     const route = useRoute();
     const authStore = useAuthStore();
     const tenantStore = useTenantStore();
@@ -111,7 +118,6 @@ export default defineComponent({
     const customerId = computed(() => String(route.params.customerId ?? ""));
     const documentOcrAvailable = computed(() => tenantStore.hasFeature("kyc-document-ocr"));
     const amlFeatureEnabled = computed(() => tenantStore.hasFeature("aml-compliance"));
-    const dateTimeLocale = computed(() => (locale.value === "de" ? "de-DE" : "en-GB"));
     const kycStatusOptions = computed(() => [
       { label: t("customerDetail.statusOptions.kyc.NOT_STARTED"), value: "NOT_STARTED" },
       { label: t("customerDetail.statusOptions.kyc.IN_PROGRESS"), value: "IN_PROGRESS" },
@@ -135,6 +141,8 @@ export default defineComponent({
       { label: t("customerDetail.riskLevels.MEDIUM"), value: "MEDIUM" },
       { label: t("customerDetail.riskLevels.HIGH"), value: "HIGH" }
     ]);
+    const resolveDocumentImageSrc = (value) => normalizeDocumentImageSrc(value);
+    const canPrefillDocument = computed(() => Boolean(kyc.documentFrontImageDataUrl));
 
     async function loadData() {
       if (!tenantStore.selectedTenantId || !customerId.value) {
@@ -147,9 +155,10 @@ export default defineComponent({
       fieldErrors.value = [];
 
       try {
-        const [customerResponse, kycResponse] = await Promise.all([
+        const [customerResponse, kycResponse, kycDocumentsResponse] = await Promise.all([
           fetchCustomer(tenantStore.selectedTenantId, customerId.value, authStore.token),
-          fetchKycStatus(tenantStore.selectedTenantId, customerId.value, authStore.token)
+          fetchKycStatus(tenantStore.selectedTenantId, customerId.value, authStore.token),
+          fetchKycDocuments(tenantStore.selectedTenantId, customerId.value, authStore.token)
         ]);
         const loanResponse = await fetchLoans(tenantStore.selectedTenantId, authStore.token, customerId.value);
         const amlResponse = amlFeatureEnabled.value
@@ -165,8 +174,8 @@ export default defineComponent({
           documentType: kycResponse.documentType ?? "PERSONALAUSWEIS",
           documentNumber: kycResponse.documentNumber ?? "",
           documentValidUntil: kycResponse.documentValidUntil ?? "",
-          documentFrontImageDataUrl: kycResponse.documentFrontImageDataUrl ?? "",
-          documentBackImageDataUrl: kycResponse.documentBackImageDataUrl ?? "",
+          documentFrontImageDataUrl: kycDocumentsResponse.documentFrontImageDataUrl ?? "",
+          documentBackImageDataUrl: kycDocumentsResponse.documentBackImageDataUrl ?? "",
           decisionNote: kycResponse.decisionNote ?? ""
         });
         Object.assign(aml, {
@@ -264,8 +273,6 @@ export default defineComponent({
           documentType: updated.documentType ?? "PERSONALAUSWEIS",
           documentNumber: updated.documentNumber ?? "",
           documentValidUntil: updated.documentValidUntil ?? "",
-          documentFrontImageDataUrl: updated.documentFrontImageDataUrl ?? "",
-          documentBackImageDataUrl: updated.documentBackImageDataUrl ?? "",
           decisionNote: updated.decisionNote ?? ""
         });
         successMessage.value = t("customerDetail.messages.kycSaved");
@@ -329,7 +336,7 @@ export default defineComponent({
     }
 
     async function updateDocument(side, event) {
-      const [file] = event?.target?.files ?? [];
+      const file = firstSelectedFile(event);
       if (!file) {
         kyc[side] = "";
         return;
@@ -349,17 +356,22 @@ export default defineComponent({
       }
     }
 
+    function clearDocument(side) {
+      kyc[side] = "";
+    }
+
     async function prefillDocument() {
       if (!tenantStore.selectedTenantId || !customerId.value) {
         return;
       }
-      if (!kyc.documentFrontImageDataUrl && !kyc.documentBackImageDataUrl) {
+      if (!kyc.documentFrontImageDataUrl) {
         return;
       }
 
       try {
         isPrefillingKyc.value = true;
         errorMessage.value = "";
+        successMessage.value = "";
         fieldErrors.value = [];
         const result = await prefillKycDocument(
           tenantStore.selectedTenantId,
@@ -395,20 +407,6 @@ export default defineComponent({
       fieldErrors.value = Array.isArray(error?.fieldErrors) ? error.fieldErrors : [];
     }
 
-    function formatDateTime(value) {
-      if (!value) {
-        return t("common.notAvailable");
-      }
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) {
-        return value;
-      }
-      return new Intl.DateTimeFormat(dateTimeLocale.value, {
-        dateStyle: "medium",
-        timeStyle: "short"
-      }).format(date);
-    }
-
     onMounted(loadData);
 
     return {
@@ -416,7 +414,11 @@ export default defineComponent({
       loans,
       errorMessage,
       fieldErrors,
+      formatCurrency,
+      formatDate,
       formatDateTime,
+      canPrefillDocument,
+      resolveDocumentImageSrc,
       isLoading,
       isPrefillingKyc,
       isSavingCustomer,
@@ -427,6 +429,7 @@ export default defineComponent({
       amlFeatureEnabled,
       amlRiskLevelOptions,
       amlStatusOptions,
+      clearDocument,
       kycDocumentTypeOptions,
       kycStatusOptions,
       prefillDocument,

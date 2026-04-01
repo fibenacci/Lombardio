@@ -13,6 +13,7 @@ import {
 } from "../../services/api/auction";
 import { useAppToast } from "../../composables/use-app-toast";
 import { useI18n } from "../../i18n";
+import { useFormatters } from "../../utils/formatters";
 import template from "./template.html?raw";
 import "./styles.scss";
 
@@ -33,6 +34,7 @@ export default defineComponent({
     const tenantStore = useTenantStore();
     const toast = useAppToast();
     const { t } = useI18n();
+    const { formatCurrency, formatDate } = useFormatters();
     const auctions = ref([]);
     const surplusCases = ref([]);
     const selectedAuctionId = ref("");
@@ -52,6 +54,10 @@ export default defineComponent({
     const selectedAuction = computed(() =>
       auctions.value.find((auction) => auction.id === selectedAuctionId.value) ?? null
     );
+
+    function getAuctionStatusLabel(status) {
+      return t(`auctions.status.${status}`);
+    }
 
     function ensureLotState(lotId) {
       if (!bidForms[lotId]) {
@@ -202,6 +208,9 @@ export default defineComponent({
       bidForms,
       createForm,
       errorMessage,
+      formatCurrency,
+      formatDate,
+      getAuctionStatusLabel,
       selectedAuction,
       selectedAuctionId,
       settleForms,

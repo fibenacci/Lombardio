@@ -36,19 +36,21 @@
         </template>
       </PColumn>
       <PColumn :header="t('pawnTickets.columns.createdAt')" field="createdAt" sortable>
-        <template #body="{ data }">{{ data.createdAt?.slice(0, 10) }}</template>
+        <template #body="{ data }">{{ formatDate(data.createdAt) }}</template>
       </PColumn>
-      <PColumn field="dueDate" :header="t('pawnTickets.columns.dueDate')" sortable />
+      <PColumn field="dueDate" :header="t('pawnTickets.columns.dueDate')" sortable>
+        <template #body="{ data }">{{ formatDate(data.dueDate) }}</template>
+      </PColumn>
       <PColumn :header="t('pawnTickets.columns.status')" field="status" sortable>
         <template #body="{ data }">
           <StatusTag :value="getTicketStatusLabel(data.status)" :activeValues="[t('pawnTickets.status.ACTIVE')]" :warnValues="[t('pawnTickets.status.DUE')]" />
         </template>
       </PColumn>
       <PColumn :header="t('pawnTickets.columns.loan')" field="totalLoanValue" sortable>
-        <template #body="{ data }">{{ data.totalLoanValue }} EUR</template>
+        <template #body="{ data }">{{ formatCurrency(data.totalLoanValue) }}</template>
       </PColumn>
       <PColumn :header="t('pawnTickets.columns.repayment')" field="totalRepaymentAmount" sortable>
-        <template #body="{ data }">{{ data.totalRepaymentAmount }} EUR</template>
+        <template #body="{ data }">{{ formatCurrency(data.totalRepaymentAmount) }}</template>
       </PColumn>
       <PColumn field="positionCount" :header="t('pawnTickets.columns.positions')" sortable />
       <PColumn :header="t('pawnTickets.columns.actions')">

@@ -3,15 +3,9 @@ import { useRouter } from "vue-router";
 import { fetchCustomerPortalDocument, fetchCustomerPortalPawnTickets } from "../../services/api/customerPortal";
 import { useCustomerPortalStore } from "../../stores/customerPortal";
 import { useI18n } from "../../i18n";
+import { useFormatters } from "../../utils/formatters";
 import template from "./template.html?raw";
 import "./styles.scss";
-
-function formatCurrency(value) {
-  return new Intl.NumberFormat("de-DE", {
-    style: "currency",
-    currency: "EUR"
-  }).format(Number(value ?? 0));
-}
 
 export default defineComponent({
   name: "CustomerPortalHomeView",
@@ -19,6 +13,7 @@ export default defineComponent({
     const customerPortalStore = useCustomerPortalStore();
     const router = useRouter();
     const { t } = useI18n();
+    const { formatCurrency, formatDate } = useFormatters();
     const tickets = ref([]);
     const isLoading = ref(true);
     const isDownloading = ref("");
@@ -60,6 +55,7 @@ export default defineComponent({
       downloadDocument,
       errorMessage,
       formatCurrency,
+      formatDate,
       isDownloading,
       isLoading,
       logout,

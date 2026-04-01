@@ -13,7 +13,7 @@ export function updateTenant(id, payload, token) {
 }
 
 export function fetchTenantFeatures(tenantId, token) {
-  return platformGet(`/api/v1/platform/tenants/${tenantId}/features`, token);
+  return platformGet(`/api/v1/tenants/${tenantId}/features`, token);
 }
 
 export function upsertTenantFeature(tenantId, featureKey, payload, token) {

@@ -206,6 +206,27 @@ const TestAutoComplete = defineComponent({
   }
 });
 
+const TestFileUpload = defineComponent({
+  name: "TestPrimeFileUpload",
+  props: {
+    multiple: {
+      type: Boolean,
+      default: false
+    }
+  },
+  emits: ["select", "clear"],
+  setup(props, { emit, slots, attrs }) {
+    const chooseCallback = () => {};
+    const clearCallback = () => emit("clear");
+
+    return () => h("div", { ...attrs, class: ["test-prime-fileupload", attrs.class] }, [
+      slots.header?.({ chooseCallback, clearCallback, files: [] }),
+      slots.content?.({ files: [] }),
+      slots.empty?.()
+    ]);
+  }
+});
+
 config.global.plugins = [
   [PrimeVue, {
     theme: {
@@ -230,6 +251,7 @@ config.global.components = {
   PDataTable: DataTable,
   PDialog: Dialog,
   PDivider: Divider,
+  PFileUpload: TestFileUpload,
   PInputText: InputText,
   PMessage: Message,
   PMultiSelect: TestMultiSelect,

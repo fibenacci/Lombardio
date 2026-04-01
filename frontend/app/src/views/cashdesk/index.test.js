@@ -50,7 +50,7 @@ describe("CashdeskView", () => {
 
     expect(pawnTicketApi.fetchPawnTickets).toHaveBeenCalledWith("tenant-default", "token-123");
     expect(pawnTicketApi.redeemPawnTicket).toHaveBeenCalled();
-    expect(wrapper.text()).toContain("196.5 EUR");
+    expect(wrapper.text()).toContain("196,50");
   });
 
   it("persists a cash transaction into the journal", async () => {

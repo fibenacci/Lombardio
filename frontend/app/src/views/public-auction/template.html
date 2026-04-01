@@ -39,9 +39,9 @@
       <div v-if="bidder" class="panel nested">
         <strong>{{ bidder.paddleNumber }}</strong>
         <p>{{ bidder.displayName }}</p>
-        <p class="meta-copy">{{ t("publicAuction.approvalStatus", { status: bidder.approvalStatus }) }}</p>
-        <p class="meta-copy">{{ t("publicAuction.bidderChecks", { kyc: bidder.kycStatus, account: bidder.accountCheckStatus }) }}</p>
-        <p class="meta-copy">{{ t("publicAuction.realtimeState", { state: realtimeState }) }}</p>
+        <p class="meta-copy">{{ t("publicAuction.approvalStatus", { status: getApprovalStatusLabel(bidder.approvalStatus) }) }}</p>
+        <p class="meta-copy">{{ getBidderCheckSummary(bidder) }}</p>
+        <p class="meta-copy">{{ t("publicAuction.realtimeState", { state: getRealtimeStateLabel(realtimeState) }) }}</p>
       </div>
     </section>
 
@@ -59,8 +59,8 @@
         <span>{{ t("publicAuction.fields.amount") }}</span>
         <input v-model="bidForm.amount" type="number" min="0.01" step="0.01">
       </label>
-      <p class="hint">{{ t("publicAuction.minimumIncrement", { amount: auction?.minimumIncrement ?? "-" }) }}</p>
-      <p class="hint">{{ t("publicAuction.countdownEndsAt", { time: auction?.countdownEndsAt ?? "-" }) }}</p>
+      <p class="hint">{{ t("publicAuction.minimumIncrement", { amount: auction?.minimumIncrement == null ? "-" : formatCurrency(auction.minimumIncrement) }) }}</p>
+      <p class="hint">{{ t("publicAuction.countdownEndsAt", { time: auction?.countdownEndsAt ? formatDateTime(auction.countdownEndsAt) : "-" }) }}</p>
       <button type="button" :disabled="bidder?.approvalStatus !== 'APPROVED'" @click="submitBid">{{ t("publicAuction.actions.submitBid") }}</button>
     </section>
   </div>
@@ -70,7 +70,9 @@
     <AppDataTable :value="auction?.lots ?? []" dataKey="id">
       <PColumn field="lotNumber" :header="t('publicAuction.columns.lotNumber')" sortable />
       <PColumn field="title" :header="t('publicAuction.columns.title')" sortable />
-      <PColumn field="currentBid" :header="t('publicAuction.columns.currentBid')" sortable />
+      <PColumn field="currentBid" :header="t('publicAuction.columns.currentBid')" sortable>
+        <template #body="{ data }">{{ data.currentBid == null ? "-" : formatCurrency(data.currentBid) }}</template>
+      </PColumn>
       <PColumn field="highestBidderAlias" :header="t('publicAuction.columns.highestBidder')" sortable>
         <template #body="{ data }">{{ data.highestBidderAlias || "-" }}</template>
       </PColumn>

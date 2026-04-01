@@ -9,6 +9,8 @@ import { fetchKycStatus, prefillKycDocument, updateKycStatus } from "../../servi
 import { fetchPawnTicketDocument, fetchPawnTicketLabels, fetchPawnTicketQuote } from "../../services/api/pawnTicket";
 import { fetchDashboardOverview } from "../../services/api/reporting";
 import { useI18n } from "../../i18n";
+import { normalizeDocumentImageSrc } from "../../utils/documentDataUrl";
+import { useFormatters } from "../../utils/formatters";
 import FormFeedback from "../../components/form-feedback";
 import template from "./template.html?raw";
 import "./styles.scss";
@@ -43,13 +45,19 @@ function mergeKycStatus(customer, kycStatus) {
     documentType: kycStatus.documentType,
     documentNumber: kycStatus.documentNumber,
     documentValidUntil: kycStatus.documentValidUntil,
-    documentFrontImageDataUrl: kycStatus.documentFrontImageDataUrl,
-    documentBackImageDataUrl: kycStatus.documentBackImageDataUrl,
     decisionNote: kycStatus.decisionNote,
     providerName: kycStatus.providerName,
     providerReference: kycStatus.providerReference,
     providerStatus: kycStatus.providerStatus,
     kycApproved: kycStatus.status === "APPROVED"
+  };
+}
+
+function mergeKycDocuments(customer, kycDocuments) {
+  return {
+    ...customer,
+    documentFrontImageDataUrl: kycDocuments.documentFrontImageDataUrl ?? customer.documentFrontImageDataUrl ?? "",
+    documentBackImageDataUrl: kycDocuments.documentBackImageDataUrl ?? customer.documentBackImageDataUrl ?? ""
   };
 }
 
@@ -89,11 +97,8 @@ function readFileAsDataUrl(file, t) {
   });
 }
 
-function formatCurrency(value) {
-  return new Intl.NumberFormat("de-DE", {
-    style: "currency",
-    currency: "EUR"
-  }).format(Number(value ?? 0));
+function firstSelectedFile(event) {
+  return event?.files?.[0] ?? event?.target?.files?.[0] ?? null;
 }
 
 function formatCustomerOption(customer, t) {
@@ -135,6 +140,7 @@ export default defineComponent({
   setup() {
     const router = useRouter();
     const { t } = useI18n();
+    const { formatCurrency, formatDate } = useFormatters();
     const authStore = useAuthStore();
     const tenantStore = useTenantStore();
     const selectedTenant = computed(() => tenantStore.selectedTenant);
@@ -214,6 +220,8 @@ export default defineComponent({
     const positions = ref([createEmptyPosition()]);
     const reportingOverview = ref(null);
     const reportingError = ref("");
+    const resolveDocumentImageSrc = (value) => normalizeDocumentImageSrc(value);
+    const canPrefillNewCustomerDocument = computed(() => Boolean(newCustomerKyc.documentFrontImageDataUrl));
 
     const canSubmitLoan = computed(() => {
       const hasCustomer = useNewCustomer.value
@@ -569,7 +577,10 @@ export default defineComponent({
               )
             : null;
           customerId = createdCustomer.id;
-          const mergedCustomer = mergeKycStatus(createdCustomer, kycStatus);
+          const mergedCustomer = mergeKycDocuments(mergeKycStatus(createdCustomer, kycStatus), {
+            documentFrontImageDataUrl: newCustomerKyc.documentFrontImageDataUrl,
+            documentBackImageDataUrl: newCustomerKyc.documentBackImageDataUrl
+          });
           customers.value = [amlStatus ? mergeAmlStatus(mergedCustomer, amlStatus) : mergedCustomer, ...customers.value];
         }
 
@@ -688,11 +699,12 @@ export default defineComponent({
       if (!tenantStore.selectedTenantId) {
         return;
       }
-      if (!newCustomerKyc.documentFrontImageDataUrl && !newCustomerKyc.documentBackImageDataUrl) {
+      if (!newCustomerKyc.documentFrontImageDataUrl) {
         return;
       }
 
       try {
+        errorMessage.value = "";
         fieldErrors.value = [];
         const result = await prefillKycDocument(
           tenantStore.selectedTenantId,
@@ -759,7 +771,7 @@ export default defineComponent({
     }
 
     async function updateNewCustomerDocument(side, event) {
-      const [file] = event?.target?.files ?? [];
+      const file = firstSelectedFile(event);
       if (!file) {
         newCustomerKyc[side] = "";
         return;
@@ -776,7 +788,7 @@ export default defineComponent({
     }
 
     async function updatePowerOfAttorneyDocument(event) {
-      const [file] = event?.target?.files ?? [];
+      const file = firstSelectedFile(event);
       if (!file) {
         pledgePresentation.powerOfAttorneyDocumentDataUrl = "";
         return;
@@ -787,6 +799,14 @@ export default defineComponent({
       } catch (error) {
         handleError(error);
       }
+    }
+
+    function clearNewCustomerDocument(side) {
+      newCustomerKyc[side] = "";
+    }
+
+    function clearPowerOfAttorneyDocument() {
+      pledgePresentation.powerOfAttorneyDocumentDataUrl = "";
     }
 
     async function openPawnTicketDocument(ticketNumber, printMode = false) {
@@ -903,6 +923,8 @@ export default defineComponent({
       documentOcrAvailable,
       financeTrendMax,
       formatCurrency,
+      formatDate,
+      resolveDocumentImageSrc,
       getAmlStatusLabel,
       getKycStatusLabel,
       getRiskLevelLabel,
@@ -910,6 +932,9 @@ export default defineComponent({
       getVerificationModeLabel,
       inventoryMax,
       canSubmitLoan,
+      canPrefillNewCustomerDocument,
+      clearNewCustomerDocument,
+      clearPowerOfAttorneyDocument,
       terms,
       totalLoanValue,
       prefillNewCustomerDocumentData,

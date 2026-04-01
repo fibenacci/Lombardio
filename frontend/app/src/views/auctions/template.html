@@ -50,9 +50,9 @@
           @click="selectedAuctionId = auction.id"
         >
           <strong>{{ auction.title }}</strong>
-          <span>{{ auction.status }}</span>
+          <span>{{ getAuctionStatusLabel(auction.status) }}</span>
           <span>{{ auction.location }}</span>
-          <span v-if="auction.auctionDate">{{ t("auctions.auctionDate", { date: auction.auctionDate }) }}</span>
+          <span v-if="auction.auctionDate">{{ t("auctions.auctionDate", { date: formatDate(auction.auctionDate) }) }}</span>
         </button>
       </div>
     </AdminPanel>
@@ -86,13 +86,13 @@
         <PColumn field="contractNumber" :header="t('auctions.tableColumns.contractNumber')" sortable />
         <PColumn field="description" :header="t('auctions.tableColumns.description')" sortable />
         <PColumn :header="t('auctions.tableColumns.latestBidAmount')" field="latestBidAmount" sortable>
-          <template #body="{ data }">{{ data.latestBidAmount || "0.00" }}</template>
+          <template #body="{ data }">{{ formatCurrency(data.latestBidAmount ?? 0) }}</template>
         </PColumn>
         <PColumn :header="t('auctions.tableColumns.hammerPrice')" field="hammerPrice" sortable>
-          <template #body="{ data }">{{ data.hammerPrice || "-" }}</template>
+          <template #body="{ data }">{{ data.hammerPrice == null ? "-" : formatCurrency(data.hammerPrice) }}</template>
         </PColumn>
         <PColumn :header="t('auctions.tableColumns.surplusAmount')" field="surplusAmount" sortable>
-          <template #body="{ data }">{{ data.surplusAmount || "-" }}</template>
+          <template #body="{ data }">{{ data.surplusAmount == null ? "-" : formatCurrency(data.surplusAmount) }}</template>
         </PColumn>
         <PColumn :header="t('auctions.tableColumns.actions')">
           <template #body="{ data }">
@@ -113,10 +113,18 @@
     <AppDataTable :value="surplusCases" dataKey="lotId">
       <PColumn field="lotNumber" :header="t('auctions.tableColumns.lotNumber')" sortable />
       <PColumn field="contractNumber" :header="t('auctions.tableColumns.contractNumber')" sortable />
-      <PColumn field="hammerPrice" :header="t('auctions.tableColumns.hammerPrice')" sortable />
-      <PColumn field="outstandingClaim" :header="t('auctions.tableColumns.outstandingClaim')" sortable />
-      <PColumn field="surplusAmount" :header="t('auctions.tableColumns.surplusAmount')" sortable />
-      <PColumn field="authorityTransferDueDate" :header="t('auctions.tableColumns.authorityTransferDueDate')" sortable />
+      <PColumn field="hammerPrice" :header="t('auctions.tableColumns.hammerPrice')" sortable>
+        <template #body="{ data }">{{ formatCurrency(data.hammerPrice) }}</template>
+      </PColumn>
+      <PColumn field="outstandingClaim" :header="t('auctions.tableColumns.outstandingClaim')" sortable>
+        <template #body="{ data }">{{ formatCurrency(data.outstandingClaim) }}</template>
+      </PColumn>
+      <PColumn field="surplusAmount" :header="t('auctions.tableColumns.surplusAmount')" sortable>
+        <template #body="{ data }">{{ formatCurrency(data.surplusAmount) }}</template>
+      </PColumn>
+      <PColumn field="authorityTransferDueDate" :header="t('auctions.tableColumns.authorityTransferDueDate')" sortable>
+        <template #body="{ data }">{{ formatDate(data.authorityTransferDueDate) }}</template>
+      </PColumn>
       <PColumn field="authorityTransferStatus" :header="t('auctions.tableColumns.status')" sortable />
     </AppDataTable>
   </AdminPanel>

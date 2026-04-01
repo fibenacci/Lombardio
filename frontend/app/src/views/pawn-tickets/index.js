@@ -3,6 +3,7 @@ import { useAppToast } from "../../composables/use-app-toast";
 import { useAuthStore } from "../../stores/auth";
 import { useTenantStore } from "../../stores/tenant";
 import { useI18n } from "../../i18n";
+import { useFormatters } from "../../utils/formatters";
 import { fetchPawnTicketDocument, fetchPawnTicketLabels, fetchPawnTickets } from "../../services/api/pawnTicket";
 import template from "./template.html?raw";
 import "./styles.scss";
@@ -17,6 +18,7 @@ export default defineComponent({
     const authStore = useAuthStore();
     const tenantStore = useTenantStore();
     const { t } = useI18n();
+    const { formatCurrency, formatDate } = useFormatters();
     const toast = useAppToast();
     const tickets = ref([]);
     const query = ref("");
@@ -119,6 +121,8 @@ export default defineComponent({
     return {
       errorMessage,
       filteredTickets,
+      formatCurrency,
+      formatDate,
       getTicketStatusLabel: (status) => statusLabels[status]?.() ?? status ?? t("common.notAvailable"),
       isDownloading,
       isLoading,
