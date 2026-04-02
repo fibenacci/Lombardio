@@ -8,15 +8,9 @@
  *
  * For partnership or cooperation inquiries, please contact the author.
  */
-package io.lombardio.platform.config;
+package io.lombardio.platform.auth.api;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
-@ConfigurationProperties(prefix = "app.keycloak")
-public record KeycloakProperties(
-    String serverUrl,
-    String realm,
-    String clientId,
-    String adminUsername,
-    String adminPassword,
-    String operatorClientId) {}
+public record OperatorLoginRequest(@Email @NotBlank String email, @NotBlank String password) {}

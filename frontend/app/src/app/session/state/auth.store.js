@@ -1,9 +1,13 @@
 import { defineStore } from "pinia";
 import * as authApi from "../infrastructure/auth.api";
 
+const AUTH_TOKEN_STORAGE_KEY = "lombardio.auth.token";
+const ORIGINAL_TOKEN_STORAGE_KEY = "lombardio.auth.original_token";
+
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     authenticated: false,
+    originalToken: null,
     user: null,
     token: null,
     ready: false,
@@ -23,16 +27,19 @@ export const useAuthStore = defineStore("auth", {
 
   actions: {
     async initialize() {
-      const savedToken = localStorage.getItem("lombardio.auth.token");
+      localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+      sessionStorage.removeItem(ORIGINAL_TOKEN_STORAGE_KEY);
+      this.clearSession();
 
-      if (savedToken) {
-        try {
-          this.token = savedToken;
-          this.user = await authApi.fetchCurrentUser(this.token);
+      try {
+        const session = await authApi.refreshSession();
+        if (session?.status === "AUTHENTICATED") {
+          this.token = session.accessToken;
+          this.user = session.user;
           this.authenticated = true;
-        } catch {
-          this.clearSession();
         }
+      } catch {
+        this.clearSession();
       }
 
       this.ready = true;
@@ -49,12 +56,10 @@ export const useAuthStore = defineStore("auth", {
         }
 
         this.token = response.accessToken;
-        this.user = await authApi.fetchCurrentUser(this.token);
+        this.user = response.user ?? (await authApi.fetchCurrentUser(this.token));
         this.authenticated = true;
         this.pendingMfaChallengeId = null;
         this.pendingMfaMethods = [];
-
-        localStorage.setItem("lombardio.auth.token", this.token);
         return response;
       } catch (error) {
         this.clearSession();
@@ -67,22 +72,23 @@ export const useAuthStore = defineStore("auth", {
       const originalToken = this.token;
 
       try {
+        this.originalToken = originalToken;
         this.token = response.accessToken;
         this.user = await authApi.fetchCurrentUser(this.token);
         this.authenticated = true;
-        sessionStorage.setItem("lombardio.auth.original_token", originalToken);
       } catch (error) {
+        this.originalToken = null;
         this.token = originalToken;
         throw error;
       }
     },
 
     async endDelegation() {
-      const originalToken = sessionStorage.getItem("lombardio.auth.original_token");
+      const originalToken = this.originalToken;
       if (originalToken) {
         this.token = originalToken;
         this.user = await authApi.fetchCurrentUser(this.token);
-        sessionStorage.removeItem("lombardio.auth.original_token");
+        this.originalToken = null;
       }
     },
 
@@ -106,11 +112,10 @@ export const useAuthStore = defineStore("auth", {
 
       if (response.status === "AUTHENTICATED") {
         this.token = response.accessToken;
-        this.user = await authApi.fetchCurrentUser(this.token);
+        this.user = response.user ?? (await authApi.fetchCurrentUser(this.token));
         this.authenticated = true;
         this.pendingMfaChallengeId = null;
         this.pendingMfaMethods = [];
-        localStorage.setItem("lombardio.auth.token", this.token);
       }
 
       return response;
@@ -128,16 +133,18 @@ export const useAuthStore = defineStore("auth", {
 
     clearSession() {
       this.authenticated = false;
+      this.originalToken = null;
       this.user = null;
       this.token = "";
       this.pendingMfaChallengeId = null;
       this.pendingMfaMethods = [];
-      localStorage.removeItem("lombardio.auth.token");
-      sessionStorage.removeItem("lombardio.auth.original_token");
+      localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+      sessionStorage.removeItem(ORIGINAL_TOKEN_STORAGE_KEY);
     },
 
     resetForTests() {
       this.authenticated = false;
+      this.originalToken = null;
       this.user = null;
       this.token = "";
       this.ready = false;

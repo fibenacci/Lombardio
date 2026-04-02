@@ -12,11 +12,10 @@ package io.lombardio.platform.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "app.keycloak")
-public record KeycloakProperties(
-    String serverUrl,
-    String realm,
-    String clientId,
-    String adminUsername,
-    String adminPassword,
-    String operatorClientId) {}
+@ConfigurationProperties(prefix = "app.operator-session")
+public record OperatorSessionProperties(
+    String refreshCookieName,
+    String refreshCookiePath,
+    boolean refreshCookieSecure,
+    String refreshCookieSameSite,
+    long refreshCookieMaxAgeSeconds) {}

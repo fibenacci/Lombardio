@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 import {
   acceptPortalInvitation,
-  fetchCustomerPortalMe,
   loginCustomerPortal
 } from "../../../modules/customer-portal/infrastructure/api/customer-portal.api";
 
@@ -20,27 +19,14 @@ export const useCustomerPortalStore = defineStore("customerPortal", {
 
   actions: {
     async initialize() {
-      const storedToken = window.localStorage.getItem(TOKEN_STORAGE_KEY);
-      if (!storedToken) {
-        this.ready = true;
-        return;
-      }
-
-      this.token = storedToken;
-      try {
-        this.customer = await fetchCustomerPortalMe(this.token);
-      } catch {
-        this.clearSession();
-      } finally {
-        this.ready = true;
-      }
+      window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+      this.ready = true;
     },
 
     async login(email, password) {
       const response = await loginCustomerPortal({ email, password });
       this.token = response.accessToken;
       this.customer = response.customer;
-      window.localStorage.setItem(TOKEN_STORAGE_KEY, this.token);
       return response;
     },
 
@@ -48,7 +34,6 @@ export const useCustomerPortalStore = defineStore("customerPortal", {
       const response = await acceptPortalInvitation({ token, password });
       this.token = response.accessToken;
       this.customer = response.customer;
-      window.localStorage.setItem(TOKEN_STORAGE_KEY, this.token);
       return response;
     },
 

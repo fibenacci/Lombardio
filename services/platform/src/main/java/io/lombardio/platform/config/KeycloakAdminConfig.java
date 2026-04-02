@@ -15,6 +15,7 @@ import org.keycloak.admin.client.KeycloakBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
 
 @Configuration
 @EnableConfigurationProperties(KeycloakProperties.class)
@@ -32,5 +33,10 @@ public class KeycloakAdminConfig {
             .grantType("password");
 
     return builder.build();
+  }
+
+  @Bean
+  public RestClient keycloakOidcRestClient(KeycloakProperties props) {
+    return RestClient.builder().baseUrl(props.serverUrl()).build();
   }
 }

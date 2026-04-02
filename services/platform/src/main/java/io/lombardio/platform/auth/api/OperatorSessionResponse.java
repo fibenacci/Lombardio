@@ -8,15 +8,7 @@
  *
  * For partnership or cooperation inquiries, please contact the author.
  */
-package io.lombardio.platform.config;
+package io.lombardio.platform.auth.api;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
-@ConfigurationProperties(prefix = "app.keycloak")
-public record KeycloakProperties(
-    String serverUrl,
-    String realm,
-    String clientId,
-    String adminUsername,
-    String adminPassword,
-    String operatorClientId) {}
+public record OperatorSessionResponse(
+    String status, String accessToken, OperatorSessionUserResponse user) {}

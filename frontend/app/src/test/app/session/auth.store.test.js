@@ -8,29 +8,9 @@ describe("authStore", () => {
     authStore = useAuthStore();
   });
 
-  it("restores a stored session and loads the current user", async () => {
+  it("does not restore persisted sessions from browser storage", async () => {
     window.localStorage.setItem("lombardio.auth.token", "token-123");
-    vi.spyOn(authApi, "fetchCurrentUser").mockResolvedValue({
-      id: "user-admin",
-      actorUserId: "user-admin",
-      tenantId: "tenant-default",
-      email: "admin@lombardio.local",
-      displayName: "System Admin",
-      impersonating: false,
-      roles: ["admin"],
-      permissions: ["users.read"]
-    });
-
-    await authStore.initialize();
-
-    expect(authStore.ready).toBe(true);
-    expect(authStore.token).toBe("token-123");
-    expect(authStore.user?.email).toBe("admin@lombardio.local");
-  });
-
-  it("clears invalid stored sessions", async () => {
-    window.localStorage.setItem("lombardio.auth.token", "expired-token");
-    vi.spyOn(authApi, "fetchCurrentUser").mockRejectedValue(new Error("Unauthorized"));
+    vi.spyOn(authApi, "refreshSession").mockResolvedValue(null);
 
     await authStore.initialize();
 
@@ -38,6 +18,44 @@ describe("authStore", () => {
     expect(authStore.token).toBe("");
     expect(authStore.user).toBeNull();
     expect(window.localStorage.getItem("lombardio.auth.token")).toBeNull();
+  });
+
+  it("removes stale persisted tokens from earlier frontend versions", async () => {
+    window.localStorage.setItem("lombardio.auth.token", "expired-token");
+    window.sessionStorage.setItem("lombardio.auth.original_token", "delegation-token");
+    vi.spyOn(authApi, "refreshSession").mockResolvedValue(null);
+
+    await authStore.initialize();
+
+    expect(authStore.ready).toBe(true);
+    expect(authStore.token).toBe("");
+    expect(authStore.user).toBeNull();
+    expect(window.localStorage.getItem("lombardio.auth.token")).toBeNull();
+    expect(window.sessionStorage.getItem("lombardio.auth.original_token")).toBeNull();
+  });
+
+  it("restores a server-backed operator session during initialize", async () => {
+    vi.spyOn(authApi, "refreshSession").mockResolvedValue({
+      status: "AUTHENTICATED",
+      accessToken: "refreshed-token",
+      user: {
+        id: "user-admin",
+        actorUserId: "user-admin",
+        tenantId: "tenant-default",
+        email: "admin@lombardio.local",
+        displayName: "System Admin",
+        impersonating: false,
+        roles: ["users.read"],
+        permissions: ["users.read"]
+      }
+    });
+
+    await authStore.initialize();
+
+    expect(authStore.ready).toBe(true);
+    expect(authStore.token).toBe("refreshed-token");
+    expect(authStore.user?.id).toBe("user-admin");
+    expect(authStore.isAuthenticated).toBe(true);
   });
 
   it("starts and ends a delegated session", async () => {
@@ -78,10 +96,12 @@ describe("authStore", () => {
     await authStore.startDelegation("user-admin");
     expect(authStore.token).toBe("delegated-token");
     expect(authStore.user?.impersonating).toBe(true);
+    expect(authStore.originalToken).toBe("base-token");
 
     await authStore.endDelegation();
     expect(authStore.token).toBe("base-token");
     expect(authStore.user?.id).toBe("user-platform-admin");
+    expect(authStore.originalToken).toBeNull();
   });
 
   it("stores a pending MFA challenge instead of a session when login requires TOTP", async () => {

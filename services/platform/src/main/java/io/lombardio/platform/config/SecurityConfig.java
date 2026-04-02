@@ -35,7 +35,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@EnableConfigurationProperties(AppCorsProperties.class)
+@EnableConfigurationProperties({AppCorsProperties.class, OperatorSessionProperties.class})
 public class SecurityConfig {
 
   @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
@@ -50,6 +50,11 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers("/api/v1/platform/health")
+                    .permitAll()
+                    .requestMatchers(
+                        "/api/v1/platform/auth/login",
+                        "/api/v1/platform/auth/refresh",
+                        "/api/v1/platform/auth/logout")
                     .permitAll()
                     .requestMatchers("/actuator/health", "/actuator/info")
                     .permitAll()
@@ -104,6 +109,7 @@ public class SecurityConfig {
     configuration.setAllowedHeaders(corsProperties.allowedHeaders());
     configuration.setExposedHeaders(corsProperties.exposedHeaders());
     configuration.setMaxAge(corsProperties.maxAgeSeconds());
+    configuration.setAllowCredentials(true);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);

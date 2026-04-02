@@ -1,95 +1,89 @@
 import { readRuntimeValue } from "../../../shared/kernel/config/runtime-config";
-import { apiClient } from "../../../shared/kernel/http/runtime-api-client";
+import { apiClient, BASE_URLS } from "../../../shared/kernel/http/runtime-api-client";
 
-const KEYCLOAK_BASE_URL = readRuntimeValue(
-  "KEYCLOAK_BASE_URL",
-  import.meta.env.VITE_KEYCLOAK_URL ?? "http://localhost:8080"
-);
-const KEYCLOAK_REALM = readRuntimeValue(
-  "KEYCLOAK_REALM",
-  import.meta.env.VITE_KEYCLOAK_REALM ?? "lombardio"
-);
-const KEYCLOAK_CLIENT_ID = readRuntimeValue(
-  "KEYCLOAK_CLIENT_ID",
-  import.meta.env.VITE_KEYCLOAK_CLIENT_ID ?? "lombardio-app"
+const PLATFORM_AUTH_BASE_URL = readRuntimeValue(
+  "PLATFORM_API_BASE_URL",
+  import.meta.env.VITE_PLATFORM_API_BASE_URL ?? "http://localhost:8080"
 );
 
-function parseJwt(token) {
-  const segments = token.split(".");
-  if (segments.length < 2) {
-    throw new Error("Invalid access token");
-  }
-
-  const payload = segments[1]
-    .replace(/-/g, "+")
-    .replace(/_/g, "/")
-    .padEnd(Math.ceil(segments[1].length / 4) * 4, "=");
-
-  return JSON.parse(window.atob(payload));
+async function parsePayload(response) {
+  const isJson = response.headers.get("content-type")?.includes("application/json");
+  return isJson ? await response.json() : await response.text();
 }
 
-function toUserProfile(token) {
-  const claims = parseJwt(token);
-  const permissions = Array.isArray(claims.realm_access?.roles) ? claims.realm_access.roles : [];
+function toRequestError(response, payload, fallbackMessage) {
+  const message =
+    typeof payload === "object" && payload !== null && "message" in payload && payload.message
+      ? payload.message
+      : fallbackMessage;
 
-  return {
-    id: claims.sub,
-    actorUserId: claims.actorUserId ?? claims.sub,
-    tenantId: claims.tenantId ?? null,
-    email: claims.email ?? claims.preferred_username ?? "",
-    displayName: claims.name ?? claims.preferred_username ?? claims.email ?? "",
-    impersonating: claims.impersonating === true,
-    roles: permissions,
-    permissions
-  };
+  const error = new Error(message);
+  error.status = response.status;
+  error.payload = payload;
+  return error;
+}
+
+async function requestPlatformSession(path, body, fallbackMessage) {
+  const response = await fetch(`${PLATFORM_AUTH_BASE_URL}${path}`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body ?? {})
+  });
+
+  const payload = await parsePayload(response);
+
+  if (!response.ok) {
+    throw toRequestError(response, payload, fallbackMessage);
+  }
+
+  return payload;
 }
 
 export async function login(payload) {
-  const body = new URLSearchParams({
-    grant_type: "password",
-    client_id: KEYCLOAK_CLIENT_ID,
-    username: payload.email,
-    password: payload.password
+  return requestPlatformSession("/api/v1/platform/auth/login", payload, "Login failed");
+}
+
+export async function refreshSession() {
+  const response = await fetch(`${PLATFORM_AUTH_BASE_URL}/api/v1/platform/auth/refresh`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: "{}"
   });
 
-  const response = await fetch(
-    `${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body
-    }
-  );
-
-  const isJson = response.headers.get("content-type")?.includes("application/json");
-  const payloadBody = isJson ? await response.json() : await response.text();
-
-  if (!response.ok) {
-    const errorDescription =
-      typeof payloadBody === "object" && payloadBody !== null
-        ? payloadBody.error_description || payloadBody.error
-        : "";
-    const message = errorDescription || "Login failed";
-    const error = new Error(message);
-    error.status = response.status;
-    error.payload = payloadBody;
-    throw error;
+  if (response.status === 204 || response.status === 401) {
+    return null;
   }
 
-  return {
-    status: "AUTHENTICATED",
-    accessToken: payloadBody.access_token
-  };
+  const payload = await parsePayload(response);
+  if (!response.ok) {
+    throw toRequestError(response, payload, "Session refresh failed");
+  }
+
+  return payload;
 }
 
 export async function logout() {
-  return null;
+  await requestPlatformSession("/api/v1/platform/auth/logout", {}, "Logout failed");
 }
 
 export async function fetchCurrentUser(token) {
-  return toUserProfile(token);
+  const response = await fetch(`${BASE_URLS.platform}/api/v1/platform/auth/me`, {
+    method: "GET",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    }
+  });
+  const payload = await parsePayload(response);
+  if (!response.ok) {
+    throw toRequestError(response, payload, "Current user lookup failed");
+  }
+  return payload;
 }
 
 export function createDelegation(userId, token) {

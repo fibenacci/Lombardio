@@ -40,6 +40,13 @@ app:
     client-id: ${KEYCLOAK_CLIENT_ID:admin-cli}
     admin-username: ${KEYCLOAK_ADMIN_USERNAME:admin}
     admin-password: ${KEYCLOAK_ADMIN_PASSWORD:admin_change_me}
+    operator-client-id: ${KEYCLOAK_OPERATOR_CLIENT_ID:lombardio-app}
+  operator-session:
+    refresh-cookie-name: ${APP_OPERATOR_SESSION_REFRESH_COOKIE_NAME:lombardio_operator_refresh}
+    refresh-cookie-path: ${APP_OPERATOR_SESSION_REFRESH_COOKIE_PATH:/}
+    refresh-cookie-secure: ${APP_OPERATOR_SESSION_REFRESH_COOKIE_SECURE:false}
+    refresh-cookie-same-site: ${APP_OPERATOR_SESSION_REFRESH_COOKIE_SAME_SITE:Lax}
+    refresh-cookie-max-age-seconds: ${APP_OPERATOR_SESSION_REFRESH_COOKIE_MAX_AGE_SECONDS:2592000}
   cors:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}
     allowed-methods: ${APP_CORS_ALLOWED_METHODS}

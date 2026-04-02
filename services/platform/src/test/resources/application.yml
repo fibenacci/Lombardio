@@ -41,6 +41,19 @@ integration:
     publisher-enabled: false
 
 app:
+  keycloak:
+    server-url: http://localhost:8080
+    realm: lombardio
+    client-id: admin-cli
+    admin-username: admin
+    admin-password: admin
+    operator-client-id: lombardio-app
+  operator-session:
+    refresh-cookie-name: lombardio_operator_refresh
+    refresh-cookie-path: /
+    refresh-cookie-secure: false
+    refresh-cookie-same-site: Lax
+    refresh-cookie-max-age-seconds: 2592000
   cors:
     allowed-origins: http://localhost:5173
     allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
