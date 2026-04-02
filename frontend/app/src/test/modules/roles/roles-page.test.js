@@ -16,7 +16,6 @@ describe("RolesView", () => {
   });
 
   it("loads tenant roles from the API layer", async () => {
-    authStore.token = "token-123";
     authStore.user = {
       id: "user-admin",
       tenantId: "tenant-default",
@@ -38,7 +37,7 @@ describe("RolesView", () => {
     const wrapper = mount(RolesView);
     await flushPromises();
 
-    expect(accessApi.fetchRoles).toHaveBeenCalledWith("tenant-default", "token-123");
+    expect(accessApi.fetchRoles).toHaveBeenCalledWith("tenant-default");
     expect(wrapper.text()).toContain("Administrator");
     expect(wrapper.text()).toContain("2");
   });

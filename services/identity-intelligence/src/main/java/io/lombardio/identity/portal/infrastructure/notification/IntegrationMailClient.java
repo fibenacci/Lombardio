@@ -28,9 +28,9 @@ public class IntegrationMailClient {
   public IntegrationMailClient(
       RestClient.Builder restClientBuilder,
       @Value("${integration.base-url:http://localhost:8092}") String integrationBaseUrl,
-      @Value("${customer.internal-service-token:dev-internal-token}") String internalServiceToken) {
+      @Value("${customer.internal-service-token}") String internalServiceToken) {
     this.restClient = restClientBuilder.baseUrl(integrationBaseUrl).build();
-    this.internalServiceToken = internalServiceToken;
+    this.internalServiceToken = requireSecureToken(internalServiceToken);
   }
 
   public void send(
@@ -50,6 +50,17 @@ public class IntegrationMailClient {
                 tenantId, recipients, List.of(), subject, textBody, htmlBody, metadata))
         .retrieve()
         .toBodilessEntity();
+  }
+
+  private static String requireSecureToken(String token) {
+    if (token == null
+        || token.isBlank()
+        || "REPLACE_WITH_SECURE_TOKEN".equals(token)
+        || "dev-internal-token".equals(token)) {
+      throw new IllegalStateException(
+          "customer.internal-service-token must be configured with a secure value");
+    }
+    return token;
   }
 
   private record IntegrationMailRequest(

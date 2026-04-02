@@ -9,7 +9,7 @@ export function useCustomersPage({
   t,
   tenantStore
 }: {
-  authStore: { token: string };
+  authStore: Record<string, unknown>;
   router: { push: (payload: object) => unknown };
   t: (key: string, params?: Record<string, unknown>) => string;
   tenantStore: { selectedTenantId: string };
@@ -37,7 +37,6 @@ export function useCustomersPage({
           query: searchQuery,
           tenantId: tenantStore.selectedTenantId
         },
-        authStore.token,
         t
       );
     } catch (error) {

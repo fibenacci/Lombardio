@@ -10,5 +10,17 @@
  */
 package io.lombardio.identity.portal.infrastructure.security;
 
+import io.lombardio.identity.portal.infrastructure.persistence.CustomerPortalSessionEntity;
+
 public record AuthenticatedCustomerPortalUser(
-    String customerId, String tenantId, String displayName, String email) {}
+    String customerId,
+    String tenantId,
+    String displayName,
+    String email,
+    CustomerPortalSessionEntity session) {
+
+  public AuthenticatedCustomerPortalUser(
+      String customerId, String tenantId, String displayName, String email) {
+    this(customerId, tenantId, displayName, email, null);
+  }
+}

@@ -1,9 +1,47 @@
 import { computed, reactive, ref } from "vue";
+import { getRequestErrorMessage } from "../../../../shared/kernel/errors/request-error";
 import { useAppToast } from "../../../../shared/ui/composables/use-app-toast";
 import { createHttpOnlineAuctionsAdapter } from "../../infrastructure/adapters/http-online-auctions.adapter";
 
+type OnlineAuctionLotDraft = {
+  title: string;
+  description: string;
+  startingBid: string;
+};
+
+type OnlineAuctionRegistration = {
+  id: string;
+  kycStatus?: string | null;
+  accountCheckStatus?: string | null;
+  reviewNote?: string | null;
+};
+
+type OnlineAuction = {
+  id: string;
+  tenantId: string;
+  title: string;
+  status?: string | null;
+  registrations?: OnlineAuctionRegistration[];
+};
+
 function emptyLot() {
-  return { title: "", description: "", startingBid: "0.00" };
+  return { title: "", description: "", startingBid: "0.00" } satisfies OnlineAuctionLotDraft;
+}
+
+function hasText(value: string) {
+  return String(value).trim().length > 0;
+}
+
+function isPositiveAmount(value: string | number) {
+  return Number(value) > 0;
+}
+
+function isValidCountdown(value: string | number) {
+  return Number.isInteger(Number(value)) && Number(value) >= 30;
+}
+
+function hasValidOnlineAuctionLot(lot: OnlineAuctionLotDraft) {
+  return hasText(lot.title) && hasText(lot.description) && isPositiveAmount(lot.startingBid);
 }
 
 export function useOnlineAuctionsPage({
@@ -11,13 +49,13 @@ export function useOnlineAuctionsPage({
   t,
   tenantStore
 }: {
-  authStore: { token: string };
+  authStore: Record<string, unknown>;
   t: (key: string, params?: Record<string, unknown>) => string;
   tenantStore: { selectedTenantId: string };
 }) {
   const adapter = createHttpOnlineAuctionsAdapter();
   const toast = useAppToast();
-  const auctions = ref<any[]>([]);
+  const auctions = ref<OnlineAuction[]>([]);
   const selectedAuctionId = ref("");
   const errorMessage = ref("");
   const createForm = reactive({
@@ -53,11 +91,21 @@ export function useOnlineAuctionsPage({
     return t(`onlineAuctions.registrationStatus.approval.${status}`);
   }
 
-  function getRegistrationSummary(registration: any) {
+  function getRegistrationSummary(registration: OnlineAuctionRegistration) {
     return t("onlineAuctions.registrationSummary", {
       account: t(`onlineAuctions.registrationStatus.account.${registration.accountCheckStatus}`),
       kyc: t(`onlineAuctions.registrationStatus.kyc.${registration.kycStatus}`)
     });
+  }
+
+  function canCreateOnlineAuction() {
+    const hasHeader = hasText(createForm.title) && hasText(createForm.slug);
+    const hasIncrement = isPositiveAmount(createForm.minimumIncrement);
+    const hasCountdown = isValidCountdown(createForm.countdownSeconds);
+    const hasLots = createForm.lots.length > 0;
+    const hasValidLots = createForm.lots.every(hasValidOnlineAuctionLot);
+
+    return hasHeader && hasIncrement && hasCountdown && hasLots && hasValidLots;
   }
 
   async function loadData() {
@@ -65,7 +113,7 @@ export function useOnlineAuctionsPage({
       auctions.value = [];
       return;
     }
-    auctions.value = await adapter.fetchOnlineAuctions(tenantStore.selectedTenantId, authStore.token);
+    auctions.value = await adapter.fetchOnlineAuctions(tenantStore.selectedTenantId);
     if (!selectedAuctionId.value && auctions.value.length > 0) {
       selectedAuctionId.value = auctions.value[0].id;
     }
@@ -87,12 +135,17 @@ export function useOnlineAuctionsPage({
       errorMessage.value = "";
       await loadData();
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
+      errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
     }
   }
 
   async function submitCreate() {
     try {
+      errorMessage.value = "";
+      if (!canCreateOnlineAuction()) {
+        errorMessage.value = t("onlineAuctions.messages.invalidCreateForm");
+        return;
+      }
       await adapter.createOnlineAuction(
         tenantStore.selectedTenantId,
         {
@@ -102,7 +155,6 @@ export function useOnlineAuctionsPage({
           countdownSeconds: Number(createForm.countdownSeconds),
           lots: createForm.lots.map((item) => ({ ...item, startingBid: Number(item.startingBid) }))
         },
-        authStore.token
       );
       createForm.lots = [emptyLot()];
       toast.success(
@@ -111,7 +163,7 @@ export function useOnlineAuctionsPage({
       );
       await reloadData();
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
+      errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
     }
   }
 
@@ -130,7 +182,6 @@ export function useOnlineAuctionsPage({
           reviewNote: reviewForms[registrationId]?.reviewNote ?? "",
           decision
         },
-        authStore.token
       );
       toast.success(
         decision === "APPROVE"
@@ -140,7 +191,7 @@ export function useOnlineAuctionsPage({
       );
       await reloadData();
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
+      errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
     }
   }
 
@@ -152,20 +203,20 @@ export function useOnlineAuctionsPage({
       const tenantId = tenantStore.selectedTenantId;
       const auctionId = selectedAuction.value.id;
       if (action === "publish") {
-        await adapter.publishOnlineAuction(tenantId, auctionId, authStore.token);
+        await adapter.publishOnlineAuction(tenantId, auctionId);
         toast.info(t("onlineAuctions.messages.publishedTitle"), t("onlineAuctions.messages.publishedToast", { title: selectedAuction.value.title }));
       }
       if (action === "start") {
-        await adapter.startOnlineAuction(tenantId, auctionId, authStore.token);
+        await adapter.startOnlineAuction(tenantId, auctionId);
         toast.info(t("onlineAuctions.messages.startedTitle"), t("onlineAuctions.messages.startedToast", { title: selectedAuction.value.title }));
       }
       if (action === "close") {
-        await adapter.closeOnlineAuction(tenantId, auctionId, authStore.token);
+        await adapter.closeOnlineAuction(tenantId, auctionId);
         toast.info(t("onlineAuctions.messages.closedTitle"), t("onlineAuctions.messages.closedToast", { title: selectedAuction.value.title }));
       }
       await reloadData();
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
+      errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
     }
   }
 
@@ -180,6 +231,7 @@ export function useOnlineAuctionsPage({
   return {
     addLot,
     auctions,
+    canCreateOnlineAuction,
     changeStatus,
     createForm,
     errorMessage,

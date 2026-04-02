@@ -3,17 +3,14 @@ import type { PawnTicketModel } from "../../domain/model/pawn-ticket";
 
 export function createHttpPawnTicketsAdapter() {
   return {
-    fetchPawnTicketDocument(ticketNumber: string, token: string) {
-      return pawnTicketApi.fetchPawnTicketDocument(ticketNumber, token);
+    fetchPawnTicketDocument(ticketNumber: string) {
+      return pawnTicketApi.fetchPawnTicketDocument(ticketNumber);
     },
-    fetchPawnTicketLabels(ticketNumber: string, token: string) {
-      return pawnTicketApi.fetchPawnTicketLabels(ticketNumber, token);
+    fetchPawnTicketLabels(ticketNumber: string) {
+      return pawnTicketApi.fetchPawnTicketLabels(ticketNumber);
     },
-    fetchPawnTickets(tenantId: string, token: string) {
-      return (pawnTicketApi.fetchPawnTickets as (tenantId: string, token: string) => Promise<PawnTicketModel[]>)(
-        tenantId,
-        token
-      );
+    fetchPawnTickets(tenantId: string) {
+      return (pawnTicketApi.fetchPawnTickets as (tenantId: string) => Promise<PawnTicketModel[]>)(tenantId);
     }
   };
 }

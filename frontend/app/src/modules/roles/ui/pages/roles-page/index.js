@@ -38,7 +38,7 @@ export default defineComponent({
       }
 
       try {
-        roles.value = await rolesAdapter.fetchRoles(tenantStore.selectedTenantId, authStore.token);
+        roles.value = await rolesAdapter.fetchRoles(tenantStore.selectedTenantId);
         if (roles.value.length === 0) {
           successMessage.value = t("roles.messages.empty");
         }

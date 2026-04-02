@@ -16,7 +16,6 @@ describe("UsersView", () => {
   });
 
   it("loads the tenant user directory for tenant admins", async () => {
-    authStore.token = "token-123";
     authStore.user = {
       id: "user-admin",
       tenantId: "tenant-default",
@@ -57,14 +56,13 @@ describe("UsersView", () => {
     const wrapper = mount(UsersView);
     await flushPromises();
 
-    expect(accessApi.fetchUsers).toHaveBeenCalledWith("tenant-default", "token-123");
-    expect(accessApi.fetchRoles).toHaveBeenCalledWith("tenant-default", "token-123");
-    expect(accessApi.fetchBranches).toHaveBeenCalledWith("tenant-default", "token-123");
+    expect(accessApi.fetchUsers).toHaveBeenCalledWith("tenant-default");
+    expect(accessApi.fetchRoles).toHaveBeenCalledWith("tenant-default");
+    expect(accessApi.fetchBranches).toHaveBeenCalledWith("tenant-default");
     expect(wrapper.text()).toContain("Tenant Admin");
   });
 
   it("creates a user via the tenant provisioning API", async () => {
-    authStore.token = "token-123";
     authStore.user = {
       id: "user-admin",
       tenantId: "tenant-default",
@@ -122,14 +120,12 @@ describe("UsersView", () => {
         displayName: "Operations",
         roles: ["role-admin"],
         branchIds: ["branch-1"]
-      },
-      "token-123"
+      }
     );
     expect(wrapper.text()).toContain("User created");
   });
 
   it("loads role options for tenant admins", async () => {
-    authStore.token = "token-123";
     authStore.user = {
       id: "user-admin",
       tenantId: "tenant-default",
@@ -153,12 +149,11 @@ describe("UsersView", () => {
     const wrapper = mount(UsersView);
     await flushPromises();
 
-    expect(accessApi.fetchRoles).toHaveBeenCalledWith("tenant-default", "token-123");
+    expect(accessApi.fetchRoles).toHaveBeenCalledWith("tenant-default");
     expect(wrapper.text()).toContain("Assign tenant roles");
   });
 
   it("allows editing an existing tenant user", async () => {
-    authStore.token = "token-123";
     authStore.user = {
       id: "user-admin",
       tenantId: "tenant-default",
@@ -243,8 +238,7 @@ describe("UsersView", () => {
         roleIds: ["users.write", "roles.write"],
         roles: ["users.write", "roles.write"],
         branchIds: ["branch-1", "branch-2"]
-      },
-      "token-123"
+      }
     );
     expect(wrapper.text()).toContain("User updated");
   });

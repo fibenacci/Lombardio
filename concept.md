@@ -35,6 +35,8 @@ The system must support these modes without making any external platform the own
 - POS, disposition, and channel publication must be tenant-scoped and backend-authorized.
 - Every externally visible business action must remain auditable.
 - For unique items, double-sale prevention is mandatory across local and external channels.
+- Operator-facing frontend architecture follows a BFF-oriented security model: browser code should not distribute long-lived bearer tokens across business services.
+- During migration toward the full BFF target, operator access is kept in an encrypted server-side session at the platform boundary and exposed to the browser only as an opaque `HttpOnly` cookie.
 
 ## Scope Boundaries
 

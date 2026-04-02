@@ -1,39 +1,44 @@
 import { BASE_URLS, createApiClient } from "../../../../shared/kernel/http/runtime-api-client";
 
-const apiClient = createApiClient(BASE_URLS.auction);
+const apiClient = createApiClient(BASE_URLS.platform);
 
-export function fetchAuctions(tenantId, token) {
-  return apiClient.get(`/api/v1/tenants/${tenantId}/auctions`, token);
+export function fetchAuctions(tenantId) {
+  return apiClient.get(`/api/v1/platform/operator/tenants/${tenantId}/auctions`);
 }
 
-export function createAuction(tenantId, payload, token) {
-  return apiClient.post(`/api/v1/tenants/${tenantId}/auctions`, payload, token);
+export function createAuction(tenantId, payload) {
+  return apiClient.post(`/api/v1/platform/operator/tenants/${tenantId}/auctions`, payload);
 }
 
-export function announceAuction(tenantId, auctionId, payload, token) {
-  return apiClient.post(`/api/v1/tenants/${tenantId}/auctions/${auctionId}/announce`, payload, token);
-}
-
-export function openAuction(tenantId, auctionId, token) {
-  return apiClient.post(`/api/v1/tenants/${tenantId}/auctions/${auctionId}/open`, {}, token);
-}
-
-export function closeAuction(tenantId, auctionId, token) {
-  return apiClient.post(`/api/v1/tenants/${tenantId}/auctions/${auctionId}/close`, {}, token);
-}
-
-export function placeAuctionBid(tenantId, auctionId, lotId, payload, token) {
-  return apiClient.post(`/api/v1/tenants/${tenantId}/auctions/${auctionId}/lots/${lotId}/bids`, payload, token);
-}
-
-export function settleAuctionLot(tenantId, auctionId, lotId, payload, token) {
+export function announceAuction(tenantId, auctionId, payload) {
   return apiClient.post(
-    `/api/v1/tenants/${tenantId}/auctions/${auctionId}/lots/${lotId}/settle`,
-    payload,
-    token
+    `/api/v1/platform/operator/tenants/${tenantId}/auctions/${auctionId}/announce`,
+    payload
   );
 }
 
-export function fetchSurplusCases(tenantId, token) {
-  return apiClient.get(`/api/v1/tenants/${tenantId}/surplus-cases`, token);
+export function openAuction(tenantId, auctionId) {
+  return apiClient.post(`/api/v1/platform/operator/tenants/${tenantId}/auctions/${auctionId}/open`, {});
+}
+
+export function closeAuction(tenantId, auctionId) {
+  return apiClient.post(`/api/v1/platform/operator/tenants/${tenantId}/auctions/${auctionId}/close`, {});
+}
+
+export function placeAuctionBid(tenantId, auctionId, lotId, payload) {
+  return apiClient.post(
+    `/api/v1/platform/operator/tenants/${tenantId}/auctions/${auctionId}/lots/${lotId}/bids`,
+    payload
+  );
+}
+
+export function settleAuctionLot(tenantId, auctionId, lotId, payload) {
+  return apiClient.post(
+    `/api/v1/platform/operator/tenants/${tenantId}/auctions/${auctionId}/lots/${lotId}/settle`,
+    payload
+  );
+}
+
+export function fetchSurplusCases(tenantId) {
+  return apiClient.get(`/api/v1/platform/operator/tenants/${tenantId}/surplus-cases`);
 }

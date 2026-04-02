@@ -14,7 +14,6 @@ describe("PawnTicketsView", () => {
   });
 
   it("loads pawn tickets from the API layer", async () => {
-    authStore.token = "token-123";
     tenantStore.selectedTenantId = "tenant-default";
     tenantStore.tenants = [{ id: "tenant-default", displayName: "Default Tenant" }];
 
@@ -38,7 +37,7 @@ describe("PawnTicketsView", () => {
     const wrapper = mount(PawnTicketsView);
     await flushPromises();
 
-    expect(pawnTicketApi.fetchPawnTickets).toHaveBeenCalledWith("tenant-default", "token-123");
+    expect(pawnTicketApi.fetchPawnTickets).toHaveBeenCalledWith("tenant-default");
     expect(wrapper.text()).toContain("PS-1001");
     expect(wrapper.text()).toContain("AGB-2026-03");
     expect(wrapper.text()).toContain("Anna Becker");

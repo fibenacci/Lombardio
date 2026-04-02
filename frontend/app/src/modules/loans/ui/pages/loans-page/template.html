@@ -3,11 +3,7 @@
     :eyebrow="t('loans.eyebrow')"
     :title="t('loans.title')"
     icon="pi pi-file-edit"
-    :copy="
-      tenantStore.selectedTenantId
-        ? t('loans.copyWithTenant', { tenant: tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId })
-        : t('loans.copyWithoutTenant')
-    "
+    :copy="pageCopy"
   />
 
   <AdminPanel :title="t('loans.registerTitle')" :subtitle="isLoading ? t('common.loading') : t('loans.count', { count: filteredLoans.length })">

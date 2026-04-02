@@ -1,4 +1,4 @@
-import { defineComponent, onMounted } from "vue";
+import { computed, defineComponent, onMounted } from "vue";
 import { useAuthStore } from "../../../../../app/session/state/auth.store";
 import { useTenantStore } from "../../../../../app/tenant-context/state/tenant.store";
 import { useI18n } from "../../../../../app/i18n";
@@ -29,6 +29,7 @@ export default defineComponent({
       t,
       tenantStore
     });
+    const pageTitle = computed(() => tenantStore.selectedTenant?.displayName || t("tenantHome.titleFallback"));
 
     onMounted(tenantHome.loadContext);
 
@@ -36,6 +37,7 @@ export default defineComponent({
       ...tenantHome,
       formatCurrency,
       formatDate,
+      pageTitle,
       t
     };
   },

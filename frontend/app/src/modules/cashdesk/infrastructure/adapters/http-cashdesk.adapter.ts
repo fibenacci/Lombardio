@@ -2,23 +2,23 @@ import * as pawnTicketApi from "../../../../modules/pawn-tickets/infrastructure/
 
 export function createHttpCashdeskAdapter() {
   return {
-    calculatePartialRepayment(payload: object, token: string) {
-      return pawnTicketApi.calculatePartialRepayment(payload, token);
+    calculatePartialRepayment(payload: object) {
+      return pawnTicketApi.calculatePartialRepayment(payload);
     },
-    executeCashTransaction(payload: object, token: string) {
-      return pawnTicketApi.executeCashTransaction(payload, token);
+    executeCashTransaction(payload: object) {
+      return pawnTicketApi.executeCashTransaction(payload);
     },
-    extendPawnTicket(payload: object, token: string) {
-      return pawnTicketApi.extendPawnTicket(payload, token);
+    extendPawnTicket(payload: object) {
+      return pawnTicketApi.extendPawnTicket(payload);
     },
-    fetchCashTransactions(tenantId: string, token: string) {
-      return pawnTicketApi.fetchCashTransactions(tenantId, token);
+    fetchCashTransactions(tenantId: string) {
+      return pawnTicketApi.fetchCashTransactions(tenantId);
     },
-    fetchPawnTickets(tenantId: string, token: string) {
-      return pawnTicketApi.fetchPawnTickets(tenantId, token);
+    fetchPawnTickets(tenantId: string) {
+      return pawnTicketApi.fetchPawnTickets(tenantId);
     },
-    redeemPawnTicket(payload: object, token: string) {
-      return pawnTicketApi.redeemPawnTicket(payload, token);
+    redeemPawnTicket(payload: object) {
+      return pawnTicketApi.redeemPawnTicket(payload);
     }
   };
 }

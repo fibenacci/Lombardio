@@ -1,4 +1,4 @@
-import { defineComponent, onMounted } from "vue";
+import { computed, defineComponent, onMounted } from "vue";
 import { useAuthStore } from "../../../../../app/session/state/auth.store";
 import { useTenantStore } from "../../../../../app/tenant-context/state/tenant.store";
 import { useI18n } from "../../../../../app/i18n";
@@ -19,6 +19,14 @@ export default defineComponent({
       t,
       tenantStore
     });
+    const pageCopy = computed(() => {
+      if (!tenantStore.selectedTenantId) {
+        return t("loans.copyWithoutTenant");
+      }
+
+      const tenantDisplayName = tenantStore.selectedTenant?.displayName || tenantStore.selectedTenantId;
+      return t("loans.copyWithTenant", { tenant: tenantDisplayName });
+    });
 
     onMounted(loansPage.loadData);
 
@@ -27,6 +35,7 @@ export default defineComponent({
       formatCurrency,
       formatDate,
       formatDateTime,
+      pageCopy,
       t,
       tenantStore
     };

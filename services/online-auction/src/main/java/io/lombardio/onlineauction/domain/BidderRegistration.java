@@ -21,6 +21,7 @@ public record BidderRegistration(
     String iban,
     String paddleNumber,
     String accessToken,
+    String accessTokenHash,
     BidderApprovalStatus approvalStatus,
     ReviewCheckStatus kycStatus,
     ReviewCheckStatus accountCheckStatus,

@@ -119,6 +119,40 @@ make up
 - 📈 **Grafana**: [http://localhost:3000](http://localhost:3000)
 - 🐰 **RabbitMQ**: [http://localhost:15672](http://localhost:15672)
 
+### 5️⃣ Session Security Defaults
+
+Local development uses relaxed cookie defaults so login and portal flows work on plain `http://localhost`:
+
+- `APP_OPERATOR_SESSION_COOKIE_SECURE=false`
+- `APP_OPERATOR_SESSION_COOKIE_SAME_SITE=Lax`
+- `CUSTOMER_PORTAL_SESSION_COOKIE_SECURE=false`
+- `CUSTOMER_PORTAL_SESSION_COOKIE_SAME_SITE=Lax`
+
+For every shared, staging, or production environment, tighten these explicitly:
+
+- set `APP_OPERATOR_SESSION_COOKIE_SECURE=true`
+- set `CUSTOMER_PORTAL_SESSION_COOKIE_SECURE=true`
+- keep `SameSite` explicit (`Lax` by default, `Strict` only if the login and invitation flows still work)
+- review `APP_OPERATOR_SESSION_COOKIE_MAX_AGE_SECONDS`
+- provide a dedicated `APP_OPERATOR_SESSION_ENCRYPTION_KEY`
+- review `CUSTOMER_PORTAL_SESSION_COOKIE_MAX_AGE_SECONDS`
+- review `CUSTOMER_PORTAL_SESSION_TTL_SECONDS`
+- keep `VITE_OPERATOR_DELEGATION_ENABLED=false` and `VITE_OPERATOR_TOTP_ENABLED=false` unless matching backend support is actually implemented
+
+The frontend no longer relies on browser-persistent access tokens for operator or customer-portal reloads. Session continuity is provided through `HttpOnly` session cookies plus backend-controlled refresh/session handling.
+
+For operator sessions, the target architecture is a BFF-oriented server-side boundary. The current migration step already keeps operator tokens in an encrypted server-side session inside `platform` and exposes only an opaque `HttpOnly` session cookie to the browser while the full BFF consolidation is rolled out.
+
+### 6️⃣ Developer Conventions For Operator Flows
+
+For all new or changed operator-facing use cases, the following rules are binding:
+
+- the browser must not assemble `Authorization: Bearer ...` headers for operator APIs
+- new operator API flows must be exposed through explicit `platform` facades under `/api/v1/platform/operator/...`
+- direct frontend-to-service operator calls are not part of the target architecture
+- transport and forwarding mechanics belong in shared BFF support classes, not in ad-hoc controller code
+- public auction and customer-portal flows remain separate trust boundaries and should not be folded into the operator BFF by default
+
 ### Regula OCR License
 
 For local OCR document prefilling, place your Regula license file at:

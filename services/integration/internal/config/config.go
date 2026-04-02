@@ -64,6 +64,9 @@ func LoadFromEnv() (Config, error) {
 	if cfg.InternalServiceToken == "" {
 		return Config{}, fmt.Errorf("INTEGRATION_INTERNAL_SERVICE_TOKEN is required")
 	}
+	if cfg.InternalServiceToken == "change-me-integration-internal-token" || cfg.InternalServiceToken == "internal-secret-token" {
+		return Config{}, fmt.Errorf("INTEGRATION_INTERNAL_SERVICE_TOKEN must be configured with a secure value")
+	}
 	if cfg.EmailDeliveryMode == "" {
 		cfg.EmailDeliveryMode = "log"
 	}

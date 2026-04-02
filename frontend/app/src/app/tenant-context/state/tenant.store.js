@@ -44,7 +44,7 @@ export const useTenantStore = defineStore("tenant", {
       }
 
       try {
-        const tenants = await fetchTenants(authStore.token);
+        const tenants = await fetchTenants();
         this.tenants = tenants;
 
         if (!this.selectedTenantId && tenants.length > 0) {
@@ -80,7 +80,7 @@ export const useTenantStore = defineStore("tenant", {
       }
 
       try {
-        this.features = await fetchTenantFeatures(this.selectedTenantId, authStore.token);
+        this.features = await fetchTenantFeatures(this.selectedTenantId);
       } catch (error) {
         console.error("Failed to fetch tenant features", error);
         throw error;

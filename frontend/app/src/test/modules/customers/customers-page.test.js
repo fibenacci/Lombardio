@@ -18,7 +18,6 @@ describe("CustomersView", () => {
   });
 
   it("loads customers from the API layer", async () => {
-    authStore.token = "token-123";
     tenantStore.selectedTenantId = "tenant-default";
     tenantStore.tenants = [{ id: "tenant-default", displayName: "Default Tenant" }];
 
@@ -55,7 +54,7 @@ describe("CustomersView", () => {
     });
     await flushPromises();
 
-    expect(customerApi.searchCustomers).toHaveBeenCalledWith("tenant-default", "", "token-123");
+    expect(customerApi.searchCustomers).toHaveBeenCalledWith("tenant-default", "");
     expect(wrapper.text()).toContain("Anna Becker");
     expect(wrapper.text()).toContain("Approved");
     expect(wrapper.text()).toContain("Clear");

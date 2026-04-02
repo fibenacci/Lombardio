@@ -1,6 +1,6 @@
 import { BASE_URLS, createApiClient } from "../../../../shared/kernel/http/runtime-api-client";
 
-const apiClient = createApiClient(BASE_URLS.customer);
+const apiClient = createApiClient(BASE_URLS.platform);
 
 function normalizeCustomerCollection(payload) {
   if (Array.isArray(payload)) {
@@ -22,22 +22,21 @@ function normalizeCustomerCollection(payload) {
   return [];
 }
 
-export async function searchCustomers(tenantId, query, token) {
+export async function searchCustomers(tenantId, query) {
   const payload = await apiClient.get(
-    `/api/v1/tenants/${tenantId}/customers?query=${encodeURIComponent(query ?? "")}`,
-    token
+    `/api/v1/platform/operator/tenants/${tenantId}/customers?query=${encodeURIComponent(query ?? "")}`
   );
   return normalizeCustomerCollection(payload);
 }
 
-export function createCustomer(tenantId, payload, token) {
-  return apiClient.post(`/api/v1/tenants/${tenantId}/customers`, payload, token);
+export function createCustomer(tenantId, payload) {
+  return apiClient.post(`/api/v1/platform/operator/tenants/${tenantId}/customers`, payload);
 }
 
-export function fetchCustomer(tenantId, customerId, token) {
-  return apiClient.get(`/api/v1/tenants/${tenantId}/customers/${customerId}`, token);
+export function fetchCustomer(tenantId, customerId) {
+  return apiClient.get(`/api/v1/platform/operator/tenants/${tenantId}/customers/${customerId}`);
 }
 
-export function updateCustomer(tenantId, customerId, payload, token) {
-  return apiClient.put(`/api/v1/tenants/${tenantId}/customers/${customerId}`, payload, token);
+export function updateCustomer(tenantId, customerId, payload) {
+  return apiClient.put(`/api/v1/platform/operator/tenants/${tenantId}/customers/${customerId}`, payload);
 }

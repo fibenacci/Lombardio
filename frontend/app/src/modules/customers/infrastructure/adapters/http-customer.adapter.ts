@@ -6,38 +6,33 @@ import type { AmlStatusDto, CustomerDto, KycDocumentsDto, KycStatusDto, LoanDto 
 
 export function createHttpCustomerAdapter() {
   return {
-    fetchAmlStatus(tenantId: string, customerId: string, token: string) {
-      return amlApi.fetchAmlStatus(tenantId, customerId, token);
+    fetchAmlStatus(tenantId: string, customerId: string) {
+      return amlApi.fetchAmlStatus(tenantId, customerId);
     },
-    async loadCustomerDetailData(tenantId: string, customerId: string, token: string, amlEnabled: boolean) {
+    async loadCustomerDetailData(tenantId: string, customerId: string, amlEnabled: boolean) {
       const [customerResponse, kycResponse, kycDocumentsResponse] = await Promise.all([
-        (customerApi.fetchCustomer as (
-          tenantId: string,
-          customerId: string,
-          token: string
-        ) => Promise<CustomerDto>)(tenantId, customerId, token),
-        (kycApi.fetchKycStatus as (
-          tenantId: string,
-          customerId: string,
-          token: string
-        ) => Promise<KycStatusDto>)(tenantId, customerId, token),
-        (kycApi.fetchKycDocuments as (
-          tenantId: string,
-          customerId: string,
-          token: string
-        ) => Promise<KycDocumentsDto>)(tenantId, customerId, token)
+        (customerApi.fetchCustomer as (tenantId: string, customerId: string) => Promise<CustomerDto>)(
+          tenantId,
+          customerId
+        ),
+        (kycApi.fetchKycStatus as (tenantId: string, customerId: string) => Promise<KycStatusDto>)(
+          tenantId,
+          customerId
+        ),
+        (kycApi.fetchKycDocuments as (tenantId: string, customerId: string) => Promise<KycDocumentsDto>)(
+          tenantId,
+          customerId
+        )
       ]);
       const loanResponse = await (originationApi.fetchLoans as (
         tenantId: string,
-        token: string,
         customerId?: string | null
-      ) => Promise<LoanDto[]>)(tenantId, token, customerId);
+      ) => Promise<LoanDto[]>)(tenantId, customerId);
       const amlResponse = amlEnabled
-        ? await (amlApi.fetchAmlStatus as (
-          tenantId: string,
-          customerId: string,
-          token: string
-        ) => Promise<AmlStatusDto>)(tenantId, customerId, token)
+        ? await (amlApi.fetchAmlStatus as (tenantId: string, customerId: string) => Promise<AmlStatusDto>)(
+          tenantId,
+          customerId
+        )
         : null;
 
       return {
@@ -48,35 +43,32 @@ export function createHttpCustomerAdapter() {
         loans: loanResponse
       };
     },
-    prefillKycDocument(tenantId: string, customerId: string, payload: object, token: string) {
-      return kycApi.prefillKycDocument(tenantId, customerId, payload, token);
+    prefillKycDocument(tenantId: string, customerId: string, payload: object) {
+      return kycApi.prefillKycDocument(tenantId, customerId, payload);
     },
-    searchCustomers(tenantId: string, query: string, token: string) {
-      return customerApi.searchCustomers(tenantId, query, token);
+    searchCustomers(tenantId: string, query: string) {
+      return customerApi.searchCustomers(tenantId, query);
     },
-    saveAml(tenantId: string, customerId: string, payload: object, token: string) {
+    saveAml(tenantId: string, customerId: string, payload: object) {
       return (amlApi.updateAmlStatus as (
         tenantId: string,
         customerId: string,
-        payload: object,
-        token: string
-      ) => Promise<AmlStatusDto>)(tenantId, customerId, payload, token);
+        payload: object
+      ) => Promise<AmlStatusDto>)(tenantId, customerId, payload);
     },
-    saveCustomer(tenantId: string, customerId: string, payload: object, token: string) {
+    saveCustomer(tenantId: string, customerId: string, payload: object) {
       return (customerApi.updateCustomer as (
         tenantId: string,
         customerId: string,
-        payload: object,
-        token: string
-      ) => Promise<CustomerDto>)(tenantId, customerId, payload, token);
+        payload: object
+      ) => Promise<CustomerDto>)(tenantId, customerId, payload);
     },
-    saveKyc(tenantId: string, customerId: string, payload: object, token: string) {
+    saveKyc(tenantId: string, customerId: string, payload: object) {
       return (kycApi.updateKycStatus as (
         tenantId: string,
         customerId: string,
-        payload: object,
-        token: string
-      ) => Promise<KycStatusDto>)(tenantId, customerId, payload, token);
+        payload: object
+      ) => Promise<KycStatusDto>)(tenantId, customerId, payload);
     }
   };
 }

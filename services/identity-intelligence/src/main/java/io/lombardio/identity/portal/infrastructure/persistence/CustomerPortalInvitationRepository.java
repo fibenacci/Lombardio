@@ -10,10 +10,13 @@
  */
 package io.lombardio.identity.portal.infrastructure.persistence;
 
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CustomerPortalInvitationRepository
     extends JpaRepository<CustomerPortalInvitationEntity, String> {
+
+  Optional<CustomerPortalInvitationEntity> findByTokenHash(String tokenHash);
 
   void deleteByCustomerIdAndUsedAtIsNull(String customerId);
 }

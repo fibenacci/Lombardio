@@ -1,5 +1,24 @@
 import { onBeforeUnmount, reactive, ref } from "vue";
+import { getRequestErrorMessage } from "../../../../shared/kernel/errors/request-error";
 import { createHttpPublicAuctionsAdapter } from "../../infrastructure/adapters/http-public-auctions.adapter";
+
+type PublicAuctionLot = {
+  id: string;
+};
+
+type PublicAuction = {
+  lots?: PublicAuctionLot[];
+};
+
+type PublicBidder = {
+  accessToken?: string;
+  accountCheckStatus?: string;
+  kycStatus?: string;
+} | null;
+
+function hasText(value: string) {
+  return String(value).trim().length > 0;
+}
 
 export function usePublicAuctionPage({
   route,
@@ -9,11 +28,11 @@ export function usePublicAuctionPage({
   t: (key: string, params?: Record<string, unknown>) => string;
 }) {
   const adapter = createHttpPublicAuctionsAdapter();
-  const auction = ref<any | null>(null);
-  const bidder = ref<any | null>(null);
+  const auction = ref<PublicAuction | null>(null);
+  const bidder = ref<PublicBidder>(null);
   const errorMessage = ref("");
   const realtimeState = ref("idle");
-  const realtimeEvents = ref<any[]>([]);
+  const realtimeEvents = ref<unknown[]>([]);
   const registrationForm = reactive({
     displayName: "",
     email: "",
@@ -27,8 +46,28 @@ export function usePublicAuctionPage({
   });
   let closeRealtime: null | (() => void) = null;
 
+  function tenantId() {
+    return String(route.params.tenantId ?? "");
+  }
+
+  function auctionId() {
+    return String(route.params.auctionId ?? "");
+  }
+
+  function bidderAccessToken() {
+    return bidder.value?.accessToken ?? "";
+  }
+
+  function hasRegisteredBidder() {
+    return hasText(bidderAccessToken());
+  }
+
+  function hasValidBidRequest() {
+    return hasText(bidForm.lotId) && Number(bidForm.amount) > 0;
+  }
+
   async function loadAuction() {
-    auction.value = await adapter.fetchPublicOnlineAuction(String(route.params.tenantId ?? ""), String(route.params.auctionId ?? ""));
+    auction.value = await adapter.fetchPublicOnlineAuction(tenantId(), auctionId());
     if (!bidForm.lotId && auction.value?.lots?.length) {
       bidForm.lotId = auction.value.lots[0].id;
     }
@@ -39,28 +78,28 @@ export function usePublicAuctionPage({
       errorMessage.value = "";
       await loadAuction();
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
+      errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
     }
   }
 
   async function registerBidder() {
     bidder.value = await adapter.registerPublicBidder(
-      String(route.params.tenantId ?? ""),
-      String(route.params.auctionId ?? ""),
+      tenantId(),
+      auctionId(),
       registrationForm
     );
     await reloadAuction();
   }
 
   async function enableRealtime() {
-    if (!bidder.value?.accessToken) {
+    if (!hasRegisteredBidder()) {
       return;
     }
     const session = await adapter.createRealtimeSession(
-      String(route.params.tenantId ?? ""),
-      String(route.params.auctionId ?? ""),
+      tenantId(),
+      auctionId(),
       {
-        accessToken: bidder.value.accessToken
+        accessToken: bidderAccessToken()
       }
     );
     closeRealtime?.();
@@ -76,15 +115,19 @@ export function usePublicAuctionPage({
   }
 
   async function submitBid() {
-    if (!bidder.value?.accessToken) {
+    if (!hasRegisteredBidder()) {
       errorMessage.value = t("publicAuction.messages.registerFirst");
       return;
     }
+    if (!hasValidBidRequest()) {
+      errorMessage.value = t("publicAuction.messages.invalidBid");
+      return;
+    }
     auction.value = await adapter.placePublicBid(
-      String(route.params.tenantId ?? ""),
-      String(route.params.auctionId ?? ""),
+      tenantId(),
+      auctionId(),
       {
-        accessToken: bidder.value.accessToken,
+        accessToken: bidderAccessToken(),
         lotId: bidForm.lotId,
         amount: Number(bidForm.amount)
       }
@@ -100,7 +143,7 @@ export function usePublicAuctionPage({
     return t(`publicAuction.status.realtime.${state}`);
   }
 
-  function getBidderCheckSummary(currentBidder: any) {
+  function getBidderCheckSummary(currentBidder: NonNullable<PublicBidder>) {
     return t("publicAuction.bidderChecks", {
       account: t(`onlineAuctions.registrationStatus.account.${currentBidder.accountCheckStatus}`),
       kyc: t(`onlineAuctions.registrationStatus.kyc.${currentBidder.kycStatus}`)

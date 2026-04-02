@@ -27,7 +27,7 @@ const routes = [
   { path: "/login", name: "login", component: LoginView },
   { path: "/online-auctions/:tenantId/:auctionId", name: "public-online-auction", component: PublicAuctionView },
   { path: "/portal/login", name: "customer-portal-login", component: CustomerPortalLoginView },
-  { path: "/portal/activate/:token", name: "customer-portal-activate", component: CustomerPortalActivateView },
+  { path: "/portal/activate/:token?", name: "customer-portal-activate", component: CustomerPortalActivateView },
   { path: "/portal", redirect: "/portal/home" },
   {
     path: "/portal/home",
@@ -83,11 +83,27 @@ const router = createRouter({
   routes
 });
 
+function isPortalActivationRoute(to: RouteLocationNormalized) {
+  return Boolean(to.path?.startsWith("/portal/activate"));
+}
+
+function isPublicRoute(to: RouteLocationNormalized) {
+  return to.name === "public-online-auction" || isPortalActivationRoute(to);
+}
+
+function isPortalRoute(to: RouteLocationNormalized) {
+  return Boolean(to.path?.startsWith("/portal"));
+}
+
+function defaultAuthenticatedPath(authStore: ReturnType<typeof useAuthStore>) {
+  return authStore.canManagePlatform ? "/platform/tenants" : "/app/dashboard";
+}
+
 export function routeGuard(to: RouteLocationNormalized) {
   const authStore = useAuthStore();
   const customerPortalStore = useCustomerPortalStore();
 
-  if (to.name === "public-online-auction" || (to.path && to.path.startsWith("/portal/activate"))) {
+  if (isPublicRoute(to)) {
     return true;
   }
 
@@ -95,7 +111,7 @@ export function routeGuard(to: RouteLocationNormalized) {
     return true;
   }
 
-  if (to.path && to.path.startsWith("/portal")) {
+  if (isPortalRoute(to)) {
     if (to.meta.requiresCustomerPortalAuth && !customerPortalStore.isAuthenticated) {
       return { name: "customer-portal-login" };
     }
@@ -107,7 +123,7 @@ export function routeGuard(to: RouteLocationNormalized) {
   }
 
   if (to.name === "login" && authStore.isAuthenticated) {
-    return { path: authStore.canManagePlatform ? "/platform/tenants" : "/app/dashboard" };
+    return { path: defaultAuthenticatedPath(authStore) };
   }
 
   if (to.meta.requiresPlatformAccess && !authStore.canManagePlatform) {

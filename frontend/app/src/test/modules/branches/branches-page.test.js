@@ -16,7 +16,6 @@ describe("BranchesView", () => {
   });
 
   it("loads branches from the API layer", async () => {
-    authStore.token = "token-123";
     authStore.user = {
       id: "user-admin",
       tenantId: "tenant-default",
@@ -36,13 +35,12 @@ describe("BranchesView", () => {
     const wrapper = mount(BranchesView);
     await flushPromises();
 
-    expect(accessApi.fetchBranches).toHaveBeenCalledWith("tenant-default", "token-123");
+    expect(accessApi.fetchBranches).toHaveBeenCalledWith("tenant-default");
     expect(wrapper.text()).toContain("Berlin Mitte");
     expect(wrapper.text()).toContain("Create branch");
   });
 
   it("creates branches via the tenant API", async () => {
-    authStore.token = "token-123";
     authStore.user = {
       id: "user-admin",
       tenantId: "tenant-default",
@@ -64,8 +62,7 @@ describe("BranchesView", () => {
 
     expect(accessApi.createBranch).toHaveBeenCalledWith(
       "tenant-default",
-      { key: "hh", displayName: "Hamburg", status: "ACTIVE" },
-      "token-123"
+      { key: "hh", displayName: "Hamburg", status: "ACTIVE" }
     );
     expect(wrapper.text()).toContain("Branch created");
   });

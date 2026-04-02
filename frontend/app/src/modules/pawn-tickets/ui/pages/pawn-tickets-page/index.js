@@ -1,4 +1,4 @@
-import { defineComponent, onMounted } from "vue";
+import { computed, defineComponent, onMounted } from "vue";
 import { useAppToast } from "../../../../../shared/ui/composables/use-app-toast";
 import { useAuthStore } from "../../../../../app/session/state/auth.store";
 import { useTenantStore } from "../../../../../app/tenant-context/state/tenant.store";
@@ -29,6 +29,14 @@ export default defineComponent({
       EXTENDED: () => t("pawnTickets.status.EXTENDED"),
       AUCTIONED: () => t("pawnTickets.status.AUCTIONED")
     };
+    const pageCopy = computed(() => {
+      if (!tenantStore.selectedTenantId) {
+        return t("pawnTickets.copyWithoutTenant");
+      }
+
+      const tenantDisplayName = tenantStore.selectedTenant?.displayName || tenantStore.selectedTenantId;
+      return t("pawnTickets.copyWithTenant", { tenant: tenantDisplayName });
+    });
 
     onMounted(pawnTicketsPage.loadData);
 
@@ -37,6 +45,7 @@ export default defineComponent({
       formatCurrency,
       formatDate,
       getTicketStatusLabel: (status) => statusLabels[status]?.() ?? status ?? t("common.notAvailable"),
+      pageCopy,
       t,
       tenantStore
     };

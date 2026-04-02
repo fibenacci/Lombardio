@@ -60,6 +60,22 @@ export default defineComponent({
       { label: t("users.status.ACTIVE"), value: "ACTIVE" },
       { label: t("users.status.INACTIVE"), value: "INACTIVE" }
     ]);
+    const pageCopy = computed(() => {
+      if (!tenantStore.selectedTenantId) {
+        return t("users.copyWithoutTenant");
+      }
+
+      const tenantDisplayName = tenantStore.selectedTenant?.displayName || tenantStore.selectedTenantId;
+      return t("users.copyWithTenant", { tenant: tenantDisplayName });
+    });
+
+    function canManageTenantUsers() {
+      return authStore.hasPermission("users.write") && tenantStore.selectedTenantId === authStore.user?.tenantId;
+    }
+
+    function canManagePlatformUsers() {
+      return authStore.hasPermission("platform.tenants.write");
+    }
 
     async function loadData() {
       isLoading.value = true;
@@ -75,10 +91,10 @@ export default defineComponent({
 
       try {
         const [userResponse, roleResponse] = await Promise.all([
-          usersAdapter.fetchUsers(tenantStore.selectedTenantId, authStore.token),
-          usersAdapter.fetchRoles(tenantStore.selectedTenantId, authStore.token)
+          usersAdapter.fetchUsers(tenantStore.selectedTenantId),
+          usersAdapter.fetchRoles(tenantStore.selectedTenantId)
         ]);
-        const branchResponse = await usersAdapter.fetchBranches(tenantStore.selectedTenantId, authStore.token);
+        const branchResponse = await usersAdapter.fetchBranches(tenantStore.selectedTenantId);
 
         users.value = userResponse;
         roles.value = roleResponse;
@@ -108,7 +124,7 @@ export default defineComponent({
         };
 
         if (editingUserId.value) {
-          await usersAdapter.updateUser(editingUserId.value, payload, authStore.token);
+          await usersAdapter.updateUser(editingUserId.value, payload);
           toast.success(
             t("users.messages.userUpdatedTitle"),
             t("users.messages.userUpdatedToast", { user: payload.displayName || payload.email })
@@ -123,8 +139,7 @@ export default defineComponent({
               displayName: payload.displayName,
               roles: payload.roles,
               branchIds: payload.branchIds
-            },
-            authStore.token
+            }
           );
           toast.success(
             t("users.messages.userCreatedTitle"),
@@ -141,7 +156,11 @@ export default defineComponent({
     }
 
     function canDelegateToUser(user) {
-      return authStore.canImpersonate() && authStore.user?.id !== user.id;
+      const delegationAvailable = authStore.delegationAvailable;
+      const canImpersonate = authStore.canImpersonate();
+      const isDifferentUser = authStore.user?.id !== user.id;
+
+      return delegationAvailable && canImpersonate && isDifferentUser;
     }
 
     async function delegateToUser(userId) {
@@ -175,11 +194,7 @@ export default defineComponent({
       errorMessage.value = "";
     }
 
-    const canManageUsers = computed(
-      () =>
-        authStore.hasPermission("platform.tenants.write")
-        || (authStore.hasPermission("users.write") && tenantStore.selectedTenantId === authStore.user?.tenantId)
-    );
+    const canManageUsers = computed(() => canManagePlatformUsers() || canManageTenantUsers());
 
     function resetForm() {
       editingUserId.value = "";
@@ -204,6 +219,7 @@ export default defineComponent({
       errorMessage,
       form,
       isLoading,
+      pageCopy,
       resetForm,
       roleOptions,
       roles,

@@ -1,5 +1,20 @@
 import { computed, ref } from "vue";
+import { getRequestErrorMessage } from "../../../../shared/kernel/errors/request-error";
+import { openBlobInWindow } from "../../../../shared/kernel/utils/blob-window";
 import { createHttpCustomerPortalAdapter } from "../../infrastructure/adapters/http-customer-portal.adapter";
+
+type CustomerPortalCustomer = {
+  customerNumber?: string;
+  displayName?: string;
+  firstName?: string;
+  lastName?: string;
+} | null;
+
+type CustomerPortalPawnTicket = {
+  ticketNumber: string;
+  status?: string;
+  dueDate?: string;
+};
 
 export function useCustomerPortalHomePage({
   customerPortalStore,
@@ -7,15 +22,14 @@ export function useCustomerPortalHomePage({
   t
 }: {
   customerPortalStore: {
-    customer: unknown;
-    logout: () => void;
-    token: string;
+    customer: CustomerPortalCustomer;
+    logout: () => Promise<unknown> | unknown;
   };
   router: { push: (payload: object) => Promise<unknown> | unknown };
   t: (key: string, params?: Record<string, unknown>) => string;
 }) {
   const adapter = createHttpCustomerPortalAdapter();
-  const tickets = ref<any[]>([]);
+  const tickets = ref<CustomerPortalPawnTicket[]>([]);
   const isLoading = ref(true);
   const isDownloading = ref("");
   const errorMessage = ref("");
@@ -25,9 +39,9 @@ export function useCustomerPortalHomePage({
     isLoading.value = true;
     errorMessage.value = "";
     try {
-      tickets.value = await adapter.fetchCustomerPortalPawnTickets(customerPortalStore.token);
+      tickets.value = await adapter.fetchCustomerPortalPawnTickets();
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
+      errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
     } finally {
       isLoading.value = false;
     }
@@ -36,17 +50,16 @@ export function useCustomerPortalHomePage({
   async function downloadDocument(ticketNumber: string) {
     isDownloading.value = ticketNumber;
     try {
-      const blob = await adapter.fetchCustomerPortalDocument(ticketNumber, customerPortalStore.token);
-      const url = URL.createObjectURL(blob);
-      window.open(url, "_blank", "noopener");
+      const blob = await adapter.fetchCustomerPortalDocument(ticketNumber);
+      openBlobInWindow(blob);
     } finally {
       isDownloading.value = "";
     }
   }
 
-  function logout() {
-    customerPortalStore.logout();
-    router.push({ name: "customer-portal-login" });
+  async function logout() {
+    await customerPortalStore.logout();
+    await router.push({ name: "customer-portal-login" });
   }
 
   return {

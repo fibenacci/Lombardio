@@ -1,0 +1,757 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: lombardio
+
+resources:
+  - ../../base
+  - rabbitmq.yaml
+  - keycloak.yaml
+  - local-secrets.yaml
+  - headlamp.yaml
+  - integration.yaml
+
+configMapGenerator:
+  - name: keycloak-realm-import
+    files:
+      - lombardio-realm.json=../../../keycloak/lombardio-realm.json
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+patches:
+  - patch: |-
+      $patch: delete
+      apiVersion: external-secrets.io/v1beta1
+      kind: ExternalSecret
+      metadata:
+        name: postgres-secret
+    target:
+      kind: ExternalSecret
+      name: postgres-secret
+  - patch: |-
+      $patch: delete
+      apiVersion: external-secrets.io/v1beta1
+      kind: ExternalSecret
+      metadata:
+        name: identity-access-secret
+    target:
+      kind: ExternalSecret
+      name: identity-access-secret
+  - patch: |-
+      $patch: delete
+      apiVersion: external-secrets.io/v1beta1
+      kind: ExternalSecret
+      metadata:
+        name: platform-secret
+    target:
+      kind: ExternalSecret
+      name: platform-secret
+  - patch: |-
+      $patch: delete
+      apiVersion: external-secrets.io/v1beta1
+      kind: ExternalSecret
+      metadata:
+        name: customer-secret
+    target:
+      kind: ExternalSecret
+      name: customer-secret
+  - patch: |-
+      $patch: delete
+      apiVersion: external-secrets.io/v1beta1
+      kind: ExternalSecret
+      metadata:
+        name: pawn-ticket-secret
+    target:
+      kind: ExternalSecret
+      name: pawn-ticket-secret
+  - patch: |-
+      $patch: delete
+      apiVersion: external-secrets.io/v1beta1
+      kind: ExternalSecret
+      metadata:
+        name: kyc-secret
+    target:
+      kind: ExternalSecret
+      name: kyc-secret
+  - patch: |-
+      $patch: delete
+      apiVersion: external-secrets.io/v1beta1
+      kind: ExternalSecret
+      metadata:
+        name: aml-secret
+    target:
+      kind: ExternalSecret
+      name: aml-secret
+  - patch: |-
+      $patch: delete
+      apiVersion: external-secrets.io/v1beta1
+      kind: ExternalSecret
+      metadata:
+        name: loan-origination-secret
+    target:
+      kind: ExternalSecret
+      name: loan-origination-secret
+  - patch: |-
+      $patch: delete
+      apiVersion: external-secrets.io/v1beta1
+      kind: ExternalSecret
+      metadata:
+        name: auction-secret
+    target:
+      kind: ExternalSecret
+      name: auction-secret
+  - patch: |-
+      $patch: delete
+      apiVersion: external-secrets.io/v1beta1
+      kind: ExternalSecret
+      metadata:
+        name: online-auction-secret
+    target:
+      kind: ExternalSecret
+      name: online-auction-secret
+  - patch: |-
+      $patch: delete
+      apiVersion: external-secrets.io/v1beta1
+      kind: ExternalSecret
+      metadata:
+        name: centrifugo-config
+    target:
+      kind: ExternalSecret
+      name: centrifugo-config
+  - patch: |-
+      $patch: delete
+      apiVersion: external-secrets.io/v1beta1
+      kind: ExternalSecret
+      metadata:
+        name: grafana-secret
+    target:
+      kind: ExternalSecret
+      name: grafana-secret
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: prometheus
+    target:
+      kind: Deployment
+      name: prometheus
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: prometheus
+    target:
+      kind: Service
+      name: prometheus
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: grafana
+    target:
+      kind: Deployment
+      name: grafana
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: grafana
+    target:
+      kind: Service
+      name: grafana
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: prometheus-config
+    target:
+      kind: ConfigMap
+      name: prometheus-config
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: grafana-datasource
+    target:
+      kind: ConfigMap
+      name: grafana-datasource
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: grafana-dashboards
+    target:
+      kind: ConfigMap
+      name: grafana-dashboards
+  - patch: |-
+      $patch: delete
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: lombardio
+    target:
+      kind: Ingress
+      name: lombardio
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: regula
+    target:
+      kind: Deployment
+      name: regula
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: regula
+    target:
+      kind: Service
+      name: regula
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: kyc
+    target:
+      kind: Deployment
+      name: kyc
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: kyc
+    target:
+      kind: Service
+      name: kyc
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: kyc-config
+    target:
+      kind: ConfigMap
+      name: kyc-config
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: aml
+    target:
+      kind: Deployment
+      name: aml
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: aml
+    target:
+      kind: Service
+      name: aml
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: aml-config
+    target:
+      kind: ConfigMap
+      name: aml-config
+  - target:
+      kind: ConfigMap
+      name: platform-config
+    patch: |-
+      - op: replace
+        path: /data
+        value:
+          PLATFORM_DB_URL: jdbc:postgresql://postgres:5432/lombardio?currentSchema=platform
+          PLATFORM_DB_USERNAME: lombardio
+          SPRING_RABBITMQ_HOST: rabbitmq
+          SPRING_RABBITMQ_PORT: "5672"
+          SPRING_RABBITMQ_USERNAME: lombardio
+          INTEGRATION_RABBITMQ_EXCHANGE: lombardio.domain
+          INTEGRATION_RABBITMQ_PUBLISHER_BATCH_SIZE: "10"
+          INTEGRATION_RABBITMQ_PUBLISHER_ENABLED: "false"
+          KEYCLOAK_URL: http://keycloak:8080
+          KEYCLOAK_REALM: lombardio
+          KEYCLOAK_CLIENT_ID: admin-cli
+          KEYCLOAK_ADMIN_USERNAME: platform@lombardio.local
+          KEYCLOAK_OPERATOR_CLIENT_ID: lombardio-app
+          APP_CORS_ALLOWED_ORIGINS: http://localhost:8080
+          APP_CORS_ALLOWED_METHODS: GET,POST,PUT,PATCH,DELETE,OPTIONS
+          APP_CORS_ALLOWED_HEADERS: Authorization,Content-Type,Accept,X-Requested-With
+          APP_CORS_EXPOSED_HEADERS: Content-Disposition,Location
+          APP_CORS_MAX_AGE_SECONDS: "3600"
+          APP_OPERATOR_SESSION_COOKIE_NAME: lombardio_operator_session
+          APP_OPERATOR_SESSION_COOKIE_PATH: /
+          APP_OPERATOR_SESSION_COOKIE_SAME_SITE: Lax
+          APP_OPERATOR_SESSION_COOKIE_MAX_AGE_SECONDS: "2592000"
+          APP_OPERATOR_SESSION_COOKIE_SECURE: "false"
+          SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/lombardio/protocol/openid-connect/certs
+          SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/lombardio
+  - target:
+      kind: ConfigMap
+      name: customer-config
+    patch: |-
+      - op: replace
+        path: /data
+        value:
+          IDENTITY_INTELLIGENCE_DB_URL: jdbc:postgresql://postgres:5432/lombardio?currentSchema=identity_intelligence
+          IDENTITY_INTELLIGENCE_DB_USERNAME: lombardio
+          PAWN_TICKET_BASE_URL: http://pawn-ticket:8085
+          INTEGRATION_BASE_URL: http://integration:8092
+          PLATFORM_BASE_URL: http://platform:8082
+          REGULA_BASE_URL: http://regula:8087
+          CUSTOMER_PORTAL_PUBLIC_BASE_URL: http://localhost:8080/portal
+          CUSTOMER_PORTAL_SESSION_COOKIE_NAME: lombardio_customer_portal_session
+          CUSTOMER_PORTAL_SESSION_COOKIE_PATH: /
+          CUSTOMER_PORTAL_SESSION_COOKIE_SAME_SITE: Lax
+          CUSTOMER_PORTAL_SESSION_COOKIE_MAX_AGE_SECONDS: "2592000"
+          CUSTOMER_PORTAL_SESSION_TTL_SECONDS: "2592000"
+          CUSTOMER_PORTAL_SESSION_CLEANUP_FIXED_DELAY_MS: "3600000"
+          CUSTOMER_PORTAL_SESSION_COOKIE_SECURE: "false"
+          APP_CORS_ALLOWED_ORIGINS: http://localhost:8080
+          APP_CORS_ALLOWED_METHODS: GET,POST,PUT,PATCH,DELETE,OPTIONS
+          APP_CORS_ALLOWED_HEADERS: Authorization,Content-Type,Accept,X-Requested-With
+          APP_CORS_EXPOSED_HEADERS: Content-Disposition,Location
+          APP_CORS_MAX_AGE_SECONDS: "3600"
+          SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/lombardio/protocol/openid-connect/certs
+          SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/lombardio
+  - target:
+      kind: ConfigMap
+      name: loan-origination-config
+    patch: |-
+      - op: replace
+        path: /data
+        value:
+          LOAN_ORIGINATION_DB_URL: jdbc:postgresql://postgres:5432/lombardio?currentSchema=loan_origination
+          LOAN_ORIGINATION_DB_USERNAME: lombardio
+          IDENTITY_BASE_URL: http://customer:8084
+          APP_CORS_ALLOWED_ORIGINS: http://localhost:8080
+          APP_CORS_ALLOWED_METHODS: GET,POST,PUT,PATCH,DELETE,OPTIONS
+          APP_CORS_ALLOWED_HEADERS: Authorization,Content-Type,Accept,X-Requested-With
+          APP_CORS_EXPOSED_HEADERS: Content-Disposition,Location
+          APP_CORS_MAX_AGE_SECONDS: "3600"
+          SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/lombardio/protocol/openid-connect/certs
+          SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/lombardio
+  - target:
+      kind: ConfigMap
+      name: pawn-ticket-config
+    patch: |-
+      - op: replace
+        path: /data
+        value:
+          PAWN_TICKET_DB_URL: jdbc:postgresql://postgres:5432/lombardio?currentSchema=pawn_ticket
+          PAWN_TICKET_DB_USERNAME: lombardio
+          CUSTOMER_BASE_URL: http://customer:8084
+          LOAN_ORIGINATION_BASE_URL: http://loan-origination:8083
+          PLATFORM_BASE_URL: http://platform:8082
+          APP_CORS_ALLOWED_ORIGINS: http://localhost:8080
+          APP_CORS_ALLOWED_METHODS: GET,POST,PUT,PATCH,DELETE,OPTIONS
+          APP_CORS_ALLOWED_HEADERS: Authorization,Content-Type,Accept,X-Requested-With
+          APP_CORS_EXPOSED_HEADERS: Content-Disposition,Location
+          APP_CORS_MAX_AGE_SECONDS: "3600"
+          SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/lombardio/protocol/openid-connect/certs
+          SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/lombardio
+  - target:
+      kind: ConfigMap
+      name: auction-config
+    patch: |-
+      - op: replace
+        path: /data
+        value:
+          AUCTION_DB_URL: jdbc:postgresql://postgres:5432/lombardio?currentSchema=auction
+          AUCTION_DB_USERNAME: lombardio
+          APP_CORS_ALLOWED_ORIGINS: http://localhost:8080
+          APP_CORS_ALLOWED_METHODS: GET,POST,PUT,PATCH,DELETE,OPTIONS
+          APP_CORS_ALLOWED_HEADERS: Authorization,Content-Type,Accept,X-Requested-With
+          APP_CORS_EXPOSED_HEADERS: Content-Disposition,Location
+          APP_CORS_MAX_AGE_SECONDS: "3600"
+          SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/lombardio/protocol/openid-connect/certs
+          SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/lombardio
+  - target:
+      kind: ConfigMap
+      name: online-auction-config
+    patch: |-
+      - op: replace
+        path: /data
+        value:
+          ONLINE_AUCTION_DB_URL: jdbc:postgresql://postgres:5432/lombardio?currentSchema=online_auction
+          ONLINE_AUCTION_DB_USERNAME: lombardio
+          REDIS_HOST: redis
+          REDIS_PORT: "6379"
+          CENTRIFUGO_BASE_URL: http://centrifugo:8000
+          CENTRIFUGO_WS_URL: ws://localhost:8090/connection/websocket
+          APP_CORS_ALLOWED_ORIGINS: http://localhost:8080
+          APP_CORS_ALLOWED_METHODS: GET,POST,PUT,PATCH,DELETE,OPTIONS
+          APP_CORS_ALLOWED_HEADERS: Authorization,Content-Type,Accept,X-Requested-With
+          APP_CORS_EXPOSED_HEADERS: Content-Disposition,Location
+          APP_CORS_MAX_AGE_SECONDS: "3600"
+          SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/lombardio/protocol/openid-connect/certs
+          SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/lombardio
+  - target:
+      kind: Deployment
+      name: reporting
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env
+        value:
+          - name: LOAN_ORIGINATION_BASE_URL
+            value: http://loan-origination:8083
+          - name: PAWN_TICKET_BASE_URL
+            value: http://pawn-ticket:8085
+          - name: APP_CORS_ALLOWED_ORIGINS
+            value: http://localhost:8080
+          - name: APP_CORS_ALLOWED_METHODS
+            value: GET,POST,PUT,PATCH,DELETE,OPTIONS
+          - name: APP_CORS_ALLOWED_HEADERS
+            value: Authorization,Content-Type,Accept,X-Requested-With
+          - name: APP_CORS_EXPOSED_HEADERS
+            value: Content-Disposition,Location
+          - name: APP_CORS_MAX_AGE_SECONDS
+            value: "3600"
+          - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
+            value: http://keycloak:8080/realms/lombardio/protocol/openid-connect/certs
+          - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI
+            value: http://keycloak:8080/realms/lombardio
+  - target:
+      kind: Deployment
+      name: frontend
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: add
+        path: /spec/strategy
+        value:
+          type: Recreate
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: lombardio-frontend-runtime:local
+      - op: replace
+        path: /spec/template/spec/containers/0/env
+        value:
+          - name: API_BASE_URL
+            value: http://localhost:8084
+          - name: PLATFORM_API_BASE_URL
+            value: http://localhost:8082
+          - name: ORIGINATION_API_BASE_URL
+            value: http://localhost:8083
+          - name: CUSTOMER_API_BASE_URL
+            value: http://localhost:8084
+          - name: PAWN_TICKET_API_BASE_URL
+            value: http://localhost:8085
+          - name: KYC_API_BASE_URL
+            value: http://localhost:8084
+          - name: AML_API_BASE_URL
+            value: http://localhost:8084
+          - name: AUCTION_API_BASE_URL
+            value: http://localhost:8089
+          - name: ONLINE_AUCTION_API_BASE_URL
+            value: http://localhost:8090
+          - name: REPORTING_API_BASE_URL
+            value: http://localhost:8091
+          - name: CENTRIFUGO_WS_URL
+            value: ws://localhost:8090/connection/websocket
+          - name: VITE_OPERATOR_DELEGATION_ENABLED
+            value: "false"
+          - name: VITE_OPERATOR_TOTP_ENABLED
+            value: "false"
+  - target:
+      kind: Deployment
+      name: platform
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: add
+        path: /spec/strategy
+        value:
+          type: Recreate
+      - op: add
+        path: /spec/template/spec/containers/0/startupProbe
+        value:
+          httpGet:
+            path: /actuator/health
+            port: http
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 24
+  - target:
+      kind: Deployment
+      name: platform
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: lombardio-platform:latest
+  - target:
+      kind: Deployment
+      name: customer
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: add
+        path: /spec/strategy
+        value:
+          type: Recreate
+      - op: add
+        path: /spec/template/spec/containers/0/startupProbe
+        value:
+          httpGet:
+            path: /actuator/health
+            port: http
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 24
+  - target:
+      kind: Deployment
+      name: customer
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: lombardio-identity-intelligence:latest
+  - target:
+      kind: Deployment
+      name: loan-origination
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: add
+        path: /spec/template/spec/containers/0/startupProbe
+        value:
+          httpGet:
+            path: /actuator/health
+            port: http
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 24
+  - target:
+      kind: Deployment
+      name: loan-origination
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: lombardio-loan-origination:latest
+  - target:
+      kind: Deployment
+      name: pawn-ticket
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: add
+        path: /spec/template/spec/containers/0/startupProbe
+        value:
+          httpGet:
+            path: /actuator/health
+            port: http
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 24
+  - target:
+      kind: Deployment
+      name: pawn-ticket
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: lombardio-pawn-ticket:latest
+  - target:
+      kind: Deployment
+      name: auction
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: add
+        path: /spec/template/spec/containers/0/startupProbe
+        value:
+          httpGet:
+            path: /actuator/health
+            port: http
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 24
+  - target:
+      kind: Deployment
+      name: auction
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: lombardio-auction:latest
+  - target:
+      kind: Deployment
+      name: online-auction
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: add
+        path: /spec/template/spec/containers/0/startupProbe
+        value:
+          httpGet:
+            path: /actuator/health
+            port: http
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 24
+      - op: add
+        path: /spec/template/spec/containers/0/env
+        value:
+          - name: IDENTITY_SECURITY_ENCRYPTION_KEY
+            valueFrom:
+              secretKeyRef:
+                name: online-auction-secret
+                key: IDENTITY_SECURITY_ENCRYPTION_KEY
+  - target:
+      kind: Deployment
+      name: online-auction
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: lombardio-online-auction:latest
+  - target:
+      kind: Deployment
+      name: centrifugo
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/readinessProbe
+        value:
+          tcpSocket:
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 2
+      - op: replace
+        path: /spec/template/spec/containers/0/livenessProbe
+        value:
+          tcpSocket:
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          timeoutSeconds: 2
+  - target:
+      kind: Deployment
+      name: reporting
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: add
+        path: /spec/template/spec/containers/0/startupProbe
+        value:
+          httpGet:
+            path: /actuator/health
+            port: http
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 24
+  - target:
+      kind: Deployment
+      name: reporting
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: lombardio-reporting:latest
+  - target:
+      kind: Service
+      name: frontend
+    patch: |-
+      - op: add
+        path: /spec/type
+        value: NodePort
+      - op: add
+        path: /spec/ports/0/nodePort
+        value: 30080
+  - target:
+      kind: Service
+      name: platform
+    patch: |-
+      - op: add
+        path: /spec/type
+        value: NodePort
+      - op: add
+        path: /spec/ports/0/nodePort
+        value: 30082
+  - target:
+      kind: Service
+      name: customer
+    patch: |-
+      - op: add
+        path: /spec/type
+        value: NodePort
+      - op: add
+        path: /spec/ports/0/nodePort
+        value: 30084
+  - target:
+      kind: Service
+      name: loan-origination
+    patch: |-
+      - op: add
+        path: /spec/type
+        value: NodePort
+      - op: add
+        path: /spec/ports/0/nodePort
+        value: 30083
+  - target:
+      kind: Service
+      name: pawn-ticket
+    patch: |-
+      - op: add
+        path: /spec/type
+        value: NodePort
+      - op: add
+        path: /spec/ports/0/nodePort
+        value: 30085
+  - target:
+      kind: Service
+      name: auction
+    patch: |-
+      - op: add
+        path: /spec/type
+        value: NodePort
+      - op: add
+        path: /spec/ports/0/nodePort
+        value: 30089
+  - target:
+      kind: Service
+      name: online-auction
+    patch: |-
+      - op: add
+        path: /spec/type
+        value: NodePort
+      - op: add
+        path: /spec/ports/0/nodePort
+        value: 30090
+  - target:
+      kind: Service
+      name: reporting
+    patch: |-
+      - op: add
+        path: /spec/type
+        value: NodePort
+      - op: add
+        path: /spec/ports/0/nodePort
+        value: 30091

@@ -66,6 +66,7 @@ Das System läuft als Microservice-Landschaft in Kubernetes. Die Kommunikation e
 6.  **Single Responsibility Principle:** Backend-Bausteine, Frontend-Views und UI-Section-Module sollen jeweils nur einen klaren fachlichen oder technischen Verantwortungsbereich besitzen.
 7.  **Leichte UI-Komposition:** Im Frontend werden wiederkehrende Bereichsstrukturen über kleine Basis-Komponenten oder lokale Factories zusammengesetzt; eine schwere globale Registry wird nur bei echtem Plugin- oder Override-Bedarf eingeführt.
 8.  **Feature-First Frontend mit innerer Hexagon-Struktur:** Frontend-Features werden entlang fachlicher Bereiche geschnitten. Innerhalb eines Features werden Domain, Application, Ports/Adapter, Composables, Stores, Komponenten und Views sauber getrennt.
+9.  **Security by Design für Operator-Sessions:** Das Zielbild für die Operator-Authentifizierung ist ein BFF-orientierter Sitzungsrand. Browser-JavaScript soll keine langlebigen Operator-Bearer-Tokens verwalten oder an Fachservices verteilen.
 
 ---
 
@@ -97,6 +98,9 @@ Für das Back-Office-Frontend gelten ergänzend folgende Strukturregeln:
 *   **Strikte Trennung von DTO und Domain:** Rohe DTOs dürfen nicht ungefiltert bis in die UI gelangen. Vor der Verwendung in Views oder Komponenten werden sie in stabile Domain- oder View-Modelle übersetzt.
 *   **PrimeVue als UI-Implementierungsdetail:** PrimeVue wird hinter app-eigenen Base-Komponenten oder dünnen Wrappers gekapselt, damit fachliche Features nicht direkt an die Bibliothek gekoppelt sind.
 *   **Wiederverwendung über Basisbausteine:** Gemeinsame Hüllen oder wiederkehrende UI-Strukturen werden über kleine Basis-Komponenten oder lokale Factories realisiert, nicht über Copy-Paste oder globale Magie.
+*   **Session-Härtung über Cookies statt Browser-Storage:** Operator- und Customer-Portal-Reloads werden über `HttpOnly`-Cookies und serverseitige Refresh-/Session-Endpunkte getragen. Browser-persistente Access-Tokens in `localStorage` oder `sessionStorage` sind nicht Teil des Zielbilds.
+*   **Operator-Session-Migrationspfad zum BFF:** Die Plattformkante verwaltet Operator-Tokens jetzt in einer verschlüsselten serverseitigen Session und gibt an den Browser nur noch ein opaques `HttpOnly`-Cookie aus. Frontend-Code soll keine Bearer-Header mehr zusammensetzen oder Tokens in App-State, Storage oder UI-Features verteilen.
+*   **Explizite Produktionskonfiguration:** `secure`, `SameSite`, Cookie-Lebensdauer und Session-TTLs müssen pro Umgebung bewusst gesetzt werden. Entwicklungsdefaults auf `localhost` sind nicht als Produktionsvorgaben zu verstehen.
 
 ---
 
@@ -171,6 +175,7 @@ Lombardio ist für den Betrieb in einer Cloud-nativen Umgebung optimiert:
 
 ### 7.3 Infrastruktur-Komponenten
 *   **API Gateway:** Traefik übernimmt das Ingress-Management, SSL-Terminierung und das Routing zu den Microservices.
+*   **BFF-Zielbild für Operatoren:** Traefik und die Plattformkante bilden langfristig die serverseitige Einstiegsschicht für Operator-Sessions. Browser-seitig sollen nur `HttpOnly`-Cookies und serverseitig kontrollierte Session-/Proxy-Flows verbleiben.
 *   **Identitätsmanagement:** Keycloak läuft als zentraler IAM-Service innerhalb des Clusters.
 *   **Persistenz & Messaging:**
     *   PostgreSQL (Stammdaten)
@@ -244,7 +249,18 @@ Für den operativen Betrieb der Plattform stehen zentrale Werkzeuge zur Verfügu
 *   **Audit-Log-Einsicht:** Revisionssichere Einsicht in Systemereignisse zur Fehleranalyse und Einhaltung von Service Level Agreements (SLAs).
 *   **Support-Zugang:** (Optional) Möglichkeit für Plattform-Admins, Mandanten bei technischen Problemen durch Impersonation oder spezifische Support-Rollen zu unterstützen (unter Wahrung strenger Datenschutzvorgaben).
 
-### 8.4 Intelligente Rechtsautomatisierung (Legal Automation)
+### 8.4 Operator-Authentifizierung & BFF-Entscheidung
+
+Die Operator-Oberfläche ist sicherheitskritisch, weil sie tenant-weite Verwaltungs- und Personenbezugsdaten bündelt. Daraus folgt eine klare Architekturentscheidung:
+
+*   **Zielarchitektur:** Für Operatoren wird eine BFF-orientierte Session-Architektur angestrebt. Der Browser hält keine fachlich nutzbaren Bearer-Tokens und verteilt sie nicht an einzelne Services.
+*   **Browser-Vertrauensgrenze:** Operator-Sessions werden über `HttpOnly`-Cookies getragen. Tokens dürfen weder in `localStorage`/`sessionStorage` noch als reguläre UI-Datenstrukturen für Feature-Code vorausgesetzt werden.
+*   **Migrationsschritt:** Solange noch kein vollständiger BFF-/Proxy-Schnitt für alle Operator-Use-Cases existiert, kapselt die Plattform die Operator-Tokens bereits in einer verschlüsselten serverseitigen Session und nutzt für Operator-Flows nur noch ein opaques `HttpOnly`-Cookie zum Browser. Das reduziert die JS-Angriffsfläche sofort, ohne den laufenden Mehrservice-Betrieb zu zerbrechen.
+*   **Folgeschritte:** Fachliche Backend-Aufrufe der Operator-Oberfläche werden schrittweise hinter serverseitig kontrollierten BFF-Endpunkten oder einer äquivalenten Gateway-Schicht konsolidiert. Customer/KYC/AML, Loan-Origination/Pawn-Ticket sowie Auction/Online-Auction/Reporting laufen bereits über explizite Operator-Fassaden; der generische Operator-Proxy gehört nicht mehr zur Zielarchitektur.
+*   **Implementierungsregel:** Neue Operator-Use-Cases werden nur noch über explizite Platform-Fassaden ergänzt. Transport- und Forwarding-Logik bleibt in gemeinsamen BFF-Bausteinen; neue Controller sollen keine ad-hoc Header- oder Proxy-Implementierungen einführen.
+*   **Nicht-Ziel:** Ein dauerhaft browserseitig verteilter Bearer-Ansatz über mehrere Fachservices ist nicht das Zielbild von Lombardio.
+
+### 8.5 Intelligente Rechtsautomatisierung (Legal Automation)
 Lombardio nutzt Software-Logik, um die Einhaltung komplexer Fristen und Gebührenstrukturen der Pfandleiherverordnung (PfandlV) sicherzustellen.
 
 #### 8.4.1 Automatisierte Gebührenkontrolle (§ 10 PfandlV)

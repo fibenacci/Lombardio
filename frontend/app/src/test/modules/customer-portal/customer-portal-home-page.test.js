@@ -19,7 +19,6 @@ describe("CustomerPortalHomeView", () => {
     customerPortalStore = useCustomerPortalStore();
     setLocale("de");
     push.mockReset();
-    customerPortalStore.token = "portal-token";
     customerPortalStore.customer = {
       customerId: "customer-1",
       displayName: "Anna Becker"
@@ -50,7 +49,7 @@ describe("CustomerPortalHomeView", () => {
     await wrapper.find("button:not(.portal-logout)").trigger("click");
     await flushPromises();
 
-    expect(customerPortalApi.fetchCustomerPortalDocument).toHaveBeenCalledWith("PS-1001", "portal-token");
+    expect(customerPortalApi.fetchCustomerPortalDocument).toHaveBeenCalledWith("PS-1001");
     expect(openSpy).toHaveBeenCalled();
   });
 });

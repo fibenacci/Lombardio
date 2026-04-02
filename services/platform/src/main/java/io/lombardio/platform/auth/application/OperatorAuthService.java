@@ -13,6 +13,7 @@ package io.lombardio.platform.auth.application;
 import io.lombardio.platform.auth.api.OperatorSessionUserResponse;
 import io.lombardio.platform.config.KeycloakProperties;
 import io.lombardio.platform.iam.application.IdentityProviderUnavailableException;
+import io.lombardio.platform.security.AuthenticatedUser;
 import io.lombardio.platform.security.UnauthorizedException;
 import java.util.List;
 import java.util.Map;
@@ -92,26 +93,30 @@ public class OperatorAuthService {
     }
   }
 
-  public OperatorSessionUserResponse profileFromAccessToken(String accessToken) {
+  public AuthenticatedUser authenticatedUserFromAccessToken(String accessToken) {
     try {
       Jwt jwt = jwtDecoder.decode(accessToken);
       List<String> permissions = extractPermissions(jwt);
-      return new OperatorSessionUserResponse(
+      return new AuthenticatedUser(
           jwt.getSubject(),
           stringClaim(jwt, "actorUserId", jwt.getSubject()),
           stringClaim(jwt, "tenantId", null),
+          booleanClaim(jwt, "impersonating"),
           stringClaim(jwt, "email", stringClaim(jwt, "preferred_username", "")),
           stringClaim(
               jwt,
               "name",
               stringClaim(
                   jwt, "preferred_username", stringClaim(jwt, "email", jwt.getSubject()))),
-          booleanClaim(jwt, "impersonating"),
-          permissions,
           permissions);
     } catch (RuntimeException exception) {
       throw new UnauthorizedException("Invalid operator session");
     }
+  }
+
+  public OperatorSessionUserResponse profileFromAccessToken(String accessToken) {
+    AuthenticatedUser user = authenticatedUserFromAccessToken(accessToken);
+    return OperatorSessionUserResponse.fromAuthenticatedUser(user);
   }
 
   private OperatorSession toOperatorSession(KeycloakTokenResponse response) {

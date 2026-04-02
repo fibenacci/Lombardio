@@ -4,7 +4,6 @@ export interface CustomerQueryPort {
   loadCustomerDetailData(
     tenantId: string,
     customerId: string,
-    token: string,
     amlEnabled: boolean
   ): Promise<{
     aml: AmlStatusDto | null;

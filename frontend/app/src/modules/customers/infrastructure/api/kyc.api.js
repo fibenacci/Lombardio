@@ -1,23 +1,22 @@
 import { BASE_URLS, createApiClient } from "../../../../shared/kernel/http/runtime-api-client";
 
-const apiClient = createApiClient(BASE_URLS.kyc);
+const apiClient = createApiClient(BASE_URLS.platform);
 
-export function fetchKycStatus(tenantId, customerId, token) {
-  return apiClient.get(`/api/v1/tenants/${tenantId}/customers/${customerId}/kyc`, token);
+export function fetchKycStatus(tenantId, customerId) {
+  return apiClient.get(`/api/v1/platform/operator/tenants/${tenantId}/customers/${customerId}/kyc`);
 }
 
-export function fetchKycDocuments(tenantId, customerId, token) {
-  return apiClient.get(`/api/v1/tenants/${tenantId}/customers/${customerId}/kyc/documents`, token);
+export function fetchKycDocuments(tenantId, customerId) {
+  return apiClient.get(`/api/v1/platform/operator/tenants/${tenantId}/customers/${customerId}/kyc/documents`);
 }
 
-export function updateKycStatus(tenantId, customerId, payload, token) {
-  return apiClient.post(`/api/v1/tenants/${tenantId}/customers/${customerId}/kyc`, payload, token);
+export function updateKycStatus(tenantId, customerId, payload) {
+  return apiClient.post(`/api/v1/platform/operator/tenants/${tenantId}/customers/${customerId}/kyc`, payload);
 }
 
-export function prefillKycDocument(tenantId, customerId, payload, token) {
+export function prefillKycDocument(tenantId, customerId, payload) {
   return apiClient.post(
-    `/api/v1/tenants/${tenantId}/customers/${customerId}/kyc/document-prefill`,
-    payload,
-    token
+    `/api/v1/platform/operator/tenants/${tenantId}/customers/${customerId}/kyc/document-prefill`,
+    payload
   );
 }

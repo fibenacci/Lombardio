@@ -36,7 +36,7 @@
         </div>
         <template #actions>
           <PButton icon="pi pi-plus" :label="t('onlineAuctions.actions.addLot')" severity="secondary" outlined type="button" @click="addLot" />
-          <PButton icon="pi pi-save" :label="t('onlineAuctions.actions.create')" type="submit" />
+          <PButton icon="pi pi-save" :label="t('onlineAuctions.actions.create')" type="submit" :disabled="!canCreateOnlineAuction()" />
         </template>
       </FormShell>
     </AdminPanel>

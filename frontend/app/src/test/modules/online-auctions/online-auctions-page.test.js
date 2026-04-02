@@ -48,4 +48,35 @@ describe("OnlineAuctionsView", () => {
     expect(wrapper.text()).toContain("Live Gold Auction");
     expect(wrapper.text()).toContain("P1001");
   });
+
+  it("blocks online auction creation with incomplete lot data before the request is sent", async () => {
+    authStore.token = "token-123";
+    tenantStore.selectedTenantId = "tenant-default";
+    tenantStore.tenants = [{ id: "tenant-default", displayName: "Default Tenant" }];
+
+    vi.spyOn(onlineAuctionApi, "fetchOnlineAuctions").mockResolvedValue([]);
+    const createOnlineAuctionSpy = vi.spyOn(onlineAuctionApi, "createOnlineAuction").mockResolvedValue({});
+
+    await router.push("/app/online-auctions");
+    await router.isReady();
+
+    const wrapper = mount(OnlineAuctionsView, {
+      global: { plugins: [router] }
+    });
+    await flushPromises();
+
+    wrapper.vm.createForm.title = "Live Gold Auction";
+    wrapper.vm.createForm.slug = "live-gold-auction";
+    wrapper.vm.createForm.minimumIncrement = "10.00";
+    wrapper.vm.createForm.countdownSeconds = "180";
+    wrapper.vm.createForm.lots[0].title = "Gold ring";
+    wrapper.vm.createForm.lots[0].description = "";
+    wrapper.vm.createForm.lots[0].startingBid = "100.00";
+
+    await wrapper.vm.submitCreate();
+    await flushPromises();
+
+    expect(createOnlineAuctionSpy).not.toHaveBeenCalled();
+    expect(wrapper.vm.errorMessage).toBe("Please complete title, slug, minimum increment, countdown and all lots with valid values.");
+  });
 });

@@ -51,6 +51,10 @@ spec:
               value: http://reporting.lombardio.local
             - name: CENTRIFUGO_WS_URL
               value: ws://realtime.lombardio.local/connection/websocket
+            - name: VITE_OPERATOR_DELEGATION_ENABLED
+              value: "false"
+            - name: VITE_OPERATOR_TOTP_ENABLED
+              value: "false"
           ports:
             - containerPort: 80
               name: http

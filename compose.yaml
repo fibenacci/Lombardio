@@ -1,7 +1,7 @@
 x-java-core-env: &java-core-env
   JAVA_TOOL_OPTIONS: "${JAVA_TOOL_OPTIONS:--XX:ActiveProcessorCount=2 -XX:InitialRAMPercentage=10 -XX:MaxRAMPercentage=60 -XX:+UseG1GC -XX:+UseStringDeduplication -Djava.security.egd=file:/dev/./urandom}"
   INTEGRATION_RABBITMQ_PUBLISHER_BATCH_SIZE: 10
-  INTEGRATION_INTERNAL_SERVICE_TOKEN: "internal-secret-token"
+  INTEGRATION_INTERNAL_SERVICE_TOKEN: ${INTEGRATION_INTERNAL_SERVICE_TOKEN:-change-me-integration-internal-token}
   SPRING_RABBITMQ_HOST: rabbitmq
   SPRING_RABBITMQ_PORT: 5672
   SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-lombardio}
@@ -19,7 +19,7 @@ x-java-core-env: &java-core-env
 x-java-default-env: &java-default-env
   JAVA_TOOL_OPTIONS: "${JAVA_DEFAULT_TOOL_OPTIONS:--XX:ActiveProcessorCount=1 -XX:InitialRAMPercentage=10 -XX:MaxRAMPercentage=60 -XX:+UseG1GC -XX:+UseStringDeduplication -Djava.security.egd=file:/dev/./urandom}"
   INTEGRATION_RABBITMQ_PUBLISHER_BATCH_SIZE: 10
-  INTEGRATION_INTERNAL_SERVICE_TOKEN: "internal-secret-token"
+  INTEGRATION_INTERNAL_SERVICE_TOKEN: ${INTEGRATION_INTERNAL_SERVICE_TOKEN:-change-me-integration-internal-token}
   SPRING_RABBITMQ_HOST: rabbitmq
   SPRING_RABBITMQ_PORT: 5672
   SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-lombardio}
@@ -37,7 +37,7 @@ x-java-default-env: &java-default-env
 x-java-light-env: &java-light-env
   JAVA_TOOL_OPTIONS: "${JAVA_LIGHT_TOOL_OPTIONS:--XX:ActiveProcessorCount=1 -XX:InitialRAMPercentage=5 -XX:MaxRAMPercentage=50 -XX:+UseG1GC -Djava.security.egd=file:/dev/./urandom}"
   INTEGRATION_RABBITMQ_PUBLISHER_BATCH_SIZE: 10
-  INTEGRATION_INTERNAL_SERVICE_TOKEN: "internal-secret-token"
+  INTEGRATION_INTERNAL_SERVICE_TOKEN: ${INTEGRATION_INTERNAL_SERVICE_TOKEN:-change-me-integration-internal-token}
   SPRING_RABBITMQ_HOST: rabbitmq
   SPRING_RABBITMQ_PORT: 5672
   SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-lombardio}
@@ -190,8 +190,22 @@ services:
       KEYCLOAK_URL: http://keycloak:8080
       KEYCLOAK_REALM: lombardio
       KEYCLOAK_CLIENT_ID: admin-cli
+      KEYCLOAK_OPERATOR_CLIENT_ID: ${KEYCLOAK_OPERATOR_CLIENT_ID:-lombardio-app}
       KEYCLOAK_ADMIN_USERNAME: platform@lombardio.local
       KEYCLOAK_ADMIN_PASSWORD: admin
+      PLATFORM_OUTBOX_ACCESS_TOKEN: ${PLATFORM_OUTBOX_ACCESS_TOKEN:-change-me-platform-outbox-token}
+      APP_OPERATOR_BFF_IDENTITY_BASE_URL: http://identity-intelligence:8084
+      APP_OPERATOR_BFF_ORIGINATION_BASE_URL: http://loan-origination:8083
+      APP_OPERATOR_BFF_PAWN_TICKET_BASE_URL: http://pawn-ticket:8085
+      APP_OPERATOR_BFF_AUCTION_BASE_URL: http://auction:8089
+      APP_OPERATOR_BFF_ONLINE_AUCTION_BASE_URL: http://online-auction:8090
+      APP_OPERATOR_BFF_REPORTING_BASE_URL: http://reporting:8091
+      APP_OPERATOR_SESSION_COOKIE_NAME: ${APP_OPERATOR_SESSION_COOKIE_NAME:-lombardio_operator_session}
+      APP_OPERATOR_SESSION_COOKIE_PATH: ${APP_OPERATOR_SESSION_COOKIE_PATH:-/}
+      APP_OPERATOR_SESSION_COOKIE_SECURE: ${APP_OPERATOR_SESSION_COOKIE_SECURE:-false}
+      APP_OPERATOR_SESSION_COOKIE_SAME_SITE: ${APP_OPERATOR_SESSION_COOKIE_SAME_SITE:-Lax}
+      APP_OPERATOR_SESSION_COOKIE_MAX_AGE_SECONDS: ${APP_OPERATOR_SESSION_COOKIE_MAX_AGE_SECONDS:-2592000}
+      APP_OPERATOR_SESSION_ENCRYPTION_KEY: ${APP_OPERATOR_SESSION_ENCRYPTION_KEY:-dev-operator-session-encryption-key}
       IDENTITY_SECURITY_ENCRYPTION_KEY: "dev-encryption-key-must-be-32-chars-!!!"
     volumes:
       - maven-cache:/root/.m2
@@ -263,8 +277,17 @@ services:
       INTEGRATION_BASE_URL: http://integration:8092
       REGULA_BASE_URL: http://regula:8080
       PLATFORM_BASE_URL: http://platform:8082
+      CUSTOMER_INTERNAL_SERVICE_TOKEN: ${CUSTOMER_INTERNAL_SERVICE_TOKEN:-change-me-customer-internal-token}
       SPRING_PROFILES_ACTIVE: bootstrap
       INTEGRATION_RABBITMQ_PUBLISHER_ENABLED: "true"
+      CUSTOMER_PORTAL_PUBLIC_BASE_URL: ${CUSTOMER_PORTAL_PUBLIC_BASE_URL:-http://localhost:5173/portal}
+      CUSTOMER_PORTAL_SESSION_COOKIE_NAME: ${CUSTOMER_PORTAL_SESSION_COOKIE_NAME:-lombardio_customer_portal_session}
+      CUSTOMER_PORTAL_SESSION_COOKIE_PATH: ${CUSTOMER_PORTAL_SESSION_COOKIE_PATH:-/}
+      CUSTOMER_PORTAL_SESSION_COOKIE_SECURE: ${CUSTOMER_PORTAL_SESSION_COOKIE_SECURE:-false}
+      CUSTOMER_PORTAL_SESSION_COOKIE_SAME_SITE: ${CUSTOMER_PORTAL_SESSION_COOKIE_SAME_SITE:-Lax}
+      CUSTOMER_PORTAL_SESSION_COOKIE_MAX_AGE_SECONDS: ${CUSTOMER_PORTAL_SESSION_COOKIE_MAX_AGE_SECONDS:-2592000}
+      CUSTOMER_PORTAL_SESSION_TTL_SECONDS: ${CUSTOMER_PORTAL_SESSION_TTL_SECONDS:-2592000}
+      CUSTOMER_PORTAL_SESSION_CLEANUP_FIXED_DELAY_MS: ${CUSTOMER_PORTAL_SESSION_CLEANUP_FIXED_DELAY_MS:-3600000}
     volumes:
       - maven-cache:/root/.m2
     healthcheck:
@@ -296,6 +319,7 @@ services:
       PAWN_TICKET_DB_URL: jdbc:postgresql://postgres:5432/lombardio?currentSchema=pawn_ticket
       PAWN_TICKET_DB_USERNAME: lombardio
       PAWN_TICKET_DB_PASSWORD: ${POSTGRES_PASSWORD:-lombardio}
+      CUSTOMER_INTERNAL_SERVICE_TOKEN: ${CUSTOMER_INTERNAL_SERVICE_TOKEN:-change-me-customer-internal-token}
       INTEGRATION_RABBITMQ_PUBLISHER_ENABLED: "true"
       SPRING_PROFILES_ACTIVE: bootstrap
     volumes:
@@ -449,7 +473,7 @@ services:
       RABBITMQ_EXCHANGE: lombardio.events
       RABBITMQ_QUEUE: lombardio.integration
       RABBITMQ_BINDING_KEY: "#"
-      INTEGRATION_INTERNAL_SERVICE_TOKEN: "internal-secret-token"
+      INTEGRATION_INTERNAL_SERVICE_TOKEN: ${INTEGRATION_INTERNAL_SERVICE_TOKEN:-change-me-integration-internal-token}
       INTEGRATION_EMAIL_DELIVERY_MODE: "log"
       INTEGRATION_WEBHOOK_DESTINATIONS: "[]"
     ports:
@@ -480,6 +504,8 @@ services:
       VITE_KEYCLOAK_URL: http://localhost:8080
       VITE_KEYCLOAK_REALM: lombardio
       VITE_KEYCLOAK_CLIENT_ID: lombardio-app
+      VITE_OPERATOR_DELEGATION_ENABLED: ${VITE_OPERATOR_DELEGATION_ENABLED:-false}
+      VITE_OPERATOR_TOTP_ENABLED: ${VITE_OPERATOR_TOTP_ENABLED:-false}
     ports:
       - "5173:80"
     volumes:

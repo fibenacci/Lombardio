@@ -10,9 +10,10 @@
  */
 package io.lombardio.onlineauction.config;
 
+import io.lombardio.platform.security.CookieOrHeaderBearerTokenResolver;
 import io.lombardio.platform.security.KeycloakJwtAuthenticationConverter;
+import io.lombardio.platform.security.KeycloakJwtValidators;
 import java.util.List;
-import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,6 +39,13 @@ public class SecurityConfig {
 
   @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
   private String jwkSetUri;
+
+  @Value("${app.security.operator-client-id:${KEYCLOAK_OPERATOR_CLIENT_ID:lombardio-app}}")
+  private String operatorClientId;
+
+  @Value(
+      "${app.operator-session.access-cookie-name:${APP_OPERATOR_SESSION_ACCESS_COOKIE_NAME:lombardio_operator_access}}")
+  private String operatorAccessCookieName;
 
   public SecurityConfig(@Value("${identity.security.encryption-key}") String jwtSecret) {
     this.jwtSecret = jwtSecret;
@@ -65,9 +73,13 @@ public class SecurityConfig {
                     .authenticated())
         .oauth2ResourceServer(
             oauth2 ->
-                oauth2.jwt(
-                    jwt ->
-                        jwt.jwtAuthenticationConverter(new KeycloakJwtAuthenticationConverter())));
+                oauth2
+                    .bearerTokenResolver(
+                        new CookieOrHeaderBearerTokenResolver(operatorAccessCookieName))
+                    .jwt(
+                        jwt ->
+                            jwt.jwtAuthenticationConverter(
+                                new KeycloakJwtAuthenticationConverter())));
 
     return http.build();
   }
@@ -75,22 +87,7 @@ public class SecurityConfig {
   @Bean
   public JwtDecoder jwtDecoder() {
     NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
-
-    Set<String> trustedIssuers =
-        Set.of("http://localhost:8080/realms/lombardio", "http://keycloak:8080/realms/lombardio");
-
-    jwtDecoder.setJwtValidator(
-        new DelegatingOAuth2TokenValidator<>(
-            new JwtTimestampValidator(),
-            jwt -> {
-              String issuer = jwt.getIssuer() != null ? jwt.getIssuer().toString() : "";
-              if (trustedIssuers.contains(issuer)) {
-                return OAuth2TokenValidatorResult.success();
-              }
-              return OAuth2TokenValidatorResult.failure(
-                  new OAuth2Error("invalid_issuer", "The issuer is not trusted: " + issuer, null));
-            }));
-
+    jwtDecoder.setJwtValidator(KeycloakJwtValidators.operatorAccessTokenValidator(operatorClientId));
     return jwtDecoder;
   }
 

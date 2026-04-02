@@ -29,20 +29,14 @@ public record AuthenticatedUser(
 
   public static Optional<String> currentAccessToken() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication != null && authentication.getCredentials() instanceof String token) {
+    if (authentication == null || !(authentication.getPrincipal() instanceof AuthenticatedUser)) {
+      return Optional.empty();
+    }
+    if (authentication.getCredentials() instanceof String token) {
       return Optional.of(token);
     }
-    // In case of standard Spring OAuth2 Resource Server, credentials might be Jwt
-    // object
-    if (authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser) {
-      // We need to store the token in the authentication object.
-      // Currently KeycloakJwtAuthenticationConverter uses
-      // UsernamePasswordAuthenticationToken(principal, jwt, authorities)
-      // So getCredentials() should return the Jwt object.
-      if (authentication.getCredentials()
-          instanceof org.springframework.security.oauth2.jwt.Jwt jwt) {
-        return Optional.of(jwt.getTokenValue());
-      }
+    if (authentication.getCredentials() instanceof org.springframework.security.oauth2.jwt.Jwt jwt) {
+      return Optional.of(jwt.getTokenValue());
     }
     return Optional.empty();
   }

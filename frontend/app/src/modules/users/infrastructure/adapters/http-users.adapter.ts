@@ -2,20 +2,20 @@ import * as accessApi from "../../../../modules/access-management/infrastructure
 
 export function createHttpUsersAdapter() {
   return {
-    createUser(tenantId: string, payload: object, token: string) {
-      return accessApi.createUser(tenantId, payload, token);
+    createUser(tenantId: string, payload: object) {
+      return accessApi.createUser(tenantId, payload);
     },
-    fetchBranches(tenantId: string, token: string) {
-      return accessApi.fetchBranches(tenantId, token);
+    fetchBranches(tenantId: string) {
+      return accessApi.fetchBranches(tenantId);
     },
-    fetchRoles(tenantId: string, token: string) {
-      return accessApi.fetchRoles(tenantId, token);
+    fetchRoles(tenantId: string) {
+      return accessApi.fetchRoles(tenantId);
     },
-    fetchUsers(tenantId: string, token: string) {
-      return accessApi.fetchUsers(tenantId, token);
+    fetchUsers(tenantId: string) {
+      return accessApi.fetchUsers(tenantId);
     },
-    updateUser(id: string, payload: object, token: string) {
-      return accessApi.updateUser(id, payload, token);
+    updateUser(id: string, payload: object) {
+      return accessApi.updateUser(id, payload);
     }
   };
 }

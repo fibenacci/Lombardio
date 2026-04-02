@@ -3,6 +3,7 @@ import { useAppToast } from "../../../../../shared/ui/composables/use-app-toast"
 import { useI18n } from "../../../../../app/i18n";
 import { useAuthStore } from "../../../../../app/session/state/auth.store";
 import { useTenantStore } from "../../../../../app/tenant-context/state/tenant.store";
+import { getRequestErrorMessage } from "../../../../../shared/kernel/errors/request-error";
 import { createHttpTenantsAdapter } from "../../../infrastructure/adapters/http-tenants.adapter";
 import template from "./template.html?raw";
 import "./styles.scss";
@@ -59,7 +60,7 @@ export default defineComponent({
       try {
         await tenantStore.refreshTenants();
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : t("tenants.messages.loadFailed");
+        errorMessage.value = getRequestErrorMessage(error, t("tenants.messages.loadFailed"));
       } finally {
         isLoading.value = false;
       }
@@ -75,8 +76,7 @@ export default defineComponent({
             key: form.key,
             displayName: form.displayName,
             status: form.status
-          },
-          authStore.token
+          }
         );
 
         await tenantStore.refreshTenants();
@@ -87,7 +87,7 @@ export default defineComponent({
         form.displayName = "";
         form.status = "ACTIVE";
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : t("tenants.messages.createFailed");
+        errorMessage.value = getRequestErrorMessage(error, t("tenants.messages.createFailed"));
       }
     }
 
@@ -98,7 +98,7 @@ export default defineComponent({
       try {
         await tenantStore.selectTenant(tenantId);
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : t("tenants.messages.featuresLoadFailed");
+        errorMessage.value = getRequestErrorMessage(error, t("tenants.messages.featuresLoadFailed"));
       }
     }
 
@@ -111,7 +111,7 @@ export default defineComponent({
       errorMessage.value = "";
 
       try {
-        await tenantsAdapter.upsertTenantFeature(tenantStore.selectedTenantId, featureKey, { enabled }, authStore.token);
+        await tenantsAdapter.upsertTenantFeature(tenantStore.selectedTenantId, featureKey, { enabled });
         await tenantStore.refreshFeatures();
         successMessage.value = t("tenants.messages.featureUpdatedTitle");
         toast.success(
@@ -122,7 +122,7 @@ export default defineComponent({
           })
         );
       } catch (error) {
-        errorMessage.value = error instanceof Error ? error.message : t("tenants.messages.featureUpdateFailed");
+        errorMessage.value = getRequestErrorMessage(error, t("tenants.messages.featureUpdateFailed"));
       }
     }
 

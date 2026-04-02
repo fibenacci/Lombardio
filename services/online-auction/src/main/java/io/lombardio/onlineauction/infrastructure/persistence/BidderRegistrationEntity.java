@@ -54,6 +54,9 @@ public class BidderRegistrationEntity {
   @Column(nullable = false)
   private String accessToken;
 
+  @Column
+  private String accessTokenHash;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private BidderApprovalStatus approvalStatus;
@@ -144,6 +147,14 @@ public class BidderRegistrationEntity {
 
   public void setAccessToken(String accessToken) {
     this.accessToken = accessToken;
+  }
+
+  public String getAccessTokenHash() {
+    return accessTokenHash;
+  }
+
+  public void setAccessTokenHash(String accessTokenHash) {
+    this.accessTokenHash = accessTokenHash;
   }
 
   public BidderApprovalStatus getApprovalStatus() {

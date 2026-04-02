@@ -170,6 +170,8 @@ public class OnlineAuctionDevelopmentSeeder {
               tenant.key().substring(0, Math.min(3, tenant.key().length())).toUpperCase()
                   + String.format("%03d", auctionIndex * 10 + index),
               "token-" + tenant.key() + "-" + auctionIndex + "-" + index,
+              io.lombardio.onlineauction.application.BidderAccessTokenHasher.sha256(
+                  "token-" + tenant.key() + "-" + auctionIndex + "-" + index),
               approvalStatus,
               reviewStatus,
               approvalStatus == BidderApprovalStatus.REJECTED

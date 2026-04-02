@@ -1,4 +1,11 @@
 import { ref } from "vue";
+import { getRequestErrorMessage } from "../../../../shared/kernel/errors/request-error";
+
+type TotpEnrollment = {
+  qrCodeDataUrl?: string;
+  secret?: string;
+  recoveryCodes?: string[];
+} | null;
 
 export function useSecurityPage({
   authStore,
@@ -10,6 +17,7 @@ export function useSecurityPage({
   authStore: {
     activateTotp: (code: string) => Promise<unknown>;
     beginTotpEnrollment: () => Promise<unknown>;
+    mfaEnrollmentAvailable?: boolean;
     user?: { mfaEnabled?: boolean } | null;
   };
   availableLocales: string[];
@@ -17,7 +25,7 @@ export function useSecurityPage({
   setLocale: (value: string) => void;
   t: (key: string, params?: Record<string, unknown>) => string;
 }) {
-  const enrollment = ref<any | null>(null);
+  const enrollment = ref<TotpEnrollment>(null);
   const activationCode = ref("");
   const errorMessage = ref("");
   const successMessage = ref("");
@@ -30,9 +38,9 @@ export function useSecurityPage({
     isSubmitting.value = true;
 
     try {
-      enrollment.value = await authStore.beginTotpEnrollment();
+      enrollment.value = (await authStore.beginTotpEnrollment()) as TotpEnrollment;
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : t("security.enrollmentFailed");
+      errorMessage.value = getRequestErrorMessage(error, t("security.enrollmentFailed"));
     } finally {
       isSubmitting.value = false;
     }
@@ -49,7 +57,7 @@ export function useSecurityPage({
       enrollment.value = null;
       activationCode.value = "";
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : t("security.activationFailed");
+      errorMessage.value = getRequestErrorMessage(error, t("security.activationFailed"));
     } finally {
       isSubmitting.value = false;
     }
@@ -72,6 +80,7 @@ export function useSecurityPage({
     selectedLocale,
     startEnrollment,
     successMessage,
+    totpAvailable: authStore.mfaEnrollmentAvailable ?? false,
     updateLanguage
   };
 }

@@ -335,14 +335,13 @@ describe("TenantHomeView", () => {
         ],
         termMonths: 3,
         manualMonthlyOperatingFee: null,
-        thirdPartyPledgorPresentation: false,
-        bearerName: null,
-        bearerStreet: null,
-        bearerPostalCode: null,
-        bearerCity: null,
-        powerOfAttorneyDocumentDataUrl: null
-      },
-      "token-123"
+      thirdPartyPledgorPresentation: false,
+      bearerName: null,
+      bearerStreet: null,
+      bearerPostalCode: null,
+      bearerCity: null,
+      powerOfAttorneyDocumentDataUrl: null
+      }
     );
     expect(wrapper.text()).toContain("PS-1001");
     expect(wrapper.text()).toContain("Vertrag: PS-1001");
@@ -355,7 +354,7 @@ describe("TenantHomeView", () => {
     await pdfButton.trigger("click");
     await flushPromises();
 
-    expect(pawnTicketApi.fetchPawnTicketDocument).toHaveBeenCalledWith("PS-1001", "token-123");
+    expect(pawnTicketApi.fetchPawnTicketDocument).toHaveBeenCalledWith("PS-1001");
     expect(objectUrlSpy).toHaveBeenCalled();
     expect(openSpy).toHaveBeenCalledWith("blob:ticket", "_blank", "noopener,noreferrer");
   });
@@ -608,6 +607,8 @@ describe("TenantHomeView", () => {
 
     wrapper.vm.selectedCustomerOption = wrapper.vm.customerOptions[0];
     wrapper.vm.handleCustomerSelection({ value: wrapper.vm.customerOptions[0] });
+    wrapper.vm.customers[0].documentFrontImageDataUrl = "data:image/png;base64,front";
+    wrapper.vm.customers[0].documentBackImageDataUrl = "data:image/png;base64,back";
     await flushPromises();
 
     const approveButton = wrapper.findAll("button").find((button) => button.text().includes("KYC manuell freigeben"));
@@ -635,7 +636,9 @@ describe("TenantHomeView", () => {
         displayName: "Murat Yilmaz",
         phone: "+49 170 222222",
         kycStatus: "NOT_STARTED",
-        kycApproved: false
+        kycApproved: false,
+        documentFrontImageDataUrl: "data:image/png;base64,front",
+        documentBackImageDataUrl: "data:image/png;base64,back"
       }
     ]);
     vi.spyOn(kycApi, "fetchKycStatus").mockResolvedValue({
@@ -694,8 +697,7 @@ describe("TenantHomeView", () => {
       expect.objectContaining({
         verificationMode: "PROVIDER",
         providerStatus: "PENDING"
-      }),
-      "token-123"
+      })
     );
     expect(wrapper.vm.selectedCustomer.verificationMode).toBe("PROVIDER");
     expect(wrapper.vm.selectedCustomer.providerStatus).toBe("PENDING");
@@ -827,8 +829,7 @@ describe("TenantHomeView", () => {
         documentNumber: "C01AB2345",
         documentFrontImageDataUrl: "data:image/png;base64,front",
         documentBackImageDataUrl: "data:image/png;base64,back"
-      }),
-      "token-123"
+      })
     );
     expect(updateAmlSpy).toHaveBeenCalledWith(
       "tenant-default",
@@ -837,8 +838,7 @@ describe("TenantHomeView", () => {
         status: "CLEAR",
         riskLevel: "MEDIUM",
         sourceOfFundsChecked: true
-      }),
-      "token-123"
+      })
     );
     expect(createLoanSpy).toHaveBeenCalled();
   });
@@ -887,10 +887,87 @@ describe("TenantHomeView", () => {
       {
         documentFrontImageDataUrl: "data:text/plain;base64,RE9DTk86IFhLMTIzNDU2Nw==",
         documentBackImageDataUrl: "data:text/plain;base64,VkFMSURfVU5USUw6IDIwMzEtMDMtMTg="
-      },
-      "token-123"
+      }
     );
     expect(wrapper.vm.newCustomerKyc.documentNumber).toBe("XK1234567");
     expect(wrapper.vm.newCustomerKyc.documentValidUntil).toBe("2031-03-18");
+  });
+
+  it("blocks new-customer loan submission when manual kyc documents are missing", async () => {
+    tenantStore.selectedTenantId = "tenant-default";
+    tenantStore.tenants = [{ id: "tenant-default", displayName: "Default Tenant" }];
+    authStore.token = "token-123";
+
+    vi.spyOn(originationApi, "fetchValuationGuidelines").mockResolvedValue([
+      {
+        id: "guideline-gold-585",
+        label: "Goldring 585",
+        description: "Gelbgold 14 Karat",
+        baseLoanValue: 180
+      }
+    ]);
+    vi.spyOn(customerApi, "searchCustomers").mockResolvedValue([]);
+    vi.spyOn(pawnTicketApi, "fetchPawnTicketQuote").mockResolvedValue({
+      dueDate: "2026-06-18",
+      earliestAuctionDate: "2026-07-18",
+      monthlyInterestRate: 1,
+      monthlyOperatingFee: 4.5,
+      totalInterestAmount: 6,
+      totalOperatingFeeAmount: 13.5,
+      totalRepaymentAmount: 219.5,
+      legalText: "Kostenmodell gemaess PfandlV."
+    });
+    const createCustomerSpy = vi.spyOn(customerApi, "createCustomer").mockResolvedValue({
+      id: "customer-new",
+      customerNumber: "KD-1002",
+      displayName: "Erika Mustermann",
+      birthDate: "1988-04-12",
+      phone: "+49 170 111111",
+      kycStatus: "NOT_STARTED",
+      kycApproved: false,
+      checkedDocumentType: null
+    });
+    const updateKycSpy = vi.spyOn(kycApi, "updateKycStatus").mockResolvedValue({
+      customerId: "customer-new",
+      status: "APPROVED",
+      verifiedUntil: "2027-03-18",
+      documentType: "PERSONALAUSWEIS",
+      decisionNote: "Freigegeben"
+    });
+    const createLoanSpy = vi.spyOn(originationApi, "createLoan").mockResolvedValue({});
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    wrapper.vm.useNewCustomer = true;
+    Object.assign(wrapper.vm.newCustomer, {
+      customerNumber: "KD-1002",
+      firstName: "Erika",
+      lastName: "Mustermann",
+      birthDate: "1988-04-12",
+      phone: "+49 170 111111",
+      email: "erika@example.test",
+      wantsDigitalPawnTicket: true,
+      street: "Testweg 1",
+      postalCode: "10115",
+      city: "Berlin"
+    });
+    wrapper.vm.positions = [
+      {
+        ticketGroup: 1,
+        label: "Goldring 585",
+        description: "Gelbgold 14 Karat",
+        guidelineId: "guideline-gold-585",
+        pledgedValue: 180
+      }
+    ];
+
+    await wrapper.vm.submitLoan();
+    await flushPromises();
+
+    expect(createCustomerSpy).not.toHaveBeenCalled();
+    expect(updateKycSpy).not.toHaveBeenCalled();
+    expect(createLoanSpy).not.toHaveBeenCalled();
+    expect(wrapper.vm.errorMessage).toBe("Bitte Vorder- und Rückseite des Dokuments zuerst hinterlegen.");
   });
 });

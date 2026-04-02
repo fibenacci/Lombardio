@@ -41,7 +41,6 @@ import { FormFeedback } from "../shared/ui/feedback";
 import { createPinia, setActivePinia } from "pinia";
 import { useAuthStore, useCustomerPortalStore } from "../app/session/state";
 import { useTenantStore } from "../app/tenant-context/state";
-import * as platformApi from "../modules/tenants/infrastructure/api/tenants.api";
 
 vi.mock("../modules/tenants/infrastructure/api/tenants.api", () => ({
   fetchTenants: vi.fn(() => Promise.resolve([])),

@@ -15,7 +15,6 @@ describe("authStore", () => {
     await authStore.initialize();
 
     expect(authStore.ready).toBe(true);
-    expect(authStore.token).toBe("");
     expect(authStore.user).toBeNull();
     expect(window.localStorage.getItem("lombardio.auth.token")).toBeNull();
   });
@@ -28,7 +27,6 @@ describe("authStore", () => {
     await authStore.initialize();
 
     expect(authStore.ready).toBe(true);
-    expect(authStore.token).toBe("");
     expect(authStore.user).toBeNull();
     expect(window.localStorage.getItem("lombardio.auth.token")).toBeNull();
     expect(window.sessionStorage.getItem("lombardio.auth.original_token")).toBeNull();
@@ -37,7 +35,6 @@ describe("authStore", () => {
   it("restores a server-backed operator session during initialize", async () => {
     vi.spyOn(authApi, "refreshSession").mockResolvedValue({
       status: "AUTHENTICATED",
-      accessToken: "refreshed-token",
       user: {
         id: "user-admin",
         actorUserId: "user-admin",
@@ -53,7 +50,6 @@ describe("authStore", () => {
     await authStore.initialize();
 
     expect(authStore.ready).toBe(true);
-    expect(authStore.token).toBe("refreshed-token");
     expect(authStore.user?.id).toBe("user-admin");
     expect(authStore.isAuthenticated).toBe(true);
   });
@@ -114,7 +110,6 @@ describe("authStore", () => {
     const response = await authStore.login("admin@lombardio.local", "change-me");
 
     expect(response.status).toBe("MFA_REQUIRED");
-    expect(authStore.token).toBe("");
     expect(authStore.user).toBeNull();
     expect(authStore.pendingMfaChallengeId).toBe("challenge-123");
     expect(authStore.pendingMfaMethods).toEqual(["TOTP"]);

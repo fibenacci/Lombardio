@@ -2,11 +2,11 @@ import * as customerPortalApi from "../api/customer-portal.api";
 
 export function createHttpCustomerPortalAdapter() {
   return {
-    fetchCustomerPortalDocument(ticketNumber: string, token: string) {
-      return customerPortalApi.fetchCustomerPortalDocument(ticketNumber, token);
+    fetchCustomerPortalDocument(ticketNumber: string) {
+      return customerPortalApi.fetchCustomerPortalDocument(ticketNumber);
     },
-    fetchCustomerPortalPawnTickets(token: string) {
-      return customerPortalApi.fetchCustomerPortalPawnTickets(token);
+    fetchCustomerPortalPawnTickets() {
+      return customerPortalApi.fetchCustomerPortalPawnTickets();
     },
     fetchPortalInvitation(token: string) {
       return customerPortalApi.fetchPortalInvitation(token);

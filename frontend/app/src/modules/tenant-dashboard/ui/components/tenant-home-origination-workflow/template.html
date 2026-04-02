@@ -48,7 +48,7 @@
               {{ t("tenantHome.customerSection.kycApprovalRequired") }}
             </p>
             <p v-else-if="amlFeatureEnabled && !selectedCustomer.amlOriginationAllowed" class="muted-copy">
-              {{ selectedCustomer.amlDecisionReason ?? t("tenantHome.customerSection.amlReviewRequired") }}
+              {{ selectedCustomerAmlDecisionText }}
             </p>
           </div>
           <div class="inline-row">

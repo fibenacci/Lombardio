@@ -69,8 +69,12 @@ export default createDetailSectionComponent({
       get: () => props.useNewCustomer,
       set: (value) => emit("update:useNewCustomer", value)
     });
+    const selectedCustomerAmlDecisionText = computed(
+      () => props.selectedCustomer?.amlDecisionReason || props.t("tenantHome.customerSection.amlReviewRequired")
+    );
 
     return {
+      selectedCustomerAmlDecisionText,
       selectedCustomerOptionModel,
       useNewCustomerModel
     };

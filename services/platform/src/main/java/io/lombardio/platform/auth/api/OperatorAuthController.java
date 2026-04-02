@@ -12,6 +12,8 @@ package io.lombardio.platform.auth.api;
 
 import io.lombardio.platform.auth.application.OperatorAuthService;
 import io.lombardio.platform.auth.application.OperatorSession;
+import io.lombardio.platform.auth.application.StoredOperatorSession;
+import io.lombardio.platform.auth.application.StoredOperatorSessionService;
 import io.lombardio.platform.config.OperatorSessionProperties;
 import io.lombardio.platform.security.AuthenticatedUser;
 import jakarta.servlet.http.Cookie;
@@ -33,11 +35,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class OperatorAuthController {
 
   private final OperatorAuthService operatorAuthService;
+  private final StoredOperatorSessionService storedOperatorSessionService;
   private final OperatorSessionProperties sessionProperties;
 
   public OperatorAuthController(
-      OperatorAuthService operatorAuthService, OperatorSessionProperties sessionProperties) {
+      OperatorAuthService operatorAuthService,
+      StoredOperatorSessionService storedOperatorSessionService,
+      OperatorSessionProperties sessionProperties) {
     this.operatorAuthService = operatorAuthService;
+    this.storedOperatorSessionService = storedOperatorSessionService;
     this.sessionProperties = sessionProperties;
   }
 
@@ -45,32 +51,36 @@ public class OperatorAuthController {
   public OperatorSessionResponse login(
       @Valid @RequestBody OperatorLoginRequest request, HttpServletResponse response) {
     OperatorSession session = operatorAuthService.login(request.email(), request.password());
-    writeRefreshCookie(response, session.refreshToken());
-    return new OperatorSessionResponse("AUTHENTICATED", session.accessToken(), session.user());
+    StoredOperatorSession storedSession = storedOperatorSessionService.createSession(session);
+    writeSessionCookie(response, storedSession.sessionId());
+    return toCookieBackedSessionResponse(storedSession.user());
   }
 
   @PostMapping("/refresh")
   public ResponseEntity<OperatorSessionResponse> refresh(
       HttpServletRequest request,
       HttpServletResponse response) {
-    String refreshToken = readRefreshToken(request);
-    if (refreshToken == null || refreshToken.isBlank()) {
+    String sessionId = readSessionId(request);
+    if (sessionId == null || sessionId.isBlank()) {
       return ResponseEntity.noContent().build();
     }
 
-    OperatorSession session = operatorAuthService.refresh(refreshToken);
-    writeRefreshCookie(response, session.refreshToken());
-    return ResponseEntity.ok(
-        new OperatorSessionResponse("AUTHENTICATED", session.accessToken(), session.user()));
+    return storedOperatorSessionService
+        .refreshSession(sessionId)
+        .map(
+            session -> {
+              writeSessionCookie(response, session.sessionId());
+              return ResponseEntity.ok(toCookieBackedSessionResponse(session.user()));
+            })
+        .orElseGet(() -> ResponseEntity.noContent().build());
   }
 
   @PostMapping("/logout")
   public ResponseEntity<Void> logout(
       HttpServletRequest request,
       HttpServletResponse response) {
-    String refreshToken = readRefreshToken(request);
-    operatorAuthService.logout(refreshToken);
-    clearRefreshCookie(response);
+    storedOperatorSessionService.logout(readSessionId(request));
+    clearSessionCookie(response);
     return ResponseEntity.noContent().build();
   }
 
@@ -79,33 +89,37 @@ public class OperatorAuthController {
     return OperatorSessionUserResponse.fromAuthenticatedUser(authenticatedUser);
   }
 
-  private void writeRefreshCookie(HttpServletResponse response, String refreshToken) {
+  private OperatorSessionResponse toCookieBackedSessionResponse(OperatorSessionUserResponse user) {
+    return new OperatorSessionResponse("AUTHENTICATED", user);
+  }
+
+  private void writeSessionCookie(HttpServletResponse response, String sessionId) {
     response.addHeader(
         HttpHeaders.SET_COOKIE,
-        buildRefreshCookie(refreshToken, sessionProperties.refreshCookieMaxAgeSeconds()).toString());
+        buildSessionCookie(sessionId, sessionProperties.cookieMaxAgeSeconds()).toString());
   }
 
-  private void clearRefreshCookie(HttpServletResponse response) {
-    response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie("", 0).toString());
+  private void clearSessionCookie(HttpServletResponse response) {
+    response.addHeader(HttpHeaders.SET_COOKIE, buildSessionCookie("", 0).toString());
   }
 
-  private ResponseCookie buildRefreshCookie(String value, long maxAgeSeconds) {
-    return ResponseCookie.from(sessionProperties.refreshCookieName(), value)
+  private ResponseCookie buildSessionCookie(String value, long maxAgeSeconds) {
+    return ResponseCookie.from(sessionProperties.cookieName(), value)
         .httpOnly(true)
-        .secure(sessionProperties.refreshCookieSecure())
-        .sameSite(sessionProperties.refreshCookieSameSite())
-        .path(sessionProperties.refreshCookiePath())
+        .secure(sessionProperties.cookieSecure())
+        .sameSite(sessionProperties.cookieSameSite())
+        .path(sessionProperties.cookiePath())
         .maxAge(maxAgeSeconds)
         .build();
   }
 
-  private String readRefreshToken(HttpServletRequest request) {
+  private String readSessionId(HttpServletRequest request) {
     if (request.getCookies() == null) {
       return null;
     }
 
     for (Cookie cookie : request.getCookies()) {
-      if (sessionProperties.refreshCookieName().equals(cookie.getName())) {
+      if (sessionProperties.cookieName().equals(cookie.getName())) {
         return cookie.getValue();
       }
     }

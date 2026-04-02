@@ -24,6 +24,9 @@ public class CustomerPortalSessionEntity {
   @Column(name = "token", nullable = false)
   private String token;
 
+  @Column(name = "token_hash")
+  private String tokenHash;
+
   @Column(name = "customer_id", nullable = false)
   private String customerId;
 
@@ -33,12 +36,23 @@ public class CustomerPortalSessionEntity {
   @Column(name = "issued_at", nullable = false)
   private Instant issuedAt;
 
+  @Column(name = "expires_at", nullable = false)
+  private Instant expiresAt;
+
   public String getToken() {
     return token;
   }
 
   public void setToken(String token) {
     this.token = token;
+  }
+
+  public String getTokenHash() {
+    return tokenHash;
+  }
+
+  public void setTokenHash(String tokenHash) {
+    this.tokenHash = tokenHash;
   }
 
   public String getCustomerId() {
@@ -63,5 +77,13 @@ public class CustomerPortalSessionEntity {
 
   public void setIssuedAt(Instant issuedAt) {
     this.issuedAt = issuedAt;
+  }
+
+  public Instant getExpiresAt() {
+    return expiresAt;
+  }
+
+  public void setExpiresAt(Instant expiresAt) {
+    this.expiresAt = expiresAt;
   }
 }

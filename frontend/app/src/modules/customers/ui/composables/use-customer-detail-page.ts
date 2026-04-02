@@ -1,4 +1,5 @@
 import { computed, reactive, ref } from "vue";
+import { getRequestErrorMessage } from "../../../../shared/kernel/errors/request-error";
 import { normalizeDocumentImageSrc } from "../../../../shared/kernel/utils/document-data-url";
 import { createHttpCustomerAdapter } from "../../infrastructure/adapters/http-customer.adapter";
 import {
@@ -26,13 +27,17 @@ function firstSelectedFile(event: unknown) {
   return payload?.files?.[0] ?? payload?.target?.files?.[0] ?? null;
 }
 
+function hasRequiredManualKycDocuments(kyc: { documentFrontImageDataUrl: string; documentBackImageDataUrl: string }) {
+  return Boolean(kyc.documentFrontImageDataUrl && kyc.documentBackImageDataUrl);
+}
+
 export function useCustomerDetailPage({
   authStore,
   route,
   t,
   tenantStore
 }: {
-  authStore: { token: string };
+  authStore: Record<string, unknown>;
   route: { params: Record<string, unknown> };
   t: (key: string, params?: Record<string, unknown>) => string;
   tenantStore: { selectedTenant: unknown; selectedTenantId: string; hasFeature: (key: string) => boolean };
@@ -134,7 +139,6 @@ export function useCustomerDetailPage({
       const result = await customerAdapter.loadCustomerDetailData(
         tenantStore.selectedTenantId,
         customerId.value,
-        authStore.token,
         amlFeatureEnabled.value
       );
 
@@ -159,8 +163,7 @@ export function useCustomerDetailPage({
       const updated = await customerAdapter.saveCustomer(
         tenantStore.selectedTenantId,
         customerId.value,
-        mapCustomerDomainToUpdatePayload(customer),
-        authStore.token
+        mapCustomerDomainToUpdatePayload(customer)
       );
       Object.assign(customer, mapCustomerDtoToDomain(updated));
       successMessage.value = t("customerDetail.messages.customerSaved");
@@ -178,11 +181,18 @@ export function useCustomerDetailPage({
     try {
       isSavingKyc.value = true;
       resetFeedback();
+      if (!hasRequiredManualKycDocuments(kyc)) {
+        errorMessage.value = t("customerDetail.messages.documentImagesRequired");
+        fieldErrors.value = [
+          { field: "documentFrontImageDataUrl", message: t("customerDetail.messages.documentImagesRequired") },
+          { field: "documentBackImageDataUrl", message: t("customerDetail.messages.documentImagesRequired") }
+        ];
+        return;
+      }
       const updated = await customerAdapter.saveKyc(
         tenantStore.selectedTenantId,
         customerId.value,
-        mapKycDomainToUpdatePayload(kyc),
-        authStore.token
+        mapKycDomainToUpdatePayload(kyc)
       );
       Object.assign(kyc, {
         ...kyc,
@@ -212,8 +222,7 @@ export function useCustomerDetailPage({
       const updated = await customerAdapter.saveAml(
         tenantStore.selectedTenantId,
         customerId.value,
-        mapAmlDomainToUpdatePayload(aml),
-        authStore.token
+        mapAmlDomainToUpdatePayload(aml)
       );
       Object.assign(aml, mapAmlToDomain(updated, amlFeatureEnabled.value));
       successMessage.value = t("customerDetail.messages.amlSaved");
@@ -257,8 +266,7 @@ export function useCustomerDetailPage({
         {
           documentFrontImageDataUrl: kyc.documentFrontImageDataUrl,
           documentBackImageDataUrl: kyc.documentBackImageDataUrl
-        },
-        authStore.token
+        }
       );
       if (!result.available || !result.matched) {
         errorMessage.value = t("customerDetail.messages.ocrUnavailable");
@@ -282,7 +290,7 @@ export function useCustomerDetailPage({
   }
 
   function handleError(error: unknown) {
-    errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
+    errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
     fieldErrors.value = Array.isArray((error as { fieldErrors?: unknown } | undefined)?.fieldErrors)
       ? ((error as { fieldErrors: Array<{ field: string; message: string }> }).fieldErrors)
       : [];

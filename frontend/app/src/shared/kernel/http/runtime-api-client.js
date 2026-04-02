@@ -1,62 +1,53 @@
 import { readRuntimeValue } from "../config/runtime-config";
 import { useAuthStore } from "../../../app/session/state/auth.store";
 
+const platformBaseUrl = readRuntimeValue(
+  "PLATFORM_API_BASE_URL",
+  import.meta.env.VITE_PLATFORM_API_BASE_URL ?? "http://localhost:8080"
+);
+
 export const BASE_URLS = {
-  default: readRuntimeValue("API_BASE_URL", import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080"),
-  platform: readRuntimeValue(
-    "PLATFORM_API_BASE_URL",
-    import.meta.env.VITE_PLATFORM_API_BASE_URL ?? "http://localhost:8080"
-  ),
-  origination: readRuntimeValue(
-    "ORIGINATION_API_BASE_URL",
-    import.meta.env.VITE_ORIGINATION_API_BASE_URL ?? "http://localhost:8080"
-  ),
-  customer: readRuntimeValue(
+  default: platformBaseUrl,
+  platform: platformBaseUrl,
+  customerPortal: readRuntimeValue(
     "CUSTOMER_API_BASE_URL",
     import.meta.env.VITE_CUSTOMER_API_BASE_URL ?? "http://localhost:8080"
   ),
-  pawnTicket: readRuntimeValue(
-    "PAWN_TICKET_API_BASE_URL",
-    import.meta.env.VITE_PAWN_TICKET_API_BASE_URL ?? "http://localhost:8080"
-  ),
-  kyc: readRuntimeValue("KYC_API_BASE_URL", import.meta.env.VITE_KYC_API_BASE_URL ?? "http://localhost:8080"),
-  aml: readRuntimeValue("AML_API_BASE_URL", import.meta.env.VITE_AML_API_BASE_URL ?? "http://localhost:8080"),
-  auction: readRuntimeValue(
-    "AUCTION_API_BASE_URL",
-    import.meta.env.VITE_AUCTION_API_BASE_URL ?? "http://localhost:8080"
-  ),
-  onlineAuction: readRuntimeValue(
+  publicOnlineAuction: readRuntimeValue(
     "ONLINE_AUCTION_API_BASE_URL",
     import.meta.env.VITE_ONLINE_AUCTION_API_BASE_URL ?? "http://localhost:8080"
-  ),
-  reporting: readRuntimeValue(
-    "REPORTING_API_BASE_URL",
-    import.meta.env.VITE_REPORTING_API_BASE_URL ?? "http://localhost:8080"
   )
 };
 
-function buildErrorMessage(response, payload, requestInfo) {
-  const traceId =
-    (typeof payload === "object" && payload !== null && "traceId" in payload ? payload.traceId : null)
-    ?? requestInfo.traceId
-    ?? null;
+function buildUserMessage(response, payload) {
+  const hasFieldErrors =
+    typeof payload === "object" && payload !== null && Array.isArray(payload.fieldErrors) && payload.fieldErrors.length > 0;
 
-  if (typeof payload === "object" && payload !== null && "message" in payload && payload.message) {
-    return traceId ? `${payload.message} (traceId: ${traceId})` : payload.message;
+  if (response.status === 400 || response.status === 422 || hasFieldErrors) {
+    return "Validation failed";
   }
 
-  const requestLabel = `${requestInfo.method} ${requestInfo.url}`;
-  return traceId
-    ? `${requestLabel} failed with status ${response.status} (traceId: ${traceId})`
-    : `${requestLabel} failed with status ${response.status}`;
-}
+  if (response.status === 401) {
+    return "Authentication is required.";
+  }
 
-function resolveToken(token) {
-  const authStore = useAuthStore();
-  return {
-    authStore,
-    token: token || authStore.accessToken
-  };
+  if (response.status === 403) {
+    return "You are not allowed to perform this action.";
+  }
+
+  if (response.status === 404) {
+    return "The requested resource was not found.";
+  }
+
+  if (response.status === 409) {
+    return "The request could not be completed.";
+  }
+
+  if (response.status === 502 || response.status === 503 || response.status === 504) {
+    return "The service is temporarily unavailable.";
+  }
+
+  return "The request failed.";
 }
 
 async function redirectToLogin(authStore) {
@@ -81,13 +72,10 @@ function toRequestError(response, payload, requestInfo) {
   const traceId =
     response.headers.get("X-Trace-Id")
     ?? (typeof payload === "object" && payload !== null && "traceId" in payload ? payload.traceId : null);
-  const message = buildErrorMessage(response, payload, {
-    method: requestInfo.method,
-    url: requestInfo.url,
-    traceId
-  });
+  const message = buildUserMessage(response, payload);
 
   const error = new Error(message);
+  error.userMessage = message;
   error.status = response.status;
   error.payload = payload;
   error.fieldErrors = fieldErrors;
@@ -98,16 +86,16 @@ function toRequestError(response, payload, requestInfo) {
 }
 
 async function request(baseUrl, path, options = {}) {
-  const { authStore, token } = resolveToken(options.token);
+  const authStore = useAuthStore();
   const { headers: customHeaders = {}, ...restOptions } = options;
   const requestUrl = `${baseUrl}${path}`;
   const requestMethod = restOptions.method ?? "GET";
 
   const response = await fetch(requestUrl, {
     ...restOptions,
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...customHeaders
     }
   });
@@ -130,19 +118,20 @@ async function request(baseUrl, path, options = {}) {
   return payload;
 }
 
-async function requestBlob(baseUrl, path, token) {
-  const { authStore, token: effectiveToken } = resolveToken(token);
+async function requestBlob(baseUrl, path) {
+  const authStore = useAuthStore();
   const requestUrl = `${baseUrl}${path}`;
   const response = await fetch(requestUrl, {
     method: "GET",
-    headers: {
-      ...(effectiveToken ? { Authorization: `Bearer ${effectiveToken}` } : {})
-    }
+    credentials: "include"
   });
 
   if (!response.ok) {
-    const error = new Error(`GET ${requestUrl} failed with status ${response.status}`);
-    error.status = response.status;
+    const payload = await parsePayload(response);
+    const error = toRequestError(response, payload, {
+      method: "GET",
+      url: requestUrl
+    });
 
     if (response.status === 401) {
       await redirectToLogin(authStore);
@@ -154,30 +143,29 @@ async function requestBlob(baseUrl, path, token) {
   return response.blob();
 }
 
-function withJsonBody(method, body, token) {
+function withJsonBody(method, body) {
   return {
     method,
-    body: JSON.stringify(body),
-    token
+    body: JSON.stringify(body)
   };
 }
 
 export function createApiClient(baseUrl) {
   return {
-    get(path, token) {
-      return request(baseUrl, path, { method: "GET", token });
+    get(path) {
+      return request(baseUrl, path, { method: "GET" });
     },
-    post(path, body, token) {
-      return request(baseUrl, path, withJsonBody("POST", body, token));
+    post(path, body) {
+      return request(baseUrl, path, withJsonBody("POST", body));
     },
-    patch(path, body, token) {
-      return request(baseUrl, path, withJsonBody("PATCH", body, token));
+    patch(path, body) {
+      return request(baseUrl, path, withJsonBody("PATCH", body));
     },
-    put(path, body, token) {
-      return request(baseUrl, path, withJsonBody("PUT", body, token));
+    put(path, body) {
+      return request(baseUrl, path, withJsonBody("PUT", body));
     },
-    getBlob(path, token) {
-      return requestBlob(baseUrl, path, token);
+    getBlob(path) {
+      return requestBlob(baseUrl, path);
     }
   };
 }

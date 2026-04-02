@@ -120,7 +120,9 @@ public class OnlineAuctionPersistenceAdapter implements OnlineAuctionRepository 
     entity.setBirthDate(registration.birthDate());
     entity.setIban(registration.iban());
     entity.setPaddleNumber(registration.paddleNumber());
-    entity.setAccessToken(registration.accessToken());
+    // Keep the legacy column populated with a harmless surrogate while matching happens via hash.
+    entity.setAccessToken(registration.id());
+    entity.setAccessTokenHash(registration.accessTokenHash());
     entity.setApprovalStatus(registration.approvalStatus());
     entity.setKycStatus(registration.kycStatus());
     entity.setAccountCheckStatus(registration.accountCheckStatus());
@@ -170,7 +172,11 @@ public class OnlineAuctionPersistenceAdapter implements OnlineAuctionRepository 
         entity.getBirthDate(),
         entity.getIban(),
         entity.getPaddleNumber(),
-        entity.getAccessToken(),
+        null,
+        entity.getAccessTokenHash() != null
+            ? entity.getAccessTokenHash()
+            : io.lombardio.onlineauction.application.BidderAccessTokenHasher.sha256(
+                entity.getAccessToken()),
         entity.getApprovalStatus(),
         entity.getKycStatus(),
         entity.getAccountCheckStatus(),

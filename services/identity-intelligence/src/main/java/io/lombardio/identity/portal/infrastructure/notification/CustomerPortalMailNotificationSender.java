@@ -11,6 +11,8 @@
 package io.lombardio.identity.portal.infrastructure.notification;
 
 import io.lombardio.identity.domain.model.Customer;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -35,7 +37,7 @@ public class CustomerPortalMailNotificationSender implements CustomerPortalNotif
 
   @Override
   public void sendInvitation(Customer customer, String token, Instant expiresAt) {
-    String activationLink = portalBaseUrl + "/activate/" + token;
+    String activationLink = portalBaseUrl + "/activate#" + URLEncoder.encode(token, StandardCharsets.UTF_8);
     String expiresAtText =
         DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneOffset.UTC).format(expiresAt);
     integrationMailClient.send(

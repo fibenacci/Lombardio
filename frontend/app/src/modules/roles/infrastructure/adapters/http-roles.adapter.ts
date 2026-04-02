@@ -2,8 +2,8 @@ import * as accessApi from "../../../../modules/access-management/infrastructure
 
 export function createHttpRolesAdapter() {
   return {
-    fetchRoles(tenantId: string, token: string) {
-      return accessApi.fetchRoles(tenantId, token);
+    fetchRoles(tenantId: string) {
+      return accessApi.fetchRoles(tenantId);
     }
   };
 }

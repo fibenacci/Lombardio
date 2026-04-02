@@ -15,108 +15,96 @@ import type {
   TenantHomeReportingOverviewDto
 } from "../dto/tenant-dashboard.dto";
 
-export function fetchTenantHomeGuidelines(tenantId: string, token: string) {
-  return (originationApi.fetchValuationGuidelines as (
-    tenantId: string,
-    token: string
-  ) => Promise<TenantHomeGuidelineDto[]>)(tenantId, token);
+export function fetchTenantHomeGuidelines(tenantId: string) {
+  return (originationApi.fetchValuationGuidelines as (tenantId: string) => Promise<TenantHomeGuidelineDto[]>)(
+    tenantId
+  );
 }
 
-export function searchTenantHomeCustomers(tenantId: string, query: string, token: string) {
-  return (customerApi.searchCustomers as (
-    tenantId: string,
-    query: string,
-    token: string
-  ) => Promise<TenantHomeCustomerDto[]>)(tenantId, query, token);
+export function searchTenantHomeCustomers(tenantId: string, query: string) {
+  return (customerApi.searchCustomers as (tenantId: string, query: string) => Promise<TenantHomeCustomerDto[]>)(
+    tenantId,
+    query
+  );
 }
 
-export function fetchTenantHomeAmlStatus(tenantId: string, customerId: string, token: string) {
-  return (amlApi.fetchAmlStatus as (
-    tenantId: string,
-    customerId: string,
-    token: string
-  ) => Promise<TenantHomeAmlStatusDto>)(tenantId, customerId, token);
+export function fetchTenantHomeAmlStatus(tenantId: string, customerId: string) {
+  return (amlApi.fetchAmlStatus as (tenantId: string, customerId: string) => Promise<TenantHomeAmlStatusDto>)(
+    tenantId,
+    customerId
+  );
 }
 
-export function assessTenantHomeAmlOrigination(tenantId: string, customerId: string, payload: { loanAmount: number }, token: string) {
+export function assessTenantHomeAmlOrigination(tenantId: string, customerId: string, payload: { loanAmount: number }) {
   return (amlApi.assessAmlOrigination as (
     tenantId: string,
     customerId: string,
-    payload: { loanAmount: number },
-    token: string
-  ) => Promise<TenantHomeAmlStatusDto>)(tenantId, customerId, payload, token);
+    payload: { loanAmount: number }
+  ) => Promise<TenantHomeAmlStatusDto>)(tenantId, customerId, payload);
 }
 
-export function fetchTenantHomeKycStatus(tenantId: string, customerId: string, token: string) {
-  return (kycApi.fetchKycStatus as (
-    tenantId: string,
-    customerId: string,
-    token: string
-  ) => Promise<TenantHomeKycStatusDto>)(tenantId, customerId, token);
+export function fetchTenantHomeKycStatus(tenantId: string, customerId: string) {
+  return (kycApi.fetchKycStatus as (tenantId: string, customerId: string) => Promise<TenantHomeKycStatusDto>)(
+    tenantId,
+    customerId
+  );
 }
 
-export function updateTenantHomeKycStatus(tenantId: string, customerId: string, payload: Record<string, unknown>, token: string) {
+export function updateTenantHomeKycStatus(tenantId: string, customerId: string, payload: Record<string, unknown>) {
   return (kycApi.updateKycStatus as (
     tenantId: string,
     customerId: string,
-    payload: Record<string, unknown>,
-    token: string
-  ) => Promise<TenantHomeKycStatusDto>)(tenantId, customerId, payload, token);
+    payload: Record<string, unknown>
+  ) => Promise<TenantHomeKycStatusDto>)(tenantId, customerId, payload);
 }
 
-export function prefillTenantHomeKycDocument(tenantId: string, customerId: string, payload: Record<string, unknown>, token: string) {
+export function prefillTenantHomeKycDocument(tenantId: string, customerId: string, payload: Record<string, unknown>) {
   return (kycApi.prefillKycDocument as (
     tenantId: string,
     customerId: string,
-    payload: Record<string, unknown>,
-    token: string
-  ) => Promise<TenantHomeKycDocumentsPrefillDto>)(tenantId, customerId, payload, token);
+    payload: Record<string, unknown>
+  ) => Promise<TenantHomeKycDocumentsPrefillDto>)(tenantId, customerId, payload);
 }
 
-export function createTenantHomeCustomer(tenantId: string, payload: Record<string, unknown>, token: string) {
-  return (customerApi.createCustomer as (
-    tenantId: string,
-    payload: Record<string, unknown>,
-    token: string
-  ) => Promise<TenantHomeCustomerDto>)(tenantId, payload, token);
+export function createTenantHomeCustomer(tenantId: string, payload: Record<string, unknown>) {
+  return (customerApi.createCustomer as (tenantId: string, payload: Record<string, unknown>) => Promise<TenantHomeCustomerDto>)(
+    tenantId,
+    payload
+  );
 }
 
-export function updateTenantHomeAmlStatus(tenantId: string, customerId: string, payload: Record<string, unknown>, token: string) {
+export function updateTenantHomeAmlStatus(tenantId: string, customerId: string, payload: Record<string, unknown>) {
   return (amlApi.updateAmlStatus as (
     tenantId: string,
     customerId: string,
-    payload: Record<string, unknown>,
-    token: string
-  ) => Promise<TenantHomeAmlStatusDto>)(tenantId, customerId, payload, token);
+    payload: Record<string, unknown>
+  ) => Promise<TenantHomeAmlStatusDto>)(tenantId, customerId, payload);
 }
 
-export function fetchTenantHomeQuote(payload: Record<string, unknown>, token: string) {
-  return (pawnTicketApi.fetchPawnTicketQuote as (
-    payload: Record<string, unknown>,
-    token: string
-  ) => Promise<TenantHomeQuoteDto>)(payload, token);
+export function fetchTenantHomeQuote(payload: Record<string, unknown>) {
+  return (pawnTicketApi.fetchPawnTicketQuote as (payload: Record<string, unknown>) => Promise<TenantHomeQuoteDto>)(
+    payload
+  );
 }
 
-export function createTenantHomeLoan(tenantId: string, payload: Record<string, unknown>, token: string) {
+export function createTenantHomeLoan(tenantId: string, payload: Record<string, unknown>) {
   return (originationApi.createLoan as (
     tenantId: string,
-    payload: Record<string, unknown>,
-    token: string
-  ) => Promise<TenantHomeLoanDto>)(tenantId, payload, token);
+    payload: Record<string, unknown>
+  ) => Promise<TenantHomeLoanDto>)(tenantId, payload);
 }
 
-export function fetchTenantHomeReportingOverview(tenantId: string, token: string, rangeDays = 14) {
+export function fetchTenantHomeReportingOverview(tenantId: string, rangeDays = 14) {
   return (reportingApi.fetchDashboardOverview as (
     tenantId: string,
-    token: string,
     rangeDays?: number
-  ) => Promise<TenantHomeReportingOverviewDto>)(tenantId, token, rangeDays);
+  ) => Promise<TenantHomeReportingOverviewDto>)(tenantId, rangeDays);
 }
 
-export function fetchTenantHomePawnTicketDocument(ticketNumber: string, token: string) {
-  return pawnTicketApi.fetchPawnTicketDocument(ticketNumber, token);
+export function fetchTenantHomePawnTicketDocument(ticketNumber: string) {
+  return pawnTicketApi.fetchPawnTicketDocument(ticketNumber);
 }
 
-export function fetchTenantHomePawnTicketLabels(ticketNumber: string, token: string) {
-  return pawnTicketApi.fetchPawnTicketLabels(ticketNumber, token);
+export function fetchTenantHomePawnTicketLabels(ticketNumber: string) {
+  return pawnTicketApi.fetchPawnTicketLabels(ticketNumber);
 }

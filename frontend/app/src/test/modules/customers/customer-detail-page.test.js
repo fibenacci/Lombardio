@@ -24,8 +24,6 @@ describe("CustomerDetailView", () => {
     tenantStore.selectedTenantId = "tenant-default";
     tenantStore.tenants = [{ id: "tenant-default", displayName: "Default Tenant" }];
     tenantStore.features = [{ tenantId: "tenant-default", featureKey: "aml-compliance", enabled: true }];
-    authStore.token = "token-123";
-
     vi.spyOn(customerApi, "fetchCustomer").mockResolvedValue({
       id: "customer-1",
       customerNumber: "KD-1001",
@@ -148,9 +146,69 @@ describe("CustomerDetailView", () => {
         status: "CLEAR",
         riskLevel: "MEDIUM",
         sourceOfFundsChecked: true
-      }),
-      "token-123"
+      })
     );
     expect(wrapper.text()).toContain("AML review cleared for origination");
+  });
+
+  it("blocks manual kyc save when document images are missing", async () => {
+    tenantStore.selectedTenantId = "tenant-default";
+    tenantStore.tenants = [{ id: "tenant-default", displayName: "Default Tenant" }];
+    vi.spyOn(customerApi, "fetchCustomer").mockResolvedValue({
+      id: "customer-1",
+      customerNumber: "KD-1001",
+      firstName: "Anna",
+      lastName: "Becker",
+      birthDate: "1988-04-12",
+      phone: "+49 170 111111",
+      email: "anna@example.test",
+      wantsDigitalPawnTicket: true,
+      onlineAccessStatus: "INVITED",
+      street: "Hauptstrasse 1",
+      postalCode: "10115",
+      city: "Berlin"
+    });
+    vi.spyOn(originationApi, "fetchLoans").mockResolvedValue([]);
+    vi.spyOn(kycApi, "fetchKycStatus").mockResolvedValue({
+      status: "IN_PROGRESS",
+      verificationMode: "MANUAL",
+      verifiedUntil: "2030-03-18",
+      documentType: "PERSONALAUSWEIS",
+      documentNumber: "L01X00T47",
+      documentValidUntil: "2030-03-18",
+      decisionNote: "Freigegeben"
+    });
+    vi.spyOn(kycApi, "fetchKycDocuments").mockResolvedValue({
+      customerId: "customer-1",
+      documentFrontImageDataUrl: "",
+      documentBackImageDataUrl: ""
+    });
+    vi.spyOn(amlApi, "fetchAmlStatus").mockResolvedValue(null);
+    const updateKycSpy = vi.spyOn(kycApi, "updateKycStatus").mockResolvedValue({
+      customerId: "customer-1",
+      status: "APPROVED",
+      verificationMode: "MANUAL",
+      verifiedUntil: "2030-03-18",
+      documentType: "PERSONALAUSWEIS",
+      documentNumber: "L01X00T47",
+      documentValidUntil: "2030-03-18",
+      decisionNote: "Freigegeben"
+    });
+
+    await router.push("/app/customers/customer-1");
+    await router.isReady();
+
+    const wrapper = mount(CustomerDetailView, {
+      global: {
+        plugins: [router]
+      }
+    });
+    await flushPromises();
+
+    await wrapper.vm.saveKyc();
+    await flushPromises();
+
+    expect(updateKycSpy).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain("Bitte Vorder- und Rückseite des Dokuments zuerst hinterlegen.");
   });
 });

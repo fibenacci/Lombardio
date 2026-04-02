@@ -1,6 +1,15 @@
 import { readRuntimeValue } from "../../../shared/kernel/config/runtime-config";
 import { apiClient, BASE_URLS } from "../../../shared/kernel/http/runtime-api-client";
 
+const OPERATOR_DELEGATION_ENABLED = readRuntimeValue(
+  "OPERATOR_DELEGATION_ENABLED",
+  import.meta.env.VITE_OPERATOR_DELEGATION_ENABLED ?? "false"
+) === "true";
+const OPERATOR_TOTP_ENABLED = readRuntimeValue(
+  "OPERATOR_TOTP_ENABLED",
+  import.meta.env.VITE_OPERATOR_TOTP_ENABLED ?? "false"
+) === "true";
+
 const PLATFORM_AUTH_BASE_URL = readRuntimeValue(
   "PLATFORM_API_BASE_URL",
   import.meta.env.VITE_PLATFORM_API_BASE_URL ?? "http://localhost:8080"
@@ -12,12 +21,10 @@ async function parsePayload(response) {
 }
 
 function toRequestError(response, payload, fallbackMessage) {
-  const message =
-    typeof payload === "object" && payload !== null && "message" in payload && payload.message
-      ? payload.message
-      : fallbackMessage;
+  const message = response.status === 401 ? fallbackMessage : "The request failed.";
 
   const error = new Error(message);
+  error.userMessage = message;
   error.status = response.status;
   error.payload = payload;
   return error;
@@ -49,11 +56,7 @@ export async function login(payload) {
 export async function refreshSession() {
   const response = await fetch(`${PLATFORM_AUTH_BASE_URL}/api/v1/platform/auth/refresh`, {
     method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: "{}"
+    credentials: "include"
   });
 
   if (response.status === 204 || response.status === 401) {
@@ -69,15 +72,25 @@ export async function refreshSession() {
 }
 
 export async function logout() {
-  await requestPlatformSession("/api/v1/platform/auth/logout", {}, "Logout failed");
+  const response = await fetch(`${PLATFORM_AUTH_BASE_URL}/api/v1/platform/auth/logout`, {
+    method: "POST",
+    credentials: "include"
+  });
+
+  if (response.status === 204 || response.status === 401) {
+    return;
+  }
+
+  const payload = await parsePayload(response);
+  if (!response.ok) {
+    throw toRequestError(response, payload, "Logout failed");
+  }
 }
 
-export async function fetchCurrentUser(token) {
+export async function fetchCurrentUser() {
   const response = await fetch(`${BASE_URLS.platform}/api/v1/platform/auth/me`, {
     method: "GET",
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
-    }
+    credentials: "include"
   });
   const payload = await parsePayload(response);
   if (!response.ok) {
@@ -86,18 +99,46 @@ export async function fetchCurrentUser(token) {
   return payload;
 }
 
-export function createDelegation(userId, token) {
-  return apiClient.post("/api/v1/auth/delegations", { userId }, token);
+export function isDelegationEnabled() {
+  return OPERATOR_DELEGATION_ENABLED;
+}
+
+export function isTotpEnabled() {
+  return OPERATOR_TOTP_ENABLED;
+}
+
+export function createDelegation(userId) {
+  if (!OPERATOR_DELEGATION_ENABLED) {
+    const error = new Error("Delegated sessions are not available.");
+    error.userMessage = "Delegated sessions are not available.";
+    throw error;
+  }
+  return apiClient.post("/api/v1/auth/delegations", { userId });
 }
 
 export function verifyTotpChallenge(payload) {
+  if (!OPERATOR_TOTP_ENABLED) {
+    const error = new Error("Two-factor authentication is not available.");
+    error.userMessage = "Two-factor authentication is not available.";
+    throw error;
+  }
   return apiClient.post("/api/v1/auth/mfa/totp/verify", payload);
 }
 
-export function startTotpEnrollment(token) {
-  return apiClient.post("/api/v1/auth/mfa/totp/enroll", {}, token);
+export function startTotpEnrollment() {
+  if (!OPERATOR_TOTP_ENABLED) {
+    const error = new Error("Two-factor authentication is not available.");
+    error.userMessage = "Two-factor authentication is not available.";
+    throw error;
+  }
+  return apiClient.post("/api/v1/auth/mfa/totp/enroll", {});
 }
 
-export function activateTotp(payload, token) {
-  return apiClient.post("/api/v1/auth/mfa/totp/activate", payload, token);
+export function activateTotp(payload) {
+  if (!OPERATOR_TOTP_ENABLED) {
+    const error = new Error("Two-factor authentication is not available.");
+    error.userMessage = "Two-factor authentication is not available.";
+    throw error;
+  }
+  return apiClient.post("/api/v1/auth/mfa/totp/activate", payload);
 }

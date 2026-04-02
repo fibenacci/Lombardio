@@ -11,9 +11,7 @@ vi.mock("vue-router", () => ({
     push
   }),
   useRoute: () => ({
-    params: {
-      token: "invite-123"
-    }
+    params: {}
   })
 }));
 
@@ -27,6 +25,7 @@ describe("CustomerPortalActivateView", () => {
   });
 
   it("loads the invitation and activates the access", async () => {
+    window.location.hash = "#invite-123";
     vi.spyOn(customerPortalApi, "fetchPortalInvitation").mockResolvedValue({
       customerDisplayName: "Anna Becker",
       email: "anna@example.test",

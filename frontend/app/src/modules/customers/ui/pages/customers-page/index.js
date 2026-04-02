@@ -1,4 +1,4 @@
-import { defineComponent, onMounted } from "vue";
+import { computed, defineComponent, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../../../../../app/session/state/auth.store";
 import { useTenantStore } from "../../../../../app/tenant-context/state/tenant.store";
@@ -34,6 +34,14 @@ export default defineComponent({
       REPORTED: () => t("customerDetail.statusOptions.aml.REPORTED"),
       UNKNOWN: () => t("customers.amlUnknown")
     };
+    const pageCopy = computed(() => {
+      if (!tenantStore.selectedTenantId) {
+        return t("customers.copyWithoutTenant");
+      }
+
+      const tenantDisplayName = tenantStore.selectedTenant?.displayName || tenantStore.selectedTenantId;
+      return t("customers.copyWithTenant", { tenant: tenantDisplayName });
+    });
 
     onMounted(() => customersPage.loadData());
 
@@ -41,6 +49,7 @@ export default defineComponent({
       ...customersPage,
       getAmlStatusLabel: (status) => amlStatusLabels[status]?.() ?? status ?? t("common.notAvailable"),
       getKycStatusLabel: (status) => kycStatusLabels[status]?.() ?? status ?? t("common.notAvailable"),
+      pageCopy,
       t,
       tenantStore
     };

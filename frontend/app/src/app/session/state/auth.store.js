@@ -1,8 +1,10 @@
 import { defineStore } from "pinia";
 import * as authApi from "../infrastructure/auth.api";
 
-const AUTH_TOKEN_STORAGE_KEY = "lombardio.auth.token";
-const ORIGINAL_TOKEN_STORAGE_KEY = "lombardio.auth.original_token";
+function clearLegacyBrowserSessionArtifacts() {
+  localStorage.removeItem("lombardio.auth.token");
+  sessionStorage.removeItem("lombardio.auth.original_token");
+}
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -16,25 +18,26 @@ export const useAuthStore = defineStore("auth", {
   }),
 
   getters: {
-    isAuthenticated: (state) => !!state.token,
+    isAuthenticated: (state) => state.authenticated,
     currentUser: (state) => state.user,
-    accessToken: (state) => state.token,
+    delegationAvailable: () => authApi.isDelegationEnabled(),
+    mfaEnrollmentAvailable: () => authApi.isTotpEnabled(),
     canManagePlatform: (state) => state.user?.permissions?.includes("platform.tenants.read") || false,
     hasPermission: (state) => (permission) => state.user?.permissions?.includes(permission) || false,
     canImpersonate: (state) => () =>
-      state.user?.permissions?.some((permission) => permission.startsWith("sessions.impersonate.")) || false
+      authApi.isDelegationEnabled()
+      && (state.user?.permissions?.some((permission) => permission.startsWith("sessions.impersonate.")) || false)
   },
 
   actions: {
     async initialize() {
-      localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
-      sessionStorage.removeItem(ORIGINAL_TOKEN_STORAGE_KEY);
+      clearLegacyBrowserSessionArtifacts();
       this.clearSession();
 
       try {
         const session = await authApi.refreshSession();
         if (session?.status === "AUTHENTICATED") {
-          this.token = session.accessToken;
+          this.token = "";
           this.user = session.user;
           this.authenticated = true;
         }
@@ -55,8 +58,8 @@ export const useAuthStore = defineStore("auth", {
           return response;
         }
 
-        this.token = response.accessToken;
-        this.user = response.user ?? (await authApi.fetchCurrentUser(this.token));
+        this.token = "";
+        this.user = response.user ?? (await authApi.fetchCurrentUser());
         this.authenticated = true;
         this.pendingMfaChallengeId = null;
         this.pendingMfaMethods = [];
@@ -68,13 +71,13 @@ export const useAuthStore = defineStore("auth", {
     },
 
     async startDelegation(userId) {
-      const response = await authApi.createDelegation(userId, this.token);
+      const response = await authApi.createDelegation(userId);
       const originalToken = this.token;
 
       try {
         this.originalToken = originalToken;
-        this.token = response.accessToken;
-        this.user = await authApi.fetchCurrentUser(this.token);
+        this.token = response?.accessToken ?? "";
+        this.user = await authApi.fetchCurrentUser();
         this.authenticated = true;
       } catch (error) {
         this.originalToken = null;
@@ -87,18 +90,16 @@ export const useAuthStore = defineStore("auth", {
       const originalToken = this.originalToken;
       if (originalToken) {
         this.token = originalToken;
-        this.user = await authApi.fetchCurrentUser(this.token);
+        this.user = await authApi.fetchCurrentUser();
         this.originalToken = null;
       }
     },
 
     async logout() {
-      if (this.token) {
-        try {
-          await authApi.logout(this.token);
-        } catch {
-          // Ignore logout errors.
-        }
+      try {
+        await authApi.logout();
+      } catch {
+        // Ignore logout errors.
       }
 
       this.clearSession();
@@ -111,8 +112,8 @@ export const useAuthStore = defineStore("auth", {
       });
 
       if (response.status === "AUTHENTICATED") {
-        this.token = response.accessToken;
-        this.user = response.user ?? (await authApi.fetchCurrentUser(this.token));
+        this.token = "";
+        this.user = response.user ?? (await authApi.fetchCurrentUser());
         this.authenticated = true;
         this.pendingMfaChallengeId = null;
         this.pendingMfaMethods = [];
@@ -122,11 +123,11 @@ export const useAuthStore = defineStore("auth", {
     },
 
     async beginTotpEnrollment() {
-      return authApi.startTotpEnrollment(this.token);
+      return authApi.startTotpEnrollment();
     },
 
     async activateTotp(code) {
-      const response = await authApi.activateTotp({ code }, this.token);
+      const response = await authApi.activateTotp({ code });
       this.user = response;
       return response;
     },
@@ -138,8 +139,7 @@ export const useAuthStore = defineStore("auth", {
       this.token = "";
       this.pendingMfaChallengeId = null;
       this.pendingMfaMethods = [];
-      localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
-      sessionStorage.removeItem(ORIGINAL_TOKEN_STORAGE_KEY);
+      clearLegacyBrowserSessionArtifacts();
     },
 
     resetForTests() {
@@ -150,8 +150,7 @@ export const useAuthStore = defineStore("auth", {
       this.ready = false;
       this.pendingMfaChallengeId = null;
       this.pendingMfaMethods = [];
-      localStorage.clear();
-      sessionStorage.clear();
+      clearLegacyBrowserSessionArtifacts();
     }
   }
 });

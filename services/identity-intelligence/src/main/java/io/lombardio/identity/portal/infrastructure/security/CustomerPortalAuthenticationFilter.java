@@ -11,13 +11,14 @@
 package io.lombardio.identity.portal.infrastructure.security;
 
 import io.lombardio.identity.portal.application.CustomerPortalService;
+import io.lombardio.identity.config.CustomerPortalSessionProperties;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -27,9 +28,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class CustomerPortalAuthenticationFilter extends OncePerRequestFilter {
 
   private final CustomerPortalService customerPortalService;
+  private final CustomerPortalSessionProperties sessionProperties;
 
-  public CustomerPortalAuthenticationFilter(CustomerPortalService customerPortalService) {
+  public CustomerPortalAuthenticationFilter(
+      CustomerPortalService customerPortalService, CustomerPortalSessionProperties sessionProperties) {
     this.customerPortalService = customerPortalService;
+    this.sessionProperties = sessionProperties;
   }
 
   @Override
@@ -42,17 +46,27 @@ public class CustomerPortalAuthenticationFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
-    if (authorization != null && authorization.startsWith("Bearer ")) {
-      String tokenValue = authorization.substring(7);
-      AuthenticatedCustomerPortalUser principal = customerPortalService.authenticate(tokenValue);
-      if (principal != null) {
-        SecurityContextHolder.getContext()
-            .setAuthentication(
-                new UsernamePasswordAuthenticationToken(principal, tokenValue, List.of()));
-      }
+    String tokenValue = readSessionToken(request);
+    AuthenticatedCustomerPortalUser principal = customerPortalService.authenticate(tokenValue);
+    if (principal != null) {
+      SecurityContextHolder.getContext()
+          .setAuthentication(
+              new UsernamePasswordAuthenticationToken(principal, tokenValue, List.of()));
     }
 
     filterChain.doFilter(request, response);
+  }
+
+  private String readSessionToken(HttpServletRequest request) {
+    if (request.getCookies() == null) {
+      return null;
+    }
+
+    for (Cookie cookie : request.getCookies()) {
+      if (sessionProperties.cookieName().equals(cookie.getName())) {
+        return cookie.getValue();
+      }
+    }
+    return null;
   }
 }

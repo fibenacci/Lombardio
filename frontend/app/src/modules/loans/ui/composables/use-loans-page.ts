@@ -9,7 +9,7 @@ export function useLoansPage({
   t,
   tenantStore
 }: {
-  authStore: { token: string };
+  authStore: Record<string, unknown>;
   t: (key: string, params?: Record<string, unknown>) => string;
   tenantStore: { selectedTenantId: string };
 }) {
@@ -43,7 +43,7 @@ export function useLoansPage({
     }
 
     try {
-      loans.value = await loadLoans(tenantStore.selectedTenantId, authStore.token);
+      loans.value = await loadLoans(tenantStore.selectedTenantId);
     } catch (error) {
       errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
     } finally {

@@ -12,7 +12,10 @@ package io.lombardio.onlineauction.application;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.lombardio.onlineauction.api.BidderRegistrationResponse;
 import io.lombardio.onlineauction.api.CreateOnlineAuctionRequest;
 import io.lombardio.onlineauction.api.OnlineAuctionLotRequest;
 import io.lombardio.onlineauction.api.PlaceOnlineBidRequest;
@@ -31,10 +34,11 @@ class OnlineAuctionServiceTest {
   @Test
   void createsPublishesRegistersAndPlacesBid() {
     InMemoryOnlineAuctionRepository repository = new InMemoryOnlineAuctionRepository();
+    List<Object> publishedPayloads = new ArrayList<>();
     OnlineAuctionService service =
         new OnlineAuctionService(
             repository,
-            (channel, payload) -> {},
+            (channel, payload) -> publishedPayloads.add(payload),
             (subject, channel) -> new RealtimeSession("ws://localhost", channel, "conn", "sub"));
 
     var created =
@@ -68,6 +72,18 @@ class OnlineAuctionServiceTest {
                 "DE44500105175407324931"));
     assertFalse(registration.accessToken().isBlank());
     assertEquals("PENDING", registration.approvalStatus().name());
+    assertTrue(service.getPublicAuction("tenant-default", created.id()).registrations().isEmpty());
+    BidderRegistrationResponse publishedRegistration =
+        publishedPayloads.stream()
+            .filter(java.util.Map.class::isInstance)
+            .map(java.util.Map.class::cast)
+            .filter(item -> "bidder_registered".equals(item.get("type")))
+            .map(item -> item.get("payload"))
+            .filter(BidderRegistrationResponse.class::isInstance)
+            .map(BidderRegistrationResponse.class::cast)
+            .findFirst()
+            .orElseThrow();
+    assertNull(publishedRegistration.accessToken());
 
     var reviewed =
         service.reviewRegistration(
@@ -87,6 +103,7 @@ class OnlineAuctionServiceTest {
                 registration.accessToken(), firstLot.id(), new BigDecimal("110.00")));
     assertEquals(new BigDecimal("110.00"), bidResult.lots().get(0).currentBid());
     assertEquals(registration.paddleNumber(), bidResult.lots().get(0).highestBidderAlias());
+    assertTrue(bidResult.registrations().isEmpty());
   }
 
   private static final class InMemoryOnlineAuctionRepository implements OnlineAuctionRepository {

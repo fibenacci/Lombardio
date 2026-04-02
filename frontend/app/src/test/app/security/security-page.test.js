@@ -2,6 +2,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import SecurityView from "../../../app/security/ui/pages/security-page";
 import { useAuthStore } from "../../../app/session/state";
 import { setLocale } from "../../../app/i18n";
+import * as authApi from "../../../app/session/infrastructure/auth.api";
 
 describe("SecurityView", () => {
   let authStore;
@@ -12,6 +13,7 @@ describe("SecurityView", () => {
   });
 
   it("starts TOTP enrollment and activates it", async () => {
+    vi.spyOn(authApi, "isTotpEnabled").mockReturnValue(true);
     authStore.token = "token-123";
     authStore.user = {
       id: "user-admin",
@@ -43,6 +45,21 @@ describe("SecurityView", () => {
 
     expect(authStore.activateTotp).toHaveBeenCalledWith("123456");
     expect(wrapper.text()).toContain("Two-factor authentication enabled");
+  });
+
+  it("shows TOTP as unavailable when the backend capability is disabled", async () => {
+    vi.spyOn(authApi, "isTotpEnabled").mockReturnValue(false);
+    authStore.user = {
+      id: "user-admin",
+      email: "admin@lombardio.local",
+      displayName: "System Admin",
+      mfaEnabled: false
+    };
+
+    const wrapper = mount(SecurityView);
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Two-factor authentication is currently not available in this environment.");
   });
 
   it("updates the app language in settings", async () => {

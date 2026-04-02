@@ -76,15 +76,15 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/CustomerWriteRequest"
-  /api/v1/customer-portal/invitations/{token}:
-    get:
+  /api/v1/customer-portal/invitations/lookup:
+    post:
       summary: Load a customer portal invitation by token
-      parameters:
-        - name: token
-          in: path
-          required: true
-          schema:
-            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerPortalInvitationLookupRequest"
       responses:
         "200":
           description: Invitation payload
@@ -194,4 +194,11 @@ components:
         token:
           type: string
         password:
+          type: string
+    CustomerPortalInvitationLookupRequest:
+      type: object
+      required:
+        - token
+      properties:
+        token:
           type: string

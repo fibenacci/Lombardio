@@ -34,7 +34,7 @@
 
         <template #actions>
           <PButton icon="pi pi-plus" :label="t('auctions.actions.addLot')" severity="secondary" outlined type="button" @click="addLot" />
-          <PButton icon="pi pi-save" :label="t('auctions.actions.create')" type="submit" />
+          <PButton icon="pi pi-save" :label="t('auctions.actions.create')" type="submit" :disabled="!canCreateAuction()" />
         </template>
       </FormShell>
     </AdminPanel>
@@ -99,7 +99,7 @@
             <div class="action-stack">
               <PInputText v-model="bidForms[data.id].bidderDisplayName" type="text" :placeholder="t('auctions.placeholders.bidderDisplayName')" />
               <PInputText v-model="bidForms[data.id].amount" type="number" min="0.01" step="0.01" :placeholder="t('auctions.placeholders.bidAmount')" />
-              <PButton :label="t('auctions.actions.recordBid')" severity="secondary" outlined size="small" type="button" @click="submitBid(data.id)" />
+              <PButton :label="t('auctions.actions.recordBid')" severity="secondary" outlined size="small" type="button" :disabled="!canRecordBid(data.id)" @click="submitBid(data.id)" />
               <PInputText v-model="settleForms[data.id].hammerPrice" type="number" min="0.01" step="0.01" :placeholder="t('auctions.placeholders.hammerPrice')" />
               <PButton :label="t('auctions.actions.bookHammerPrice')" severity="secondary" outlined size="small" type="button" @click="submitSettlement(data.id)" />
             </div>

@@ -17,7 +17,6 @@ describe("LoansView", () => {
   });
 
   it("loads the chronological pledge register from the API layer", async () => {
-    authStore.token = "token-123";
     tenantStore.selectedTenantId = "tenant-default";
     tenantStore.tenants = [{ id: "tenant-default", displayName: "Default Tenant" }];
 
@@ -54,7 +53,7 @@ describe("LoansView", () => {
     });
     await flushPromises();
 
-    expect(originationApi.fetchLoans).toHaveBeenCalledWith("tenant-default", "token-123");
+    expect(originationApi.fetchLoans).toHaveBeenCalledWith("tenant-default");
     expect(wrapper.text()).toContain("Anna Becker");
     expect(wrapper.text()).toContain("PS-1001");
     expect(wrapper.text()).toContain("18 Mar 2030");

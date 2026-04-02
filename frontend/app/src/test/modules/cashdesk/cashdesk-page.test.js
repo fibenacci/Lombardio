@@ -16,7 +16,6 @@ describe("CashdeskView", () => {
   });
 
   it("loads tickets and calculates a redemption settlement", async () => {
-    authStore.token = "token-123";
     tenantStore.selectedTenantId = "tenant-default";
     tenantStore.tenants = [{ id: "tenant-default", displayName: "Default Tenant" }];
 
@@ -48,13 +47,12 @@ describe("CashdeskView", () => {
     await wrapper.find("button").trigger("click");
     await flushPromises();
 
-    expect(pawnTicketApi.fetchPawnTickets).toHaveBeenCalledWith("tenant-default", "token-123");
+    expect(pawnTicketApi.fetchPawnTickets).toHaveBeenCalledWith("tenant-default");
     expect(pawnTicketApi.redeemPawnTicket).toHaveBeenCalled();
     expect(wrapper.text()).toContain("196,50");
   });
 
   it("persists a cash transaction into the journal", async () => {
-    authStore.token = "token-123";
     tenantStore.selectedTenantId = "tenant-default";
     tenantStore.tenants = [{ id: "tenant-default", displayName: "Default Tenant" }];
 
@@ -110,8 +108,7 @@ describe("CashdeskView", () => {
         tenantId: "tenant-default",
         ticketNumber: "PS-1001",
         type: "REDEEM"
-      }),
-      "token-123"
+      })
     );
     expect(fetchTransactionsSpy).toHaveBeenCalledTimes(2);
     expect(wrapper.text()).toContain("Kassenjournal");

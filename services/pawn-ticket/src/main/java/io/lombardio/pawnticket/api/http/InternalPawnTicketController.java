@@ -14,7 +14,6 @@ import io.lombardio.pawnticket.application.service.PawnTicketDocumentService;
 import io.lombardio.pawnticket.application.service.PawnTicketPolicyService;
 import io.lombardio.pawnticket.domain.model.PawnTicket;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -22,7 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,27 +28,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/internal/v1/customers/{tenantId}/{customerId}/pawn-tickets")
 public class InternalPawnTicketController {
 
-  private static final String INTERNAL_AUTH_HEADER = "X-Internal-Service-Token";
-
   private final PawnTicketPolicyService pawnTicketPolicyService;
   private final PawnTicketDocumentService pawnTicketDocumentService;
-  private final String internalServiceToken;
 
   public InternalPawnTicketController(
       PawnTicketPolicyService pawnTicketPolicyService,
-      PawnTicketDocumentService pawnTicketDocumentService,
-      @Value("${internal.service-token:dev-internal-token}") String internalServiceToken) {
+      PawnTicketDocumentService pawnTicketDocumentService) {
     this.pawnTicketPolicyService = pawnTicketPolicyService;
     this.pawnTicketDocumentService = pawnTicketDocumentService;
-    this.internalServiceToken = internalServiceToken;
   }
 
   @GetMapping
   public List<PawnTicketOverviewResponse> listCustomerTickets(
-      @RequestHeader(name = INTERNAL_AUTH_HEADER, required = false) String requestToken,
       @PathVariable String tenantId,
       @PathVariable String customerId) {
-    requireInternalToken(requestToken);
     return pawnTicketPolicyService.listIssuedTickets(tenantId, customerId).stream()
         .map(this::toOverview)
         .toList();
@@ -58,11 +49,9 @@ public class InternalPawnTicketController {
 
   @GetMapping(value = "/{ticketNumber}/document", produces = MediaType.APPLICATION_PDF_VALUE)
   public ResponseEntity<byte[]> document(
-      @RequestHeader(name = INTERNAL_AUTH_HEADER, required = false) String requestToken,
       @PathVariable String tenantId,
       @PathVariable String customerId,
       @PathVariable String ticketNumber) {
-    requireInternalToken(requestToken);
     PawnTicket pawnTicket = pawnTicketPolicyService.getIssuedTicket(ticketNumber);
     if (!tenantId.equals(pawnTicket.tenantId()) || !customerId.equals(pawnTicket.customerId())) {
       throw new AccessDeniedException("Ticket access denied");
@@ -91,11 +80,5 @@ public class InternalPawnTicketController {
         pawnTicket.loanAmount(),
         pawnTicket.totalRepaymentAmount(),
         pawnTicket.positions().size());
-  }
-
-  private void requireInternalToken(String requestToken) {
-    if (requestToken == null || !requestToken.equals(internalServiceToken)) {
-      throw new AccessDeniedException("Internal service token required");
-    }
   }
 }

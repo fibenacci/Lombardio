@@ -5,7 +5,13 @@ metadata:
 data:
   PLATFORM_DB_URL: jdbc:postgresql://postgres:5432/lombardio_identity
   PLATFORM_DB_USERNAME: lombardio
----
+  KEYCLOAK_OPERATOR_CLIENT_ID: lombardio-app
+  APP_OPERATOR_SESSION_COOKIE_NAME: lombardio_operator_session
+  APP_OPERATOR_SESSION_COOKIE_PATH: /
+  APP_OPERATOR_SESSION_COOKIE_SAME_SITE: Lax
+  APP_OPERATOR_SESSION_COOKIE_MAX_AGE_SECONDS: "2592000"
+  APP_OPERATOR_SESSION_COOKIE_SECURE: "false"
+--- 
 apiVersion: v1
 kind: Service
 metadata:

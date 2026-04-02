@@ -3,11 +3,7 @@
     :eyebrow="t('users.eyebrow')"
     :title="t('users.title')"
     icon="pi pi-users"
-    :copy="
-      tenantStore.selectedTenantId
-        ? t('users.copyWithTenant', { tenant: tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId })
-        : t('users.copyWithoutTenant')
-    "
+    :copy="pageCopy"
   />
 
   <div class="panel-grid">

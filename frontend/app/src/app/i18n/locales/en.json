@@ -78,7 +78,8 @@
     "confirmPassword": "Confirm password",
     "submit": "Activate access",
     "submitting": "Activating access...",
-    "passwordMismatch": "The passwords do not match."
+    "passwordMismatch": "The passwords do not match.",
+    "invalidLink": "The activation link is invalid or incomplete."
   },
   "customerPortalHome": {
     "eyebrow": "My pawn ticket",
@@ -241,6 +242,26 @@
       "delegatedSessionStartedToast": "You are now acting with the selected user context."
     }
   },
+  "security": {
+    "eyebrow": "Security",
+    "title": "Security settings",
+    "copy": "Manage authentication and personal security preferences.",
+    "totpStatusTitle": "Two-factor authentication",
+    "totpStatusSubtitle": "Strengthen sign-in with an additional one-time code.",
+    "startSetup": "Start setup",
+    "activateTitle": "Activate TOTP",
+    "activateSubtitle": "Use the secret or otpauth URI in your authenticator app and confirm with a code.",
+    "secret": "Secret",
+    "otpauthUri": "otpauth URI",
+    "code": "Code",
+    "enableTotp": "Enable TOTP",
+    "settingsTitle": "Preferences",
+    "settingsSubtitle": "Personal application settings.",
+    "enrollmentFailed": "TOTP enrollment could not be started.",
+    "activationFailed": "TOTP could not be activated.",
+    "activationSuccess": "Two-factor authentication enabled",
+    "notAvailable": "Two-factor authentication is currently not available in this environment."
+  },
   "tenants": {
     "eyebrow": "Platform",
     "title": "Tenants",
@@ -372,12 +393,18 @@
     "messages": {
       "createdTitle": "Auction created",
       "createdFallback": "Auction draft created.",
+      "invalidCreateForm": "Please complete title, location and all lots with valid values.",
       "announcementSavedTitle": "Announcement saved",
       "announcementSavedToast": "The public auction notice was updated.",
       "openedTitle": "Auction opened",
       "openedToast": "{title} is now open.",
       "closedTitle": "Auction closed",
       "closedToast": "{title} was closed.",
+      "auctionMustBeLive": "Bids can only be recorded once the auction is live.",
+      "lotMustBeOpen": "Bids can only be recorded for open lots.",
+      "bidderRequired": "Please enter the bidder name first.",
+      "bidAmountRequired": "Please enter a valid bid greater than 0.",
+      "bidMustExceedCurrent": "The bid must be higher than the current bid.",
       "bidRecordedTitle": "Bid recorded",
       "bidRecordedToast": "The bid was added to the selected lot.",
       "lotSettledTitle": "Lot settled",
@@ -464,6 +491,7 @@
     "messages": {
       "createdTitle": "Online auction created",
       "createdFallback": "Online auction draft created.",
+      "invalidCreateForm": "Please complete title, slug, minimum increment, countdown and all lots with valid values.",
       "bidderApprovedTitle": "Bidder approved",
       "bidderRejectedTitle": "Bidder rejected",
       "registrationSavedToast": "Registration review was saved.",
@@ -522,29 +550,9 @@
       }
     },
     "messages": {
-      "registerFirst": "Please register first."
+      "registerFirst": "Please register first.",
+      "invalidBid": "Please select a lot and enter a valid bid greater than 0."
     }
-  },
-  "security": {
-    "eyebrow": "Security",
-    "title": "Multi-factor authentication",
-    "copy": "Protect privileged access with TOTP today. WebAuthn and YubiKey support can build on this flow next.",
-    "totpStatusTitle": "TOTP status",
-    "totpStatusSubtitle": "Use an authenticator app as a second factor during login.",
-    "totpActive": "TOTP is active for this account.",
-    "totpInactive": "TOTP is not active yet.",
-    "startSetup": "Start TOTP setup",
-    "activateTitle": "Activate TOTP",
-    "activateSubtitle": "Scan or copy the secret into your authenticator app, then confirm one code.",
-    "secret": "Secret",
-    "otpauthUri": "otpauth URI",
-    "code": "Authenticator code",
-    "enableTotp": "Enable TOTP",
-    "enrollmentFailed": "Enrollment failed",
-    "activationFailed": "Activation failed",
-    "activationSuccess": "Two-factor authentication enabled",
-    "settingsTitle": "App settings",
-    "settingsSubtitle": "Configure personal UI and language preferences for this browser."
   },
   "customers": {
     "eyebrow": "CRM",
@@ -917,6 +925,7 @@
       "reportingFailed": "Analytics could not be loaded",
       "partialDataLoaded": "Some business services are not ready yet. The view was loaded with partial data.",
       "missingRequiredFields": "Please complete the customer, required position fields and a valid term.",
+      "documentImagesRequired": "Please upload front and back side of the document first.",
       "loanCreated": "Origination captured and pawn ticket created"
     }
   }

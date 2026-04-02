@@ -1,39 +1,39 @@
 import { BASE_URLS, createApiClient } from "../../../../shared/kernel/http/runtime-api-client";
 
-const apiClient = createApiClient(BASE_URLS.pawnTicket);
+const apiClient = createApiClient(BASE_URLS.platform);
 
-export function fetchPawnTicketQuote(payload, token) {
-  return apiClient.post("/api/v1/pawn-tickets/quote", payload, token);
+export function fetchPawnTicketQuote(payload) {
+  return apiClient.post("/api/v1/platform/operator/pawn-tickets/quote", payload);
 }
 
-export function fetchPawnTickets(tenantId, token) {
-  return apiClient.get(`/api/v1/tenants/${tenantId}/pawn-tickets`, token);
+export function fetchPawnTickets(tenantId) {
+  return apiClient.get(`/api/v1/platform/operator/tenants/${tenantId}/pawn-tickets`);
 }
 
-export function fetchPawnTicketDocument(ticketNumber, token) {
-  return apiClient.getBlob(`/api/v1/pawn-tickets/${encodeURIComponent(ticketNumber)}/document`, token);
+export function fetchPawnTicketDocument(ticketNumber) {
+  return apiClient.getBlob(`/api/v1/platform/operator/pawn-tickets/${encodeURIComponent(ticketNumber)}/document`);
 }
 
-export function fetchPawnTicketLabels(ticketNumber, token) {
-  return apiClient.getBlob(`/api/v1/pawn-tickets/${encodeURIComponent(ticketNumber)}/labels`, token);
+export function fetchPawnTicketLabels(ticketNumber) {
+  return apiClient.getBlob(`/api/v1/platform/operator/pawn-tickets/${encodeURIComponent(ticketNumber)}/labels`);
 }
 
-export function extendPawnTicket(payload, token) {
-  return apiClient.post("/api/v1/pawn-tickets/extend", payload, token);
+export function extendPawnTicket(payload) {
+  return apiClient.post("/api/v1/platform/operator/pawn-tickets/extend", payload);
 }
 
-export function redeemPawnTicket(payload, token) {
-  return apiClient.post("/api/v1/pawn-tickets/redeem", payload, token);
+export function redeemPawnTicket(payload) {
+  return apiClient.post("/api/v1/platform/operator/pawn-tickets/redeem", payload);
 }
 
-export function calculatePartialRepayment(payload, token) {
-  return apiClient.post("/api/v1/pawn-tickets/partial-repayment", payload, token);
+export function calculatePartialRepayment(payload) {
+  return apiClient.post("/api/v1/platform/operator/pawn-tickets/partial-repayment", payload);
 }
 
-export function executeCashTransaction(payload, token) {
-  return apiClient.post("/api/v1/cash-transactions", payload, token);
+export function executeCashTransaction(payload) {
+  return apiClient.post("/api/v1/platform/operator/cash-transactions", payload);
 }
 
-export function fetchCashTransactions(tenantId, token) {
-  return apiClient.get(`/api/v1/tenants/${tenantId}/cash-transactions`, token);
+export function fetchCashTransactions(tenantId) {
+  return apiClient.get(`/api/v1/platform/operator/tenants/${tenantId}/cash-transactions`);
 }

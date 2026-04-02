@@ -13,4 +13,15 @@ package io.lombardio.platform.integration.api;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "integration.outbox")
-public record IntegrationOutboxProperties(String accessToken) {}
+public record IntegrationOutboxProperties(String accessToken) {
+
+  public IntegrationOutboxProperties {
+    if (accessToken == null
+        || accessToken.isBlank()
+        || "change-me-platform-outbox-token".equals(accessToken)
+        || "internal-secret-token".equals(accessToken)) {
+      throw new IllegalArgumentException(
+          "integration.outbox.access-token must be configured with a secure value");
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { reactive, ref } from "vue";
+import { getRequestErrorMessage } from "../../../../shared/kernel/errors/request-error";
 
 export function useCustomerPortalLoginPage({
   customerPortalStore,
@@ -23,7 +24,7 @@ export function useCustomerPortalLoginPage({
       await customerPortalStore.login(form.email, form.password);
       await router.push({ name: "customer-portal-home" });
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
+      errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
     } finally {
       isSubmitting.value = false;
     }

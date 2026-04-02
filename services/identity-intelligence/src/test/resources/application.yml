@@ -39,6 +39,14 @@ customer:
 
 customer-portal:
   public-base-url: http://localhost:5173/portal
+  session:
+    cookie-name: lombardio_customer_portal_session
+    cookie-path: /
+    cookie-secure: false
+    cookie-same-site: Lax
+    cookie-max-age-seconds: 2592000
+    session-ttl-seconds: 2592000
+    cleanup-fixed-delay-ms: 3600000
 
 app:
   cors:

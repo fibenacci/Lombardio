@@ -10,10 +10,16 @@
  */
 package io.lombardio.identity.portal.infrastructure.persistence;
 
+import java.time.Instant;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CustomerPortalSessionRepository
     extends JpaRepository<CustomerPortalSessionEntity, String> {
 
+  Optional<CustomerPortalSessionEntity> findByTokenHash(String tokenHash);
+
   void deleteByCustomerId(String customerId);
+
+  void deleteByExpiresAtBefore(Instant instant);
 }

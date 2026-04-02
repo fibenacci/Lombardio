@@ -35,6 +35,14 @@ customer:
 
 customer-portal:
   public-base-url: ${CUSTOMER_PORTAL_PUBLIC_BASE_URL:http://localhost:5173/portal}
+  session:
+    cookie-name: ${CUSTOMER_PORTAL_SESSION_COOKIE_NAME:lombardio_customer_portal_session}
+    cookie-path: ${CUSTOMER_PORTAL_SESSION_COOKIE_PATH:/}
+    cookie-secure: ${CUSTOMER_PORTAL_SESSION_COOKIE_SECURE:false}
+    cookie-same-site: ${CUSTOMER_PORTAL_SESSION_COOKIE_SAME_SITE:Lax}
+    cookie-max-age-seconds: ${CUSTOMER_PORTAL_SESSION_COOKIE_MAX_AGE_SECONDS:2592000}
+    session-ttl-seconds: ${CUSTOMER_PORTAL_SESSION_TTL_SECONDS:2592000}
+    cleanup-fixed-delay-ms: ${CUSTOMER_PORTAL_SESSION_CLEANUP_FIXED_DELAY_MS:3600000}
 
 app:
   cors:

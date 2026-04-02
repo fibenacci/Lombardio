@@ -3,11 +3,7 @@
     :eyebrow="t('branches.eyebrow')"
     :title="t('branches.title')"
     icon="pi pi-sitemap"
-    :copy="
-      tenantStore.selectedTenantId
-        ? t('branches.copyWithTenant', { tenant: tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId })
-        : t('branches.copyWithoutTenant')
-    "
+    :copy="pageCopy"
   />
 
   <div class="panel-grid">

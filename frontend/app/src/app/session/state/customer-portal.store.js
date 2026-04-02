@@ -1,67 +1,76 @@
 import { defineStore } from "pinia";
 import {
   acceptPortalInvitation,
+  fetchCustomerPortalMe,
+  logoutCustomerPortal,
+  refreshCustomerPortalSession,
   loginCustomerPortal
 } from "../../../modules/customer-portal/infrastructure/api/customer-portal.api";
 
-const TOKEN_STORAGE_KEY = "lombardio.customer-portal.token";
-
 export const useCustomerPortalStore = defineStore("customerPortal", {
   state: () => ({
-    token: "",
     customer: null,
     ready: false
   }),
 
   getters: {
-    isAuthenticated: (state) => Boolean(state.token && state.customer)
+    isAuthenticated: (state) => Boolean(state.customer)
   },
 
   actions: {
     async initialize() {
-      window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+      this.clearSession();
+
+      try {
+        const session = await refreshCustomerPortalSession();
+        if (session?.customer) {
+          this.customer = session.customer;
+        }
+      } catch {
+        this.clearSession();
+      }
+
       this.ready = true;
     },
 
     async login(email, password) {
       const response = await loginCustomerPortal({ email, password });
-      this.token = response.accessToken;
       this.customer = response.customer;
       return response;
     },
 
     async acceptInvitation(token, password) {
       const response = await acceptPortalInvitation({ token, password });
-      this.token = response.accessToken;
       this.customer = response.customer;
       return response;
     },
 
     async refreshCustomer() {
-      if (!this.token) {
+      if (!this.customer) {
         this.customer = null;
         return null;
       }
 
-      this.customer = await fetchCustomerPortalMe(this.token);
+      this.customer = await fetchCustomerPortalMe();
       return this.customer;
     },
 
-    logout() {
+    async logout() {
+      try {
+        await logoutCustomerPortal();
+      } catch {
+        // Ignore logout errors.
+      }
       this.clearSession();
     },
 
     clearSession() {
-      this.token = "";
       this.customer = null;
-      window.localStorage.removeItem(TOKEN_STORAGE_KEY);
     },
 
     resetForTests() {
-      this.token = "";
       this.customer = null;
       this.ready = false;
-      window.localStorage.removeItem(TOKEN_STORAGE_KEY);
     }
   }
 });

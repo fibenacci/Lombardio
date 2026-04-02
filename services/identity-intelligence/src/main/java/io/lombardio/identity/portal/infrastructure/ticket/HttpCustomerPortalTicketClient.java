@@ -30,9 +30,9 @@ public class HttpCustomerPortalTicketClient implements CustomerPortalTicketClien
   public HttpCustomerPortalTicketClient(
       RestClient.Builder restClientBuilder,
       @Value("${pawn-ticket.base-url:http://localhost:8085}") String pawnTicketBaseUrl,
-      @Value("${customer.internal-service-token:dev-internal-token}") String internalServiceToken) {
+      @Value("${customer.internal-service-token}") String internalServiceToken) {
     this.restClient = restClientBuilder.baseUrl(pawnTicketBaseUrl).build();
-    this.internalServiceToken = internalServiceToken;
+    this.internalServiceToken = requireSecureToken(internalServiceToken);
   }
 
   @Override
@@ -71,5 +71,16 @@ public class HttpCustomerPortalTicketClient implements CustomerPortalTicketClien
     } catch (RestClientException exception) {
       throw new IllegalStateException("Pawn ticket service unavailable", exception);
     }
+  }
+
+  private static String requireSecureToken(String token) {
+    if (token == null
+        || token.isBlank()
+        || "REPLACE_WITH_SECURE_TOKEN".equals(token)
+        || "dev-internal-token".equals(token)) {
+      throw new IllegalStateException(
+          "customer.internal-service-token must be configured with a secure value");
+    }
+    return token;
   }
 }

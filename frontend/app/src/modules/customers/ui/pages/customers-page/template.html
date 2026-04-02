@@ -3,11 +3,7 @@
     :eyebrow="t('customers.eyebrow')"
     :title="t('customers.title')"
     icon="pi pi-users"
-    :copy="
-      tenantStore.selectedTenantId
-        ? t('customers.copyWithTenant', { tenant: tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId })
-        : t('customers.copyWithoutTenant')
-    "
+    :copy="pageCopy"
   />
 
   <AdminPanel :title="t('customers.overviewTitle')" :subtitle="isLoading ? t('common.loading') : t('customers.count', { count: customers.length })">

@@ -1,10 +1,21 @@
 import { computed, ref } from "vue";
 import { getRequestErrorMessage } from "../../../../shared/kernel/errors/request-error";
+import { openBlobInWindow } from "../../../../shared/kernel/utils/blob-window";
 import { createLoadPawnTicketsService } from "../../application/services/load-pawn-tickets.service";
 import type { PawnTicketModel } from "../../domain/model/pawn-ticket";
 import { createHttpPawnTicketsAdapter } from "../../infrastructure/adapters/http-pawn-tickets.adapter";
 
-function resolvePawnTicketStatus(ticket: Record<string, any>, now = new Date()) {
+type ResolvablePawnTicket = PawnTicketModel & {
+  status?: string;
+  redeemedAt?: string | null;
+  settledAt?: string | null;
+  auctionedAt?: string | null;
+  extendedAt?: string | null;
+  dueDate?: string | null;
+  earliestAuctionDate?: string | null;
+};
+
+function resolvePawnTicketStatus(ticket: ResolvablePawnTicket, now = new Date()) {
   if (typeof ticket.status === "string" && ticket.status) {
     return ticket.status;
   }
@@ -41,7 +52,7 @@ export function usePawnTicketsPage({
   tenantStore,
   toast
 }: {
-  authStore: { token: string };
+  authStore: Record<string, unknown>;
   t: (key: string, params?: Record<string, unknown>) => string;
   tenantStore: { selectedTenantId: string };
   toast: { info: (title: string, message: string) => void };
@@ -81,7 +92,7 @@ export function usePawnTicketsPage({
     }
 
     try {
-      tickets.value = await loadPawnTickets(tenantStore.selectedTenantId, authStore.token);
+      tickets.value = await loadPawnTickets(tenantStore.selectedTenantId);
     } catch (error) {
       errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
     } finally {
@@ -92,26 +103,14 @@ export function usePawnTicketsPage({
   async function openBlobDocument(
     ticketNumber: string,
     printMode: boolean,
-    fetchBlob: (ticketNumber: string, token: string) => Promise<Blob>,
+    fetchBlob: (ticketNumber: string) => Promise<Blob>,
     titleKey: string,
     messageKey: string
   ) {
     try {
       isDownloading.value = true;
-      const blob = await fetchBlob(ticketNumber, authStore.token);
-      const documentUrl = URL.createObjectURL(blob);
-      const popup = window.open(documentUrl, "_blank", "noopener,noreferrer");
-
-      if (printMode && popup) {
-        popup.addEventListener(
-          "load",
-          () => {
-            popup.focus();
-            popup.print();
-          },
-          { once: true }
-        );
-      }
+      const blob = await fetchBlob(ticketNumber);
+      openBlobInWindow(blob, { printMode });
 
       toast.info(t(titleKey), t(messageKey, { ticketNumber }));
     } catch (error) {

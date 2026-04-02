@@ -42,11 +42,19 @@ app:
     admin-password: ${KEYCLOAK_ADMIN_PASSWORD:admin_change_me}
     operator-client-id: ${KEYCLOAK_OPERATOR_CLIENT_ID:lombardio-app}
   operator-session:
-    refresh-cookie-name: ${APP_OPERATOR_SESSION_REFRESH_COOKIE_NAME:lombardio_operator_refresh}
-    refresh-cookie-path: ${APP_OPERATOR_SESSION_REFRESH_COOKIE_PATH:/}
-    refresh-cookie-secure: ${APP_OPERATOR_SESSION_REFRESH_COOKIE_SECURE:false}
-    refresh-cookie-same-site: ${APP_OPERATOR_SESSION_REFRESH_COOKIE_SAME_SITE:Lax}
-    refresh-cookie-max-age-seconds: ${APP_OPERATOR_SESSION_REFRESH_COOKIE_MAX_AGE_SECONDS:2592000}
+    cookie-name: ${APP_OPERATOR_SESSION_COOKIE_NAME:lombardio_operator_session}
+    cookie-path: ${APP_OPERATOR_SESSION_COOKIE_PATH:/}
+    cookie-secure: ${APP_OPERATOR_SESSION_COOKIE_SECURE:false}
+    cookie-same-site: ${APP_OPERATOR_SESSION_COOKIE_SAME_SITE:Lax}
+    cookie-max-age-seconds: ${APP_OPERATOR_SESSION_COOKIE_MAX_AGE_SECONDS:2592000}
+    encryption-key: ${APP_OPERATOR_SESSION_ENCRYPTION_KEY}
+  operator-bff:
+    identity-base-url: ${APP_OPERATOR_BFF_IDENTITY_BASE_URL:http://localhost:8084}
+    origination-base-url: ${APP_OPERATOR_BFF_ORIGINATION_BASE_URL:http://localhost:8083}
+    pawn-ticket-base-url: ${APP_OPERATOR_BFF_PAWN_TICKET_BASE_URL:http://localhost:8085}
+    auction-base-url: ${APP_OPERATOR_BFF_AUCTION_BASE_URL:http://localhost:8089}
+    online-auction-base-url: ${APP_OPERATOR_BFF_ONLINE_AUCTION_BASE_URL:http://localhost:8090}
+    reporting-base-url: ${APP_OPERATOR_BFF_REPORTING_BASE_URL:http://localhost:8091}
   cors:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}
     allowed-methods: ${APP_CORS_ALLOWED_METHODS}

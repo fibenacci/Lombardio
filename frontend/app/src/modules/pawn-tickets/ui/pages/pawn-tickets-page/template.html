@@ -3,11 +3,7 @@
     :eyebrow="t('pawnTickets.eyebrow')"
     :title="t('pawnTickets.title')"
     icon="pi pi-ticket"
-    :copy="
-      tenantStore.selectedTenantId
-        ? t('pawnTickets.copyWithTenant', { tenant: tenantStore.selectedTenant?.displayName ?? tenantStore.selectedTenantId })
-        : t('pawnTickets.copyWithoutTenant')
-    "
+    :copy="pageCopy"
   />
 
   <AdminPanel :title="t('pawnTickets.overviewTitle')" :subtitle="isLoading ? t('common.loading') : t('pawnTickets.count', { count: filteredTickets.length })">

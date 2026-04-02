@@ -48,6 +48,12 @@ terraform apply
 
 The base manifests no longer store runtime credentials inline.
 
+Security-relevant runtime defaults are split deliberately:
+
+- the `base/` manifests keep local-kind-compatible cookie settings
+- the `staging/` and `production/` overlays patch operator and customer-portal session cookies to `secure=true`
+- frontend capability flags for delegation and TOTP stay `false` until matching backend support exists
+
 ## Overlays
 
 Environment-specific overlays live in:
@@ -64,6 +70,15 @@ They are designed to be driven by GitHub Actions with image tag replacement at d
 - Replace the placeholder image names before applying in shared environments.
 - Store kubeconfigs and registry access only in GitHub environment secrets, not in the repository.
 - Keep runtime secrets out of committed defaults. For local Docker Compose, copy `.env.example` to `.env` and fill in the values there.
+- For shared environments, do not rely on application fallback values for session cookies. Set and review:
+  - `APP_OPERATOR_SESSION_COOKIE_SECURE`
+  - `APP_OPERATOR_SESSION_COOKIE_SAME_SITE`
+  - `APP_OPERATOR_SESSION_COOKIE_MAX_AGE_SECONDS`
+  - `APP_OPERATOR_SESSION_ENCRYPTION_KEY`
+  - `CUSTOMER_PORTAL_SESSION_COOKIE_SECURE`
+  - `CUSTOMER_PORTAL_SESSION_COOKIE_SAME_SITE`
+  - `CUSTOMER_PORTAL_SESSION_COOKIE_MAX_AGE_SECONDS`
+  - `CUSTOMER_PORTAL_SESSION_TTL_SECONDS`
 - The expected Vault paths for Kubernetes runtime secrets currently include:
   - `lombardio/postgres`
   - `lombardio/identity-access`

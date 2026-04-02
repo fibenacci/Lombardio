@@ -10,8 +10,9 @@
         <PDivider />
         <PMessage v-if="errorMessage" severity="error" variant="simple">{{ errorMessage }}</PMessage>
         <PMessage v-if="successMessage" severity="success" variant="simple">{{ successMessage }}</PMessage>
+        <PMessage v-if="!totpAvailable" severity="warn" variant="simple">{{ t("security.notAvailable") }}</PMessage>
         <PButton
-          v-if="!authStore.user?.mfaEnabled"
+          v-if="totpAvailable && !authStore.user?.mfaEnabled"
           :disabled="isSubmitting"
           icon="pi pi-shield"
           :label="t('security.startSetup')"

@@ -5,6 +5,20 @@ resources:
 
 patches:
 - patch: |-
+    - op: add
+      path: /data/APP_OPERATOR_SESSION_COOKIE_SECURE
+      value: "true"
+  target:
+    kind: ConfigMap
+    name: platform-config
+- patch: |-
+    - op: add
+      path: /data/CUSTOMER_PORTAL_SESSION_COOKIE_SECURE
+      value: "true"
+  target:
+    kind: ConfigMap
+    name: customer-config
+- patch: |-
     - op: replace
       path: /spec/template/spec/containers/0/env
       value:
@@ -30,6 +44,10 @@ patches:
           value: https://reporting.staging.lombardio.example
         - name: CENTRIFUGO_WS_URL
           value: wss://realtime.staging.lombardio.example/connection/websocket
+        - name: VITE_OPERATOR_DELEGATION_ENABLED
+          value: "false"
+        - name: VITE_OPERATOR_TOTP_ENABLED
+          value: "false"
   target:
     kind: Deployment
     name: frontend

@@ -78,7 +78,8 @@
     "confirmPassword": "Passwort bestätigen",
     "submit": "Zugang aktivieren",
     "submitting": "Aktivierung läuft...",
-    "passwordMismatch": "Die Passwörter stimmen nicht überein."
+    "passwordMismatch": "Die Passwörter stimmen nicht überein.",
+    "invalidLink": "Der Aktivierungslink ist ungültig oder unvollständig."
   },
   "customerPortalHome": {
     "eyebrow": "Mein Pfandschein",
@@ -241,6 +242,26 @@
       "delegatedSessionStartedToast": "Du arbeitest jetzt im Kontext des ausgewählten Benutzers."
     }
   },
+  "security": {
+    "eyebrow": "Sicherheit",
+    "title": "Sicherheitseinstellungen",
+    "copy": "Authentisierung und persönliche Sicherheitseinstellungen verwalten.",
+    "totpStatusTitle": "Zwei-Faktor-Authentisierung",
+    "totpStatusSubtitle": "Die Anmeldung mit einem zusätzlichen Einmalcode absichern.",
+    "startSetup": "Einrichtung starten",
+    "activateTitle": "TOTP aktivieren",
+    "activateSubtitle": "Den Secret oder die otpauth-URI in der Authenticator-App verwenden und mit einem Code bestätigen.",
+    "secret": "Secret",
+    "otpauthUri": "otpauth-URI",
+    "code": "Code",
+    "enableTotp": "TOTP aktivieren",
+    "settingsTitle": "Einstellungen",
+    "settingsSubtitle": "Persönliche Anwendungseinstellungen.",
+    "enrollmentFailed": "Die TOTP-Einrichtung konnte nicht gestartet werden.",
+    "activationFailed": "TOTP konnte nicht aktiviert werden.",
+    "activationSuccess": "Zwei-Faktor-Authentisierung aktiviert",
+    "notAvailable": "Die Zwei-Faktor-Authentisierung ist in dieser Umgebung derzeit nicht verfügbar."
+  },
   "tenants": {
     "eyebrow": "Plattform",
     "title": "Mandanten",
@@ -372,12 +393,18 @@
     "messages": {
       "createdTitle": "Auktion angelegt",
       "createdFallback": "Auktionsentwurf angelegt.",
+      "invalidCreateForm": "Bitte Titel, Ort und alle Posten mit gültigen Werten vollständig erfassen.",
       "announcementSavedTitle": "Bekanntmachung gespeichert",
       "announcementSavedToast": "Die öffentliche Bekanntmachung wurde aktualisiert.",
       "openedTitle": "Auktion geöffnet",
       "openedToast": "{title} ist jetzt geöffnet.",
       "closedTitle": "Auktion geschlossen",
       "closedToast": "{title} wurde geschlossen.",
+      "auctionMustBeLive": "Gebote können erst erfasst werden, wenn die Auktion live ist.",
+      "lotMustBeOpen": "Gebote können nur auf offene Posten erfasst werden.",
+      "bidderRequired": "Bitte zuerst den Bieternamen erfassen.",
+      "bidAmountRequired": "Bitte ein gültiges Gebot größer als 0 erfassen.",
+      "bidMustExceedCurrent": "Das Gebot muss über dem aktuellen Gebot liegen.",
       "bidRecordedTitle": "Gebot erfasst",
       "bidRecordedToast": "Das Gebot wurde dem ausgewählten Posten hinzugefügt.",
       "lotSettledTitle": "Posten verbucht",
@@ -464,6 +491,7 @@
     "messages": {
       "createdTitle": "Online-Auktion angelegt",
       "createdFallback": "Online-Auktionsentwurf angelegt.",
+      "invalidCreateForm": "Bitte Titel, Slug, Mindestschritt, Countdown und alle Posten mit gültigen Werten vollständig erfassen.",
       "bidderApprovedTitle": "Bieter freigegeben",
       "bidderRejectedTitle": "Bieter abgelehnt",
       "registrationSavedToast": "Die Registrierungsprüfung wurde gespeichert.",
@@ -522,29 +550,9 @@
       }
     },
     "messages": {
-      "registerFirst": "Bitte zuerst registrieren."
+      "registerFirst": "Bitte zuerst registrieren.",
+      "invalidBid": "Bitte wählen Sie einen Posten und geben Sie ein gültiges Gebot größer als 0 ein."
     }
-  },
-  "security": {
-    "eyebrow": "Sicherheit",
-    "title": "Multi-Faktor-Authentifizierung",
-    "copy": "Privilegierte Zugriffe heute mit TOTP absichern. WebAuthn- und YubiKey-Support baut auf diesem Flow auf.",
-    "totpStatusTitle": "TOTP-Status",
-    "totpStatusSubtitle": "Eine Authenticator-App als zweiten Faktor beim Login verwenden.",
-    "totpActive": "TOTP ist für dieses Konto aktiv.",
-    "totpInactive": "TOTP ist noch nicht aktiv.",
-    "startSetup": "TOTP-Einrichtung starten",
-    "activateTitle": "TOTP aktivieren",
-    "activateSubtitle": "Secret oder URI in die Authenticator-App übernehmen und anschließend einen Code bestätigen.",
-    "secret": "Secret",
-    "otpauthUri": "otpauth-URI",
-    "code": "Authenticator-Code",
-    "enableTotp": "TOTP aktivieren",
-    "enrollmentFailed": "Einrichtung fehlgeschlagen",
-    "activationFailed": "Aktivierung fehlgeschlagen",
-    "activationSuccess": "Zwei-Faktor-Authentifizierung aktiviert",
-    "settingsTitle": "App-Einstellungen",
-    "settingsSubtitle": "Persönliche Oberfläche und Sprache für diesen Browser festlegen."
   },
   "customers": {
     "eyebrow": "CRM",
@@ -918,6 +926,7 @@
       "reportingFailed": "Auswertungen konnten nicht geladen werden",
       "partialDataLoaded": "Einige Fachservices sind noch nicht bereit. Die Ansicht wurde mit Teildaten geladen.",
       "missingRequiredFields": "Bitte Kunde, Pflichtfelder der Positionen und eine gültige Laufzeit vollständig erfassen.",
+      "documentImagesRequired": "Bitte Vorder- und Rückseite des Dokuments zuerst hinterlegen.",
       "loanCreated": "Beleihung erfasst und Pfandschein erzeugt"
     }
   }

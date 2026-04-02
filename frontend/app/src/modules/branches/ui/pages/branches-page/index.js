@@ -25,16 +25,29 @@ export default defineComponent({
       displayName: "",
       status: "ACTIVE"
     });
-    const canManageBranches = computed(
-      () =>
-        authStore.hasPermission("platform.tenants.write")
-        || (authStore.hasPermission("branches.write") && tenantStore.selectedTenantId === authStore.user?.tenantId)
-    );
+
+    function canManageTenantBranches() {
+      return authStore.hasPermission("branches.write") && tenantStore.selectedTenantId === authStore.user?.tenantId;
+    }
+
+    function canManagePlatformBranches() {
+      return authStore.hasPermission("platform.tenants.write");
+    }
+
+    const canManageBranches = computed(() => canManagePlatformBranches() || canManageTenantBranches());
 
     const statusOptions = computed(() => [
       { label: t("branches.status.ACTIVE"), value: "ACTIVE" },
       { label: t("branches.status.INACTIVE"), value: "INACTIVE" }
     ]);
+    const pageCopy = computed(() => {
+      if (!tenantStore.selectedTenantId) {
+        return t("branches.copyWithoutTenant");
+      }
+
+      const tenantDisplayName = tenantStore.selectedTenant?.displayName || tenantStore.selectedTenantId;
+      return t("branches.copyWithTenant", { tenant: tenantDisplayName });
+    });
 
     async function loadData() {
       isLoading.value = true;
@@ -47,7 +60,7 @@ export default defineComponent({
       }
 
       try {
-        branches.value = await branchesAdapter.fetchBranches(tenantStore.selectedTenantId, authStore.token);
+        branches.value = await branchesAdapter.fetchBranches(tenantStore.selectedTenantId);
       } catch (error) {
         errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
       } finally {
@@ -60,7 +73,7 @@ export default defineComponent({
       errorMessage.value = "";
 
       try {
-        await branchesAdapter.createBranch(tenantStore.selectedTenantId, { ...form }, authStore.token);
+        await branchesAdapter.createBranch(tenantStore.selectedTenantId, { ...form });
         toast.success(
           t("branches.messages.branchCreatedTitle"),
           t("branches.messages.branchCreatedToast", { displayName: form.displayName })
@@ -83,6 +96,7 @@ export default defineComponent({
       errorMessage,
       form,
       isLoading,
+      pageCopy,
       reload: loadData,
       statusOptions,
       successMessage,

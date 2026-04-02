@@ -1,6 +1,19 @@
 import { computed, nextTick, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
+import { getRequestErrorMessage } from "../../../../shared/kernel/errors/request-error";
+import { openBlobInWindow } from "../../../../shared/kernel/utils/blob-window";
 import { normalizeDocumentImageSrc } from "../../../../shared/kernel/utils/document-data-url";
+import { firstSelectedFile, readFileAsDataUrl } from "./tenant-dashboard-file.utils";
+import {
+  hasRequiredManualKycDocuments as hasRequiredManualKycDocumentsState,
+  hasRequiredNewCustomerFields as hasRequiredNewCustomerFieldsState,
+  hasValidDigitalTicketContact as hasValidDigitalTicketContactState,
+  hasValidExistingCustomerState as hasValidExistingCustomerStateForSelection,
+  hasValidManualFeeWhenRequired as hasValidManualFeeWhenRequiredState,
+  hasValidNewCustomerAmlState as hasValidNewCustomerAmlStateForOrigination,
+  hasValidPledgorPresentation as hasValidPledgorPresentationState,
+  hasValidPosition as hasValidPositionState
+} from "./tenant-dashboard-validation";
 import {
   assessTenantHomeAmlOrigination,
   createTenantHomeCustomer,
@@ -42,38 +55,12 @@ import {
 import type { TenantHomeCustomerModel, TenantHomePositionModel } from "../../domain/model/tenant-dashboard";
 import type { TenantHomeReportingOverviewDto } from "../../infrastructure/dto/tenant-dashboard.dto";
 
-function readFileAsDataUrl(file: File, t: (key: string) => string) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
-    reader.onerror = () => reject(new Error(t("common.fileReadFailed")));
-    reader.readAsDataURL(file);
-  });
-}
-
-function firstSelectedFile(event: unknown) {
-  const payload = event as { files?: File[]; target?: { files?: File[] } } | undefined;
-  return payload?.files?.[0] ?? payload?.target?.files?.[0] ?? null;
-}
-
-function openBlobInWindow(blob: Blob, printMode: boolean) {
-  const documentUrl = URL.createObjectURL(blob);
-  const popup = window.open(documentUrl, "_blank", "noopener,noreferrer");
-
-  if (printMode && popup) {
-    popup.addEventListener("load", () => {
-      popup.focus();
-      popup.print();
-    }, { once: true });
-  }
-}
-
 export function useTenantDashboardService({
   authStore,
   t,
   tenantStore
 }: {
-  authStore: { token: string };
+  authStore: Record<string, unknown>;
   t: (key: string, params?: Record<string, unknown>) => string;
   tenantStore: { selectedTenant: unknown; selectedTenantId: string; hasFeature: (key: string) => boolean };
 }) {
@@ -153,50 +140,60 @@ export function useTenantDashboardService({
   const financeTrendMax = computed(() => calculateFinanceTrendMax(reportingOverview.value));
   const inventoryMax = computed(() => calculateInventoryMax(reportingOverview.value));
 
-  const canSubmitLoan = computed(() => {
-    const hasCustomer = useNewCustomer.value
-      ? [
-          newCustomer.customerNumber,
-          newCustomer.firstName,
-          newCustomer.lastName,
-          newCustomer.birthDate,
-          newCustomer.phone,
-          newCustomerKyc.documentType,
-          newCustomerKyc.documentNumber,
-          newCustomerKyc.documentValidUntil,
-          newCustomerKyc.documentFrontImageDataUrl,
-          newCustomerKyc.documentBackImageDataUrl
-        ].every((value) => String(value ?? "").trim().length > 0)
-          && (!newCustomer.wantsDigitalPawnTicket || String(newCustomer.email ?? "").trim().length > 0)
-          && (!pledgePresentation.thirdPartyPledgorPresentation
-            || (
-              String(pledgePresentation.bearerName ?? "").trim().length > 0
-              && String(pledgePresentation.powerOfAttorneyDocumentDataUrl ?? "").trim().length > 0
-            ))
-          && (!amlFeatureEnabled.value
-            || (
-              newCustomerAml.status === "CLEAR"
-              && !newCustomerAml.sanctionsHit
-              && !newCustomerAml.unusualTransactionFlag
-              && (!newCustomerAml.suspiciousActivityReported || String(newCustomerAml.goamlReference ?? "").trim().length > 0)
-              && (!(newCustomerAml.pepFlag && newCustomerAml.riskLevel === "HIGH") || newCustomerAml.sourceOfFundsChecked)
-            ))
-      : String(selectedCustomerId.value ?? "").trim().length > 0
-        && selectedCustomer.value?.kycApproved === true
-        && (!amlFeatureEnabled.value || selectedCustomer.value?.amlOriginationAllowed === true);
+  function hasRequiredNewCustomerFields() {
+    return hasRequiredNewCustomerFieldsState(newCustomer, newCustomerKyc);
+  }
 
-    const hasValidPositions = positions.value.every((position) =>
-      Number(position.ticketGroup) >= 1
-      && Number.isInteger(Number(position.ticketGroup))
-      && String(position.label ?? "").trim().length > 0
-      && String(position.description ?? "").trim().length > 0
-      && String(position.guidelineId ?? "").trim().length > 0
-      && Number(position.pledgedValue) > 0
+  function hasValidDigitalTicketContact() {
+    return hasValidDigitalTicketContactState(newCustomer);
+  }
+
+  function hasValidPledgorPresentation() {
+    return hasValidPledgorPresentationState(pledgePresentation);
+  }
+
+  function hasValidNewCustomerAmlState() {
+    return hasValidNewCustomerAmlStateForOrigination(newCustomerAml, amlFeatureEnabled.value);
+  }
+
+  function hasValidExistingCustomerState() {
+    return hasValidExistingCustomerStateForSelection(
+      selectedCustomerId.value,
+      selectedCustomer.value,
+      amlFeatureEnabled.value
     );
+  }
 
+  function hasValidCustomerState() {
+    if (useNewCustomer.value) {
+      return hasRequiredNewCustomerFields()
+        && hasValidDigitalTicketContact()
+        && hasValidPledgorPresentation()
+        && hasValidNewCustomerAmlState();
+    }
+
+    return hasValidExistingCustomerState();
+  }
+
+  function hasValidPosition(position: {
+    ticketGroup: string | number;
+    label: string;
+    description: string;
+    guidelineId: string;
+    pledgedValue: string | number;
+  }) {
+    return hasValidPositionState(position);
+  }
+
+  function hasValidManualFeeWhenRequired() {
+    return hasValidManualFeeWhenRequiredState(loanQuotes.value, terms.manualMonthlyOperatingFee);
+  }
+
+  const canSubmitLoan = computed(() => {
+    const hasCustomer = hasValidCustomerState();
+    const hasValidPositions = positions.value.every(hasValidPosition);
     const hasValidTerm = Number(terms.termMonths) >= 3;
-    const hasManualFeeWhenRequired = !loanQuotes.value.some((quote) => quote.manualMonthlyOperatingFeeRequired)
-      || Number(terms.manualMonthlyOperatingFee) >= 0;
+    const hasManualFeeWhenRequired = hasValidManualFeeWhenRequired();
 
     return hasCustomer && hasValidPositions && hasValidTerm && hasManualFeeWhenRequired;
   });
@@ -207,7 +204,7 @@ export function useTenantDashboardService({
   }
 
   function handleError(error: unknown) {
-    errorMessage.value = error instanceof Error ? error.message : t("common.requestFailed");
+    errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
     fieldErrors.value = Array.isArray((error as { fieldErrors?: unknown } | undefined)?.fieldErrors)
       ? ((error as { fieldErrors: Array<{ field: string; message: string }> }).fieldErrors)
       : [];
@@ -216,7 +213,7 @@ export function useTenantDashboardService({
   async function enrichCustomerCompliance(customer: TenantHomeCustomerModel) {
     try {
       const amlStatus = amlFeatureEnabled.value
-        ? await fetchTenantHomeAmlStatus(tenantStore.selectedTenantId, String(customer.id), authStore.token)
+        ? await fetchTenantHomeAmlStatus(tenantStore.selectedTenantId, String(customer.id))
         : null;
       return amlStatus ? mergeAmlStatus(toCustomerModel(customer), amlStatus) : toCustomerModel(customer);
     } catch {
@@ -241,10 +238,10 @@ export function useTenantDashboardService({
 
     try {
       reportingError.value = "";
-      reportingOverview.value = await fetchTenantHomeReportingOverview(tenantStore.selectedTenantId, authStore.token, 14);
+      reportingOverview.value = await fetchTenantHomeReportingOverview(tenantStore.selectedTenantId, 14);
     } catch (error) {
       reportingOverview.value = null;
-      reportingError.value = error instanceof Error ? error.message : t("tenantHome.messages.reportingFailed");
+      reportingError.value = getRequestErrorMessage(error, t("tenantHome.messages.reportingFailed"));
     }
   }
 
@@ -288,8 +285,7 @@ export function useTenantDashboardService({
                 manualMonthlyOperatingFee: terms.manualMonthlyOperatingFee
                   ? Number(terms.manualMonthlyOperatingFee)
                   : null
-              },
-              authStore.token
+              }
             );
 
             return {
@@ -315,8 +311,8 @@ export function useTenantDashboardService({
     resetErrorState();
 
     const [guidelineResult, customerResult] = await Promise.allSettled([
-      fetchTenantHomeGuidelines(tenantStore.selectedTenantId, authStore.token),
-      searchTenantHomeCustomers(tenantStore.selectedTenantId, "", authStore.token)
+      fetchTenantHomeGuidelines(tenantStore.selectedTenantId),
+      searchTenantHomeCustomers(tenantStore.selectedTenantId, "")
     ]);
 
     try {
@@ -363,7 +359,7 @@ export function useTenantDashboardService({
         return;
       }
 
-      const customerResponse = await searchTenantHomeCustomers(tenantStore.selectedTenantId, query, authStore.token);
+      const customerResponse = await searchTenantHomeCustomers(tenantStore.selectedTenantId, query);
       customers.value = await Promise.all(customerResponse.map((customer) => enrichCustomerCompliance(toCustomerModel(customer))));
       customerSuggestions.value = customerOptions.value;
     } catch (error) {
@@ -384,13 +380,12 @@ export function useTenantDashboardService({
 
     try {
       const [kycStatus, amlStatus] = await Promise.all([
-        fetchTenantHomeKycStatus(tenantStore.selectedTenantId, selectedCustomerId.value, authStore.token),
+        fetchTenantHomeKycStatus(tenantStore.selectedTenantId, selectedCustomerId.value),
         amlFeatureEnabled.value
           ? assessTenantHomeAmlOrigination(
               tenantStore.selectedTenantId,
               selectedCustomerId.value,
-              { loanAmount: Number(totalLoanValue.value || 0) },
-              authStore.token
+              { loanAmount: Number(totalLoanValue.value || 0) }
             )
           : Promise.resolve(null)
       ]);
@@ -452,6 +447,15 @@ export function useTenantDashboardService({
     fieldErrors.value = [];
     successMessage.value = "";
 
+    if (useNewCustomer.value && !hasRequiredManualKycDocumentsState(newCustomerKyc)) {
+      errorMessage.value = t("tenantHome.messages.documentImagesRequired");
+      fieldErrors.value = [
+        { field: "documentFrontImageDataUrl", message: t("tenantHome.messages.documentImagesRequired") },
+        { field: "documentBackImageDataUrl", message: t("tenantHome.messages.documentImagesRequired") }
+      ];
+      return;
+    }
+
     if (!canSubmitLoan.value) {
       errorMessage.value = t("tenantHome.messages.missingRequiredFields");
       return;
@@ -462,7 +466,7 @@ export function useTenantDashboardService({
       let customerId = selectedCustomerId.value;
 
       if (useNewCustomer.value) {
-        const createdCustomer = await createTenantHomeCustomer(tenantStore.selectedTenantId, { ...newCustomer }, authStore.token);
+        const createdCustomer = await createTenantHomeCustomer(tenantStore.selectedTenantId, { ...newCustomer });
         const kycStatus = await updateTenantHomeKycStatus(
           tenantStore.selectedTenantId,
           createdCustomer.id,
@@ -479,8 +483,7 @@ export function useTenantDashboardService({
             providerName: null,
             providerReference: null,
             providerStatus: null
-          },
-          authStore.token
+          }
         );
         const amlStatus = amlFeatureEnabled.value
           ? await updateTenantHomeAmlStatus(
@@ -498,8 +501,7 @@ export function useTenantDashboardService({
                 decisionNote: newCustomerAml.decisionNote || null,
                 lastScreenedAt: null,
                 reviewedAt: null
-              },
-              authStore.token
+              }
             )
           : null;
         customerId = createdCustomer.id;
@@ -533,7 +535,7 @@ export function useTenantDashboardService({
           : null
       };
 
-      createdLoan.value = await createTenantHomeLoan(tenantStore.selectedTenantId, payload, authStore.token) as Record<string, unknown>;
+      createdLoan.value = await createTenantHomeLoan(tenantStore.selectedTenantId, payload) as Record<string, unknown>;
       await loadReportingOverview();
       successMessage.value = t("tenantHome.messages.loanCreated");
       positions.value = [createEmptyPosition()];
@@ -570,6 +572,20 @@ export function useTenantDashboardService({
     try {
       isUpdatingKyc.value = true;
       fieldErrors.value = [];
+      if (
+        verificationMode === "MANUAL"
+        && !hasRequiredManualKycDocumentsState({
+          documentFrontImageDataUrl: selectedCustomer.value?.documentFrontImageDataUrl,
+          documentBackImageDataUrl: selectedCustomer.value?.documentBackImageDataUrl
+        })
+      ) {
+        errorMessage.value = t("tenantHome.messages.documentImagesRequired");
+        fieldErrors.value = [
+          { field: "documentFrontImageDataUrl", message: t("tenantHome.messages.documentImagesRequired") },
+          { field: "documentBackImageDataUrl", message: t("tenantHome.messages.documentImagesRequired") }
+        ];
+        return;
+      }
       const kycStatus = await updateTenantHomeKycStatus(
         tenantStore.selectedTenantId,
         selectedCustomerId.value,
@@ -597,8 +613,7 @@ export function useTenantDashboardService({
               providerName: null,
               providerReference: null,
               providerStatus: null
-            },
-        authStore.token
+            }
       );
 
       customers.value = customers.value.map((customer) =>
@@ -634,8 +649,7 @@ export function useTenantDashboardService({
         {
           documentFrontImageDataUrl: newCustomerKyc.documentFrontImageDataUrl,
           documentBackImageDataUrl: newCustomerKyc.documentBackImageDataUrl
-        },
-        authStore.token
+        }
       );
 
       if (!result.available || !result.matched) {
@@ -703,8 +717,8 @@ export function useTenantDashboardService({
 
     try {
       isDownloadingTicket.value = true;
-      const blob = await fetchTenantHomePawnTicketDocument(ticketNumber, authStore.token);
-      openBlobInWindow(blob, printMode);
+      const blob = await fetchTenantHomePawnTicketDocument(ticketNumber);
+      openBlobInWindow(blob, { printMode });
     } catch (error) {
       handleError(error);
     } finally {
@@ -719,8 +733,8 @@ export function useTenantDashboardService({
 
     try {
       isDownloadingTicket.value = true;
-      const blob = await fetchTenantHomePawnTicketLabels(ticketNumber, authStore.token);
-      openBlobInWindow(blob, printMode);
+      const blob = await fetchTenantHomePawnTicketLabels(ticketNumber);
+      openBlobInWindow(blob, { printMode });
     } catch (error) {
       handleError(error);
     } finally {

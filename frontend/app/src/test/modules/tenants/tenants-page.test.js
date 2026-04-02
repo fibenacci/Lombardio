@@ -16,7 +16,6 @@ describe("TenantsView", () => {
   });
 
   it("loads tenants and tenant features from the platform API", async () => {
-    authStore.token = "platform-token";
     authStore.user = {
       id: "user-platform-admin",
       tenantId: "tenant-platform",
@@ -45,8 +44,8 @@ describe("TenantsView", () => {
     const wrapper = mount(TenantsView);
     await flushPromises();
 
-    expect(platformApi.fetchTenants).toHaveBeenCalledWith("platform-token");
-    expect(platformApi.fetchTenantFeatures).toHaveBeenCalledWith("tenant-default", "platform-token");
+    expect(platformApi.fetchTenants).toHaveBeenCalledWith();
+    expect(platformApi.fetchTenantFeatures).toHaveBeenCalledWith("tenant-default");
     expect(wrapper.text()).toContain("Default Tenant");
     expect(wrapper.text()).toContain("User and Access Management");
   });

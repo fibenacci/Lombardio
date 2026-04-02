@@ -24,6 +24,9 @@ public class CustomerPortalInvitationEntity {
   @Column(name = "token", nullable = false)
   private String token;
 
+  @Column(name = "token_hash")
+  private String tokenHash;
+
   @Column(name = "customer_id", nullable = false)
   private String customerId;
 
@@ -48,6 +51,14 @@ public class CustomerPortalInvitationEntity {
 
   public void setToken(String token) {
     this.token = token;
+  }
+
+  public String getTokenHash() {
+    return tokenHash;
+  }
+
+  public void setTokenHash(String tokenHash) {
+    this.tokenHash = tokenHash;
   }
 
   public String getCustomerId() {

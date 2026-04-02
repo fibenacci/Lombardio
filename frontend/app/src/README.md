@@ -63,6 +63,13 @@ modules/<feature>/
 - Importiere DTOs nie direkt in `ui/`.
 - Neue PrimeVue-Nutzung nur in `shared/ui` oder in App-Providern.
 
+## Session- und Sicherheitsregeln
+
+- Operator- und Customer-Portal-Sessions bleiben getrennt.
+- Reload-fähige Sessions werden über Backend-Refresh oder Session-Endpunkte plus `HttpOnly`-Cookies umgesetzt, nicht über `localStorage` oder `sessionStorage`.
+- UI-Komponenten und Pages zeigen keine Funktionen für Delegation oder TOTP an, solange die passenden Backend-Endpunkte nicht tatsächlich verfügbar und per Runtime-Flag freigeschaltet sind.
+- User-facing Fehlertexte werden über die zentrale Fehlernormalisierung aufgelöst; rohe Backend-Messages oder technische Trace-Informationen gehören nicht direkt in die UI.
+
 ## Migration
 
 Wenn Altcode angepasst wird:

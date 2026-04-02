@@ -10,6 +10,15 @@
  */
 package io.lombardio.pawnticket.bootstrap;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
 import io.lombardio.pawnticket.demo.DemoDataProperties;
 import io.lombardio.pawnticket.domain.model.CashTransaction;
 import io.lombardio.pawnticket.domain.model.CashTransactionType;
@@ -17,13 +26,6 @@ import io.lombardio.pawnticket.domain.model.PawnTicket;
 import io.lombardio.pawnticket.domain.model.PawnTicketPosition;
 import io.lombardio.pawnticket.domain.port.CashTransactionRepository;
 import io.lombardio.pawnticket.domain.port.PawnTicketRepository;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import org.springframework.stereotype.Component;
 
 @Component
 public class PawnTicketDevelopmentSeeder {
