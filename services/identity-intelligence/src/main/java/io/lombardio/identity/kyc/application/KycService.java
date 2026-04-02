@@ -23,7 +23,6 @@ import io.lombardio.identity.kyc.domain.KycStatus;
 import io.lombardio.identity.kyc.domain.KycVerificationMode;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.LocalDate;
-import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -69,24 +68,7 @@ public class KycService {
     KycRecord record =
         kycRepository
             .findByTenantIdAndCustomerId(tenantId, customerId)
-            .orElseGet(
-                () ->
-                    new KycRecord(
-                        "kyc-" + UUID.randomUUID(),
-                        tenantId,
-                        customerId,
-                        KycVerificationMode.MANUAL,
-                        KycStatus.NOT_STARTED,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null));
+            .orElseGet(() -> KycRecordFactory.empty(tenantId, customerId));
     return toResponse(record, providerVerificationAvailable(tenantId));
   }
 
@@ -94,29 +76,12 @@ public class KycService {
     KycRecord record =
         kycRepository
             .findByTenantIdAndCustomerId(tenantId, customerId)
-            .orElseGet(
-                () ->
-                    new KycRecord(
-                        "kyc-" + UUID.randomUUID(),
-                        tenantId,
-                        customerId,
-                        KycVerificationMode.MANUAL,
-                        KycStatus.NOT_STARTED,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null));
+            .orElseGet(() -> KycRecordFactory.empty(tenantId, customerId));
 
     return new KycDocumentImagesResponse(
         record.customerId(),
-        normalizeDocumentImageDataUrl(record.documentFrontImageDataUrl()),
-        normalizeDocumentImageDataUrl(record.documentBackImageDataUrl()));
+        DocumentImageDataUrlNormalizer.normalize(record.documentFrontImageDataUrl()),
+        DocumentImageDataUrlNormalizer.normalize(record.documentBackImageDataUrl()));
   }
 
   public KycStatusResponse updateStatus(
@@ -135,48 +100,12 @@ public class KycService {
     KycRecord existing =
         kycRepository
             .findByTenantIdAndCustomerId(tenantId, customerId)
-            .orElse(
-                new KycRecord(
-                    "kyc-" + UUID.randomUUID(),
-                    tenantId,
-                    customerId,
-                    KycVerificationMode.MANUAL,
-                    KycStatus.NOT_STARTED,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null));
+            .orElse(KycRecordFactory.empty(tenantId, customerId));
 
-    validateManualDocumentData(request, verificationMode);
-
-    String normalizedFrontImageDataUrl =
-        normalizeDocumentImageDataUrl(request.documentFrontImageDataUrl());
-    String normalizedBackImageDataUrl =
-        normalizeDocumentImageDataUrl(request.documentBackImageDataUrl());
+    KycValidationRules.validateManualDocumentData(request, verificationMode);
 
     KycRecord updated =
-        new KycRecord(
-            existing.id(),
-            tenantId,
-            customerId,
-            verificationMode,
-            request.status(),
-            request.verifiedUntil(),
-            request.documentType(),
-            request.documentNumber(),
-            request.documentValidUntil(),
-            normalizedFrontImageDataUrl,
-            normalizedBackImageDataUrl,
-            request.decisionNote(),
-            verificationMode == KycVerificationMode.PROVIDER ? request.providerName() : null,
-            verificationMode == KycVerificationMode.PROVIDER ? request.providerReference() : null,
-            verificationMode == KycVerificationMode.PROVIDER ? request.providerStatus() : null);
+        KycRecordFactory.update(existing, tenantId, customerId, verificationMode, request);
 
     KycStatusResponse response =
         toResponse(kycRepository.save(updated), providerVerificationAvailable(tenantId));
@@ -205,8 +134,8 @@ public class KycService {
         documentOcrProvider
             .prefill(
                 tenantId,
-                normalizeDocumentImageDataUrl(request.documentFrontImageDataUrl()),
-                normalizeDocumentImageDataUrl(request.documentBackImageDataUrl()))
+                DocumentImageDataUrlNormalizer.normalize(request.documentFrontImageDataUrl()),
+                DocumentImageDataUrlNormalizer.normalize(request.documentBackImageDataUrl()))
             .map(
                 result ->
                     new DocumentPrefillResponse(
@@ -249,58 +178,4 @@ public class KycService {
         providerVerificationAvailable);
   }
 
-  private String normalizeDocumentImageDataUrl(String value) {
-    if (value == null) {
-      return null;
-    }
-
-    String normalizedValue = value.trim();
-    if (normalizedValue.isEmpty() || normalizedValue.startsWith("data:")) {
-      return normalizedValue;
-    }
-
-    return "data:" + inferMimeType(normalizedValue) + ";base64," + normalizedValue;
-  }
-
-  private String inferMimeType(String base64Value) {
-    if (base64Value.startsWith("/9j/")) {
-      return "image/jpeg";
-    }
-    if (base64Value.startsWith("iVBOR")) {
-      return "image/png";
-    }
-    if (base64Value.startsWith("R0lGOD")) {
-      return "image/gif";
-    }
-    if (base64Value.startsWith("UklGR")) {
-      return "image/webp";
-    }
-    return "image/png";
-  }
-
-  private void validateManualDocumentData(
-      UpdateKycStatusRequest request, KycVerificationMode verificationMode) {
-    if (verificationMode != KycVerificationMode.MANUAL) {
-      return;
-    }
-    if (request.status() != KycStatus.APPROVED && request.status() != KycStatus.IN_PROGRESS) {
-      return;
-    }
-    requireValue(request.documentType(), "documentType");
-    requireValue(request.documentNumber(), "documentNumber");
-    requireValue(request.documentFrontImageDataUrl(), "documentFrontImageDataUrl");
-    requireValue(request.documentBackImageDataUrl(), "documentBackImageDataUrl");
-    if (request.documentValidUntil() == null) {
-      throw new IllegalArgumentException("documentValidUntil is required for manual KYC");
-    }
-    if (request.documentValidUntil().isBefore(LocalDate.now())) {
-      throw new IllegalArgumentException("documentValidUntil must not be in the past");
-    }
-  }
-
-  private void requireValue(String value, String fieldName) {
-    if (value == null || value.trim().isEmpty()) {
-      throw new IllegalArgumentException(fieldName + " is required for manual KYC");
-    }
-  }
 }
