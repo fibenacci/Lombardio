@@ -298,13 +298,33 @@
           "label": "Benutzer- und Rechteverwaltung",
           "description": "Interne Benutzer- und Rechteverwaltung für die Mitarbeiter des Mandanten."
         },
+        "customer-management": {
+          "label": "Kundenverwaltung",
+          "description": "Zentrale Verwaltung von Kundenstammdaten und Dokumenten."
+        },
         "loan-origination": {
           "label": "Beleihung",
           "description": "Automatisierte Kreditbewertung und Beleihungsabläufe."
         },
+        "pawn-ticket-management": {
+          "label": "Pfandscheinverwaltung",
+          "description": "Verwaltung von aktiven Pfandscheinen, Fristen und Dokumenten."
+        },
         "aml-compliance": {
           "label": "AML Compliance",
           "description": "Prüfungen zu Geldwäscheprävention und KYC."
+        },
+        "kyc-provider-verification": {
+          "label": "Provider-KYC",
+          "description": "Einbindung externer Anbieter zur automatisierten Identitätsprüfung."
+        },
+        "kyc-document-ocr": {
+          "label": "Dokumenten-OCR",
+          "description": "Automatisierte Texterkennung für Ausweisdokumente."
+        },
+        "auction-workflow": {
+          "label": "Stationäre Auktionen",
+          "description": "Workflow für Bekanntmachung und Durchführung physischer Auktionen."
         },
         "online-auctions": {
           "label": "Online-Auktionen",

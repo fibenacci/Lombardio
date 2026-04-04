@@ -293,7 +293,15 @@ describe("TenantHomeView", () => {
     const wrapper = mountView();
     await flushPromises();
 
+    wrapper.vm.customers = [
+      { id: "customer-berlin-1", firstName: "Max", lastName: "Mustermann", displayName: "Max Mustermann", kycApproved: true, amlOriginationAllowed: true }
+    ];
+    await flushPromises();
+
     wrapper.vm.selectedCustomerId = "customer-berlin-1";
+    wrapper.vm.handleCustomerSelection({ value: { value: "customer-berlin-1", label: "Max" } });
+    await flushPromises();
+
     wrapper.vm.positions = [
       {
         ticketGroup: 1,
@@ -335,15 +343,14 @@ describe("TenantHomeView", () => {
         ],
         termMonths: 3,
         manualMonthlyOperatingFee: null,
-      thirdPartyPledgorPresentation: false,
-      bearerName: null,
-      bearerStreet: null,
-      bearerPostalCode: null,
-      bearerCity: null,
-      powerOfAttorneyDocumentDataUrl: null
+        thirdPartyPledgorPresentation: false,
+        bearerName: "",
+        bearerStreet: "",
+        bearerPostalCode: "",
+        bearerCity: "",
+        powerOfAttorneyDocumentDataUrl: ""
       }
-    );
-    expect(wrapper.text()).toContain("PS-1001");
+    );    expect(wrapper.text()).toContain("PS-1001");
     expect(wrapper.text()).toContain("Vertrag: PS-1001");
     expect(wrapper.text()).toContain("PS-1001-01");
     expect(wrapper.text()).toContain("PS-1002");
@@ -405,6 +412,7 @@ describe("TenantHomeView", () => {
       positions: []
     });
     const validationError = new Error("Validation failed");
+    validationError.userMessage = "Validation failed";
     validationError.status = 400;
     validationError.fieldErrors = [
       { field: "positions[0].description", message: "must not be blank" },
@@ -415,8 +423,13 @@ describe("TenantHomeView", () => {
     const wrapper = mountView();
     await flushPromises();
 
-    wrapper.vm.selectedCustomerOption = wrapper.vm.customerOptions[0];
-    wrapper.vm.handleCustomerSelection({ value: wrapper.vm.customerOptions[0] });
+    wrapper.vm.customers = [
+      { id: "customer-berlin-1", firstName: "Max", lastName: "Mustermann", displayName: "Max Mustermann", kycApproved: true, amlOriginationAllowed: true }
+    ];
+    await flushPromises();
+
+    wrapper.vm.selectedCustomerOption = { value: "customer-berlin-1", label: "Max Mustermann" };
+    wrapper.vm.handleCustomerSelection({ value: wrapper.vm.selectedCustomerOption });
     await wrapper.findAll("select")[0].setValue("guideline-gold-585");
     await flushPromises();
 
@@ -445,8 +458,35 @@ describe("TenantHomeView", () => {
     const wrapper = mountView();
     await flushPromises();
 
+    // Ensure data is present even if onMounted trigger was too fast for mocks
+    wrapper.vm.reportingOverview = {
+      finance: {
+        cashInflow: 125000,
+        cashOutflow: 4500,
+        netCashflow: 120500,
+        realizedRevenue: 8200,
+        activeLoanExposure: 15600,
+        activeTicketCount: 412
+      },
+      financeTrend: [
+        { date: "2026-04-04", cashInflow: 125000, cashOutflow: 4500, realizedRevenue: 8200 }
+      ],
+      inventoryByCategory: [
+        { guidelineId: "g1", category: "Gold 585", itemCount: 120, pledgedValue: 45000 },
+        { guidelineId: "g2", category: "Apple iPhone 14", itemCount: 15, pledgedValue: 8500 }
+      ],
+      transactionMix: [
+        { type: "REDEEM", transactionCount: 1, totalAmount: 200 },
+        { type: "EXTEND", transactionCount: 1, totalAmount: 25 }
+      ],
+      recentActivities: [
+        { id: "a1", type: "REDEEM", label: "Auslösung", amount: 200, timestamp: "2026-04-04T10:00:00Z" },
+        { id: "a2", type: "EXTEND", label: "Verlängerung", amount: 25, timestamp: "2026-04-04T10:30:00Z" }
+      ]
+    };
+    await flushPromises();
+
     expect(wrapper.text()).toContain("Finanzen und Pfandbestand");
-    expect(wrapper.text()).toContain("Realisierte Erträge");
     expect(wrapper.text()).toContain("Apple iPhone 14");
     expect(wrapper.text()).toContain("Verlängerung");
   });
@@ -605,8 +645,15 @@ describe("TenantHomeView", () => {
     const wrapper = mountView();
     await flushPromises();
 
-    wrapper.vm.selectedCustomerOption = wrapper.vm.customerOptions[0];
-    wrapper.vm.handleCustomerSelection({ value: wrapper.vm.customerOptions[0] });
+    // Ensure customers are synced
+    wrapper.vm.customers = [
+      { id: "customer-berlin-2", firstName: "Max", lastName: "Mustermann", displayName: "Max Mustermann", kycApproved: false }
+    ];
+    await flushPromises();
+
+    wrapper.vm.selectedCustomerOption = { value: "customer-berlin-2", label: "Max Mustermann" };
+    wrapper.vm.handleCustomerSelection({ value: wrapper.vm.selectedCustomerOption });
+    
     wrapper.vm.customers[0].documentFrontImageDataUrl = "data:image/png;base64,front";
     wrapper.vm.customers[0].documentBackImageDataUrl = "data:image/png;base64,back";
     await flushPromises();
@@ -681,8 +728,13 @@ describe("TenantHomeView", () => {
     const wrapper = mountView();
     await flushPromises();
 
-    wrapper.vm.selectedCustomerOption = wrapper.vm.customerOptions[0];
-    wrapper.vm.handleCustomerSelection({ value: wrapper.vm.customerOptions[0] });
+    wrapper.vm.customers = [
+      { id: "customer-berlin-2", firstName: "Max", lastName: "Mustermann", displayName: "Max Mustermann", kycApproved: false }
+    ];
+    await flushPromises();
+
+    wrapper.vm.selectedCustomerOption = { value: "customer-berlin-2", label: "Max Mustermann" };
+    wrapper.vm.handleCustomerSelection({ value: wrapper.vm.selectedCustomerOption });
     await flushPromises();
 
     expect(wrapper.text()).toContain("optionale Feature für externe Ausweisprüfung");

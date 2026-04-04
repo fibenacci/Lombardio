@@ -47,12 +47,10 @@ function resolvePawnTicketStatus(ticket: ResolvablePawnTicket, now = new Date())
 }
 
 export function usePawnTicketsPage({
-  authStore,
   t,
   tenantStore,
   toast
 }: {
-  authStore: Record<string, unknown>;
   t: (key: string, params?: Record<string, unknown>) => string;
   tenantStore: { selectedTenantId: string };
   toast: { info: (title: string, message: string) => void };

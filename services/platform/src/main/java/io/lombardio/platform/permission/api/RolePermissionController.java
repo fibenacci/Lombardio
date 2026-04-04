@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/platform/permissions")
+@RequestMapping("/api/v1/platform/operator/permissions")
 public class RolePermissionController {
 
   private final KeycloakService keycloakService;

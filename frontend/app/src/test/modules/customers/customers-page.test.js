@@ -1,19 +1,16 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import CustomersView from "../../../modules/customers/ui/pages/customers-page";
 import { setLocale } from "../../../app/i18n";
-import { useAuthStore } from "../../../app/session/state";
 import { useTenantStore } from "../../../app/tenant-context/state";
 import * as customerApi from "../../../modules/customers/infrastructure/api/customer.api";
 import * as amlApi from "../../../modules/customers/infrastructure/api/aml.api";
 import router from "../../../app/router";
 
 describe("CustomersView", () => {
-  let authStore;
   let tenantStore;
 
   beforeEach(() => {
     setLocale("en");
-    authStore = useAuthStore();
     tenantStore = useTenantStore();
   });
 

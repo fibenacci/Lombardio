@@ -1,6 +1,5 @@
 import { defineComponent, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { useAuthStore } from "../../../../../app/session/state/auth.store";
 import { useTenantStore } from "../../../../../app/tenant-context/state/tenant.store";
 import { useI18n } from "../../../../../app/i18n";
 import { useFormatters } from "../../../../../shared/kernel/utils/formatters";
@@ -28,11 +27,9 @@ export default defineComponent({
     const { t } = useI18n();
     const { formatCurrency, formatDate, formatDateTime } = useFormatters();
     const route = useRoute();
-    const authStore = useAuthStore();
     const tenantStore = useTenantStore();
 
     const customerDetail = useCustomerDetailPage({
-      authStore,
       route,
       t,
       tenantStore

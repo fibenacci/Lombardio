@@ -2,17 +2,14 @@ import { flushPromises, mount } from "@vue/test-utils";
 import LoansView from "../../../modules/loans/ui/pages/loans-page";
 import router from "../../../app/router";
 import { setLocale } from "../../../app/i18n";
-import { useAuthStore } from "../../../app/session/state";
 import { useTenantStore } from "../../../app/tenant-context/state";
 import * as originationApi from "../../../modules/loans/infrastructure/api/origination.api";
 
 describe("LoansView", () => {
-  let authStore;
   let tenantStore;
 
   beforeEach(() => {
     setLocale("en");
-    authStore = useAuthStore();
     tenantStore = useTenantStore();
   });
 

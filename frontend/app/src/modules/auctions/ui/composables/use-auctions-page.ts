@@ -56,11 +56,9 @@ function hasValidLotDraft(lot: AuctionLotDraft) {
 }
 
 export function useAuctionsPage({
-  authStore,
   t,
   tenantStore
 }: {
-  authStore: Record<string, unknown>;
   t: (key: string, params?: Record<string, unknown>) => string;
   tenantStore: { selectedTenantId: string };
 }) {

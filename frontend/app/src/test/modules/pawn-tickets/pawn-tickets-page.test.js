@@ -1,15 +1,12 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import PawnTicketsView from "../../../modules/pawn-tickets/ui/pages/pawn-tickets-page";
-import { useAuthStore } from "../../../app/session/state";
 import { useTenantStore } from "../../../app/tenant-context/state";
 import * as pawnTicketApi from "../../../modules/pawn-tickets/infrastructure/api/pawn-ticket.api";
 
 describe("PawnTicketsView", () => {
-  let authStore;
   let tenantStore;
 
   beforeEach(() => {
-    authStore = useAuthStore();
     tenantStore = useTenantStore();
   });
 

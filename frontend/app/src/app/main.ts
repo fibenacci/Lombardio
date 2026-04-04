@@ -7,12 +7,17 @@ import { installPrimeVue } from "./providers/primevue";
 import { useAuthStore } from "./session/state/auth.store";
 import { useCustomerPortalStore } from "./session/state/customer-portal.store";
 import { useTenantStore } from "./tenant-context/state/tenant.store";
+import { errorInterceptor } from "../shared/kernel/http/error-interceptor";
+import { handleGlobalError } from "./kernel/error-handler";
 
 export async function bootstrapApp() {
   const app = createApp(App);
   const pinia = createPiniaProvider();
 
   app.use(pinia);
+
+  // Initialize global API failure handling
+  errorInterceptor.on(401, handleGlobalError);
 
   try {
     const authStore = useAuthStore();

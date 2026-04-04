@@ -7,8 +7,7 @@ export function createUpdateCustomerKycService(customerCommandPort: CustomerComm
       return customerCommandPort.saveKyc(
         command.tenantId,
         command.customerId,
-        command.payload,
-        command.token
+        command.payload
       );
     }
   };

@@ -1,17 +1,14 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import CashdeskView from "../../../modules/cashdesk/ui/pages/cashdesk-page";
 import { setLocale } from "../../../app/i18n";
-import { useAuthStore } from "../../../app/session/state";
 import { useTenantStore } from "../../../app/tenant-context/state";
 import * as pawnTicketApi from "../../../modules/pawn-tickets/infrastructure/api/pawn-ticket.api";
 
 describe("CashdeskView", () => {
-  let authStore;
   let tenantStore;
 
   beforeEach(() => {
     setLocale("de");
-    authStore = useAuthStore();
     tenantStore = useTenantStore();
   });
 

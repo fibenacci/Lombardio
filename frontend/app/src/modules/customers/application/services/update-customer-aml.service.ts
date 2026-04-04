@@ -7,8 +7,7 @@ export function createUpdateCustomerAmlService(customerCommandPort: CustomerComm
       return customerCommandPort.saveAml(
         command.tenantId,
         command.customerId,
-        command.payload,
-        command.token
+        command.payload
       );
     }
   };

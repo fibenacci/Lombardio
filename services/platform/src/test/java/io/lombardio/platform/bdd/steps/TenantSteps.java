@@ -21,7 +21,11 @@ import io.lombardio.platform.iam.application.KeycloakService;
 import io.lombardio.platform.integration.application.PlatformOutboxService;
 import io.lombardio.platform.tenant.api.CreateTenantRequest;
 import io.lombardio.platform.tenant.api.TenantResponse;
+import io.lombardio.platform.tenant.application.TenantBranchService;
 import io.lombardio.platform.tenant.application.TenantCatalogService;
+import io.lombardio.platform.tenant.application.TenantFeatureService;
+import io.lombardio.platform.tenant.application.TenantLifecycleService;
+import io.lombardio.platform.tenant.application.TenantUserService;
 import io.lombardio.platform.tenant.application.support.InMemoryTenantRepositories;
 import java.time.Clock;
 import java.util.List;
@@ -44,15 +48,30 @@ public class TenantSteps {
 
   @Before
   public void setup() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    Clock clock = Clock.systemUTC();
+    PlatformOutboxService outboxService = new PlatformOutboxService(outboxEvents, clock);
+
+    TenantLifecycleService tenantLifecycleService =
+        new TenantLifecycleService(
+            tenants, outboxService, keycloakService, objectMapper, clock);
+
+    TenantFeatureService tenantFeatureService =
+        new TenantFeatureService(
+            features, tenantLifecycleService, outboxService, objectMapper, clock);
+
+    TenantBranchService tenantBranchService =
+        new TenantBranchService(branches, tenantLifecycleService, clock);
+
+    TenantUserService tenantUserService =
+        new TenantUserService(keycloakService, tenantLifecycleService, tenantBranchService);
+
     tenantCatalogService =
         new TenantCatalogService(
-            tenants,
-            features,
-            branches,
-            new PlatformOutboxService(outboxEvents, Clock.systemUTC()),
-            keycloakService,
-            new ObjectMapper(),
-            Clock.systemUTC());
+            tenantLifecycleService,
+            tenantFeatureService,
+            tenantBranchService,
+            tenantUserService);
   }
 
   @Given("the platform service is running")

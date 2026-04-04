@@ -298,13 +298,33 @@
           "label": "User and Access Management",
           "description": "Internal user and access management for the tenant's employees."
         },
+        "customer-management": {
+          "label": "Customer Management",
+          "description": "Central management of customer master data and documents."
+        },
         "loan-origination": {
           "label": "Origination",
           "description": "Automated credit assessment and pledge origination workflows."
         },
+        "pawn-ticket-management": {
+          "label": "Pawn Ticket Management",
+          "description": "Management of active pawn tickets, deadlines and documents."
+        },
         "aml-compliance": {
           "label": "AML Compliance",
           "description": "Anti-money laundering and KYC verification."
+        },
+        "kyc-provider-verification": {
+          "label": "Provider KYC",
+          "description": "Integration of external providers for automated identity verification."
+        },
+        "kyc-document-ocr": {
+          "label": "Document OCR",
+          "description": "Automated text recognition for identity documents."
+        },
+        "auction-workflow": {
+          "label": "In-Store Auctions",
+          "description": "Workflow for announcement and execution of physical auctions."
         },
         "online-auctions": {
           "label": "Online Auctions",

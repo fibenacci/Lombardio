@@ -2,7 +2,6 @@ import { flushPromises, mount } from "@vue/test-utils";
 import CustomerDetailView from "../../../modules/customers/ui/pages/customer-detail-page";
 import { setLocale } from "../../../app/i18n";
 import router from "../../../app/router";
-import { useAuthStore } from "../../../app/session/state";
 import { useTenantStore } from "../../../app/tenant-context/state";
 import * as customerApi from "../../../modules/customers/infrastructure/api/customer.api";
 import * as kycApi from "../../../modules/customers/infrastructure/api/kyc.api";
@@ -10,13 +9,11 @@ import * as amlApi from "../../../modules/customers/infrastructure/api/aml.api";
 import * as originationApi from "../../../modules/loans/infrastructure/api/origination.api";
 
 describe("CustomerDetailView", () => {
-  let authStore;
   let tenantStore;
 
   beforeEach(() => {
     setLocale("de");
     vi.restoreAllMocks();
-    authStore = useAuthStore();
     tenantStore = useTenantStore();
   });
 

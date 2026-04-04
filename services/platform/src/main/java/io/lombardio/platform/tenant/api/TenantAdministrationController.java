@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/tenants/{tenantId}")
+@RequestMapping("/api/v1/platform/operator/tenants/{tenantId}")
 public class TenantAdministrationController {
 
   private final TenantCatalogService tenantCatalogService;

@@ -1,6 +1,5 @@
 import { computed, defineComponent, onMounted, ref } from "vue";
 import { useI18n } from "../../../../../app/i18n";
-import { useAuthStore } from "../../../../../app/session/state/auth.store";
 import { useTenantStore } from "../../../../../app/tenant-context/state/tenant.store";
 import { getRequestErrorMessage } from "../../../../../shared/kernel/errors/request-error";
 import { createHttpRolesAdapter } from "../../../infrastructure/adapters/http-roles.adapter";
@@ -10,7 +9,6 @@ import "./styles.scss";
 export default defineComponent({
   name: "RolesPage",
   setup() {
-    const authStore = useAuthStore();
     const tenantStore = useTenantStore();
     const { t } = useI18n();
     const rolesAdapter = createHttpRolesAdapter();

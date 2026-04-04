@@ -7,7 +7,6 @@ export function createLoadCustomerDetailService(customerQueryPort: CustomerQuery
       return customerQueryPort.loadCustomerDetailData(
         query.tenantId,
         query.customerId,
-        query.token,
         query.amlEnabled
       );
     }

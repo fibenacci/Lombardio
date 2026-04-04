@@ -5,11 +5,9 @@ import { createLoadLoansService } from "../../application/services/load-loans.se
 import { createHttpLoansAdapter } from "../../infrastructure/adapters/http-loans.adapter";
 
 export function useLoansPage({
-  authStore,
   t,
   tenantStore
 }: {
-  authStore: Record<string, unknown>;
   t: (key: string, params?: Record<string, unknown>) => string;
   tenantStore: { selectedTenantId: string };
 }) {

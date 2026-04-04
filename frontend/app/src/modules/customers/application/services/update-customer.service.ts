@@ -7,8 +7,7 @@ export function createUpdateCustomerService(customerCommandPort: CustomerCommand
       return customerCommandPort.saveCustomer(
         command.tenantId,
         command.customerId,
-        command.payload,
-        command.token
+        command.payload
       );
     }
   };

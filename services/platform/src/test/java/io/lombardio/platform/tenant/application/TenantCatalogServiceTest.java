@@ -52,16 +52,31 @@ class TenantCatalogServiceTest {
   void setUp() {
     tenants.save(PlatformSeedFixtures.defaultTenant());
     PlatformSeedFixtures.defaultTenantFeatures().forEach(features::save);
+    PlatformSeedFixtures.defaultTenantBranches().forEach(branches::save);
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    PlatformOutboxService outboxService = new PlatformOutboxService(outboxEvents, clock);
+
+    TenantLifecycleService tenantLifecycleService =
+        new TenantLifecycleService(
+            tenants, outboxService, keycloakService, objectMapper, clock);
+
+    TenantFeatureService tenantFeatureService =
+        new TenantFeatureService(
+            features, tenantLifecycleService, outboxService, objectMapper, clock);
+
+    TenantBranchService tenantBranchService =
+        new TenantBranchService(branches, tenantLifecycleService, clock);
+
+    TenantUserService tenantUserService =
+        new TenantUserService(keycloakService, tenantLifecycleService, tenantBranchService);
+
     tenantCatalogService =
         new TenantCatalogService(
-            tenants,
-            features,
-            branches,
-            new PlatformOutboxService(outboxEvents, clock),
-            keycloakService,
-            new ObjectMapper(),
-            clock);
-    PlatformSeedFixtures.defaultTenantBranches().forEach(branches::save);
+            tenantLifecycleService,
+            tenantFeatureService,
+            tenantBranchService,
+            tenantUserService);
   }
 
   @Test

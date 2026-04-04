@@ -4,12 +4,10 @@ import { createLoadCustomerListService } from "../../application/services/load-c
 import { createHttpCustomerAdapter } from "../../infrastructure/adapters/http-customer.adapter";
 
 export function useCustomersPage({
-  authStore,
   router,
   t,
   tenantStore
 }: {
-  authStore: Record<string, unknown>;
   router: { push: (payload: object) => unknown };
   t: (key: string, params?: Record<string, unknown>) => string;
   tenantStore: { selectedTenantId: string };

@@ -200,3 +200,10 @@ export function toCustomerModel(customer: TenantHomeCustomerDto): TenantHomeCust
     ...customer
   };
 }
+
+export function hasRequiredManualKycDocuments(kyc: {
+  documentFrontImageDataUrl?: string | null;
+  documentBackImageDataUrl?: string | null;
+}): boolean {
+  return !!kyc.documentFrontImageDataUrl && !!kyc.documentBackImageDataUrl;
+}

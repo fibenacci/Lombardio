@@ -35,11 +35,39 @@ class OnlineAuctionServiceTest {
   void createsPublishesRegistersAndPlacesBid() {
     InMemoryOnlineAuctionRepository repository = new InMemoryOnlineAuctionRepository();
     List<Object> publishedPayloads = new ArrayList<>();
-    OnlineAuctionService service =
-        new OnlineAuctionService(
+    OnlineAuctionMetrics metrics = OnlineAuctionMetrics.noop();
+    
+    OnlineAuctionLifecycleService lifecycleService =
+        new OnlineAuctionLifecycleService(
             repository,
             (channel, payload) -> publishedPayloads.add(payload),
+            metrics);
+
+    BidderRegistrationService registrationService =
+        new BidderRegistrationService(
+            repository,
+            lifecycleService,
+            (channel, payload) -> publishedPayloads.add(payload),
+            metrics);
+
+    BidReviewService bidReviewService =
+        new BidReviewService(
+            repository,
+            lifecycleService,
+            (channel, payload) -> publishedPayloads.add(payload),
+            metrics);
+
+    RealtimeSessionService realtimeSessionService =
+        new RealtimeSessionService(
+            lifecycleService,
             (subject, channel) -> new RealtimeSession("ws://localhost", channel, "conn", "sub"));
+
+    OnlineAuctionService service =
+        new OnlineAuctionService(
+            lifecycleService,
+            registrationService,
+            bidReviewService,
+            realtimeSessionService);
 
     var created =
         service.createAuction(

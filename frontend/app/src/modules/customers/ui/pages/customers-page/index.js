@@ -1,6 +1,5 @@
 import { computed, defineComponent, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { useAuthStore } from "../../../../../app/session/state/auth.store";
 import { useTenantStore } from "../../../../../app/tenant-context/state/tenant.store";
 import { useI18n } from "../../../../../app/i18n";
 import { useCustomersPage } from "../../composables/use-customers-page";
@@ -12,10 +11,8 @@ export default defineComponent({
   setup() {
     const { t } = useI18n();
     const router = useRouter();
-    const authStore = useAuthStore();
     const tenantStore = useTenantStore();
     const customersPage = useCustomersPage({
-      authStore,
       router,
       t,
       tenantStore

@@ -34,11 +34,9 @@ function parseOptionalAmount(value: string) {
 }
 
 export function useCashdeskPage({
-  authStore,
   t,
   tenantStore
 }: {
-  authStore: Record<string, unknown>;
   t: (key: string, params?: Record<string, unknown>) => string;
   tenantStore: { selectedTenantId: string };
 }) {
