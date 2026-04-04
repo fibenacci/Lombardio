@@ -22,7 +22,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.stereotype.Component;
 
 @Component
-public class OperatorSessionCrypto {
+public final class OperatorSessionCrypto {
 
   private static final String AES_ALGORITHM = "AES/GCM/NoPadding";
   private static final int IV_LENGTH = 12;
@@ -46,7 +46,7 @@ public class OperatorSessionCrypto {
       buffer.put(iv);
       buffer.put(ciphertext);
       return Base64.getUrlEncoder().withoutPadding().encodeToString(buffer.array());
-    } catch (Exception exception) {
+    } catch (java.security.GeneralSecurityException exception) {
       throw new IllegalStateException("Failed to encrypt operator session token", exception);
     }
   }
@@ -62,7 +62,7 @@ public class OperatorSessionCrypto {
       Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
       cipher.init(Cipher.DECRYPT_MODE, keySpec, new GCMParameterSpec(TAG_LENGTH_BITS, iv));
       return new String(cipher.doFinal(ciphertext), StandardCharsets.UTF_8);
-    } catch (Exception exception) {
+    } catch (java.security.GeneralSecurityException | IllegalArgumentException exception) {
       throw new IllegalStateException("Failed to decrypt operator session token", exception);
     }
   }
@@ -71,8 +71,9 @@ public class OperatorSessionCrypto {
     try {
       MessageDigest digest = MessageDigest.getInstance("SHA-256");
       return digest.digest(input.getBytes(StandardCharsets.UTF_8));
-    } catch (Exception exception) {
-      throw new IllegalStateException("Failed to derive operator session encryption key", exception);
+    } catch (java.security.NoSuchAlgorithmException exception) {
+      throw new IllegalStateException(
+          "Failed to derive operator session encryption key", exception);
     }
   }
 }

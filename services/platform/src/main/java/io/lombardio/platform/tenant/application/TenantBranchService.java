@@ -60,19 +60,23 @@ public class TenantBranchService {
                 tenantId,
                 request.key(),
                 request.displayName(),
-                request.status() == null || request.status().isBlank() ? "ACTIVE" : request.status(),
+                request.status() == null || request.status().isBlank()
+                    ? "ACTIVE"
+                    : request.status(),
                 now,
                 now));
     return toBranchResponse(saved);
   }
 
   protected List<String> sanitizeBranchIds(String tenantId, List<String> branchIds) {
-    List<String> allowedBranchIds = branchRepository.findByTenantId(tenantId).stream().map(Branch::id).toList();
+    List<String> allowedBranchIds =
+        branchRepository.findByTenantId(tenantId).stream().map(Branch::id).toList();
     List<String> requestedBranchIds = branchIds == null ? List.of() : branchIds;
     boolean invalidBranchPresent =
         requestedBranchIds.stream().anyMatch(branchId -> !allowedBranchIds.contains(branchId));
     if (invalidBranchPresent) {
-      throw new IllegalArgumentException("One or more branch assignments are invalid for tenant " + tenantId);
+      throw new IllegalArgumentException(
+          "One or more branch assignments are invalid for tenant " + tenantId);
     }
     return requestedBranchIds;
   }

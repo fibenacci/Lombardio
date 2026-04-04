@@ -31,7 +31,8 @@ public class OperatorSessionAuthenticationFilter extends OncePerRequestFilter {
   private final OperatorSessionProperties properties;
 
   public OperatorSessionAuthenticationFilter(
-      StoredOperatorSessionService storedOperatorSessionService, OperatorSessionProperties properties) {
+      StoredOperatorSessionService storedOperatorSessionService,
+      OperatorSessionProperties properties) {
     this.storedOperatorSessionService = storedOperatorSessionService;
     this.properties = properties;
   }

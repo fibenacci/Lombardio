@@ -31,7 +31,8 @@ class AuthenticatedUserTest {
   @Test
   void returnsJwtTokenForAuthenticatedUserPrincipal() {
     AuthenticatedUser principal =
-        new AuthenticatedUser("user-1", "user-1", "tenant-default", false, "u@example.test", "User", List.of());
+        new AuthenticatedUser(
+            "user-1", "user-1", "tenant-default", false, "u@example.test", "User", List.of());
     Jwt jwt =
         Jwt.withTokenValue("jwt-token")
             .header("alg", "none")
@@ -48,7 +49,8 @@ class AuthenticatedUserTest {
   @Test
   void ignoresStringCredentialsFromNonAuthenticatedUserPrincipal() {
     SecurityContextHolder.getContext()
-        .setAuthentication(new UsernamePasswordAuthenticationToken("internal-service", "secret", List.of()));
+        .setAuthentication(
+            new UsernamePasswordAuthenticationToken("internal-service", "secret", List.of()));
 
     assertTrue(AuthenticatedUser.currentAccessToken().isEmpty());
   }

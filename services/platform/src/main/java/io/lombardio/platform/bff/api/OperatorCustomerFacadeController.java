@@ -38,10 +38,9 @@ public class OperatorCustomerFacadeController extends OperatorFacadeSupport {
 
   @GetMapping("/{customerId}")
   public ResponseEntity<byte[]> getCustomer(
-      @PathVariable String tenantId,
-      @PathVariable String customerId,
-      HttpServletRequest request) {
-    return forwardGet("identity", request, "/api/v1/tenants/" + tenantId + "/customers/" + customerId);
+      @PathVariable String tenantId, @PathVariable String customerId, HttpServletRequest request) {
+    return forwardGet(
+        "identity", request, "/api/v1/tenants/" + tenantId + "/customers/" + customerId);
   }
 
   @PutMapping("/{customerId}")
@@ -50,22 +49,20 @@ public class OperatorCustomerFacadeController extends OperatorFacadeSupport {
       @PathVariable String customerId,
       HttpServletRequest request,
       @RequestBody(required = false) byte[] body) {
-    return forwardPut("identity", request, "/api/v1/tenants/" + tenantId + "/customers/" + customerId, body);
+    return forwardPut(
+        "identity", request, "/api/v1/tenants/" + tenantId + "/customers/" + customerId, body);
   }
 
   @GetMapping("/{customerId}/kyc")
   public ResponseEntity<byte[]> getKycStatus(
-      @PathVariable String tenantId,
-      @PathVariable String customerId,
-      HttpServletRequest request) {
-    return forwardGet("identity", request, "/api/v1/tenants/" + tenantId + "/customers/" + customerId + "/kyc");
+      @PathVariable String tenantId, @PathVariable String customerId, HttpServletRequest request) {
+    return forwardGet(
+        "identity", request, "/api/v1/tenants/" + tenantId + "/customers/" + customerId + "/kyc");
   }
 
   @GetMapping("/{customerId}/kyc/documents")
   public ResponseEntity<byte[]> getKycDocuments(
-      @PathVariable String tenantId,
-      @PathVariable String customerId,
-      HttpServletRequest request) {
+      @PathVariable String tenantId, @PathVariable String customerId, HttpServletRequest request) {
     return forwardGet(
         "identity",
         request,
@@ -79,7 +76,10 @@ public class OperatorCustomerFacadeController extends OperatorFacadeSupport {
       HttpServletRequest request,
       @RequestBody(required = false) byte[] body) {
     return forwardPost(
-        "identity", request, "/api/v1/tenants/" + tenantId + "/customers/" + customerId + "/kyc", body);
+        "identity",
+        request,
+        "/api/v1/tenants/" + tenantId + "/customers/" + customerId + "/kyc",
+        body);
   }
 
   @PostMapping("/{customerId}/kyc/document-prefill")
@@ -97,10 +97,9 @@ public class OperatorCustomerFacadeController extends OperatorFacadeSupport {
 
   @GetMapping("/{customerId}/aml")
   public ResponseEntity<byte[]> getAmlStatus(
-      @PathVariable String tenantId,
-      @PathVariable String customerId,
-      HttpServletRequest request) {
-    return forwardGet("identity", request, "/api/v1/tenants/" + tenantId + "/customers/" + customerId + "/aml");
+      @PathVariable String tenantId, @PathVariable String customerId, HttpServletRequest request) {
+    return forwardGet(
+        "identity", request, "/api/v1/tenants/" + tenantId + "/customers/" + customerId + "/aml");
   }
 
   @PostMapping("/{customerId}/aml")
@@ -110,7 +109,10 @@ public class OperatorCustomerFacadeController extends OperatorFacadeSupport {
       HttpServletRequest request,
       @RequestBody(required = false) byte[] body) {
     return forwardPost(
-        "identity", request, "/api/v1/tenants/" + tenantId + "/customers/" + customerId + "/aml", body);
+        "identity",
+        request,
+        "/api/v1/tenants/" + tenantId + "/customers/" + customerId + "/aml",
+        body);
   }
 
   @PostMapping("/{customerId}/aml/origination-check")

@@ -133,9 +133,7 @@ public class IdentityIntelligencePipelineIntegrationTest {
     kycService.updateStatus(tenantId, customer.id(), kycRequest);
     var loadedImages = kycService.getDocumentImages(tenantId, customer.id());
 
-    assertEquals(
-        "data:image/png;base64," + pngBase64, loadedImages.documentFrontImageDataUrl());
-    assertEquals(
-        "data:image/png;base64," + pngBase64, loadedImages.documentBackImageDataUrl());
+    assertEquals("data:image/png;base64," + pngBase64, loadedImages.documentFrontImageDataUrl());
+    assertEquals("data:image/png;base64," + pngBase64, loadedImages.documentBackImageDataUrl());
   }
 }

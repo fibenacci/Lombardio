@@ -58,8 +58,7 @@ public class OperatorAuthController {
 
   @PostMapping("/refresh")
   public ResponseEntity<OperatorSessionResponse> refresh(
-      HttpServletRequest request,
-      HttpServletResponse response) {
+      HttpServletRequest request, HttpServletResponse response) {
     String sessionId = readSessionId(request);
     if (sessionId == null || sessionId.isBlank()) {
       return ResponseEntity.noContent().build();
@@ -76,16 +75,15 @@ public class OperatorAuthController {
   }
 
   @PostMapping("/logout")
-  public ResponseEntity<Void> logout(
-      HttpServletRequest request,
-      HttpServletResponse response) {
+  public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
     storedOperatorSessionService.logout(readSessionId(request));
     clearSessionCookie(response);
     return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/me")
-  public OperatorSessionUserResponse me(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+  public OperatorSessionUserResponse me(
+      @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
     return OperatorSessionUserResponse.fromAuthenticatedUser(authenticatedUser);
   }
 

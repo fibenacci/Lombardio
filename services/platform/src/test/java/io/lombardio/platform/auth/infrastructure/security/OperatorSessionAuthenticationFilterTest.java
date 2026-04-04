@@ -36,7 +36,8 @@ class OperatorSessionAuthenticationFilterTest {
 
   @Test
   void authenticatesFromOpaqueSessionCookie() throws Exception {
-    StoredOperatorSessionService storedOperatorSessionService = mock(StoredOperatorSessionService.class);
+    StoredOperatorSessionService storedOperatorSessionService =
+        mock(StoredOperatorSessionService.class);
     OperatorSessionAuthenticationFilter filter =
         new OperatorSessionAuthenticationFilter(
             storedOperatorSessionService,

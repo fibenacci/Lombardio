@@ -10,11 +10,11 @@
  */
 package io.lombardio.identity.portal.infrastructure.security;
 
-import io.lombardio.identity.portal.application.CustomerPortalService;
 import io.lombardio.identity.config.CustomerPortalSessionProperties;
-import jakarta.servlet.http.Cookie;
+import io.lombardio.identity.portal.application.CustomerPortalService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -31,7 +31,8 @@ public class CustomerPortalAuthenticationFilter extends OncePerRequestFilter {
   private final CustomerPortalSessionProperties sessionProperties;
 
   public CustomerPortalAuthenticationFilter(
-      CustomerPortalService customerPortalService, CustomerPortalSessionProperties sessionProperties) {
+      CustomerPortalService customerPortalService,
+      CustomerPortalSessionProperties sessionProperties) {
     this.customerPortalService = customerPortalService;
     this.sessionProperties = sessionProperties;
   }

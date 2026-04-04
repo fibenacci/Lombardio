@@ -82,7 +82,9 @@ public class TenantUserService {
 
   public List<String> listAvailableRolesForTenant(String tenantId) {
     tenantLifecycleService.requireTenant(tenantId);
-    return keycloakService.getAvailableRoles().stream().filter(this::isTenantAssignableRole).toList();
+    return keycloakService.getAvailableRoles().stream()
+        .filter(this::isTenantAssignableRole)
+        .toList();
   }
 
   private boolean isTenantAssignableRole(String roleName) {

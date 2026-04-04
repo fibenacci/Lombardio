@@ -22,7 +22,13 @@ public interface LoanReadClient {
       String id,
       Instant recordedAt,
       List<ReportedLoanPosition> positions,
-      List<ReportedPawnTicket> pawnTickets) {}
+      List<ReportedPawnTicket> pawnTickets) {
+
+    public ReportedLoanCase {
+      positions = List.copyOf(positions != null ? positions : List.of());
+      pawnTickets = List.copyOf(pawnTickets != null ? pawnTickets : List.of());
+    }
+  }
 
   record ReportedLoanPosition(String label, String guidelineLabel, BigDecimal pledgedValue) {}
 

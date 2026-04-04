@@ -10,34 +10,18 @@
  */
 package io.lombardio.platform.tenant.application;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.lombardio.platform.iam.application.KeycloakService;
-import io.lombardio.platform.integration.application.PlatformOutboxService;
 import io.lombardio.platform.tenant.api.BranchResponse;
-import io.lombardio.platform.tenant.api.CreateTenantRequest;
 import io.lombardio.platform.tenant.api.CreateTenantBranchRequest;
+import io.lombardio.platform.tenant.api.CreateTenantRequest;
 import io.lombardio.platform.tenant.api.CreateTenantUserRequest;
 import io.lombardio.platform.tenant.api.TenantFeatureResponse;
 import io.lombardio.platform.tenant.api.TenantResponse;
 import io.lombardio.platform.tenant.api.TenantUserResponse;
-import io.lombardio.platform.tenant.api.UpdateTenantUserRequest;
 import io.lombardio.platform.tenant.api.UpdateTenantRequest;
+import io.lombardio.platform.tenant.api.UpdateTenantUserRequest;
 import io.lombardio.platform.tenant.api.UpsertTenantFeatureRequest;
-import io.lombardio.platform.tenant.domain.Branch;
-import io.lombardio.platform.tenant.domain.BranchRepository;
-import io.lombardio.platform.tenant.domain.Tenant;
-import io.lombardio.platform.tenant.domain.TenantFeature;
-import io.lombardio.platform.tenant.domain.TenantFeatureRepository;
-import io.lombardio.platform.tenant.domain.TenantRepository;
-import java.time.Clock;
-import java.time.Instant;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TenantCatalogService {

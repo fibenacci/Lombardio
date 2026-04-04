@@ -65,7 +65,8 @@ class TenantAdministrationAuthorizationServiceTest {
             "Tenant Admin",
             List.of("users.read", "roles.read"));
 
-    assertThrows(ForbiddenException.class, () -> service.requireTenantRoleRead(user, "tenant-hamburg"));
+    assertThrows(
+        ForbiddenException.class, () -> service.requireTenantRoleRead(user, "tenant-hamburg"));
   }
 
   @Test
@@ -110,6 +111,7 @@ class TenantAdministrationAuthorizationServiceTest {
             "Customer Agent",
             List.of("customers.read"));
 
-    assertThrows(ForbiddenException.class, () -> service.requireTenantFeatureRead(user, "tenant-hamburg"));
+    assertThrows(
+        ForbiddenException.class, () -> service.requireTenantFeatureRead(user, "tenant-hamburg"));
   }
 }

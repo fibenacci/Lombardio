@@ -12,25 +12,11 @@ package io.lombardio.onlineauction.application;
 
 import io.lombardio.onlineauction.api.BidderReviewRequest;
 import io.lombardio.onlineauction.api.CreateOnlineAuctionRequest;
-import io.lombardio.onlineauction.api.OnlineAuctionNotFoundException;
 import io.lombardio.onlineauction.api.OnlineAuctionResponse;
 import io.lombardio.onlineauction.api.PlaceOnlineBidRequest;
 import io.lombardio.onlineauction.api.RealtimeSessionResponse;
 import io.lombardio.onlineauction.api.RegisterBidderRequest;
-import io.lombardio.onlineauction.domain.BidderApprovalStatus;
-import io.lombardio.onlineauction.domain.BidderRegistration;
-import io.lombardio.onlineauction.domain.OnlineAuction;
-import io.lombardio.onlineauction.domain.OnlineAuctionRepository;
-import io.lombardio.onlineauction.domain.OnlineAuctionStatus;
-import io.lombardio.onlineauction.domain.RealtimePublisher;
-import io.lombardio.onlineauction.domain.RealtimeSession;
-import io.lombardio.onlineauction.domain.RealtimeSessionTokenService;
-import io.lombardio.onlineauction.domain.ReviewCheckStatus;
-import io.micrometer.core.instrument.MeterRegistry;
-import java.time.Instant;
-import java.util.Comparator;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service

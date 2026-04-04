@@ -33,4 +33,9 @@ public record PawnTicket(
     BigDecimal totalOperatingFeeAmount,
     BigDecimal totalRepaymentAmount,
     String legalText,
-    java.util.List<PawnTicketPosition> positions) {}
+    java.util.List<PawnTicketPosition> positions) {
+
+  public PawnTicket {
+    positions = java.util.List.copyOf(positions != null ? positions : java.util.List.of());
+  }
+}

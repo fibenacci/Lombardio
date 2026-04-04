@@ -78,11 +78,9 @@ public class SecurityConfig {
                     new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
         .oauth2ResourceServer(
             oauth2 ->
-                oauth2
-                    .jwt(
-                        jwt ->
-                            jwt.jwtAuthenticationConverter(
-                                new KeycloakJwtAuthenticationConverter())));
+                oauth2.jwt(
+                    jwt ->
+                        jwt.jwtAuthenticationConverter(new KeycloakJwtAuthenticationConverter())));
 
     http.addFilterBefore(
         new OperatorSessionAuthenticationFilter(
@@ -95,7 +93,8 @@ public class SecurityConfig {
   @Bean
   public JwtDecoder jwtDecoder() {
     NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
-    jwtDecoder.setJwtValidator(KeycloakJwtValidators.operatorAccessTokenValidator(operatorClientId));
+    jwtDecoder.setJwtValidator(
+        KeycloakJwtValidators.operatorAccessTokenValidator(operatorClientId));
     return jwtDecoder;
   }
 

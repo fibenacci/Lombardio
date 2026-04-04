@@ -19,4 +19,12 @@ public record AppCorsProperties(
     List<String> allowedMethods,
     List<String> allowedHeaders,
     List<String> exposedHeaders,
-    Long maxAgeSeconds) {}
+    Long maxAgeSeconds) {
+
+  public AppCorsProperties {
+    allowedOrigins = List.copyOf(allowedOrigins != null ? allowedOrigins : List.of());
+    allowedMethods = List.copyOf(allowedMethods != null ? allowedMethods : List.of());
+    allowedHeaders = List.copyOf(allowedHeaders != null ? allowedHeaders : List.of());
+    exposedHeaders = List.copyOf(exposedHeaders != null ? exposedHeaders : List.of());
+  }
+}

@@ -138,7 +138,7 @@ export function useTenantDashboardService({
     try {
       await Promise.all([
         loanForm.loadGuidelines(),
-        customerLookup.searchSuggestions(),
+        customerLookup.searchCustomerSuggestions(),
         reporting.loadReportingOverview()
       ]);
       await loanForm.refreshQuote();

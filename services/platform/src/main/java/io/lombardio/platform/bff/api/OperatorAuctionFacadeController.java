@@ -23,7 +23,8 @@ public class OperatorAuctionFacadeController extends OperatorFacadeSupport {
   }
 
   @GetMapping("/auctions")
-  public ResponseEntity<byte[]> listAuctions(@PathVariable String tenantId, HttpServletRequest request) {
+  public ResponseEntity<byte[]> listAuctions(
+      @PathVariable String tenantId, HttpServletRequest request) {
     return forwardGet("auction", request, "/api/v1/tenants/" + tenantId + "/auctions", null);
   }
 
@@ -42,19 +43,33 @@ public class OperatorAuctionFacadeController extends OperatorFacadeSupport {
       HttpServletRequest request,
       @RequestBody(required = false) byte[] body) {
     return forwardPost(
-        "auction", request, "/api/v1/tenants/" + tenantId + "/auctions/" + auctionId + "/announce", null, body);
+        "auction",
+        request,
+        "/api/v1/tenants/" + tenantId + "/auctions/" + auctionId + "/announce",
+        null,
+        body);
   }
 
   @PostMapping("/auctions/{auctionId}/open")
   public ResponseEntity<byte[]> openAuction(
       @PathVariable String tenantId, @PathVariable String auctionId, HttpServletRequest request) {
-    return forwardPost("auction", request, "/api/v1/tenants/" + tenantId + "/auctions/" + auctionId + "/open", null, new byte[0]);
+    return forwardPost(
+        "auction",
+        request,
+        "/api/v1/tenants/" + tenantId + "/auctions/" + auctionId + "/open",
+        null,
+        new byte[0]);
   }
 
   @PostMapping("/auctions/{auctionId}/close")
   public ResponseEntity<byte[]> closeAuction(
       @PathVariable String tenantId, @PathVariable String auctionId, HttpServletRequest request) {
-    return forwardPost("auction", request, "/api/v1/tenants/" + tenantId + "/auctions/" + auctionId + "/close", null, new byte[0]);
+    return forwardPost(
+        "auction",
+        request,
+        "/api/v1/tenants/" + tenantId + "/auctions/" + auctionId + "/close",
+        null,
+        new byte[0]);
   }
 
   @PostMapping("/auctions/{auctionId}/lots/{lotId}/bids")

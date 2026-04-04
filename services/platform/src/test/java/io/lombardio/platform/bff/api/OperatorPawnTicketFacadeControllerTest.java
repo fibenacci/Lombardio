@@ -1,3 +1,13 @@
+/*
+ * Lombardio Source-Available No-Distribution License 1.0
+ *
+ * Copyright (c) 2026 Benjamin Letzel. All rights reserved.
+ *
+ * This project is source-available for educational and review purposes only.
+ * Redistribution, sublicensing, or commercial use is strictly prohibited.
+ *
+ * For partnership or cooperation inquiries, please contact the author.
+ */
 package io.lombardio.platform.bff.api;
 
 import static org.mockito.Mockito.mock;
@@ -13,7 +23,8 @@ class OperatorPawnTicketFacadeControllerTest extends OperatorFacadeControllerTes
   @Test
   void forwardsPawnTicketListToPawnTicketService() {
     OperatorBffProxyService proxyService = mock(OperatorBffProxyService.class);
-    OperatorPawnTicketFacadeController controller = new OperatorPawnTicketFacadeController(proxyService);
+    OperatorPawnTicketFacadeController controller =
+        new OperatorPawnTicketFacadeController(proxyService);
     MockHttpServletRequest request =
         new MockHttpServletRequest(
             "GET", "/api/v1/platform/operator/tenants/tenant-default/pawn-tickets");
@@ -44,7 +55,8 @@ class OperatorPawnTicketFacadeControllerTest extends OperatorFacadeControllerTes
   @Test
   void forwardsCashTransactionCreationToPawnTicketService() {
     OperatorBffProxyService proxyService = mock(OperatorBffProxyService.class);
-    OperatorPawnTicketFacadeController controller = new OperatorPawnTicketFacadeController(proxyService);
+    OperatorPawnTicketFacadeController controller =
+        new OperatorPawnTicketFacadeController(proxyService);
     byte[] requestBody = "{\"ticketNumber\":\"PS-1001\"}".getBytes();
     byte[] responseBody = "{\"id\":\"cash-1\"}".getBytes();
     MockHttpServletRequest request =

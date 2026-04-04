@@ -23,6 +23,11 @@ public record OperatorSessionUserResponse(
     List<String> roles,
     List<String> permissions) {
 
+  public OperatorSessionUserResponse {
+    roles = List.copyOf(roles != null ? roles : List.of());
+    permissions = List.copyOf(permissions != null ? permissions : List.of());
+  }
+
   public static OperatorSessionUserResponse fromAuthenticatedUser(AuthenticatedUser user) {
     return new OperatorSessionUserResponse(
         user.userId(),

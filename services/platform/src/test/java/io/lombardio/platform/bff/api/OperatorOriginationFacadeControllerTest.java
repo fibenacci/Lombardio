@@ -1,3 +1,13 @@
+/*
+ * Lombardio Source-Available No-Distribution License 1.0
+ *
+ * Copyright (c) 2026 Benjamin Letzel. All rights reserved.
+ *
+ * This project is source-available for educational and review purposes only.
+ * Redistribution, sublicensing, or commercial use is strictly prohibited.
+ *
+ * For partnership or cooperation inquiries, please contact the author.
+ */
 package io.lombardio.platform.bff.api;
 
 import static org.mockito.Mockito.mock;
@@ -13,7 +23,8 @@ class OperatorOriginationFacadeControllerTest extends OperatorFacadeControllerTe
   @Test
   void forwardsLoanListToOriginationService() {
     OperatorBffProxyService proxyService = mock(OperatorBffProxyService.class);
-    OperatorOriginationFacadeController controller = new OperatorOriginationFacadeController(proxyService);
+    OperatorOriginationFacadeController controller =
+        new OperatorOriginationFacadeController(proxyService);
     MockHttpServletRequest request =
         new MockHttpServletRequest("GET", "/api/v1/platform/operator/tenants/tenant-default/loans");
     request.setQueryString("customerId=customer-1");
@@ -44,11 +55,13 @@ class OperatorOriginationFacadeControllerTest extends OperatorFacadeControllerTe
   @Test
   void forwardsLoanCreationToOriginationService() {
     OperatorBffProxyService proxyService = mock(OperatorBffProxyService.class);
-    OperatorOriginationFacadeController controller = new OperatorOriginationFacadeController(proxyService);
+    OperatorOriginationFacadeController controller =
+        new OperatorOriginationFacadeController(proxyService);
     byte[] requestBody = "{\"customerId\":\"customer-1\"}".getBytes();
     byte[] responseBody = "{\"id\":\"loan-1\"}".getBytes();
     MockHttpServletRequest request =
-        new MockHttpServletRequest("POST", "/api/v1/platform/operator/tenants/tenant-default/loans");
+        new MockHttpServletRequest(
+            "POST", "/api/v1/platform/operator/tenants/tenant-default/loans");
 
     stubForward(
         proxyService,

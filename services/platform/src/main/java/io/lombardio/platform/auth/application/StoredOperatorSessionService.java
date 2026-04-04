@@ -10,6 +10,7 @@
  */
 package io.lombardio.platform.auth.application;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.platform.auth.infrastructure.persistence.OperatorSessionEntity;
 import io.lombardio.platform.auth.infrastructure.persistence.SpringDataOperatorSessionRepository;
 import io.lombardio.platform.config.OperatorSessionProperties;
@@ -31,6 +32,7 @@ public class StoredOperatorSessionService {
   private final OperatorSessionProperties properties;
   private final SecureRandom secureRandom = new SecureRandom();
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring managed repository proxy")
   public StoredOperatorSessionService(
       SpringDataOperatorSessionRepository repository,
       OperatorSessionCrypto crypto,
@@ -89,7 +91,8 @@ public class StoredOperatorSessionService {
 
               try {
                 String accessToken = crypto.decrypt(entity.getAccessTokenCiphertext());
-                AuthenticatedUser user = operatorAuthService.authenticatedUserFromAccessToken(accessToken);
+                AuthenticatedUser user =
+                    operatorAuthService.authenticatedUserFromAccessToken(accessToken);
                 return Optional.of(new StoredOperatorAuthentication(accessToken, user));
               } catch (UnauthorizedException exception) {
                 return refreshForAuthentication(entity);
@@ -118,7 +121,8 @@ public class StoredOperatorSessionService {
             });
   }
 
-  private Optional<StoredOperatorAuthentication> refreshForAuthentication(OperatorSessionEntity entity) {
+  private Optional<StoredOperatorAuthentication> refreshForAuthentication(
+      OperatorSessionEntity entity) {
     try {
       String refreshToken = crypto.decrypt(entity.getRefreshTokenCiphertext());
       OperatorSession refreshed = operatorAuthService.refresh(refreshToken);

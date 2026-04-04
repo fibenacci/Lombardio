@@ -10,10 +10,10 @@
  */
 package io.lombardio.pawnticket.config;
 
+import io.lombardio.pawnticket.security.InternalServiceAuthenticationFilter;
 import io.lombardio.platform.security.CookieOrHeaderBearerTokenResolver;
 import io.lombardio.platform.security.KeycloakJwtAuthenticationConverter;
 import io.lombardio.platform.security.KeycloakJwtValidators;
-import io.lombardio.pawnticket.security.InternalServiceAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -23,9 +23,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
-import org.springframework.security.oauth2.core.OAuth2Error;
-import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -89,7 +86,8 @@ public class SecurityConfig {
   @Bean
   public JwtDecoder jwtDecoder() {
     NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
-    jwtDecoder.setJwtValidator(KeycloakJwtValidators.operatorAccessTokenValidator(operatorClientId));
+    jwtDecoder.setJwtValidator(
+        KeycloakJwtValidators.operatorAccessTokenValidator(operatorClientId));
     return jwtDecoder;
   }
 

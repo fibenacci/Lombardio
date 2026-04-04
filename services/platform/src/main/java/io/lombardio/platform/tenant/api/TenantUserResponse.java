@@ -19,4 +19,20 @@ public record TenantUserResponse(
     String displayName,
     String status,
     List<String> roleIds,
-    List<String> branchIds) {}
+    List<String> branchIds) {
+
+  public TenantUserResponse {
+    roleIds = List.copyOf(roleIds != null ? roleIds : List.of());
+    branchIds = List.copyOf(branchIds != null ? branchIds : List.of());
+  }
+
+  @Override
+  public List<String> roleIds() {
+    return List.copyOf(roleIds);
+  }
+
+  @Override
+  public List<String> branchIds() {
+    return List.copyOf(branchIds);
+  }
+}

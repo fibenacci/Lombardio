@@ -24,6 +24,9 @@ import org.springframework.web.client.RestClient;
 public class IdentityTenantFeatureDirectory implements TenantFeatureDirectory {
 
   private static final Logger log = LoggerFactory.getLogger(IdentityTenantFeatureDirectory.class);
+  private static final ParameterizedTypeReference<List<TenantFeatureResponse>> FEATURE_LIST_TYPE =
+      new ParameterizedTypeReference<>() {};
+
   private final RestClient restClient;
 
   public IdentityTenantFeatureDirectory(
@@ -50,7 +53,7 @@ public class IdentityTenantFeatureDirectory implements TenantFeatureDirectory {
               .uri("/api/v1/tenants/{tenantId}/features", tenantId)
               .headers(headers -> headers.setBearerAuth(bearerToken))
               .retrieve()
-              .body(new ParameterizedTypeReference<List<TenantFeatureResponse>>() {});
+              .body(FEATURE_LIST_TYPE);
 
       if (features == null) {
         return false;

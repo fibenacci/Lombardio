@@ -47,8 +47,27 @@ jobs:
           cache-dependency-path: frontend/app/package-lock.json
       - run: npm install
         working-directory: frontend/app
-      - run: npm test -- --run
+      - name: Lint
+        run: npm run lint
         working-directory: frontend/app
+      - name: Typecheck
+        run: npm run typecheck
+        working-directory: frontend/app
+      - name: Test
+        run: npm test -- --run
+        working-directory: frontend/app
+
+  static-analysis-java:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Static Analysis (SpotBugs)
+        run: ./mvnw spotbugs:check
 
   build-and-push:
     if: github.event_name == 'push'
@@ -56,6 +75,7 @@ jobs:
       - test-java
       - test-go
       - test-frontend
+      - static-analysis-java
     runs-on: ubuntu-latest
     permissions:
       contents: read

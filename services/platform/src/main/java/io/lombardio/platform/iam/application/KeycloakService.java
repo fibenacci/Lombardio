@@ -10,10 +10,11 @@
  */
 package io.lombardio.platform.iam.application;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.platform.config.KeycloakProperties;
+import io.lombardio.platform.tenant.api.TenantUserResponse;
 import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.ProcessingException;
-import io.lombardio.platform.tenant.api.TenantUserResponse;
 import jakarta.ws.rs.core.Response;
 import java.util.Collections;
 import java.util.List;
@@ -119,7 +120,13 @@ public class KeycloakService {
           }
 
           return new TenantUserResponse(
-              userId, email, email, displayName, "ACTIVE", safeRoles(roles), safeBranchIds(branchIds));
+              userId,
+              email,
+              email,
+              displayName,
+              "ACTIVE",
+              safeRoles(roles),
+              safeBranchIds(branchIds));
         });
   }
 
@@ -149,6 +156,9 @@ public class KeycloakService {
         });
   }
 
+  @SuppressFBWarnings(
+      value = "IMPROPER_UNICODE",
+      justification = "Safe comparison with technical constants")
   public TenantUserResponse updateTenantUser(
       String tenantId,
       String userId,
@@ -167,18 +177,28 @@ public class KeycloakService {
           user.setUsername(email);
           user.setEmail(email);
           user.setFirstName(displayName);
-          user.setEnabled(!"INACTIVE".equalsIgnoreCase(status));
+          boolean enabled = status == null || (!"INACTIVE".equals(status) && !"inactive".equals(status));
+          user.setEnabled(enabled);
           user.setAttributes(userAttributes(tenantId, branchIds));
 
           realmResource.users().get(userId).update(user);
-          realmResource.users().get(userId).roles().realmLevel().remove(
-              realmResource.users().get(userId).roles().realmLevel().listAll());
+          realmResource
+              .users()
+              .get(userId)
+              .roles()
+              .realmLevel()
+              .remove(realmResource.users().get(userId).roles().realmLevel().listAll());
 
           if (roles != null && !roles.isEmpty()) {
-            realmResource.users().get(userId).roles().realmLevel().add(
-                roles.stream()
-                    .map(roleName -> realmResource.roles().get(roleName).toRepresentation())
-                    .toList());
+            realmResource
+                .users()
+                .get(userId)
+                .roles()
+                .realmLevel()
+                .add(
+                    roles.stream()
+                        .map(roleName -> realmResource.roles().get(roleName).toRepresentation())
+                        .toList());
           }
 
           return toTenantUserResponse(
@@ -203,7 +223,8 @@ public class KeycloakService {
     return group;
   }
 
-  private GroupRepresentation findTenantGroupOptional(RealmResource realmResource, String tenantId) {
+  private GroupRepresentation findTenantGroupOptional(
+      RealmResource realmResource, String tenantId) {
     return realmResource.groups().groups(tenantId, 0, 1).stream()
         .filter(g -> g.getName().equals(tenantId))
         .findFirst()
@@ -212,13 +233,16 @@ public class KeycloakService {
 
   private void requireTenantMembership(UserRepresentation user, String tenantId) {
     List<String> userTenants =
-        user.getAttributes() == null ? Collections.emptyList() : user.getAttributes().get("tenantId");
+        user.getAttributes() == null
+            ? Collections.emptyList()
+            : user.getAttributes().get("tenantId");
     if (userTenants == null || userTenants.stream().noneMatch(tenantId::equals)) {
       throw new RuntimeException("User does not belong to tenant: " + tenantId);
     }
   }
 
-  private TenantUserResponse toTenantUserResponse(RealmResource realmResource, UserRepresentation user) {
+  private TenantUserResponse toTenantUserResponse(
+      RealmResource realmResource, UserRepresentation user) {
     List<String> roleIds =
         realmResource.users().get(user.getId()).roles().realmLevel().listAll().stream()
             .map(RoleRepresentation::getName)
@@ -230,11 +254,15 @@ public class KeycloakService {
         user.getId(),
         user.getUsername(),
         user.getEmail(),
-        user.getFirstName() == null || user.getFirstName().isBlank() ? user.getUsername() : user.getFirstName(),
+        user.getFirstName() == null || user.getFirstName().isBlank()
+            ? user.getUsername()
+            : user.getFirstName(),
         user.isEnabled() ? "ACTIVE" : "INACTIVE",
         roleIds,
         safeBranchIds(
-            user.getAttributes() == null ? Collections.emptyList() : user.getAttributes().get("branchIds")));
+            user.getAttributes() == null
+                ? Collections.emptyList()
+                : user.getAttributes().get("branchIds")));
   }
 
   private List<String> safeRoles(List<String> roles) {

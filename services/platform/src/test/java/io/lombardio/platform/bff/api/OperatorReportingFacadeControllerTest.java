@@ -1,3 +1,13 @@
+/*
+ * Lombardio Source-Available No-Distribution License 1.0
+ *
+ * Copyright (c) 2026 Benjamin Letzel. All rights reserved.
+ *
+ * This project is source-available for educational and review purposes only.
+ * Redistribution, sublicensing, or commercial use is strictly prohibited.
+ *
+ * For partnership or cooperation inquiries, please contact the author.
+ */
 package io.lombardio.platform.bff.api;
 
 import static org.mockito.Mockito.mock;
@@ -13,7 +23,8 @@ class OperatorReportingFacadeControllerTest extends OperatorFacadeControllerTest
   @Test
   void forwardsDashboardOverviewToReportingService() {
     OperatorBffProxyService proxyService = mock(OperatorBffProxyService.class);
-    OperatorReportingFacadeController controller = new OperatorReportingFacadeController(proxyService);
+    OperatorReportingFacadeController controller =
+        new OperatorReportingFacadeController(proxyService);
     MockHttpServletRequest request =
         new MockHttpServletRequest(
             "GET", "/api/v1/platform/operator/tenants/tenant-default/reporting/dashboard");

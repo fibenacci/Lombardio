@@ -110,6 +110,7 @@ make up
 | `make down` | Stop all local containers |
 | `make reset` | Stop containers and remove volumes (DB Reset) |
 | `make test` | Run all backend tests via Maven |
+| `make static` | Run static code analysis (SpotBugs) |
 | `make fix` | Run all available auto-formatters (Spotless, Go, Frontend) |
 | `make help` | Show all available Makefile commands |
 
@@ -163,6 +164,22 @@ The local Compose stack mounts this file into the `regula` container on startup.
 Without it, Regula starts in unlicensed mode and OCR requests return HTTP `403`
 with `permission denied. Bad license`.
 
+### 7️⃣ Quality Assurance & Static Analysis
+
+We maintain a high quality bar through automated gates:
+
+- **Java Static Analysis**: Powered by **SpotBugs** with the **FindSecBugs** extension. It analyzes bytecode for logic errors, security vulnerabilities, and concurrency issues.
+  ```bash
+  # Run analysis on all Java services
+  ./mvnw compile spotbugs:check
+  ```
+- **TypeScript Type Checking**: We use `vue-tsc` for rigorous type safety in the frontend.
+  ```bash
+  # Run typecheck in frontend directory (cd frontend/app)
+  npm run typecheck
+  ```
+- **Linting**: Consistent style via **ESLint** (Frontend) and **Spotless** (Java/Go).
+
 ---
 
 ## 🛠️ Tech Stack
@@ -181,6 +198,16 @@ with `permission denied. Bad license`.
 ## 📜 License
 
 This repository is **source-available**. See the [LICENSE](./LICENSE) file for custom terms. Redistribution or commercial use of protected parts is not permitted without prior written permission.
+
+Additional legal and collaboration documents:
+
+- [TRADEMARKS.md](./TRADEMARKS.md) for name, logo, and branding restrictions
+- [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution workflow expectations
+- [CLA.md](./CLA.md) for contributor-rights policy
+- [Corporate-CLA-EN.md](./Corporate-CLA-EN.md) for the English corporate CLA template
+- [Corporate-CLA-DE.md](./Corporate-CLA-DE.md) for the German corporate CLA template
+- [COMMERCIAL.md](./COMMERCIAL.md) for OEM, partner, reseller, and commercial-use paths
+- [NOTICE](./NOTICE) for repository notices
 
 ---
 

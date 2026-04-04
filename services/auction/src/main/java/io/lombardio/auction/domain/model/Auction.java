@@ -27,4 +27,9 @@ public record Auction(
     String announcementReference,
     List<AuctionLot> lots,
     Instant createdAt,
-    Instant updatedAt) {}
+    Instant updatedAt) {
+
+  public Auction {
+    lots = List.copyOf(lots != null ? lots : List.of());
+  }
+}

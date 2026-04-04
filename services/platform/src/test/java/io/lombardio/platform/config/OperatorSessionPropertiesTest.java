@@ -20,33 +20,26 @@ class OperatorSessionPropertiesTest {
   @Test
   void acceptsSupportedSameSiteValues() {
     assertDoesNotThrow(
-        () ->
-            new OperatorSessionProperties(
-                "session", "/", false, "Lax", 900, "0123456789abcdef"));
+        () -> new OperatorSessionProperties("session", "/", false, "Lax", 900, "0123456789abcdef"));
     assertDoesNotThrow(
         () ->
-            new OperatorSessionProperties(
-                "session", "/", true, "Strict", 900, "0123456789abcdef"));
+            new OperatorSessionProperties("session", "/", true, "Strict", 900, "0123456789abcdef"));
     assertDoesNotThrow(
-        () ->
-            new OperatorSessionProperties(
-                "session", "/", true, "None", 900, "0123456789abcdef"));
+        () -> new OperatorSessionProperties("session", "/", true, "None", 900, "0123456789abcdef"));
   }
 
   @Test
   void rejectsUnsupportedSameSiteValue() {
     assertThrows(
         IllegalArgumentException.class,
-        () ->
-            new OperatorSessionProperties("session", "/", false, "lax", 900, "0123456789abcdef"));
+        () -> new OperatorSessionProperties("session", "/", false, "lax", 900, "0123456789abcdef"));
   }
 
   @Test
   void rejectsNonPositiveCookieAge() {
     assertThrows(
         IllegalArgumentException.class,
-        () ->
-            new OperatorSessionProperties("session", "/", false, "Lax", 0, "0123456789abcdef"));
+        () -> new OperatorSessionProperties("session", "/", false, "Lax", 0, "0123456789abcdef"));
   }
 
   @Test

@@ -119,10 +119,15 @@ public class ApiExceptionHandler {
   }
 
   @ExceptionHandler(Throwable.class)
+  @SuppressFBWarnings(
+      value = "CRLF_INJECTION_LOGS",
+      justification = "traceId is sanitized via whitelist regex")
   public ResponseEntity<ApiError> handleUnexpected(
       Throwable exception, HttpServletRequest request) {
     String traceId = TraceIdContext.getOrCreate(request);
-    log.error("Unhandled platform service error [traceId={}]", traceId, exception);
+    // Strict whitelist sanitization for logging to satisfy SpotBugs CRLF injection rule
+    String sanitizedTraceId = traceId == null ? "null" : traceId.replaceAll("[^a-zA-Z0-9-]", "_");
+    log.error("Unhandled platform service error [traceId={}]", sanitizedTraceId, exception);
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(new ApiError("internal_error", "Internal server error", traceId, List.of()));
   }

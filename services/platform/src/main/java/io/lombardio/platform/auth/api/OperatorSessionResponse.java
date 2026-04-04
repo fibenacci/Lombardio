@@ -10,5 +10,4 @@
  */
 package io.lombardio.platform.auth.api;
 
-public record OperatorSessionResponse(
-    String status, OperatorSessionUserResponse user) {}
+public record OperatorSessionResponse(String status, OperatorSessionUserResponse user) {}

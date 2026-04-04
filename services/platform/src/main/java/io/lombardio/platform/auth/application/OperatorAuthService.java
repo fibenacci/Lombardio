@@ -10,6 +10,7 @@
  */
 package io.lombardio.platform.auth.application;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.platform.auth.api.OperatorSessionUserResponse;
 import io.lombardio.platform.config.KeycloakProperties;
 import io.lombardio.platform.iam.application.IdentityProviderUnavailableException;
@@ -34,8 +35,13 @@ public class OperatorAuthService {
   private final JwtDecoder jwtDecoder;
   private final KeycloakProperties keycloakProperties;
 
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification = "Standard Spring dependency injection")
   public OperatorAuthService(
-      RestClient keycloakOidcRestClient, JwtDecoder jwtDecoder, KeycloakProperties keycloakProperties) {
+      RestClient keycloakOidcRestClient,
+      JwtDecoder jwtDecoder,
+      KeycloakProperties keycloakProperties) {
     this.keycloakOidcRestClient = keycloakOidcRestClient;
     this.jwtDecoder = jwtDecoder;
     this.keycloakProperties = keycloakProperties;
@@ -46,10 +52,14 @@ public class OperatorAuthService {
         exchangeToken(
             formData(
                 Map.of(
-                    "grant_type", "password",
-                    "client_id", keycloakProperties.operatorClientId(),
-                    "username", email,
-                    "password", password)),
+                    "grant_type",
+                    "password",
+                    "client_id",
+                    keycloakProperties.operatorClientId(),
+                    "username",
+                    email,
+                    "password",
+                    password)),
             "Invalid email or password");
     return toOperatorSession(response);
   }
@@ -59,9 +69,12 @@ public class OperatorAuthService {
         exchangeToken(
             formData(
                 Map.of(
-                    "grant_type", "refresh_token",
-                    "client_id", keycloakProperties.operatorClientId(),
-                    "refresh_token", refreshToken)),
+                    "grant_type",
+                    "refresh_token",
+                    "client_id",
+                    keycloakProperties.operatorClientId(),
+                    "refresh_token",
+                    refreshToken)),
             "Session expired");
     return toOperatorSession(response);
   }
@@ -79,8 +92,10 @@ public class OperatorAuthService {
           .body(
               formData(
                   Map.of(
-                      "client_id", keycloakProperties.operatorClientId(),
-                      "refresh_token", refreshToken)))
+                      "client_id",
+                      keycloakProperties.operatorClientId(),
+                      "refresh_token",
+                      refreshToken)))
           .retrieve()
           .toBodilessEntity();
     } catch (RestClientResponseException exception) {
@@ -106,8 +121,7 @@ public class OperatorAuthService {
           stringClaim(
               jwt,
               "name",
-              stringClaim(
-                  jwt, "preferred_username", stringClaim(jwt, "email", jwt.getSubject()))),
+              stringClaim(jwt, "preferred_username", stringClaim(jwt, "email", jwt.getSubject()))),
           permissions);
     } catch (RuntimeException exception) {
       throw new UnauthorizedException("Invalid operator session");
@@ -133,7 +147,8 @@ public class OperatorAuthService {
     return new OperatorSession(response.accessToken(), response.refreshToken(), user);
   }
 
-  private KeycloakTokenResponse exchangeToken(MultiValueMap<String, String> form, String unauthorizedMessage) {
+  private KeycloakTokenResponse exchangeToken(
+      MultiValueMap<String, String> form, String unauthorizedMessage) {
     try {
       return keycloakOidcRestClient
           .post()

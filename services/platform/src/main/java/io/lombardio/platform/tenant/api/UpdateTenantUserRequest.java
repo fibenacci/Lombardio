@@ -19,4 +19,10 @@ public record UpdateTenantUserRequest(
     @NotBlank String displayName,
     String status,
     List<String> roles,
-    List<String> branchIds) {}
+    List<String> branchIds) {
+
+  public UpdateTenantUserRequest {
+    roles = List.copyOf(roles != null ? roles : List.of());
+    branchIds = List.copyOf(branchIds != null ? branchIds : List.of());
+  }
+}

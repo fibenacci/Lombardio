@@ -40,8 +40,7 @@ public class InternalPawnTicketController {
 
   @GetMapping
   public List<PawnTicketOverviewResponse> listCustomerTickets(
-      @PathVariable String tenantId,
-      @PathVariable String customerId) {
+      @PathVariable String tenantId, @PathVariable String customerId) {
     return pawnTicketPolicyService.listIssuedTickets(tenantId, customerId).stream()
         .map(this::toOverview)
         .toList();

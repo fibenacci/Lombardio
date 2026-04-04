@@ -30,8 +30,7 @@ public record CustomerPortalSessionProperties(
     requirePositive(sessionTtlSeconds, "sessionTtlSeconds");
     requirePositive(cleanupFixedDelayMs, "cleanupFixedDelayMs");
     if (cookieMaxAgeSeconds > sessionTtlSeconds) {
-      throw new IllegalArgumentException(
-          "cookieMaxAgeSeconds must not exceed sessionTtlSeconds");
+      throw new IllegalArgumentException("cookieMaxAgeSeconds must not exceed sessionTtlSeconds");
     }
   }
 

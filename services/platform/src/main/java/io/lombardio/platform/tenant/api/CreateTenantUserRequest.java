@@ -19,4 +19,20 @@ public record CreateTenantUserRequest(
     @NotBlank String password,
     @NotBlank String displayName,
     List<String> roles,
-    List<String> branchIds) {}
+    List<String> branchIds) {
+
+  public CreateTenantUserRequest {
+    roles = List.copyOf(roles != null ? roles : List.of());
+    branchIds = List.copyOf(branchIds != null ? branchIds : List.of());
+  }
+
+  @Override
+  public List<String> roles() {
+    return List.copyOf(roles);
+  }
+
+  @Override
+  public List<String> branchIds() {
+    return List.copyOf(branchIds);
+  }
+}

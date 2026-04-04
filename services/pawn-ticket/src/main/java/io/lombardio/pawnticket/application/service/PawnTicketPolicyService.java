@@ -185,9 +185,9 @@ public class PawnTicketPolicyService {
         quote(
             new PawnTicketQuoteCommand(
                 remainingLoanAmount,
-                command.remainingTermMonths() == null
-                    ? DEFAULT_TERM_MONTHS
-                    : command.remainingTermMonths(),
+                command.remainingTermMonths() != null
+                    ? command.remainingTermMonths()
+                    : Integer.valueOf(DEFAULT_TERM_MONTHS),
                 command.manualMonthlyOperatingFee()));
     return new PawnTicketSettlementResult(
         remainingLoanAmount,
@@ -202,9 +202,9 @@ public class PawnTicketPolicyService {
         quote(
             new PawnTicketQuoteCommand(
                 command.outstandingLoanAmount(),
-                command.remainingTermMonths() == null
-                    ? DEFAULT_TERM_MONTHS
-                    : command.remainingTermMonths(),
+                command.remainingTermMonths() != null
+                    ? command.remainingTermMonths()
+                    : Integer.valueOf(DEFAULT_TERM_MONTHS),
                 command.manualMonthlyOperatingFee()));
     return new PawnTicketSettlementResult(
         command.outstandingLoanAmount().setScale(2, RoundingMode.HALF_UP),

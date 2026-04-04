@@ -1,3 +1,13 @@
+/*
+ * Lombardio Source-Available No-Distribution License 1.0
+ *
+ * Copyright (c) 2026 Benjamin Letzel. All rights reserved.
+ *
+ * This project is source-available for educational and review purposes only.
+ * Redistribution, sublicensing, or commercial use is strictly prohibited.
+ *
+ * For partnership or cooperation inquiries, please contact the author.
+ */
 package io.lombardio.platform.bff.api;
 
 import static org.mockito.Mockito.mock;
@@ -13,9 +23,11 @@ class OperatorCustomerFacadeControllerTest extends OperatorFacadeControllerTestS
   @Test
   void forwardsCustomerSearchToIdentityService() {
     OperatorBffProxyService proxyService = mock(OperatorBffProxyService.class);
-    OperatorCustomerFacadeController controller = new OperatorCustomerFacadeController(proxyService);
+    OperatorCustomerFacadeController controller =
+        new OperatorCustomerFacadeController(proxyService);
     MockHttpServletRequest request =
-        new MockHttpServletRequest("GET", "/api/v1/platform/operator/tenants/tenant-default/customers");
+        new MockHttpServletRequest(
+            "GET", "/api/v1/platform/operator/tenants/tenant-default/customers");
     request.setQueryString("query=ben");
     byte[] responseBody = "[]".getBytes();
 
@@ -44,7 +56,8 @@ class OperatorCustomerFacadeControllerTest extends OperatorFacadeControllerTestS
   @Test
   void forwardsKycPrefillToIdentityService() {
     OperatorBffProxyService proxyService = mock(OperatorBffProxyService.class);
-    OperatorCustomerFacadeController controller = new OperatorCustomerFacadeController(proxyService);
+    OperatorCustomerFacadeController controller =
+        new OperatorCustomerFacadeController(proxyService);
     byte[] requestBody = "{\"imageDataUrl\":\"data:image/jpeg;base64,abc\"}".getBytes();
     byte[] responseBody = "{\"available\":true}".getBytes();
     MockHttpServletRequest request =

@@ -25,11 +25,13 @@ public class OperatorOriginationFacadeController extends OperatorFacadeSupport {
   @GetMapping("/valuation-guidelines")
   public ResponseEntity<byte[]> listValuationGuidelines(
       @PathVariable String tenantId, HttpServletRequest request) {
-    return forwardGet("origination", request, "/api/v1/tenants/" + tenantId + "/valuation-guidelines");
+    return forwardGet(
+        "origination", request, "/api/v1/tenants/" + tenantId + "/valuation-guidelines");
   }
 
   @GetMapping("/loans")
-  public ResponseEntity<byte[]> listLoans(@PathVariable String tenantId, HttpServletRequest request) {
+  public ResponseEntity<byte[]> listLoans(
+      @PathVariable String tenantId, HttpServletRequest request) {
     return forwardGet("origination", request, "/api/v1/tenants/" + tenantId + "/loans");
   }
 

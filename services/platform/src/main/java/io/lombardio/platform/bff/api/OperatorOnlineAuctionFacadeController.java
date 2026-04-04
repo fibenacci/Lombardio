@@ -24,7 +24,8 @@ public class OperatorOnlineAuctionFacadeController extends OperatorFacadeSupport
 
   @GetMapping
   public ResponseEntity<byte[]> list(@PathVariable String tenantId, HttpServletRequest request) {
-    return forwardGet("online-auction", request, "/api/v1/tenants/" + tenantId + "/online-auctions");
+    return forwardGet(
+        "online-auction", request, "/api/v1/tenants/" + tenantId + "/online-auctions");
   }
 
   @PostMapping
@@ -32,7 +33,8 @@ public class OperatorOnlineAuctionFacadeController extends OperatorFacadeSupport
       @PathVariable String tenantId,
       HttpServletRequest request,
       @RequestBody(required = false) byte[] body) {
-    return forwardPost("online-auction", request, "/api/v1/tenants/" + tenantId + "/online-auctions", null, body);
+    return forwardPost(
+        "online-auction", request, "/api/v1/tenants/" + tenantId + "/online-auctions", null, body);
   }
 
   @PostMapping("/{auctionId}/publish")
@@ -78,7 +80,13 @@ public class OperatorOnlineAuctionFacadeController extends OperatorFacadeSupport
     return forwardPost(
         "online-auction",
         request,
-        "/api/v1/tenants/" + tenantId + "/online-auctions/" + auctionId + "/registrations/" + registrationId + "/review",
+        "/api/v1/tenants/"
+            + tenantId
+            + "/online-auctions/"
+            + auctionId
+            + "/registrations/"
+            + registrationId
+            + "/review",
         null,
         body);
   }

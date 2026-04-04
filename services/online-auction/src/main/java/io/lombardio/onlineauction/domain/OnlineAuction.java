@@ -29,4 +29,10 @@ public record OnlineAuction(
     Instant createdAt,
     Instant updatedAt,
     List<OnlineAuctionLot> lots,
-    List<BidderRegistration> registrations) {}
+    List<BidderRegistration> registrations) {
+
+  public OnlineAuction {
+    lots = List.copyOf(lots != null ? lots : List.of());
+    registrations = List.copyOf(registrations != null ? registrations : List.of());
+  }
+}

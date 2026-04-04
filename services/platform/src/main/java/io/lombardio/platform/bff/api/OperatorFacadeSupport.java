@@ -28,7 +28,8 @@ abstract class OperatorFacadeSupport {
 
   protected ResponseEntity<byte[]> forwardGet(
       String serviceKey, HttpServletRequest request, String downstreamPath) {
-    return forward(serviceKey, request, HttpMethod.GET, downstreamPath, request.getQueryString(), null);
+    return forward(
+        serviceKey, request, HttpMethod.GET, downstreamPath, request.getQueryString(), null);
   }
 
   protected ResponseEntity<byte[]> forwardGet(
@@ -38,7 +39,8 @@ abstract class OperatorFacadeSupport {
 
   protected ResponseEntity<byte[]> forwardPost(
       String serviceKey, HttpServletRequest request, String downstreamPath, byte[] body) {
-    return forward(serviceKey, request, HttpMethod.POST, downstreamPath, request.getQueryString(), body);
+    return forward(
+        serviceKey, request, HttpMethod.POST, downstreamPath, request.getQueryString(), body);
   }
 
   protected ResponseEntity<byte[]> forwardPost(
@@ -52,7 +54,8 @@ abstract class OperatorFacadeSupport {
 
   protected ResponseEntity<byte[]> forwardPut(
       String serviceKey, HttpServletRequest request, String downstreamPath, byte[] body) {
-    return forward(serviceKey, request, HttpMethod.PUT, downstreamPath, request.getQueryString(), body);
+    return forward(
+        serviceKey, request, HttpMethod.PUT, downstreamPath, request.getQueryString(), body);
   }
 
   private ResponseEntity<byte[]> forward(
@@ -62,7 +65,8 @@ abstract class OperatorFacadeSupport {
       String downstreamPath,
       String query,
       byte[] body) {
-    return proxyService.forward(serviceKey, downstreamPath, query, method, body, copyHeaders(request));
+    return proxyService.forward(
+        serviceKey, downstreamPath, query, method, body, copyHeaders(request));
   }
 
   protected HttpHeaders copyHeaders(HttpServletRequest request) {

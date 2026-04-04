@@ -58,8 +58,7 @@ class TenantCatalogServiceTest {
     PlatformOutboxService outboxService = new PlatformOutboxService(outboxEvents, clock);
 
     TenantLifecycleService tenantLifecycleService =
-        new TenantLifecycleService(
-            tenants, outboxService, keycloakService, objectMapper, clock);
+        new TenantLifecycleService(tenants, outboxService, keycloakService, objectMapper, clock);
 
     TenantFeatureService tenantFeatureService =
         new TenantFeatureService(
@@ -73,10 +72,7 @@ class TenantCatalogServiceTest {
 
     tenantCatalogService =
         new TenantCatalogService(
-            tenantLifecycleService,
-            tenantFeatureService,
-            tenantBranchService,
-            tenantUserService);
+            tenantLifecycleService, tenantFeatureService, tenantBranchService, tenantUserService);
   }
 
   @Test

@@ -23,4 +23,9 @@ public record IssuePawnTicketCommand(
     List<PawnTicketPosition> positions,
     BigDecimal loanAmount,
     Integer termMonths,
-    BigDecimal manualMonthlyOperatingFee) {}
+    BigDecimal manualMonthlyOperatingFee) {
+
+  public IssuePawnTicketCommand {
+    positions = List.copyOf(positions != null ? positions : List.of());
+  }
+}

@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +39,7 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
 
   public HttpDocumentOcrProvider(
       RestClient.Builder restClientBuilder,
-      @Value("${regula.base-url:${document-ocr.base-url:http://localhost:8087}}")
-          String baseUrl) {
+      @Value("${regula.base-url:${document-ocr.base-url:http://localhost:8087}}") String baseUrl) {
     log.info("[OCR] Initializing HttpDocumentOcrProvider with base URL: {}", baseUrl);
     this.restClient = restClientBuilder.baseUrl(baseUrl).build();
   }
@@ -59,7 +59,9 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
               .retrieve()
               .body(ProcessResponse.class);
 
-      if (response.ContainerList().List() == null) {
+      if (response == null
+          || response.ContainerList() == null
+          || response.ContainerList().List() == null) {
         log.warn("[OCR] Regula response is empty or invalid");
         return Optional.empty();
       }
@@ -139,25 +141,46 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
               }
             }
             case 0, 37 -> docType = coalesce(docType, value);
+            default -> {
+              // Ignore other fields
+            }
           }
 
           if (matchesAny(normalizedFieldName, "surname", "lastname", "familyname", "nachname")) {
             lastName = coalesce(lastName, value);
           }
-          if (matchesAny(normalizedFieldName, "firstname", "givenname", "name", "vorname", "givennames")) {
+          if (matchesAny(
+              normalizedFieldName, "firstname", "givenname", "name", "vorname", "givennames")) {
             firstName = coalesce(firstName, value);
           }
           if (matchesAny(normalizedFieldName, "birthdate", "dateofbirth", "geburtsdatum")) {
             birthDateStr = coalesce(birthDateStr, value);
           }
-          if (matchesAny(normalizedFieldName, "documentnumber", "docnumber", "idnumber", "documentno", "ausweisnummer")) {
+          if (matchesAny(
+              normalizedFieldName,
+              "documentnumber",
+              "docnumber",
+              "idnumber",
+              "documentno",
+              "ausweisnummer")) {
             docNumber = coalesce(docNumber, value);
             confidence = Math.max(confidence, fieldConf);
           }
-          if (matchesAny(normalizedFieldName, "expirydate", "dateofexpiry", "validuntil", "ablaufdatum", "gueltigbis")) {
+          if (matchesAny(
+              normalizedFieldName,
+              "expirydate",
+              "dateofexpiry",
+              "validuntil",
+              "ablaufdatum",
+              "gueltigbis")) {
             expiryStr = coalesce(expiryStr, value);
           }
-          if (matchesAny(normalizedFieldName, "documentclasscode", "documentclassname", "documenttype", "doctype")) {
+          if (matchesAny(
+              normalizedFieldName,
+              "documentclasscode",
+              "documentclassname",
+              "documenttype",
+              "doctype")) {
             docType = coalesce(docType, value);
           }
         }
@@ -215,7 +238,7 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
     if (fieldName == null) {
       return "";
     }
-    return fieldName.replaceAll("[^A-Za-z0-9]", "").toLowerCase();
+    return fieldName.replaceAll("[^A-Za-z0-9]", "").toLowerCase(Locale.ROOT);
   }
 
   private boolean matchesAny(String value, String... candidates) {
@@ -232,14 +255,18 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
       return "PERSONALAUSWEIS";
     }
 
-    String normalized = documentType.trim().toUpperCase();
+    String normalized = documentType.trim().toUpperCase(Locale.ROOT);
     if (normalized.contains("PASSPORT") || normalized.contains("REISEPASS")) {
       return "REISEPASS";
     }
-    if (normalized.contains("RESIDENCE") || normalized.contains("PERMIT") || normalized.contains("AUFENTHALT")) {
+    if (normalized.contains("RESIDENCE")
+        || normalized.contains("PERMIT")
+        || normalized.contains("AUFENTHALT")) {
       return "AUFENTHALTSTITEL";
     }
-    if (normalized.contains("ID") || normalized.contains("IDENTITY") || normalized.contains("PERSONALAUSWEIS")) {
+    if (normalized.contains("ID")
+        || normalized.contains("IDENTITY")
+        || normalized.contains("PERSONALAUSWEIS")) {
       return "PERSONALAUSWEIS";
     }
     return "PERSONALAUSWEIS";
@@ -309,7 +336,11 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   private record ResultItem(
-      int result_type, TextFields Text, ImageFields Images, ImageFields Graphics, OneCandidate OneCandidate) {}
+      int result_type,
+      TextFields Text,
+      ImageFields Images,
+      ImageFields Graphics,
+      OneCandidate OneCandidate) {}
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   private record TextFields(List<TextField> fieldList) {}
@@ -323,9 +354,7 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   private record StringResultValue(
-      String value,
-      int sourceType,
-      @JsonAlias({"confidence", "probability"}) int confidence) {}
+      String value, int sourceType, @JsonAlias({"confidence", "probability"}) int confidence) {}
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   private record ImageFields(List<ImageField> fieldList) {}

@@ -52,7 +52,7 @@ public class CentrifugoJwtTokenService implements RealtimeSessionTokenService {
               .withoutPadding()
               .encodeToString(mac.doFinal(content.getBytes(StandardCharsets.UTF_8)));
       return content + "." + signature;
-    } catch (Exception exception) {
+    } catch (java.security.GeneralSecurityException exception) {
       throw new IllegalStateException("Could not sign Centrifugo token", exception);
     }
   }

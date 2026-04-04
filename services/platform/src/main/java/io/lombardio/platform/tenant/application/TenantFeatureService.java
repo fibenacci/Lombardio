@@ -12,6 +12,7 @@ package io.lombardio.platform.tenant.application;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.platform.integration.application.PlatformOutboxService;
 import io.lombardio.platform.tenant.api.TenantFeatureResponse;
 import io.lombardio.platform.tenant.api.UpsertTenantFeatureRequest;
@@ -47,6 +48,7 @@ public class TenantFeatureService {
   private final ObjectMapper objectMapper;
   private final Clock clock;
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring managed singleton bean")
   public TenantFeatureService(
       TenantFeatureRepository tenantFeatureRepository,
       TenantLifecycleService tenantLifecycleService,

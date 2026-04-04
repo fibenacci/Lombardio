@@ -32,9 +32,7 @@ public class KeycloakAdminHealthIndicator implements HealthIndicator {
           ? Health.up().withDetail("keycloakAdminApi", "reachable").build()
           : Health.unknown().withDetail("keycloakAdminApi", "unknown").build();
     } catch (IdentityProviderUnavailableException exception) {
-      return Health.down(exception)
-          .withDetail("keycloakAdminApi", "unreachable")
-          .build();
+      return Health.down(exception).withDetail("keycloakAdminApi", "unreachable").build();
     }
   }
 }

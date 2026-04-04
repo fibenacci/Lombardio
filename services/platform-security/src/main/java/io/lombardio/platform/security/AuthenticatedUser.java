@@ -23,6 +23,11 @@ public record AuthenticatedUser(
     String email,
     String displayName,
     List<String> permissions) {
+
+  public AuthenticatedUser {
+    permissions = List.copyOf(permissions != null ? permissions : List.of());
+  }
+
   public boolean hasPermission(String permission) {
     return permissions.contains(permission);
   }
@@ -35,7 +40,8 @@ public record AuthenticatedUser(
     if (authentication.getCredentials() instanceof String token) {
       return Optional.of(token);
     }
-    if (authentication.getCredentials() instanceof org.springframework.security.oauth2.jwt.Jwt jwt) {
+    if (authentication.getCredentials()
+        instanceof org.springframework.security.oauth2.jwt.Jwt jwt) {
       return Optional.of(jwt.getTokenValue());
     }
     return Optional.empty();

@@ -12,4 +12,10 @@ package io.lombardio.platform.shared.api;
 
 import java.util.List;
 
-public record ApiError(String code, String message, String traceId, List<ApiFieldError> fieldErrors) {}
+public record ApiError(
+    String code, String message, String traceId, List<ApiFieldError> fieldErrors) {
+
+  public ApiError {
+    fieldErrors = List.copyOf(fieldErrors != null ? fieldErrors : List.of());
+  }
+}

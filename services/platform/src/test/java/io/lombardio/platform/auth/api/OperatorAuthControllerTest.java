@@ -111,7 +111,10 @@ class OperatorAuthControllerTest {
     assertEquals(1, response.getHeaders("Set-Cookie").size());
     assertEquals(
         true,
-        response.getHeaders("Set-Cookie").getFirst().contains("lombardio_operator_session=session-id"));
+        response
+            .getHeaders("Set-Cookie")
+            .getFirst()
+            .contains("lombardio_operator_session=session-id"));
   }
 
   @Test

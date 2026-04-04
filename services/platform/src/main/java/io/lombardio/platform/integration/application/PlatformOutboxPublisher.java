@@ -11,6 +11,7 @@
 package io.lombardio.platform.integration.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.platform.integration.api.IntegrationRabbitMqProperties;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -30,6 +31,7 @@ public class PlatformOutboxPublisher {
   private final RabbitTemplate rabbitTemplate;
   private final ObjectMapper objectMapper;
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring managed singleton beans")
   public PlatformOutboxPublisher(
       PlatformOutboxService platformOutboxService,
       IntegrationRabbitMqProperties properties,

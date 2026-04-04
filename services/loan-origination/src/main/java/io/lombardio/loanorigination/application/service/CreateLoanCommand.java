@@ -23,4 +23,9 @@ public record CreateLoanCommand(
     String bearerStreet,
     String bearerPostalCode,
     String bearerCity,
-    String powerOfAttorneyDocumentDataUrl) {}
+    String powerOfAttorneyDocumentDataUrl) {
+
+  public CreateLoanCommand {
+    positions = List.copyOf(positions != null ? positions : List.of());
+  }
+}

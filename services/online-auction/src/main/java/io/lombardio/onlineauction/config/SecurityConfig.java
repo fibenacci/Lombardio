@@ -22,9 +22,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
-import org.springframework.security.oauth2.core.OAuth2Error;
-import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -35,8 +32,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 public class SecurityConfig {
 
-  private final String jwtSecret;
-
   @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
   private String jwkSetUri;
 
@@ -46,10 +41,6 @@ public class SecurityConfig {
   @Value(
       "${app.operator-session.access-cookie-name:${APP_OPERATOR_SESSION_ACCESS_COOKIE_NAME:lombardio_operator_access}}")
   private String operatorAccessCookieName;
-
-  public SecurityConfig(@Value("${identity.security.encryption-key}") String jwtSecret) {
-    this.jwtSecret = jwtSecret;
-  }
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -87,7 +78,8 @@ public class SecurityConfig {
   @Bean
   public JwtDecoder jwtDecoder() {
     NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
-    jwtDecoder.setJwtValidator(KeycloakJwtValidators.operatorAccessTokenValidator(operatorClientId));
+    jwtDecoder.setJwtValidator(
+        KeycloakJwtValidators.operatorAccessTokenValidator(operatorClientId));
     return jwtDecoder;
   }
 

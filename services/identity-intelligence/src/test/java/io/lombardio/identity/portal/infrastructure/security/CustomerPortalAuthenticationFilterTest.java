@@ -37,8 +37,10 @@ class CustomerPortalAuthenticationFilterTest {
   @Test
   void authenticatesCustomerPortalRequestFromSessionCookie() throws Exception {
     CustomerPortalAuthenticationFilter filter = newFilter();
-    MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/customer-portal/me");
-    request.setCookies(new jakarta.servlet.http.Cookie("lombardio_customer_portal_session", "portal-cookie"));
+    MockHttpServletRequest request =
+        new MockHttpServletRequest("GET", "/api/v1/customer-portal/me");
+    request.setCookies(
+        new jakarta.servlet.http.Cookie("lombardio_customer_portal_session", "portal-cookie"));
     MockHttpServletResponse response = new MockHttpServletResponse();
     FilterChain chain = mock(FilterChain.class);
     AuthenticatedCustomerPortalUser principal =
@@ -55,7 +57,8 @@ class CustomerPortalAuthenticationFilterTest {
   @Test
   void ignoresBearerHeaderForCustomerPortalRequests() throws Exception {
     CustomerPortalAuthenticationFilter filter = newFilter();
-    MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/customer-portal/me");
+    MockHttpServletRequest request =
+        new MockHttpServletRequest("GET", "/api/v1/customer-portal/me");
     request.addHeader("Authorization", "Bearer leaked-token");
     MockHttpServletResponse response = new MockHttpServletResponse();
     FilterChain chain = mock(FilterChain.class);

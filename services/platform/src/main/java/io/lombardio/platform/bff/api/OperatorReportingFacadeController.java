@@ -23,7 +23,8 @@ public class OperatorReportingFacadeController extends OperatorFacadeSupport {
   }
 
   @GetMapping("/dashboard")
-  public ResponseEntity<byte[]> dashboard(@PathVariable String tenantId, HttpServletRequest request) {
+  public ResponseEntity<byte[]> dashboard(
+      @PathVariable String tenantId, HttpServletRequest request) {
     return forwardGet("reporting", request, "/api/v1/tenants/" + tenantId + "/reporting/dashboard");
   }
 }

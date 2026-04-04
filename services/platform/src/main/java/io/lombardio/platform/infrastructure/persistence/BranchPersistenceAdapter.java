@@ -27,7 +27,9 @@ public class BranchPersistenceAdapter implements BranchRepository {
 
   @Override
   public List<Branch> findByTenantId(String tenantId) {
-    return repository.findByTenantIdOrderByCreatedAtAsc(tenantId).stream().map(this::toDomain).toList();
+    return repository.findByTenantIdOrderByCreatedAtAsc(tenantId).stream()
+        .map(this::toDomain)
+        .toList();
   }
 
   @Override

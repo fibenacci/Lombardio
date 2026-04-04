@@ -18,4 +18,10 @@ public record LoanCase(
     CustomerProfile customer,
     PledgeRecord pledgeRecord,
     List<LoanPosition> positions,
-    List<PawnTicket> pawnTickets) {}
+    List<PawnTicket> pawnTickets) {
+
+  public LoanCase {
+    positions = List.copyOf(positions != null ? positions : List.of());
+    pawnTickets = List.copyOf(pawnTickets != null ? pawnTickets : List.of());
+  }
+}

@@ -49,6 +49,7 @@ class KycAuthorizationServiceTest {
             "Customer Agent",
             List.of("customers.read"));
 
-    assertThrows(ForbiddenException.class, () -> service.requireDocumentRead(user, "tenant-default"));
+    assertThrows(
+        ForbiddenException.class, () -> service.requireDocumentRead(user, "tenant-default"));
   }
 }

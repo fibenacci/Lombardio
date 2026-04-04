@@ -37,7 +37,8 @@ public class CustomerPortalMailNotificationSender implements CustomerPortalNotif
 
   @Override
   public void sendInvitation(Customer customer, String token, Instant expiresAt) {
-    String activationLink = portalBaseUrl + "/activate#" + URLEncoder.encode(token, StandardCharsets.UTF_8);
+    String activationLink =
+        portalBaseUrl + "/activate#" + URLEncoder.encode(token, StandardCharsets.UTF_8);
     String expiresAtText =
         DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneOffset.UTC).format(expiresAt);
     integrationMailClient.send(
@@ -45,12 +46,12 @@ public class CustomerPortalMailNotificationSender implements CustomerPortalNotif
         List.of(customer.email()),
         "Ihr Zugang zum digitalen Pfandschein",
         """
-        Guten Tag %s,
-
+        Guten Tag %s,%n
+        %n
         Ihr Zugang zum digitalen Pfandschein wurde vorbereitet.
         Bitte aktivieren Sie Ihren Zugang unter folgendem Link:
         %s
-
+        %n
         Der Link ist gueltig bis %s.
         """
             .formatted(customer.displayName(), activationLink, expiresAtText),

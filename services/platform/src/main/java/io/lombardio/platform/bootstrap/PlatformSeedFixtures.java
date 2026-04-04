@@ -10,12 +10,13 @@
  */
 package io.lombardio.platform.bootstrap;
 
-import io.lombardio.platform.tenant.domain.Tenant;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.platform.tenant.domain.Branch;
 import io.lombardio.platform.tenant.domain.TenantFeature;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public final class PlatformSeedFixtures {
 
@@ -97,9 +98,12 @@ public final class PlatformSeedFixtures {
 
   private PlatformSeedFixtures() {}
 
+  @SuppressFBWarnings(
+      value = "IMPROPER_UNICODE",
+      justification = "Demo data seeder with internal keys only")
   public static List<DemoTenant> tenantsForScale(String scale) {
     int count =
-        switch (scale == null ? "medium" : scale.trim().toLowerCase()) {
+        switch (scale == null ? "medium" : scale.trim().toLowerCase(Locale.ROOT)) {
           case "small" -> 2;
           case "large" -> DEMO_TENANTS.size();
           default -> 4;

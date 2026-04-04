@@ -19,19 +19,11 @@ public class OnlineAuctionAuthorizationService extends BaseAuthorizationService 
 
   public void requireRead(AuthenticatedUser user, String tenantId) {
     requireTenantAccessAny(
-        user,
-        tenantId,
-        "platform.tenants.read",
-        "online-auctions.read",
-        "auctions.read");
+        user, tenantId, "platform.tenants.read", "online-auctions.read", "auctions.read");
   }
 
   public void requireWrite(AuthenticatedUser user, String tenantId) {
     requireTenantAccessAny(
-        user,
-        tenantId,
-        "platform.tenants.write",
-        "online-auctions.write",
-        "auctions.write");
+        user, tenantId, "platform.tenants.write", "online-auctions.write", "auctions.write");
   }
 }

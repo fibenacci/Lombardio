@@ -24,14 +24,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
-public class InternalServiceAuthenticationFilter extends OncePerRequestFilter {
+public final class InternalServiceAuthenticationFilter extends OncePerRequestFilter {
 
   public static final String INTERNAL_AUTH_HEADER = "X-Internal-Service-Token";
   public static final String INTERNAL_SERVICE_AUTHORITY = "internal.service";
 
   private final String internalServiceToken;
 
-  public InternalServiceAuthenticationFilter(@Value("${internal.service-token}") String internalServiceToken) {
+  public InternalServiceAuthenticationFilter(
+      @Value("${internal.service-token}") String internalServiceToken) {
     this.internalServiceToken = requireSecureToken(internalServiceToken);
   }
 
@@ -63,7 +64,8 @@ public class InternalServiceAuthenticationFilter extends OncePerRequestFilter {
         || token.isBlank()
         || "REPLACE_WITH_SECURE_TOKEN".equals(token)
         || "dev-internal-token".equals(token)) {
-      throw new IllegalStateException("internal.service-token must be configured with a secure value");
+      throw new IllegalStateException(
+          "internal.service-token must be configured with a secure value");
     }
     return token;
   }

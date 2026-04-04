@@ -52,6 +52,9 @@ tf-apply: ## Apply Terraform changes (env=local|aws|gcp)
 test: ## Run all tests (Maven)
 	mvn clean install
 
+static: ## Run static code analysis (SpotBugs)
+	./mvnw compile spotbugs:check
+
 fix: ## Automatically fix code formatting (Java, Go, Frontend)
 	@echo "🎨 Fixing Java (Spotless)..."
 	./mvnw spotless:apply

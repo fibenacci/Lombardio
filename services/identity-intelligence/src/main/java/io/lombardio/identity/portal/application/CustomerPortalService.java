@@ -226,7 +226,8 @@ public class CustomerPortalService {
     session.setCustomerId(customer.id());
     session.setTenantId(customer.tenantId());
     session.setIssuedAt(Instant.now(clock));
-    session.setExpiresAt(Instant.now(clock).plus(sessionProperties.sessionTtlSeconds(), ChronoUnit.SECONDS));
+    session.setExpiresAt(
+        Instant.now(clock).plus(sessionProperties.sessionTtlSeconds(), ChronoUnit.SECONDS));
     sessionRepository.save(session);
     return rawToken;
   }

@@ -1,3 +1,13 @@
+/*
+ * Lombardio Source-Available No-Distribution License 1.0
+ *
+ * Copyright (c) 2026 Benjamin Letzel. All rights reserved.
+ *
+ * This project is source-available for educational and review purposes only.
+ * Redistribution, sublicensing, or commercial use is strictly prohibited.
+ *
+ * For partnership or cooperation inquiries, please contact the author.
+ */
 package io.lombardio.platform.bff.api;
 
 import static org.mockito.Mockito.mock;
@@ -15,7 +25,8 @@ class OperatorAuctionFacadeControllerTest extends OperatorFacadeControllerTestSu
     OperatorBffProxyService proxyService = mock(OperatorBffProxyService.class);
     OperatorAuctionFacadeController controller = new OperatorAuctionFacadeController(proxyService);
     MockHttpServletRequest request =
-        new MockHttpServletRequest("GET", "/api/v1/platform/operator/tenants/tenant-default/auctions");
+        new MockHttpServletRequest(
+            "GET", "/api/v1/platform/operator/tenants/tenant-default/auctions");
     byte[] responseBody = "[]".getBytes();
 
     stubForward(
@@ -48,7 +59,8 @@ class OperatorAuctionFacadeControllerTest extends OperatorFacadeControllerTestSu
     byte[] responseBody = "{\"id\":\"auction-1\"}".getBytes();
     MockHttpServletRequest request =
         new MockHttpServletRequest(
-            "POST", "/api/v1/platform/operator/tenants/tenant-default/auctions/auction-1/lots/lot-1/settle");
+            "POST",
+            "/api/v1/platform/operator/tenants/tenant-default/auctions/auction-1/lots/lot-1/settle");
 
     stubForward(
         proxyService,

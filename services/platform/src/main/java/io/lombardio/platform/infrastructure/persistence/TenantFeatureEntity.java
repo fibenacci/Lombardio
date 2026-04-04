@@ -10,6 +10,7 @@
  */
 package io.lombardio.platform.infrastructure.persistence;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -28,10 +29,12 @@ public class TenantFeatureEntity {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "JPA requirement")
   public TenantFeatureId getId() {
     return id;
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "JPA requirement")
   public void setId(TenantFeatureId id) {
     this.id = id;
   }

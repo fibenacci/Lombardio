@@ -18,6 +18,7 @@ import io.lombardio.onlineauction.domain.OnlineAuction;
 import io.lombardio.onlineauction.domain.OnlineAuctionRepository;
 import io.lombardio.onlineauction.domain.OnlineAuctionStatus;
 import io.lombardio.onlineauction.domain.RealtimePublisher;
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.Map;
 import org.springframework.stereotype.Service;
@@ -74,8 +75,13 @@ public class BidReviewService {
 
   private boolean bidderMatchesAccessToken(BidderRegistration bidder, String rawAccessToken) {
     String candidateHash = BidderAccessTokenHasher.sha256(rawAccessToken);
-    return bidder.accessTokenHash() != null
-        ? bidder.accessTokenHash().equals(candidateHash)
-        : rawAccessToken.equals(bidder.accessToken());
+    if (bidder.accessTokenHash() != null) {
+      return MessageDigest.isEqual(
+          bidder.accessTokenHash().getBytes(java.nio.charset.StandardCharsets.UTF_8),
+          candidateHash.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    }
+    return MessageDigest.isEqual(
+        bidder.accessToken().getBytes(java.nio.charset.StandardCharsets.UTF_8),
+        rawAccessToken.getBytes(java.nio.charset.StandardCharsets.UTF_8));
   }
 }

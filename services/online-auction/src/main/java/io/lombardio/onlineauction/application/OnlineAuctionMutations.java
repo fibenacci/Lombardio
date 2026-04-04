@@ -233,9 +233,7 @@ final class OnlineAuctionMutations {
       BidderRegistration bidder,
       Instant updatedAt) {
     List<OnlineAuctionLot> updatedLots =
-        current.lots().stream()
-            .map(lot -> updateLotBid(current, lot, request, bidder))
-            .toList();
+        current.lots().stream().map(lot -> updateLotBid(current, lot, request, bidder)).toList();
     return new OnlineAuction(
         current.id(),
         current.tenantId(),
@@ -280,8 +278,7 @@ final class OnlineAuctionMutations {
     if (!lot.id().equals(request.lotId())) {
       return lot;
     }
-    BigDecimal minimumBid =
-        lot.currentBid().max(lot.startingBid()).add(auction.minimumIncrement());
+    BigDecimal minimumBid = lot.currentBid().max(lot.startingBid()).add(auction.minimumIncrement());
     if (request.amount().compareTo(minimumBid) < 0) {
       throw new IllegalArgumentException("Bid must satisfy the minimum increment");
     }

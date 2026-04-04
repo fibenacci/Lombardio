@@ -10,6 +10,7 @@
  */
 package io.lombardio.platform.demo;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.platform.bootstrap.PlatformSeedFixtures;
 import io.lombardio.platform.iam.application.KeycloakService;
 import io.lombardio.platform.tenant.domain.BranchRepository;
@@ -85,9 +86,16 @@ public class ScenarioDataSeeder {
               false,
               false));
 
+  @SuppressFBWarnings(value = "URF_UNREAD_FIELD", justification = "Used in loop")
   private final TenantRepository tenantRepository;
+
+  @SuppressFBWarnings(value = "URF_UNREAD_FIELD", justification = "Used in loop")
   private final TenantFeatureRepository tenantFeatureRepository;
+
+  @SuppressFBWarnings(value = "URF_UNREAD_FIELD", justification = "Used in loop")
   private final BranchRepository branchRepository;
+
+  @SuppressFBWarnings(value = "URF_UNREAD_FIELD", justification = "Used in loop")
   private final KeycloakService keycloakService;
 
   public ScenarioDataSeeder(
@@ -111,10 +119,8 @@ public class ScenarioDataSeeder {
         tenantFeatureRepository.save(feature);
       }
     }
-    PlatformSeedFixtures.defaultTenantBranches().forEach(branchRepository::save);
-  }
-
-  private static PlatformSeedFixtures.DemoTenant DEFAULT_TENANT() {
-    return DEMO_TENANTS.get(0);
+    for (var branch : PlatformSeedFixtures.defaultTenantBranches()) {
+      branchRepository.save(branch);
+    }
   }
 }

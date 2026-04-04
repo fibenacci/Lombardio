@@ -54,8 +54,7 @@ public class BidderRegistrationEntity {
   @Column(nullable = false)
   private String accessToken;
 
-  @Column
-  private String accessTokenHash;
+  @Column private String accessTokenHash;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)

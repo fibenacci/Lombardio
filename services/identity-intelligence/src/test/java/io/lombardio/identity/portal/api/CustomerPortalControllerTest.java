@@ -50,16 +50,23 @@ class CustomerPortalControllerTest {
     CustomerPortalLoginResponse session =
         new CustomerPortalLoginResponse(
             "portal-token",
-            new CustomerPortalMeResponse("customer-1", "tenant-default", "Anna Example", "anna@example.test", "ACTIVE"));
-    when(customerPortalService.login(new CustomerPortalLoginRequest("anna@example.test", "secret123")))
+            new CustomerPortalMeResponse(
+                "customer-1", "tenant-default", "Anna Example", "anna@example.test", "ACTIVE"));
+    when(customerPortalService.login(
+            new CustomerPortalLoginRequest("anna@example.test", "secret123")))
         .thenReturn(session);
 
     MockHttpServletResponse response = new MockHttpServletResponse();
     CustomerPortalLoginResponse body =
-        controller.login(new CustomerPortalLoginRequest("anna@example.test", "secret123"), response);
+        controller.login(
+            new CustomerPortalLoginRequest("anna@example.test", "secret123"), response);
 
     assertEquals(null, body.accessToken());
-    assertEquals(true, response.getHeader("Set-Cookie").contains("lombardio_customer_portal_session=portal-token"));
+    assertEquals(
+        true,
+        response
+            .getHeader("Set-Cookie")
+            .contains("lombardio_customer_portal_session=portal-token"));
   }
 
   @Test
@@ -73,7 +80,8 @@ class CustomerPortalControllerTest {
   @Test
   void logoutClearsCookieAndDeletesSession() {
     MockHttpServletRequest request = new MockHttpServletRequest();
-    request.setCookies(new jakarta.servlet.http.Cookie("lombardio_customer_portal_session", "portal-token"));
+    request.setCookies(
+        new jakarta.servlet.http.Cookie("lombardio_customer_portal_session", "portal-token"));
     MockHttpServletResponse response = new MockHttpServletResponse();
 
     ResponseEntity<Void> entity = controller.logout(request, response);
@@ -90,14 +98,12 @@ class CustomerPortalControllerTest {
                 "customer-1", "tenant-default", "Anna Example", "anna@example.test")))
         .thenReturn(
             new CustomerPortalMeResponse(
-                "customer-1",
-                "tenant-default",
-                "Anna Example",
-                "anna@example.test",
-                "ACTIVE"));
+                "customer-1", "tenant-default", "Anna Example", "anna@example.test", "ACTIVE"));
 
     CustomerPortalMeResponse response =
-        controller.me(new AuthenticatedCustomerPortalUser("customer-1", "tenant-default", "Anna Example", "anna@example.test"));
+        controller.me(
+            new AuthenticatedCustomerPortalUser(
+                "customer-1", "tenant-default", "Anna Example", "anna@example.test"));
 
     assertEquals("customer-1", response.customerId());
     assertEquals("anna@example.test", response.email());

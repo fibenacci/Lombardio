@@ -39,7 +39,8 @@ public class CustomerPortalController {
   private final CustomerPortalSessionProperties sessionProperties;
 
   public CustomerPortalController(
-      CustomerPortalService customerPortalService, CustomerPortalSessionProperties sessionProperties) {
+      CustomerPortalService customerPortalService,
+      CustomerPortalSessionProperties sessionProperties) {
     this.customerPortalService = customerPortalService;
     this.sessionProperties = sessionProperties;
   }
@@ -121,7 +122,8 @@ public class CustomerPortalController {
 
   private void writeSessionCookie(HttpServletResponse response, String token) {
     response.addHeader(
-        HttpHeaders.SET_COOKIE, buildSessionCookie(token, sessionProperties.cookieMaxAgeSeconds()).toString());
+        HttpHeaders.SET_COOKIE,
+        buildSessionCookie(token, sessionProperties.cookieMaxAgeSeconds()).toString());
   }
 
   private void clearSessionCookie(HttpServletResponse response) {
