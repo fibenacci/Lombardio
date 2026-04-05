@@ -6,14 +6,59 @@ import { createLoadUsersContextService } from "../../application/services/load-u
 import { createCreateUserService } from "../../application/services/create-user.service";
 import { createUpdateUserService } from "../../application/services/update-user.service";
 
+type AuthUser = {
+  id: string;
+  tenantId?: string | null;
+  permissions?: string[];
+};
+
+type AuthStoreLike = {
+  user: AuthUser | null;
+  delegationAvailable: boolean;
+  hasPermission: (permission: string) => boolean;
+  canImpersonate: () => boolean;
+  startDelegation: (userId: string) => Promise<void>;
+};
+
+type TenantSummary = {
+  id: string;
+  displayName: string;
+};
+
+type TenantStoreLike = {
+  selectedTenantId: string;
+  selectedTenant: TenantSummary | null;
+  refreshTenants: () => Promise<void>;
+};
+
+type UserSummary = {
+  id: string;
+  email: string;
+  displayName: string;
+  status?: string;
+  username?: string;
+  roleIds?: string[];
+  branchIds?: string[];
+};
+
+type RoleSummary = {
+  id: string;
+  displayName: string;
+};
+
+type BranchSummary = {
+  id: string;
+  displayName: string;
+};
+
 export function useUsersPage({
   t,
   authStore,
   tenantStore
 }: {
   t: (key: string, params?: Record<string, unknown>) => string;
-  authStore: any;
-  tenantStore: any;
+  authStore: AuthStoreLike;
+  tenantStore: TenantStoreLike;
 }) {
   const toast = useAppToast();
   const { errorMessage, successMessage, resetFeedback, handleError } = useRequestFeedback(t);
@@ -22,9 +67,9 @@ export function useUsersPage({
   const createUserService = createCreateUserService(usersAdapter);
   const updateUserService = createUpdateUserService(usersAdapter);
 
-  const users = ref<any[]>([]);
-  const roles = ref<any[]>([]);
-  const branches = ref<any[]>([]);
+  const users = ref<UserSummary[]>([]);
+  const roles = ref<RoleSummary[]>([]);
+  const branches = ref<BranchSummary[]>([]);
   const isLoading = ref(true);
   const editingUserId = ref("");
   const form = reactive({
@@ -150,7 +195,7 @@ export function useUsersPage({
     }
   }
 
-  function canDelegateToUser(user: any) {
+  function canDelegateToUser(user: UserSummary) {
     const delegationAvailable = authStore.delegationAvailable;
     const canImpersonate = authStore.canImpersonate();
     const isDifferentUser = authStore.user?.id !== user.id;
@@ -173,7 +218,7 @@ export function useUsersPage({
     }
   }
 
-  function startEdit(user: any) {
+  function startEdit(user: UserSummary) {
     editingUserId.value = user.id;
     form.username = user.username ?? user.email;
     form.email = user.email;

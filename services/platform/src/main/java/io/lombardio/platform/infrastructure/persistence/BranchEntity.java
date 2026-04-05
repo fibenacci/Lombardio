@@ -14,7 +14,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.Objects;
 
 @Entity
 @Table(name = "tenant_branches")
@@ -52,47 +54,47 @@ public class BranchEntity {
     return tenantId;
   }
 
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
+  public void setTenantId(@NotNull String tenantId) {
+    this.tenantId = Objects.requireNonNull(tenantId, "tenantId");
   }
 
   public String getKey() {
     return key;
   }
 
-  public void setKey(String key) {
-    this.key = key;
+  public void setKey(@NotNull String key) {
+    this.key = Objects.requireNonNull(key, "key");
   }
 
   public String getDisplayName() {
     return displayName;
   }
 
-  public void setDisplayName(String displayName) {
-    this.displayName = displayName;
+  public void setDisplayName(@NotNull String displayName) {
+    this.displayName = Objects.requireNonNull(displayName, "displayName");
   }
 
   public String getStatus() {
     return status;
   }
 
-  public void setStatus(String status) {
-    this.status = status;
+  public void setStatus(@NotNull String status) {
+    this.status = Objects.requireNonNull(status, "status");
   }
 
   public Instant getCreatedAt() {
     return createdAt;
   }
 
-  public void setCreatedAt(Instant createdAt) {
-    this.createdAt = createdAt;
+  public void setCreatedAt(@NotNull Instant createdAt) {
+    this.createdAt = Objects.requireNonNull(createdAt, "createdAt");
   }
 
   public Instant getUpdatedAt() {
     return updatedAt;
   }
 
-  public void setUpdatedAt(Instant updatedAt) {
-    this.updatedAt = updatedAt;
+  public void setUpdatedAt(@NotNull Instant updatedAt) {
+    this.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt");
   }
 }

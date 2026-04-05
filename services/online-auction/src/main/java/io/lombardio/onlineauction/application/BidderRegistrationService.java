@@ -71,12 +71,7 @@ public class BidderRegistrationService {
     OnlineAuction current = lifecycleService.requireAuction(tenantId, auctionId);
     ReviewCheckStatus kycStatus = parseCheckStatus(request.kycStatus());
     ReviewCheckStatus accountCheckStatus = parseCheckStatus(request.accountCheckStatus());
-    BidderApprovalStatus status =
-        switch (request.decision().trim().toUpperCase()) {
-          case "APPROVE", "APPROVED" -> BidderApprovalStatus.APPROVED;
-          case "REJECT", "REJECTED" -> BidderApprovalStatus.REJECTED;
-          default -> throw new IllegalArgumentException("Decision must be APPROVE or REJECT");
-        };
+    BidderApprovalStatus status = parseDecision(request.decision());
     if (status == BidderApprovalStatus.APPROVED
         && (kycStatus != ReviewCheckStatus.PASSED
             || accountCheckStatus != ReviewCheckStatus.PASSED)) {
@@ -99,13 +94,28 @@ public class BidderRegistrationService {
   }
 
   private ReviewCheckStatus parseCheckStatus(String value) {
-    return switch (value.trim().toUpperCase()) {
-      case "PASS", "PASSED" -> ReviewCheckStatus.PASSED;
-      case "FAIL", "FAILED" -> ReviewCheckStatus.FAILED;
-      case "PENDING" -> ReviewCheckStatus.PENDING;
-      default ->
-          throw new IllegalArgumentException("Check status must be PENDING, PASSED or FAILED");
-    };
+    String trimmedValue = value == null ? "" : value.trim();
+    if ("PASS".equals(trimmedValue) || "PASSED".equals(trimmedValue)) {
+      return ReviewCheckStatus.PASSED;
+    }
+    if ("FAIL".equals(trimmedValue) || "FAILED".equals(trimmedValue)) {
+      return ReviewCheckStatus.FAILED;
+    }
+    if ("PENDING".equals(trimmedValue)) {
+      return ReviewCheckStatus.PENDING;
+    }
+    throw new IllegalArgumentException("Check status must be PENDING, PASSED or FAILED");
+  }
+
+  private BidderApprovalStatus parseDecision(String value) {
+    String trimmedValue = value == null ? "" : value.trim();
+    if ("APPROVE".equals(trimmedValue) || "APPROVED".equals(trimmedValue)) {
+      return BidderApprovalStatus.APPROVED;
+    }
+    if ("REJECT".equals(trimmedValue) || "REJECTED".equals(trimmedValue)) {
+      return BidderApprovalStatus.REJECTED;
+    }
+    throw new IllegalArgumentException("Decision must be APPROVE or REJECT");
   }
 
   private void publishEvent(String channel, String eventType, Object payload) {

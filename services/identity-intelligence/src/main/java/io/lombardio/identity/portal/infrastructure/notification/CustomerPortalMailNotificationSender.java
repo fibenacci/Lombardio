@@ -41,27 +41,27 @@ public class CustomerPortalMailNotificationSender implements CustomerPortalNotif
         portalBaseUrl + "/activate#" + URLEncoder.encode(token, StandardCharsets.UTF_8);
     String expiresAtText =
         DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneOffset.UTC).format(expiresAt);
+    String textBody =
+        String.format(
+            "Guten Tag %s,%n%n"
+                + "Ihr Zugang zum digitalen Pfandschein wurde vorbereitet.%n"
+                + "Bitte aktivieren Sie Ihren Zugang unter folgendem Link:%n"
+                + "%s%n%n"
+                + "Der Link ist gueltig bis %s.%n",
+            customer.displayName(), activationLink, expiresAtText);
+    String htmlBody =
+        String.format(
+            "<p>Guten Tag %s,</p>%n"
+                + "<p>Ihr Zugang zum digitalen Pfandschein wurde vorbereitet.</p>%n"
+                + "<p><a href=\"%s\">Zugang aktivieren</a></p>%n"
+                + "<p>Der Link ist gueltig bis %s.</p>%n",
+            escapeHtml(customer.displayName()), activationLink, expiresAtText);
     integrationMailClient.send(
         customer.tenantId(),
         List.of(customer.email()),
         "Ihr Zugang zum digitalen Pfandschein",
-        """
-        Guten Tag %s,%n
-        %n
-        Ihr Zugang zum digitalen Pfandschein wurde vorbereitet.
-        Bitte aktivieren Sie Ihren Zugang unter folgendem Link:
-        %s
-        %n
-        Der Link ist gueltig bis %s.
-        """
-            .formatted(customer.displayName(), activationLink, expiresAtText),
-        """
-        <p>Guten Tag %s,</p>
-        <p>Ihr Zugang zum digitalen Pfandschein wurde vorbereitet.</p>
-        <p><a href="%s">Zugang aktivieren</a></p>
-        <p>Der Link ist gueltig bis %s.</p>
-        """
-            .formatted(escapeHtml(customer.displayName()), activationLink, expiresAtText),
+        textBody,
+        htmlBody,
         Map.of("category", "customer-portal-invitation", "customerId", customer.id()));
   }
 

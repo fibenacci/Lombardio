@@ -17,7 +17,9 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.Objects;
 
 @Entity
 @Table(name = "integration_outbox_events")
@@ -77,48 +79,48 @@ public class IntegrationOutboxEventEntity {
     return aggregateType;
   }
 
-  public void setAggregateType(String aggregateType) {
-    this.aggregateType = aggregateType;
+  public void setAggregateType(@NotNull String aggregateType) {
+    this.aggregateType = Objects.requireNonNull(aggregateType, "aggregateType");
   }
 
   public String getAggregateId() {
     return aggregateId;
   }
 
-  public void setAggregateId(String aggregateId) {
-    this.aggregateId = aggregateId;
+  public void setAggregateId(@NotNull String aggregateId) {
+    this.aggregateId = Objects.requireNonNull(aggregateId, "aggregateId");
   }
 
   public String getEventType() {
     return eventType;
   }
 
-  public void setEventType(String eventType) {
-    this.eventType = eventType;
+  public void setEventType(@NotNull String eventType) {
+    this.eventType = Objects.requireNonNull(eventType, "eventType");
   }
 
   public String getTenantId() {
     return tenantId;
   }
 
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
+  public void setTenantId(@NotNull String tenantId) {
+    this.tenantId = Objects.requireNonNull(tenantId, "tenantId");
   }
 
   public String getPayload() {
     return payload;
   }
 
-  public void setPayload(String payload) {
-    this.payload = payload;
+  public void setPayload(@NotNull String payload) {
+    this.payload = Objects.requireNonNull(payload, "payload");
   }
 
   public OutboxEventStatus getStatus() {
     return status;
   }
 
-  public void setStatus(OutboxEventStatus status) {
-    this.status = status;
+  public void setStatus(@NotNull OutboxEventStatus status) {
+    this.status = Objects.requireNonNull(status, "status");
   }
 
   public int getAttemptCount() {
@@ -133,16 +135,16 @@ public class IntegrationOutboxEventEntity {
     return occurredAt;
   }
 
-  public void setOccurredAt(Instant occurredAt) {
-    this.occurredAt = occurredAt;
+  public void setOccurredAt(@NotNull Instant occurredAt) {
+    this.occurredAt = Objects.requireNonNull(occurredAt, "occurredAt");
   }
 
   public Instant getNextAttemptAt() {
     return nextAttemptAt;
   }
 
-  public void setNextAttemptAt(Instant nextAttemptAt) {
-    this.nextAttemptAt = nextAttemptAt;
+  public void setNextAttemptAt(@NotNull Instant nextAttemptAt) {
+    this.nextAttemptAt = Objects.requireNonNull(nextAttemptAt, "nextAttemptAt");
   }
 
   public Instant getLockedAt() {

@@ -1,5 +1,23 @@
 import * as auctionApi from "../api/auction.api";
 
+type AuctionLot = {
+  id: string;
+  latestBidAmount?: number | string | null;
+  status?: string | null;
+};
+
+type Auction = {
+  id: string;
+  lots: AuctionLot[];
+  status?: string | null;
+  title?: string;
+};
+
+type SurplusCase = {
+  contractNumber?: string;
+  itemNumber?: string;
+};
+
 export function createHttpAuctionsAdapter() {
   return {
     announceAuction(tenantId: string, auctionId: string, payload: object) {
@@ -11,11 +29,11 @@ export function createHttpAuctionsAdapter() {
     createAuction(tenantId: string, payload: object) {
       return auctionApi.createAuction(tenantId, payload);
     },
-    fetchAuctions(tenantId: string) {
-      return auctionApi.fetchAuctions(tenantId);
+    fetchAuctions(tenantId: string): Promise<Auction[]> {
+      return auctionApi.fetchAuctions(tenantId) as Promise<Auction[]>;
     },
-    fetchSurplusCases(tenantId: string) {
-      return auctionApi.fetchSurplusCases(tenantId);
+    fetchSurplusCases(tenantId: string): Promise<SurplusCase[]> {
+      return auctionApi.fetchSurplusCases(tenantId) as Promise<SurplusCase[]>;
     },
     openAuction(tenantId: string, auctionId: string) {
       return auctionApi.openAuction(tenantId, auctionId);

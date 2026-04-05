@@ -10,15 +10,21 @@
  */
 package io.lombardio.identity.kyc.application;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.identity.kyc.domain.KycStatus;
 import io.lombardio.identity.kyc.domain.KycVerificationMode;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import java.util.Locale;
 
 public class KycMetrics {
 
   private final MeterRegistry meterRegistry;
 
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification =
+          "MeterRegistry is a shared instrumentation dependency and cannot be defensively copied")
   public KycMetrics(MeterRegistry meterRegistry) {
     this.meterRegistry = meterRegistry;
   }
@@ -32,9 +38,9 @@ public class KycMetrics {
         .counter(
             "lombardio.kyc.status_updates",
             "status",
-            status.name().toLowerCase(),
+            status.name().toLowerCase(Locale.ROOT),
             "mode",
-            verificationMode.name().toLowerCase())
+            verificationMode.name().toLowerCase(Locale.ROOT))
         .increment();
   }
 

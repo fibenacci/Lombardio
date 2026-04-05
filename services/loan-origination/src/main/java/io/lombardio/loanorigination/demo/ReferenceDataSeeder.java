@@ -15,6 +15,7 @@ import io.lombardio.loanorigination.infrastructure.persistence.adapter.Valuation
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -117,6 +118,6 @@ public class ReferenceDataSeeder {
   }
 
   private String normalize(String scale) {
-    return scale == null ? "medium" : scale.trim().toLowerCase();
+    return scale == null ? "medium" : scale.trim().toLowerCase(Locale.ROOT);
   }
 }

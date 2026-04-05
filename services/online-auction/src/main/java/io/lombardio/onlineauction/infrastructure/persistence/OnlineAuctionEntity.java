@@ -20,10 +20,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "online_auctions")
@@ -185,18 +187,18 @@ public class OnlineAuctionEntity {
   }
 
   public List<OnlineAuctionLotEntity> getLots() {
-    return lots;
+    return List.copyOf(lots);
   }
 
-  public void setLots(List<OnlineAuctionLotEntity> lots) {
-    this.lots = lots;
+  public void setLots(@NotNull List<OnlineAuctionLotEntity> lots) {
+    this.lots = new ArrayList<>(Objects.requireNonNull(lots, "lots"));
   }
 
   public List<BidderRegistrationEntity> getRegistrations() {
-    return registrations;
+    return List.copyOf(registrations);
   }
 
-  public void setRegistrations(List<BidderRegistrationEntity> registrations) {
-    this.registrations = registrations;
+  public void setRegistrations(@NotNull List<BidderRegistrationEntity> registrations) {
+    this.registrations = new ArrayList<>(Objects.requireNonNull(registrations, "registrations"));
   }
 }

@@ -10,16 +10,15 @@
  */
 package io.lombardio.identity.api.http.error;
 
-import io.lombardio.platform.security.ForbiddenException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.platform.security.TraceIdContext;
-import io.lombardio.platform.security.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolationException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -33,32 +32,20 @@ public class ApiExceptionHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ApiError> handleValidation(
       MethodArgumentNotValidException exception, HttpServletRequest request) {
-    List<ApiFieldError> fieldErrors =
+    List<ApiFieldError> errors =
         exception.getBindingResult().getFieldErrors().stream().map(this::mapFieldError).toList();
 
-    return ResponseEntity.badRequest()
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(
             new ApiError(
-                "validation_error",
-                "Validation failed",
+                "validation_failed",
+                "Input validation failed",
                 TraceIdContext.getOrCreate(request),
-                fieldErrors));
-  }
-
-  @ExceptionHandler(ConstraintViolationException.class)
-  public ResponseEntity<ApiError> handleConstraintViolation(
-      ConstraintViolationException exception, HttpServletRequest request) {
-    return ResponseEntity.badRequest()
-        .body(
-            new ApiError(
-                "validation_error",
-                exception.getMessage(),
-                TraceIdContext.getOrCreate(request),
-                List.of()));
+                errors));
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<ApiError> handleIllegalArgument(
+  public ResponseEntity<ApiError> handleIllegal(
       IllegalArgumentException exception, HttpServletRequest request) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(
@@ -69,21 +56,9 @@ public class ApiExceptionHandler {
                 List.of()));
   }
 
-  @ExceptionHandler(UnauthorizedException.class)
-  public ResponseEntity<ApiError> handleUnauthorized(
-      UnauthorizedException exception, HttpServletRequest request) {
-    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-        .body(
-            new ApiError(
-                "unauthorized",
-                exception.getMessage(),
-                TraceIdContext.getOrCreate(request),
-                List.of()));
-  }
-
-  @ExceptionHandler(ForbiddenException.class)
+  @ExceptionHandler(AccessDeniedException.class)
   public ResponseEntity<ApiError> handleForbidden(
-      ForbiddenException exception, HttpServletRequest request) {
+      AccessDeniedException exception, HttpServletRequest request) {
     return ResponseEntity.status(HttpStatus.FORBIDDEN)
         .body(
             new ApiError(
@@ -94,10 +69,14 @@ public class ApiExceptionHandler {
   }
 
   @ExceptionHandler(Throwable.class)
+  @SuppressFBWarnings(
+      value = "CRLF_INJECTION_LOGS",
+      justification = "traceId is sanitized via whitelist regex")
   public ResponseEntity<ApiError> handleUnexpected(
       Throwable exception, HttpServletRequest request) {
     String traceId = TraceIdContext.getOrCreate(request);
-    log.error("Unhandled identity service error [traceId={}]", traceId, exception);
+    String sanitizedTraceId = traceId == null ? "null" : traceId.replaceAll("[^a-zA-Z0-9-]", "_");
+    log.error("Unhandled identity service error [traceId={}]", sanitizedTraceId, exception);
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(new ApiError("internal_error", "Internal server error", traceId, List.of()));
   }

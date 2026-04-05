@@ -174,7 +174,6 @@ public class OperatorAuthService {
     return form;
   }
 
-  @SuppressWarnings("unchecked")
   private List<String> extractPermissions(Jwt jwt) {
     Object realmAccess = jwt.getClaims().get("realm_access");
     if (realmAccess instanceof Map<?, ?> map) {

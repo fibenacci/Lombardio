@@ -10,6 +10,7 @@
  */
 package io.lombardio.identity.portal.infrastructure.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.identity.portal.infrastructure.persistence.CustomerPortalSessionEntity;
 
 public record AuthenticatedCustomerPortalUser(
@@ -17,7 +18,15 @@ public record AuthenticatedCustomerPortalUser(
     String tenantId,
     String displayName,
     String email,
-    CustomerPortalSessionEntity session) {
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP",
+            justification = "Session context required by framework")
+        CustomerPortalSessionEntity session) {
+
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification = "Session context required by framework")
+  public AuthenticatedCustomerPortalUser {}
 
   public AuthenticatedCustomerPortalUser(
       String customerId, String tenantId, String displayName, String email) {

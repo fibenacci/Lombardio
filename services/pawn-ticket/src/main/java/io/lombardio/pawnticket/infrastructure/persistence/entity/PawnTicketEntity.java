@@ -18,11 +18,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "pawn_tickets")
@@ -289,10 +291,10 @@ public class PawnTicketEntity {
   }
 
   public List<PawnTicketPositionEntity> getPositions() {
-    return positions;
+    return List.copyOf(positions);
   }
 
-  public void setPositions(List<PawnTicketPositionEntity> positions) {
-    this.positions = positions;
+  public void setPositions(@NotNull List<PawnTicketPositionEntity> positions) {
+    this.positions = new ArrayList<>(Objects.requireNonNull(positions, "positions"));
   }
 }

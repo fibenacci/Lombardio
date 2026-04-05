@@ -10,17 +10,23 @@
  */
 package io.lombardio.onlineauction.application;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.onlineauction.domain.BidderApprovalStatus;
 import io.lombardio.onlineauction.domain.ReviewCheckStatus;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.math.BigDecimal;
+import java.util.Locale;
 
 public class OnlineAuctionMetrics {
 
   private final MeterRegistry meterRegistry;
 
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification =
+          "MeterRegistry is a managed metrics dependency that must be retained directly")
   public OnlineAuctionMetrics(MeterRegistry meterRegistry) {
     this.meterRegistry = meterRegistry;
   }
@@ -41,15 +47,18 @@ public class OnlineAuctionMetrics {
       BidderApprovalStatus approvalStatus,
       ReviewCheckStatus kycStatus,
       ReviewCheckStatus accountCheckStatus) {
+    String decision = approvalStatus.name().toLowerCase(Locale.ROOT);
+    String kyc = kycStatus.name().toLowerCase(Locale.ROOT);
+    String account = accountCheckStatus.name().toLowerCase(Locale.ROOT);
     meterRegistry
         .counter(
             "lombardio.online_auction.bidder_reviews",
             "decision",
-            approvalStatus.name().toLowerCase(),
+            decision,
             "kyc",
-            kycStatus.name().toLowerCase(),
+            kyc,
             "account",
-            accountCheckStatus.name().toLowerCase())
+            account)
         .increment();
   }
 

@@ -1,8 +1,13 @@
+export type FieldError = {
+  field: string;
+  message: string;
+};
+
 export interface RequestError extends Error {
   status: number;
   userMessage: string;
-  payload?: any;
-  fieldErrors: Array<{ field: string; message: string }>;
+  payload?: unknown;
+  fieldErrors: FieldError[];
   traceId: string | null;
   requestMethod: string;
   requestUrl: string;

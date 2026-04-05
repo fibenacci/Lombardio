@@ -10,6 +10,7 @@
  */
 package io.lombardio.onlineauction.api;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.platform.security.TraceIdContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -79,9 +80,13 @@ public class ApiExceptionHandler {
   }
 
   @ExceptionHandler(Throwable.class)
+  @SuppressFBWarnings(
+      value = "CRLF_INJECTION_LOGS",
+      justification = "traceId is sanitized via whitelist regex")
   ResponseEntity<ApiError> handleUnexpected(Throwable exception, HttpServletRequest request) {
     String traceId = TraceIdContext.getOrCreate(request);
-    log.error("Unhandled online auction service error [traceId={}]", traceId, exception);
+    String sanitizedTraceId = traceId == null ? "null" : traceId.replaceAll("[^a-zA-Z0-9-]", "_");
+    log.error("Unhandled online auction service error [traceId={}]", sanitizedTraceId, exception);
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(new ApiError("internal_error", "Internal server error", traceId, List.of()));
   }

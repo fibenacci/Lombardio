@@ -10,6 +10,7 @@
  */
 package io.lombardio.identity.infrastructure.platform;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.identity.domain.port.TenantFeatureDirectory;
 import io.lombardio.platform.security.AuthenticatedUser;
 import java.util.List;
@@ -36,14 +37,19 @@ public class IdentityTenantFeatureDirectory implements TenantFeatureDirectory {
   }
 
   @Override
+  @SuppressFBWarnings(
+      value = "CRLF_INJECTION_LOGS",
+      justification = "Tenant and feature values are sanitized before being written to logs")
   public boolean isFeatureEnabled(String tenantId, String featureKey) {
+    String sanitizedTenantId = sanitizeForLogs(tenantId);
+    String sanitizedFeatureKey = sanitizeForLogs(featureKey);
     try {
       String bearerToken = AuthenticatedUser.currentAccessToken().orElse(null);
       if (bearerToken == null) {
         log.warn(
             "[FEATURES] No access token available in security context for tenant {} and feature {}",
-            tenantId,
-            featureKey);
+            sanitizedTenantId,
+            sanitizedFeatureKey);
         return false;
       }
 
@@ -67,11 +73,15 @@ public class IdentityTenantFeatureDirectory implements TenantFeatureDirectory {
     } catch (Exception e) {
       log.warn(
           "[FEATURES] Failed to fetch platform features for tenant {} while checking {}",
-          tenantId,
-          featureKey,
+          sanitizedTenantId,
+          sanitizedFeatureKey,
           e);
       return false;
     }
+  }
+
+  private String sanitizeForLogs(String value) {
+    return value == null ? "null" : value.replaceAll("[\\r\\n]", "_");
   }
 
   private record TenantFeatureResponse(String tenantId, String featureKey, boolean enabled) {}

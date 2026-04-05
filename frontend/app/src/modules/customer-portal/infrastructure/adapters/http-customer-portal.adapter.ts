@@ -1,5 +1,12 @@
 import * as customerPortalApi from "../api/customer-portal.api";
 
+type PortalInvitation = {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  expiresAt?: string;
+} | null;
+
 export function createHttpCustomerPortalAdapter() {
   return {
     fetchCustomerPortalDocument(ticketNumber: string) {
@@ -8,8 +15,8 @@ export function createHttpCustomerPortalAdapter() {
     fetchCustomerPortalPawnTickets() {
       return customerPortalApi.fetchCustomerPortalPawnTickets();
     },
-    fetchPortalInvitation(token: string) {
-      return customerPortalApi.fetchPortalInvitation(token);
+    fetchPortalInvitation(token: string): Promise<PortalInvitation> {
+      return customerPortalApi.fetchPortalInvitation(token) as Promise<PortalInvitation>;
     }
   };
 }

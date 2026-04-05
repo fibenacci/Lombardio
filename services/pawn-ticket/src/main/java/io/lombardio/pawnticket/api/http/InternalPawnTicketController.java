@@ -10,6 +10,7 @@
  */
 package io.lombardio.pawnticket.api.http;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.pawnticket.application.service.PawnTicketDocumentService;
 import io.lombardio.pawnticket.application.service.PawnTicketPolicyService;
 import io.lombardio.pawnticket.domain.model.PawnTicket;
@@ -31,6 +32,10 @@ public class InternalPawnTicketController {
   private final PawnTicketPolicyService pawnTicketPolicyService;
   private final PawnTicketDocumentService pawnTicketDocumentService;
 
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification =
+          "Spring-managed service references are intentional dependencies, not mutable state")
   public InternalPawnTicketController(
       PawnTicketPolicyService pawnTicketPolicyService,
       PawnTicketDocumentService pawnTicketDocumentService) {

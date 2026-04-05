@@ -23,6 +23,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -238,6 +239,6 @@ public class PawnTicketDevelopmentSeeder {
   }
 
   private String normalize(String scale) {
-    return scale == null ? "medium" : scale.trim().toLowerCase();
+    return scale == null ? "medium" : scale.trim().toLowerCase(Locale.ROOT);
   }
 }

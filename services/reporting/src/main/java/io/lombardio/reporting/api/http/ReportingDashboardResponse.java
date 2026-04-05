@@ -21,4 +21,27 @@ public record ReportingDashboardResponse(
     FinanceSummaryResponse finance,
     List<FinanceTrendPointResponse> financeTrend,
     List<InventoryCategoryResponse> inventoryByCategory,
-    List<TransactionMixResponse> transactionMix) {}
+    List<TransactionMixResponse> transactionMix) {
+
+  public ReportingDashboardResponse {
+    financeTrend = List.copyOf(financeTrend == null ? List.of() : financeTrend);
+    inventoryByCategory =
+        List.copyOf(inventoryByCategory == null ? List.of() : inventoryByCategory);
+    transactionMix = List.copyOf(transactionMix == null ? List.of() : transactionMix);
+  }
+
+  @Override
+  public List<FinanceTrendPointResponse> financeTrend() {
+    return List.copyOf(financeTrend);
+  }
+
+  @Override
+  public List<InventoryCategoryResponse> inventoryByCategory() {
+    return List.copyOf(inventoryByCategory);
+  }
+
+  @Override
+  public List<TransactionMixResponse> transactionMix() {
+    return List.copyOf(transactionMix);
+  }
+}

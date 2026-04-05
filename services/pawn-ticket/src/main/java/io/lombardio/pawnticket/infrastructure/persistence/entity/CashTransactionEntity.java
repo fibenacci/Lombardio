@@ -17,8 +17,10 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Objects;
 
 @Entity
 @Table(name = "cash_transactions")
@@ -75,80 +77,81 @@ public class CashTransactionEntity {
     return tenantId;
   }
 
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
+  public void setTenantId(@NotNull String tenantId) {
+    this.tenantId = Objects.requireNonNull(tenantId, "tenantId");
   }
 
   public String getTicketNumber() {
     return ticketNumber;
   }
 
-  public void setTicketNumber(String ticketNumber) {
-    this.ticketNumber = ticketNumber;
+  public void setTicketNumber(@NotNull String ticketNumber) {
+    this.ticketNumber = Objects.requireNonNull(ticketNumber, "ticketNumber");
   }
 
   public String getCustomerNumber() {
     return customerNumber;
   }
 
-  public void setCustomerNumber(String customerNumber) {
-    this.customerNumber = customerNumber;
+  public void setCustomerNumber(@NotNull String customerNumber) {
+    this.customerNumber = Objects.requireNonNull(customerNumber, "customerNumber");
   }
 
   public String getCustomerDisplayName() {
     return customerDisplayName;
   }
 
-  public void setCustomerDisplayName(String customerDisplayName) {
-    this.customerDisplayName = customerDisplayName;
+  public void setCustomerDisplayName(@NotNull String customerDisplayName) {
+    this.customerDisplayName = Objects.requireNonNull(customerDisplayName, "customerDisplayName");
   }
 
   public CashTransactionType getType() {
     return type;
   }
 
-  public void setType(CashTransactionType type) {
-    this.type = type;
+  public void setType(@NotNull CashTransactionType type) {
+    this.type = Objects.requireNonNull(type, "type");
   }
 
   public BigDecimal getOutstandingLoanAmount() {
     return outstandingLoanAmount;
   }
 
-  public void setOutstandingLoanAmount(BigDecimal outstandingLoanAmount) {
-    this.outstandingLoanAmount = outstandingLoanAmount;
+  public void setOutstandingLoanAmount(@NotNull BigDecimal outstandingLoanAmount) {
+    this.outstandingLoanAmount =
+        Objects.requireNonNull(outstandingLoanAmount, "outstandingLoanAmount");
   }
 
   public BigDecimal getInterestAmount() {
     return interestAmount;
   }
 
-  public void setInterestAmount(BigDecimal interestAmount) {
-    this.interestAmount = interestAmount;
+  public void setInterestAmount(@NotNull BigDecimal interestAmount) {
+    this.interestAmount = Objects.requireNonNull(interestAmount, "interestAmount");
   }
 
   public BigDecimal getOperatingFeeAmount() {
     return operatingFeeAmount;
   }
 
-  public void setOperatingFeeAmount(BigDecimal operatingFeeAmount) {
-    this.operatingFeeAmount = operatingFeeAmount;
+  public void setOperatingFeeAmount(@NotNull BigDecimal operatingFeeAmount) {
+    this.operatingFeeAmount = Objects.requireNonNull(operatingFeeAmount, "operatingFeeAmount");
   }
 
   public BigDecimal getTotalAmount() {
     return totalAmount;
   }
 
-  public void setTotalAmount(BigDecimal totalAmount) {
-    this.totalAmount = totalAmount;
+  public void setTotalAmount(@NotNull BigDecimal totalAmount) {
+    this.totalAmount = Objects.requireNonNull(totalAmount, "totalAmount");
   }
 
   public String getLegalText() {
     return legalText;
   }
 
-  public void setLegalText(String legalText) {
-    this.legalText = legalText;
+  public void setLegalText(@NotNull String legalText) {
+    this.legalText = Objects.requireNonNull(legalText, "legalText");
   }
 
   public String getNote() {
@@ -163,7 +166,7 @@ public class CashTransactionEntity {
     return createdAt;
   }
 
-  public void setCreatedAt(Instant createdAt) {
-    this.createdAt = createdAt;
+  public void setCreatedAt(@NotNull Instant createdAt) {
+    this.createdAt = Objects.requireNonNull(createdAt, "createdAt");
   }
 }

@@ -15,6 +15,7 @@ import io.lombardio.identity.domain.model.Customer;
 import io.lombardio.identity.domain.port.CustomerRepository;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -98,7 +99,7 @@ public class CustomerDevelopmentSeeder {
                     + tenant.key()
                     + customerIndex
                     + "@demo.lombardio.local")
-                .toLowerCase();
+                .toLowerCase(Locale.ROOT);
     String onlineAccessStatus =
         switch (customerIndex % 6) {
           case 0, 3 -> "ACTIVE";
@@ -145,6 +146,6 @@ public class CustomerDevelopmentSeeder {
   }
 
   private String normalize(String scale) {
-    return scale == null ? "medium" : scale.trim().toLowerCase();
+    return scale == null ? "medium" : scale.trim().toLowerCase(Locale.ROOT);
   }
 }

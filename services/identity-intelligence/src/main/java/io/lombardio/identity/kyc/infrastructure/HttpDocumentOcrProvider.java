@@ -12,6 +12,7 @@ package io.lombardio.identity.kyc.infrastructure;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.lombardio.identity.kyc.domain.DocumentOcrProvider;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -40,16 +41,18 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
   public HttpDocumentOcrProvider(
       RestClient.Builder restClientBuilder,
       @Value("${regula.base-url:${document-ocr.base-url:http://localhost:8087}}") String baseUrl) {
-    log.info("[OCR] Initializing HttpDocumentOcrProvider with base URL: {}", baseUrl);
+    String sanitizedBaseUrl = sanitizeForLogs(baseUrl);
+    log.info("[OCR] Initializing HttpDocumentOcrProvider with base URL: {}", sanitizedBaseUrl);
     this.restClient = restClientBuilder.baseUrl(baseUrl).build();
   }
 
   @Override
   public Optional<DocumentOcrResult> prefill(
       String tenantId, String frontImageDataUrl, String backImageDataUrl) {
+    String sanitizedTenantId = sanitizeForLogs(tenantId);
     try {
       ProcessRequest request = buildRequest(frontImageDataUrl, backImageDataUrl);
-      log.info("[OCR] Sending request to Regula for tenant {}", tenantId);
+      log.info("[OCR] Sending request to Regula for tenant {}", sanitizedTenantId);
 
       ProcessResponse response =
           restClient
@@ -60,15 +63,15 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
               .body(ProcessResponse.class);
 
       if (response == null
-          || response.ContainerList() == null
-          || response.ContainerList().List() == null) {
+          || response.containerList() == null
+          || response.containerList().list() == null) {
         log.warn("[OCR] Regula response is empty or invalid");
         return Optional.empty();
       }
 
       log.info(
           "[OCR] Received response from Regula with {} containers",
-          response.ContainerList().List().size());
+          response.containerList().list().size());
 
       return mapResponse(response);
     } catch (RestClientException exception) {
@@ -105,13 +108,13 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
     String portraitBase64 = null;
     double confidence = 0.0;
 
-    for (ResultItem item : response.ContainerList().List()) {
-      if (item.Text() != null && item.Text().fieldList() != null) {
+    for (ResultItem item : response.containerList().list()) {
+      if (item.text() != null && item.text().fieldList() != null) {
         log.info(
             "[OCR] Parsing text container type: {} with {} fields",
             item.result_type(),
-            item.Text().fieldList().size());
-        for (TextField field : item.Text().fieldList()) {
+            item.text().fieldList().size());
+        for (TextField field : item.text().fieldList()) {
           String value = getBestValue(field);
           if (value == null) continue;
 
@@ -201,8 +204,8 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
         }
       }
 
-      if (item.OneCandidate() != null && item.OneCandidate().DocumentName() != null) {
-        candidateDocumentName = coalesce(candidateDocumentName, item.OneCandidate().DocumentName());
+      if (item.oneCandidate() != null && item.oneCandidate().documentName() != null) {
+        candidateDocumentName = coalesce(candidateDocumentName, item.oneCandidate().documentName());
       }
     }
 
@@ -212,7 +215,14 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
       return Optional.empty();
     }
 
-    log.info("[OCR] Success: Extracted {} {} (Doc: {})", firstName, lastName, docNumber);
+    String sanitizedFirstName = sanitizeForLogs(firstName);
+    String sanitizedLastName = sanitizeForLogs(lastName);
+    String sanitizedDocNumber = sanitizeForLogs(docNumber);
+    log.info(
+        "[OCR] Success: Extracted {} {} (Doc: {})",
+        sanitizedFirstName,
+        sanitizedLastName,
+        sanitizedDocNumber);
 
     return Optional.of(
         new DocumentOcrResult(
@@ -294,10 +304,10 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
   }
 
   private ImageFields getImageFields(ResultItem item) {
-    if (item.Images() != null) {
-      return item.Images();
+    if (item.images() != null) {
+      return item.images();
     }
-    return item.Graphics();
+    return item.graphics();
   }
 
   private LocalDate parseDate(String dateStr) {
@@ -314,58 +324,99 @@ public class HttpDocumentOcrProvider implements DocumentOcrProvider {
       }
     }
 
-    log.warn("[OCR] Could not parse date: {}", dateStr);
+    String sanitizedDate = sanitizeForLogs(dateStr);
+    log.warn("[OCR] Could not parse date: {}", sanitizedDate);
     return null;
+  }
+
+  private String sanitizeForLogs(String input) {
+    if (input == null) {
+      return "null";
+    }
+    return input.replace('\r', '_').replace('\n', '_').replace('\t', '_');
   }
 
   // --- Official Regula OpenAPI Models ---
 
-  private record ProcessRequest(ProcessParams processParam, List<ProcessRequestItem> List) {}
+  private record ProcessRequest(
+      @JsonProperty("processParam") ProcessParams processParam,
+      @JsonProperty("List") List<ProcessRequestItem> list) {
+    public ProcessRequest {
+      list = List.copyOf(list != null ? list : List.of());
+    }
+  }
 
-  private record ProcessParams(String scenario, AuthParams authParams) {}
+  private record ProcessParams(
+      @JsonProperty("scenario") String scenario,
+      @JsonProperty("authParams") AuthParams authParams) {}
 
-  private record AuthParams(boolean checkLiveness) {}
+  private record AuthParams(@JsonProperty("checkLiveness") boolean checkLiveness) {}
 
-  private record ProcessRequestItem(ProcessRequestImageData ImageData, int light, int page_idx) {}
+  private record ProcessRequestItem(
+      @JsonProperty("ImageData") ProcessRequestImageData imageData,
+      @JsonProperty("light") int light,
+      @JsonProperty("page_idx") int pageIdx) {}
 
-  private record ProcessRequestImageData(String image) {}
+  private record ProcessRequestImageData(@JsonProperty("image") String image) {}
 
-  private record ProcessResponse(ContainerList ContainerList) {}
+  private record ProcessResponse(@JsonProperty("ContainerList") ContainerList containerList) {}
 
-  private record ContainerList(List<ResultItem> List) {}
+  private record ContainerList(@JsonProperty("List") List<ResultItem> list) {
+    public ContainerList {
+      list = List.copyOf(list != null ? list : List.of());
+    }
+  }
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   private record ResultItem(
-      int result_type,
-      TextFields Text,
-      ImageFields Images,
-      ImageFields Graphics,
-      OneCandidate OneCandidate) {}
+      @JsonProperty("result_type") int result_type,
+      @JsonProperty("Text") TextFields text,
+      @JsonProperty("Images") ImageFields images,
+      @JsonProperty("Graphics") ImageFields graphics,
+      @JsonProperty("OneCandidate") OneCandidate oneCandidate) {}
 
   @JsonIgnoreProperties(ignoreUnknown = true)
-  private record TextFields(List<TextField> fieldList) {}
+  private record TextFields(@JsonProperty("fieldList") List<TextField> fieldList) {
+    public TextFields {
+      fieldList = List.copyOf(fieldList != null ? fieldList : List.of());
+    }
+  }
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   private record TextField(
-      String fieldName,
-      int fieldType,
-      String value,
-      @JsonAlias("valueList") List<StringResultValue> values) {}
+      @JsonProperty("fieldName") String fieldName,
+      @JsonProperty("fieldType") int fieldType,
+      @JsonProperty("value") String value,
+      @JsonAlias("valueList") @JsonProperty("valueList") List<StringResultValue> values) {
+    public TextField {
+      values = List.copyOf(values != null ? values : List.of());
+    }
+  }
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   private record StringResultValue(
-      String value, int sourceType, @JsonAlias({"confidence", "probability"}) int confidence) {}
+      @JsonProperty("value") String value,
+      @JsonProperty("sourceType") int sourceType,
+      @JsonAlias({"confidence", "probability"}) @JsonProperty("confidence") int confidence) {}
 
   @JsonIgnoreProperties(ignoreUnknown = true)
-  private record ImageFields(List<ImageField> fieldList) {}
+  private record ImageFields(@JsonProperty("fieldList") List<ImageField> fieldList) {
+    public ImageFields {
+      fieldList = List.copyOf(fieldList != null ? fieldList : List.of());
+    }
+  }
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   private record ImageField(
-      String fieldName,
-      int fieldType,
-      String value,
-      @JsonAlias("valueList") List<StringResultValue> values) {}
+      @JsonProperty("fieldName") String fieldName,
+      @JsonProperty("fieldType") int fieldType,
+      @JsonProperty("value") String value,
+      @JsonAlias("valueList") @JsonProperty("valueList") List<StringResultValue> values) {
+    public ImageField {
+      values = List.copyOf(values != null ? values : List.of());
+    }
+  }
 
   @JsonIgnoreProperties(ignoreUnknown = true)
-  private record OneCandidate(String DocumentName) {}
+  private record OneCandidate(@JsonProperty("DocumentName") String documentName) {}
 }

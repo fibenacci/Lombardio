@@ -14,7 +14,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @Entity
 @Table(name = "valuation_guidelines")
@@ -52,47 +54,47 @@ public class ValuationGuidelineEntity {
     return tenantId;
   }
 
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
+  public void setTenantId(@NotNull String tenantId) {
+    this.tenantId = Objects.requireNonNull(tenantId, "tenantId");
   }
 
   public String getCategory() {
     return category;
   }
 
-  public void setCategory(String category) {
-    this.category = category;
+  public void setCategory(@NotNull String category) {
+    this.category = Objects.requireNonNull(category, "category");
   }
 
   public String getMaterial() {
     return material;
   }
 
-  public void setMaterial(String material) {
-    this.material = material;
+  public void setMaterial(@NotNull String material) {
+    this.material = Objects.requireNonNull(material, "material");
   }
 
   public String getLabel() {
     return label;
   }
 
-  public void setLabel(String label) {
-    this.label = label;
+  public void setLabel(@NotNull String label) {
+    this.label = Objects.requireNonNull(label, "label");
   }
 
   public String getDescription() {
     return description;
   }
 
-  public void setDescription(String description) {
-    this.description = description;
+  public void setDescription(@NotNull String description) {
+    this.description = Objects.requireNonNull(description, "description");
   }
 
   public BigDecimal getBaseLoanValue() {
     return baseLoanValue;
   }
 
-  public void setBaseLoanValue(BigDecimal baseLoanValue) {
-    this.baseLoanValue = baseLoanValue;
+  public void setBaseLoanValue(@NotNull BigDecimal baseLoanValue) {
+    this.baseLoanValue = Objects.requireNonNull(baseLoanValue, "baseLoanValue");
   }
 }

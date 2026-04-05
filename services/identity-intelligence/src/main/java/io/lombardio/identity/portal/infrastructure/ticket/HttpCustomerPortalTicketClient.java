@@ -20,7 +20,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 @Component
-public class HttpCustomerPortalTicketClient implements CustomerPortalTicketClient {
+public final class HttpCustomerPortalTicketClient implements CustomerPortalTicketClient {
 
   private static final String INTERNAL_AUTH_HEADER = "X-Internal-Service-Token";
 

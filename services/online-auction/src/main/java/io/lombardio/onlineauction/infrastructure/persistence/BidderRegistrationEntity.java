@@ -10,6 +10,7 @@
  */
 package io.lombardio.onlineauction.infrastructure.persistence;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.onlineauction.domain.BidderApprovalStatus;
 import io.lombardio.onlineauction.domain.ReviewCheckStatus;
 import jakarta.persistence.Column;
@@ -21,7 +22,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.Objects;
 
 @Entity
 @Table(name = "bidder_registrations")
@@ -84,68 +87,75 @@ public class BidderRegistrationEntity {
     this.id = id;
   }
 
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP",
+      justification = "JPA relationship references must expose the managed entity association")
   public OnlineAuctionEntity getAuction() {
     return auction;
   }
 
-  public void setAuction(OnlineAuctionEntity auction) {
-    this.auction = auction;
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification =
+          "JPA relationship references must store the managed entity association directly")
+  public void setAuction(@NotNull OnlineAuctionEntity auction) {
+    this.auction = Objects.requireNonNull(auction, "auction");
   }
 
   public String getDisplayName() {
     return displayName;
   }
 
-  public void setDisplayName(String displayName) {
-    this.displayName = displayName;
+  public void setDisplayName(@NotNull String displayName) {
+    this.displayName = Objects.requireNonNull(displayName, "displayName");
   }
 
   public String getEmail() {
     return email;
   }
 
-  public void setEmail(String email) {
-    this.email = email;
+  public void setEmail(@NotNull String email) {
+    this.email = Objects.requireNonNull(email, "email");
   }
 
   public String getLegalName() {
     return legalName;
   }
 
-  public void setLegalName(String legalName) {
-    this.legalName = legalName;
+  public void setLegalName(@NotNull String legalName) {
+    this.legalName = Objects.requireNonNull(legalName, "legalName");
   }
 
   public String getBirthDate() {
     return birthDate;
   }
 
-  public void setBirthDate(String birthDate) {
-    this.birthDate = birthDate;
+  public void setBirthDate(@NotNull String birthDate) {
+    this.birthDate = Objects.requireNonNull(birthDate, "birthDate");
   }
 
   public String getIban() {
     return iban;
   }
 
-  public void setIban(String iban) {
-    this.iban = iban;
+  public void setIban(@NotNull String iban) {
+    this.iban = Objects.requireNonNull(iban, "iban");
   }
 
   public String getPaddleNumber() {
     return paddleNumber;
   }
 
-  public void setPaddleNumber(String paddleNumber) {
-    this.paddleNumber = paddleNumber;
+  public void setPaddleNumber(@NotNull String paddleNumber) {
+    this.paddleNumber = Objects.requireNonNull(paddleNumber, "paddleNumber");
   }
 
   public String getAccessToken() {
     return accessToken;
   }
 
-  public void setAccessToken(String accessToken) {
-    this.accessToken = accessToken;
+  public void setAccessToken(@NotNull String accessToken) {
+    this.accessToken = Objects.requireNonNull(accessToken, "accessToken");
   }
 
   public String getAccessTokenHash() {
@@ -160,24 +170,24 @@ public class BidderRegistrationEntity {
     return approvalStatus;
   }
 
-  public void setApprovalStatus(BidderApprovalStatus approvalStatus) {
-    this.approvalStatus = approvalStatus;
+  public void setApprovalStatus(@NotNull BidderApprovalStatus approvalStatus) {
+    this.approvalStatus = Objects.requireNonNull(approvalStatus, "approvalStatus");
   }
 
   public ReviewCheckStatus getKycStatus() {
     return kycStatus;
   }
 
-  public void setKycStatus(ReviewCheckStatus kycStatus) {
-    this.kycStatus = kycStatus;
+  public void setKycStatus(@NotNull ReviewCheckStatus kycStatus) {
+    this.kycStatus = Objects.requireNonNull(kycStatus, "kycStatus");
   }
 
   public ReviewCheckStatus getAccountCheckStatus() {
     return accountCheckStatus;
   }
 
-  public void setAccountCheckStatus(ReviewCheckStatus accountCheckStatus) {
-    this.accountCheckStatus = accountCheckStatus;
+  public void setAccountCheckStatus(@NotNull ReviewCheckStatus accountCheckStatus) {
+    this.accountCheckStatus = Objects.requireNonNull(accountCheckStatus, "accountCheckStatus");
   }
 
   public String getReviewNote() {
@@ -200,7 +210,7 @@ public class BidderRegistrationEntity {
     return createdAt;
   }
 
-  public void setCreatedAt(Instant createdAt) {
-    this.createdAt = createdAt;
+  public void setCreatedAt(@NotNull Instant createdAt) {
+    this.createdAt = Objects.requireNonNull(createdAt, "createdAt");
   }
 }

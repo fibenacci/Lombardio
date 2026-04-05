@@ -17,4 +17,20 @@ public record LoanCaseResponse(
     CustomerView customer,
     PledgeRecordResponse pledgeRecord,
     List<LoanPositionResponse> positions,
-    List<PawnTicketResponse> pawnTickets) {}
+    List<PawnTicketResponse> pawnTickets) {
+
+  public LoanCaseResponse {
+    positions = List.copyOf(positions == null ? List.of() : positions);
+    pawnTickets = List.copyOf(pawnTickets == null ? List.of() : pawnTickets);
+  }
+
+  @Override
+  public List<LoanPositionResponse> positions() {
+    return List.copyOf(positions);
+  }
+
+  @Override
+  public List<PawnTicketResponse> pawnTickets() {
+    return List.copyOf(pawnTickets);
+  }
+}

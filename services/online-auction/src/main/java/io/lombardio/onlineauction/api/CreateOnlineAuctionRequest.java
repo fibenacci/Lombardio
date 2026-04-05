@@ -24,4 +24,14 @@ public record CreateOnlineAuctionRequest(
     @NotBlank String slug,
     @NotNull @DecimalMin("1.00") BigDecimal minimumIncrement,
     @Min(30) int countdownSeconds,
-    @NotEmpty List<@Valid OnlineAuctionLotRequest> lots) {}
+    @NotEmpty List<@Valid OnlineAuctionLotRequest> lots) {
+
+  public CreateOnlineAuctionRequest {
+    lots = List.copyOf(lots == null ? List.of() : lots);
+  }
+
+  @Override
+  public List<OnlineAuctionLotRequest> lots() {
+    return List.copyOf(lots);
+  }
+}

@@ -10,6 +10,7 @@
  */
 package io.lombardio.onlineauction.infrastructure.persistence;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.onlineauction.config.CentrifugoProperties;
 import io.lombardio.onlineauction.domain.RealtimePublisher;
 import java.util.Map;
@@ -33,6 +34,9 @@ public class HttpCentrifugoRealtimePublisher implements RealtimePublisher {
   }
 
   @Override
+  @SuppressFBWarnings(
+      value = "CRLF_INJECTION_LOGS",
+      justification = "Channel and exception message are sanitized before logging")
   public void publish(String channel, Object payload) {
     try {
       restClient
@@ -44,8 +48,19 @@ public class HttpCentrifugoRealtimePublisher implements RealtimePublisher {
           .retrieve()
           .toBodilessEntity();
     } catch (Exception exception) {
+      String sanitizedChannel = sanitizeForLogs(channel);
+      String sanitizedMessage = sanitizeForLogs(exception.getMessage());
       log.warn(
-          "[REALTIME] Failed to publish event to channel {}: {}", channel, exception.getMessage());
+          "[REALTIME] Failed to publish event to channel {}: {}",
+          sanitizedChannel,
+          sanitizedMessage);
     }
+  }
+
+  private String sanitizeForLogs(String value) {
+    if (value == null) {
+      return "null";
+    }
+    return value.replace('\r', '_').replace('\n', '_').replace('\t', '_');
   }
 }

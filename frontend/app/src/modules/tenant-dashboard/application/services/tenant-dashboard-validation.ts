@@ -35,8 +35,8 @@ type NewCustomerAml = {
 
 type ExistingCustomerState = {
   id?: string;
-  kycApproved?: boolean;
-  amlOriginationAllowed?: boolean;
+  kycApproved?: boolean | null;
+  amlOriginationAllowed?: boolean | null;
 };
 
 type PositionState = {

@@ -17,6 +17,7 @@ import io.lombardio.identity.kyc.domain.KycStatus;
 import io.lombardio.identity.kyc.domain.KycVerificationMode;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -72,7 +73,7 @@ public class KycDevelopmentSeeder {
         status,
         status == KycStatus.APPROVED ? today.plusYears(1).plusDays(customerIndex % 180) : null,
         customerIndex % 5 == 0 ? "REISEPASS" : "PERSONALAUSWEIS",
-        tenant.key().substring(0, Math.min(3, tenant.key().length())).toUpperCase()
+        tenant.key().substring(0, Math.min(3, tenant.key().length())).toUpperCase(Locale.ROOT)
             + String.format("%05d", customerIndex),
         today.plusYears(2).plusDays(customerIndex % 365),
         "data:image/png;base64,ZXhhbXBsZS1mcm9udA==",
@@ -115,6 +116,6 @@ public class KycDevelopmentSeeder {
   }
 
   private String normalize(String scale) {
-    return scale == null ? "medium" : scale.trim().toLowerCase();
+    return scale == null ? "medium" : scale.trim().toLowerCase(Locale.ROOT);
   }
 }

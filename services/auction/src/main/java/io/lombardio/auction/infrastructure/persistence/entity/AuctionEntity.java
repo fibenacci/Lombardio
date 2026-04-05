@@ -20,10 +20,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "auctions")
@@ -156,11 +158,11 @@ public class AuctionEntity {
   }
 
   public List<AuctionLotEntity> getLots() {
-    return lots;
+    return List.copyOf(lots);
   }
 
-  public void setLots(List<AuctionLotEntity> lots) {
-    this.lots = lots;
+  public void setLots(@NotNull List<AuctionLotEntity> lots) {
+    this.lots = new ArrayList<>(Objects.requireNonNull(lots, "lots"));
   }
 
   public Instant getCreatedAt() {

@@ -14,7 +14,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.Objects;
 
 @Entity
 @Table(name = "customer_portal_sessions")
@@ -43,8 +45,8 @@ public class CustomerPortalSessionEntity {
     return token;
   }
 
-  public void setToken(String token) {
-    this.token = token;
+  public void setToken(@NotNull String token) {
+    this.token = Objects.requireNonNull(token, "token");
   }
 
   public String getTokenHash() {
@@ -59,31 +61,31 @@ public class CustomerPortalSessionEntity {
     return customerId;
   }
 
-  public void setCustomerId(String customerId) {
-    this.customerId = customerId;
+  public void setCustomerId(@NotNull String customerId) {
+    this.customerId = Objects.requireNonNull(customerId, "customerId");
   }
 
   public String getTenantId() {
     return tenantId;
   }
 
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
+  public void setTenantId(@NotNull String tenantId) {
+    this.tenantId = Objects.requireNonNull(tenantId, "tenantId");
   }
 
   public Instant getIssuedAt() {
     return issuedAt;
   }
 
-  public void setIssuedAt(Instant issuedAt) {
-    this.issuedAt = issuedAt;
+  public void setIssuedAt(@NotNull Instant issuedAt) {
+    this.issuedAt = Objects.requireNonNull(issuedAt, "issuedAt");
   }
 
   public Instant getExpiresAt() {
     return expiresAt;
   }
 
-  public void setExpiresAt(Instant expiresAt) {
-    this.expiresAt = expiresAt;
+  public void setExpiresAt(@NotNull Instant expiresAt) {
+    this.expiresAt = Objects.requireNonNull(expiresAt, "expiresAt");
   }
 }

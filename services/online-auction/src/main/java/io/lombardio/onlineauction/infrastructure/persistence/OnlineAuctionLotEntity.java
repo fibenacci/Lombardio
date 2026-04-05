@@ -10,6 +10,7 @@
  */
 package io.lombardio.onlineauction.infrastructure.persistence;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,7 +18,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @Entity
 @Table(name = "online_auction_lots")
@@ -54,12 +57,19 @@ public class OnlineAuctionLotEntity {
     this.id = id;
   }
 
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP",
+      justification = "JPA relationship references must expose the managed entity association")
   public OnlineAuctionEntity getAuction() {
     return auction;
   }
 
-  public void setAuction(OnlineAuctionEntity auction) {
-    this.auction = auction;
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification =
+          "JPA relationship references must store the managed entity association directly")
+  public void setAuction(@NotNull OnlineAuctionEntity auction) {
+    this.auction = Objects.requireNonNull(auction, "auction");
   }
 
   public int getLotNumber() {
@@ -74,32 +84,32 @@ public class OnlineAuctionLotEntity {
     return title;
   }
 
-  public void setTitle(String title) {
-    this.title = title;
+  public void setTitle(@NotNull String title) {
+    this.title = Objects.requireNonNull(title, "title");
   }
 
   public String getDescription() {
     return description;
   }
 
-  public void setDescription(String description) {
-    this.description = description;
+  public void setDescription(@NotNull String description) {
+    this.description = Objects.requireNonNull(description, "description");
   }
 
   public BigDecimal getStartingBid() {
     return startingBid;
   }
 
-  public void setStartingBid(BigDecimal startingBid) {
-    this.startingBid = startingBid;
+  public void setStartingBid(@NotNull BigDecimal startingBid) {
+    this.startingBid = Objects.requireNonNull(startingBid, "startingBid");
   }
 
   public BigDecimal getCurrentBid() {
     return currentBid;
   }
 
-  public void setCurrentBid(BigDecimal currentBid) {
-    this.currentBid = currentBid;
+  public void setCurrentBid(@NotNull BigDecimal currentBid) {
+    this.currentBid = Objects.requireNonNull(currentBid, "currentBid");
   }
 
   public String getHighestBidderAlias() {

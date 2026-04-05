@@ -13,4 +13,14 @@ package io.lombardio.auction.api.http.error;
 import java.util.List;
 
 public record ApiError(
-    String code, String message, String traceId, List<ApiFieldError> fieldErrors) {}
+    String code, String message, String traceId, List<ApiFieldError> fieldErrors) {
+
+  public ApiError {
+    fieldErrors = List.copyOf(fieldErrors == null ? List.of() : fieldErrors);
+  }
+
+  @Override
+  public List<ApiFieldError> fieldErrors() {
+    return List.copyOf(fieldErrors);
+  }
+}

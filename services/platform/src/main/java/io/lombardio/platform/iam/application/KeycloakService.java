@@ -10,7 +10,6 @@
  */
 package io.lombardio.platform.iam.application;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.platform.config.KeycloakProperties;
 import io.lombardio.platform.tenant.api.TenantUserResponse;
 import jakarta.ws.rs.NotAuthorizedException;
@@ -156,9 +155,6 @@ public class KeycloakService {
         });
   }
 
-  @SuppressFBWarnings(
-      value = "IMPROPER_UNICODE",
-      justification = "Safe comparison with technical constants")
   public TenantUserResponse updateTenantUser(
       String tenantId,
       String userId,
@@ -177,8 +173,7 @@ public class KeycloakService {
           user.setUsername(email);
           user.setEmail(email);
           user.setFirstName(displayName);
-          boolean enabled = status == null || (!"INACTIVE".equals(status) && !"inactive".equals(status));
-          user.setEnabled(enabled);
+          user.setEnabled(isEnabledStatus(status));
           user.setAttributes(userAttributes(tenantId, branchIds));
 
           realmResource.users().get(userId).update(user);
@@ -271,6 +266,10 @@ public class KeycloakService {
 
   private List<String> safeBranchIds(List<String> branchIds) {
     return branchIds == null ? Collections.emptyList() : branchIds;
+  }
+
+  private boolean isEnabledStatus(String status) {
+    return status == null || !"INACTIVE".equals(status);
   }
 
   private Map<String, List<String>> userAttributes(String tenantId, List<String> branchIds) {

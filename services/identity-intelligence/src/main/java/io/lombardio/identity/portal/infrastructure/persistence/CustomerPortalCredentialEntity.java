@@ -14,7 +14,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.Objects;
 
 @Entity
 @Table(name = "customer_portal_credentials")
@@ -34,23 +36,23 @@ public class CustomerPortalCredentialEntity {
     return customerId;
   }
 
-  public void setCustomerId(String customerId) {
-    this.customerId = customerId;
+  public void setCustomerId(@NotNull String customerId) {
+    this.customerId = Objects.requireNonNull(customerId, "customerId");
   }
 
   public String getPasswordHash() {
     return passwordHash;
   }
 
-  public void setPasswordHash(String passwordHash) {
-    this.passwordHash = passwordHash;
+  public void setPasswordHash(@NotNull String passwordHash) {
+    this.passwordHash = Objects.requireNonNull(passwordHash, "passwordHash");
   }
 
   public Instant getActivatedAt() {
     return activatedAt;
   }
 
-  public void setActivatedAt(Instant activatedAt) {
-    this.activatedAt = activatedAt;
+  public void setActivatedAt(@NotNull Instant activatedAt) {
+    this.activatedAt = Objects.requireNonNull(activatedAt, "activatedAt");
   }
 }

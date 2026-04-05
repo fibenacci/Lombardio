@@ -10,16 +10,22 @@
  */
 package io.lombardio.pawnticket.application.service;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.pawnticket.domain.model.CashTransactionType;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.math.BigDecimal;
+import java.util.Locale;
 
 public class PawnTicketMetrics {
 
   private final MeterRegistry meterRegistry;
 
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification =
+          "MeterRegistry is a managed metrics dependency that must be retained directly")
   public PawnTicketMetrics(MeterRegistry meterRegistry) {
     this.meterRegistry = meterRegistry;
   }
@@ -40,12 +46,13 @@ public class PawnTicketMetrics {
   }
 
   public void recordCashTransaction(CashTransactionType type, BigDecimal totalAmount) {
+    String transactionType = type.name().toLowerCase(Locale.ROOT);
     meterRegistry
-        .counter("lombardio.cash_transaction.executed", "type", type.name().toLowerCase())
+        .counter("lombardio.cash_transaction.executed", "type", transactionType)
         .increment();
     DistributionSummary.builder("lombardio.cash_transaction.total_amount")
         .baseUnit("eur")
-        .tag("type", type.name().toLowerCase())
+        .tag("type", transactionType)
         .register(meterRegistry)
         .record(totalAmount.doubleValue());
   }

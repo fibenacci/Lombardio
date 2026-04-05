@@ -17,6 +17,7 @@ import io.lombardio.identity.aml.domain.port.AmlRepository;
 import io.lombardio.identity.demo.DemoDataProperties;
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -123,6 +124,6 @@ public class AmlDevelopmentSeeder {
   }
 
   private String normalize(String scale) {
-    return scale == null ? "medium" : scale.trim().toLowerCase();
+    return scale == null ? "medium" : scale.trim().toLowerCase(Locale.ROOT);
   }
 }

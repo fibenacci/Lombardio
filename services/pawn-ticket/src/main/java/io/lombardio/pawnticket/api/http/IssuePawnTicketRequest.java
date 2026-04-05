@@ -28,4 +28,14 @@ public record IssuePawnTicketRequest(
     @NotNull @DecimalMin("0.01") BigDecimal loanAmount,
     @Min(3) Integer termMonths,
     @DecimalMin("0.00") BigDecimal manualMonthlyOperatingFee,
-    @NotEmpty List<@Valid PawnTicketPositionPayload> positions) {}
+    @NotEmpty List<@Valid PawnTicketPositionPayload> positions) {
+
+  public IssuePawnTicketRequest {
+    positions = List.copyOf(positions == null ? List.of() : positions);
+  }
+
+  @Override
+  public List<PawnTicketPositionPayload> positions() {
+    return List.copyOf(positions);
+  }
+}

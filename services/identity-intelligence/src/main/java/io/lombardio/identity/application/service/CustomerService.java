@@ -21,6 +21,7 @@ import io.lombardio.identity.portal.application.CustomerPortalService;
 import io.lombardio.platform.security.AuthenticatedUser;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -40,7 +41,7 @@ public class CustomerService {
       CustomerPortalService customerPortalService) {
     this.customerRepository = customerRepository;
     this.kycDirectory = kycDirectory;
-    this.externalCrmConnectors = externalCrmConnectors;
+    this.externalCrmConnectors = List.copyOf(externalCrmConnectors);
     this.customerPortalService = customerPortalService;
   }
 
@@ -163,7 +164,7 @@ public class CustomerService {
     if (email == null) {
       return null;
     }
-    String normalized = email.trim().toLowerCase();
+    String normalized = email.trim().toLowerCase(Locale.ROOT);
     return normalized.isEmpty() ? null : normalized;
   }
 

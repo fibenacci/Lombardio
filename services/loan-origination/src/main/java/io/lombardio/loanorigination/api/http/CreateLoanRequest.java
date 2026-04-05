@@ -29,6 +29,16 @@ public record CreateLoanRequest(
     String bearerPostalCode,
     String bearerCity,
     String powerOfAttorneyDocumentDataUrl) {
+
+  public CreateLoanRequest {
+    positions = List.copyOf(positions == null ? List.of() : positions);
+  }
+
+  @Override
+  public List<PositionPayload> positions() {
+    return List.copyOf(positions);
+  }
+
   @AssertTrue(
       message =
           "powerOfAttorneyDocumentDataUrl must be provided when thirdPartyPledgorPresentation is true")

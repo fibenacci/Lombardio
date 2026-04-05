@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 @Component
-public class IntegrationMailClient {
+public final class IntegrationMailClient {
 
   private static final String INTERNAL_SERVICE_HEADER = "X-Internal-Service-Token";
 
@@ -70,5 +70,11 @@ public class IntegrationMailClient {
       String subject,
       String textBody,
       String htmlBody,
-      Map<String, String> metadata) {}
+      Map<String, String> metadata) {
+    public IntegrationMailRequest {
+      to = List.copyOf(to != null ? to : List.of());
+      replyTo = List.copyOf(replyTo != null ? replyTo : List.of());
+      metadata = Map.copyOf(metadata != null ? metadata : Map.of());
+    }
+  }
 }

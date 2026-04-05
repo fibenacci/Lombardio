@@ -14,7 +14,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.Objects;
 
 @Entity
 @Table(name = "operator_sessions")
@@ -49,39 +51,41 @@ public class OperatorSessionEntity {
     return accessTokenCiphertext;
   }
 
-  public void setAccessTokenCiphertext(String accessTokenCiphertext) {
-    this.accessTokenCiphertext = accessTokenCiphertext;
+  public void setAccessTokenCiphertext(@NotNull String accessTokenCiphertext) {
+    this.accessTokenCiphertext =
+        Objects.requireNonNull(accessTokenCiphertext, "accessTokenCiphertext");
   }
 
   public String getRefreshTokenCiphertext() {
     return refreshTokenCiphertext;
   }
 
-  public void setRefreshTokenCiphertext(String refreshTokenCiphertext) {
-    this.refreshTokenCiphertext = refreshTokenCiphertext;
+  public void setRefreshTokenCiphertext(@NotNull String refreshTokenCiphertext) {
+    this.refreshTokenCiphertext =
+        Objects.requireNonNull(refreshTokenCiphertext, "refreshTokenCiphertext");
   }
 
   public Instant getExpiresAt() {
     return expiresAt;
   }
 
-  public void setExpiresAt(Instant expiresAt) {
-    this.expiresAt = expiresAt;
+  public void setExpiresAt(@NotNull Instant expiresAt) {
+    this.expiresAt = Objects.requireNonNull(expiresAt, "expiresAt");
   }
 
   public Instant getCreatedAt() {
     return createdAt;
   }
 
-  public void setCreatedAt(Instant createdAt) {
-    this.createdAt = createdAt;
+  public void setCreatedAt(@NotNull Instant createdAt) {
+    this.createdAt = Objects.requireNonNull(createdAt, "createdAt");
   }
 
   public Instant getUpdatedAt() {
     return updatedAt;
   }
 
-  public void setUpdatedAt(Instant updatedAt) {
-    this.updatedAt = updatedAt;
+  public void setUpdatedAt(@NotNull Instant updatedAt) {
+    this.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt");
   }
 }

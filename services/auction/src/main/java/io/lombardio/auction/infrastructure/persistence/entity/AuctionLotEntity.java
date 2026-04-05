@@ -10,6 +10,7 @@
  */
 package io.lombardio.auction.infrastructure.persistence.entity;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.auction.domain.model.AuctionLotStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,8 +21,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "auction_lots")
@@ -78,12 +81,19 @@ public class AuctionLotEntity {
     this.id = id;
   }
 
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP",
+      justification = "JPA relationship references must expose the managed entity association")
   public AuctionEntity getAuction() {
     return auction;
   }
 
-  public void setAuction(AuctionEntity auction) {
-    this.auction = auction;
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification =
+          "JPA relationship references must store the managed entity association directly")
+  public void setAuction(@NotNull AuctionEntity auction) {
+    this.auction = Objects.requireNonNull(auction, "auction");
   }
 
   public int getLotNumber() {
@@ -98,48 +108,48 @@ public class AuctionLotEntity {
     return contractNumber;
   }
 
-  public void setContractNumber(String contractNumber) {
-    this.contractNumber = contractNumber;
+  public void setContractNumber(@NotNull String contractNumber) {
+    this.contractNumber = Objects.requireNonNull(contractNumber, "contractNumber");
   }
 
   public String getItemNumber() {
     return itemNumber;
   }
 
-  public void setItemNumber(String itemNumber) {
-    this.itemNumber = itemNumber;
+  public void setItemNumber(@NotNull String itemNumber) {
+    this.itemNumber = Objects.requireNonNull(itemNumber, "itemNumber");
   }
 
   public String getDescription() {
     return description;
   }
 
-  public void setDescription(String description) {
-    this.description = description;
+  public void setDescription(@NotNull String description) {
+    this.description = Objects.requireNonNull(description, "description");
   }
 
   public BigDecimal getEstimatedValue() {
     return estimatedValue;
   }
 
-  public void setEstimatedValue(BigDecimal estimatedValue) {
-    this.estimatedValue = estimatedValue;
+  public void setEstimatedValue(@NotNull BigDecimal estimatedValue) {
+    this.estimatedValue = Objects.requireNonNull(estimatedValue, "estimatedValue");
   }
 
   public BigDecimal getOutstandingClaim() {
     return outstandingClaim;
   }
 
-  public void setOutstandingClaim(BigDecimal outstandingClaim) {
-    this.outstandingClaim = outstandingClaim;
+  public void setOutstandingClaim(@NotNull BigDecimal outstandingClaim) {
+    this.outstandingClaim = Objects.requireNonNull(outstandingClaim, "outstandingClaim");
   }
 
   public BigDecimal getLatestBidAmount() {
     return latestBidAmount;
   }
 
-  public void setLatestBidAmount(BigDecimal latestBidAmount) {
-    this.latestBidAmount = latestBidAmount;
+  public void setLatestBidAmount(@NotNull BigDecimal latestBidAmount) {
+    this.latestBidAmount = Objects.requireNonNull(latestBidAmount, "latestBidAmount");
   }
 
   public String getLeadingBidder() {
@@ -162,8 +172,8 @@ public class AuctionLotEntity {
     return status;
   }
 
-  public void setStatus(AuctionLotStatus status) {
-    this.status = status;
+  public void setStatus(@NotNull AuctionLotStatus status) {
+    this.status = Objects.requireNonNull(status, "status");
   }
 
   public BigDecimal getSurplusAmount() {

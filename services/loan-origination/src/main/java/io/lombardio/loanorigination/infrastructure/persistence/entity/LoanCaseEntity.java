@@ -17,8 +17,10 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "loan_cases")
@@ -188,26 +190,26 @@ public class LoanCaseEntity {
   }
 
   public List<PledgeRecordEntity> getPledgeRecords() {
-    return pledgeRecords;
+    return List.copyOf(pledgeRecords);
   }
 
-  public void setPledgeRecords(List<PledgeRecordEntity> pledgeRecords) {
-    this.pledgeRecords = pledgeRecords;
+  public void setPledgeRecords(@NotNull List<PledgeRecordEntity> pledgeRecords) {
+    this.pledgeRecords = new ArrayList<>(Objects.requireNonNull(pledgeRecords, "pledgeRecords"));
   }
 
   public List<LoanPositionEntity> getPositions() {
-    return positions;
+    return List.copyOf(positions);
   }
 
-  public void setPositions(List<LoanPositionEntity> positions) {
-    this.positions = positions;
+  public void setPositions(@NotNull List<LoanPositionEntity> positions) {
+    this.positions = new ArrayList<>(Objects.requireNonNull(positions, "positions"));
   }
 
   public List<LoanPawnTicketEntity> getPawnTickets() {
-    return pawnTickets;
+    return List.copyOf(pawnTickets);
   }
 
-  public void setPawnTickets(List<LoanPawnTicketEntity> pawnTickets) {
-    this.pawnTickets = pawnTickets;
+  public void setPawnTickets(@NotNull List<LoanPawnTicketEntity> pawnTickets) {
+    this.pawnTickets = new ArrayList<>(Objects.requireNonNull(pawnTickets, "pawnTickets"));
   }
 }

@@ -1,4 +1,6 @@
-export type ErrorHandler = (error: any) => void | Promise<void>;
+import type { RequestError } from "./types";
+
+export type ErrorHandler = (error: RequestError) => void | Promise<void>;
 
 class ErrorInterceptorRegistry {
   private handlers: Map<number, ErrorHandler[]> = new Map();
@@ -30,7 +32,7 @@ class ErrorInterceptorRegistry {
   /**
    * Dispatch an error to all matching handlers.
    */
-  async dispatch(error: any): Promise<void> {
+  async dispatch(error: RequestError): Promise<void> {
     const status = error.status;
     const matchingHandlers = this.handlers.get(status) || [];
     

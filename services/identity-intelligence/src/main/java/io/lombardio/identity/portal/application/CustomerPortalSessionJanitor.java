@@ -10,6 +10,7 @@
  */
 package io.lombardio.identity.portal.application;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.identity.portal.infrastructure.persistence.CustomerPortalSessionRepository;
 import java.time.Clock;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,6 +22,9 @@ public class CustomerPortalSessionJanitor {
   private final CustomerPortalSessionRepository sessionRepository;
   private final Clock clock;
 
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification = "Spring-managed repository dependency cannot be defensively copied")
   public CustomerPortalSessionJanitor(
       CustomerPortalSessionRepository sessionRepository, Clock clock) {
     this.sessionRepository = sessionRepository;

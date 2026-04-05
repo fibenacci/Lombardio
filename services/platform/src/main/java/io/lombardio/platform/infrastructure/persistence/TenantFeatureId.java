@@ -32,6 +32,10 @@ public class TenantFeatureId implements Serializable {
     this.featureKey = featureKey;
   }
 
+  public TenantFeatureId(TenantFeatureId other) {
+    this(other.tenantId, other.featureKey);
+  }
+
   public String getTenantId() {
     return tenantId;
   }

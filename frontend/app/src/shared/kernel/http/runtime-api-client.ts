@@ -4,7 +4,7 @@ import { RequestErrorFactory } from "./request-error-factory";
 
 const platformBaseUrl = readRuntimeValue(
   "PLATFORM_API_BASE_URL",
-  (import.meta as any).env.VITE_PLATFORM_API_BASE_URL ?? "http://localhost:8080"
+  import.meta.env.VITE_PLATFORM_API_BASE_URL ?? "http://localhost:8080"
 );
 
 export const BASE_URLS = {
@@ -12,24 +12,24 @@ export const BASE_URLS = {
   platform: platformBaseUrl,
   customerPortal: readRuntimeValue(
     "CUSTOMER_API_BASE_URL",
-    (import.meta as any).env.VITE_CUSTOMER_API_BASE_URL ?? "http://localhost:8080"
+    import.meta.env.VITE_CUSTOMER_API_BASE_URL ?? "http://localhost:8080"
   ),
   publicOnlineAuction: readRuntimeValue(
     "ONLINE_AUCTION_API_BASE_URL",
-    (import.meta as any).env.VITE_ONLINE_AUCTION_API_BASE_URL ?? "http://localhost:8080"
+    import.meta.env.VITE_ONLINE_AUCTION_API_BASE_URL ?? "http://localhost:8080"
   )
 };
 
-async function parsePayload(response: Response): Promise<any> {
+async function parsePayload<T = unknown>(response: Response): Promise<T> {
   if (response.status === 204) {
-    return null;
+    return null as T;
   }
 
   const isJson = response.headers.get("content-type")?.includes("application/json");
-  return isJson ? await response.json() : await response.text();
+  return (isJson ? await response.json() : await response.text()) as T;
 }
 
-async function request(baseUrl: string, path: string, options: RequestInit = {}): Promise<any> {
+async function request<T = unknown>(baseUrl: string, path: string, options: RequestInit = {}): Promise<T> {
   const { headers: customHeaders = {}, ...restOptions } = options;
   const requestUrl = `${baseUrl}${path}`;
   const requestMethod = restOptions.method ?? "GET";
@@ -53,7 +53,7 @@ async function request(baseUrl: string, path: string, options: RequestInit = {})
     throw error;
   }
 
-  return parsePayload(response);
+  return parsePayload<T>(response);
 }
 
 async function requestBlob(baseUrl: string, path: string): Promise<Blob> {
@@ -76,7 +76,7 @@ async function requestBlob(baseUrl: string, path: string): Promise<Blob> {
   return response.blob();
 }
 
-function withJsonBody(method: string, body: any): RequestInit {
+function withJsonBody(method: string, body: unknown): RequestInit {
   return {
     method,
     body: JSON.stringify(body)
@@ -85,17 +85,17 @@ function withJsonBody(method: string, body: any): RequestInit {
 
 export function createApiClient(baseUrl: string) {
   return {
-    get(path: string) {
-      return request(baseUrl, path, { method: "GET" });
+    get<T = unknown>(path: string) {
+      return request<T>(baseUrl, path, { method: "GET" });
     },
-    post(path: string, body: any) {
-      return request(baseUrl, path, withJsonBody("POST", body));
+    post<T = unknown>(path: string, body: unknown) {
+      return request<T>(baseUrl, path, withJsonBody("POST", body));
     },
-    patch(path: string, body: any) {
-      return request(baseUrl, path, withJsonBody("PATCH", body));
+    patch<T = unknown>(path: string, body: unknown) {
+      return request<T>(baseUrl, path, withJsonBody("PATCH", body));
     },
-    put(path: string, body: any) {
-      return request(baseUrl, path, withJsonBody("PUT", body));
+    put<T = unknown>(path: string, body: unknown) {
+      return request<T>(baseUrl, path, withJsonBody("PUT", body));
     },
     getBlob(path: string) {
       return requestBlob(baseUrl, path);

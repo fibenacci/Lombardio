@@ -10,15 +10,18 @@
  */
 package io.lombardio.loanorigination.infrastructure.persistence.entity;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "loan_pawn_tickets")
@@ -92,108 +95,116 @@ public class LoanPawnTicketEntity {
     this.id = id;
   }
 
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP",
+      justification = "JPA relationship references must expose the managed entity association")
   public LoanCaseEntity getLoanCase() {
     return loanCase;
   }
 
-  public void setLoanCase(LoanCaseEntity loanCase) {
-    this.loanCase = loanCase;
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification =
+          "JPA relationship references must store the managed entity association directly")
+  public void setLoanCase(@NotNull LoanCaseEntity loanCase) {
+    this.loanCase = Objects.requireNonNull(loanCase, "loanCase");
   }
 
   public String getContractNumber() {
     return contractNumber;
   }
 
-  public void setContractNumber(String contractNumber) {
-    this.contractNumber = contractNumber;
+  public void setContractNumber(@NotNull String contractNumber) {
+    this.contractNumber = Objects.requireNonNull(contractNumber, "contractNumber");
   }
 
   public String getContractBarcode() {
     return contractBarcode;
   }
 
-  public void setContractBarcode(String contractBarcode) {
-    this.contractBarcode = contractBarcode;
+  public void setContractBarcode(@NotNull String contractBarcode) {
+    this.contractBarcode = Objects.requireNonNull(contractBarcode, "contractBarcode");
   }
 
   public String getTicketNumber() {
     return ticketNumber;
   }
 
-  public void setTicketNumber(String ticketNumber) {
-    this.ticketNumber = ticketNumber;
+  public void setTicketNumber(@NotNull String ticketNumber) {
+    this.ticketNumber = Objects.requireNonNull(ticketNumber, "ticketNumber");
   }
 
   public String getTermsVersion() {
     return termsVersion;
   }
 
-  public void setTermsVersion(String termsVersion) {
-    this.termsVersion = termsVersion;
+  public void setTermsVersion(@NotNull String termsVersion) {
+    this.termsVersion = Objects.requireNonNull(termsVersion, "termsVersion");
   }
 
   public String getTermsAndConditionsText() {
     return termsAndConditionsText;
   }
 
-  public void setTermsAndConditionsText(String termsAndConditionsText) {
-    this.termsAndConditionsText = termsAndConditionsText;
+  public void setTermsAndConditionsText(@NotNull String termsAndConditionsText) {
+    this.termsAndConditionsText =
+        Objects.requireNonNull(termsAndConditionsText, "termsAndConditionsText");
   }
 
   public Instant getCreatedAt() {
     return createdAt;
   }
 
-  public void setCreatedAt(Instant createdAt) {
-    this.createdAt = createdAt;
+  public void setCreatedAt(@NotNull Instant createdAt) {
+    this.createdAt = Objects.requireNonNull(createdAt, "createdAt");
   }
 
   public LocalDate getDueDate() {
     return dueDate;
   }
 
-  public void setDueDate(LocalDate dueDate) {
-    this.dueDate = dueDate;
+  public void setDueDate(@NotNull LocalDate dueDate) {
+    this.dueDate = Objects.requireNonNull(dueDate, "dueDate");
   }
 
   public LocalDate getEarliestAuctionDate() {
     return earliestAuctionDate;
   }
 
-  public void setEarliestAuctionDate(LocalDate earliestAuctionDate) {
-    this.earliestAuctionDate = earliestAuctionDate;
+  public void setEarliestAuctionDate(@NotNull LocalDate earliestAuctionDate) {
+    this.earliestAuctionDate = Objects.requireNonNull(earliestAuctionDate, "earliestAuctionDate");
   }
 
   public Integer getTermMonths() {
     return termMonths;
   }
 
-  public void setTermMonths(Integer termMonths) {
-    this.termMonths = termMonths;
+  public void setTermMonths(@NotNull Integer termMonths) {
+    this.termMonths = Objects.requireNonNull(termMonths, "termMonths");
   }
 
   public BigDecimal getTotalLoanValue() {
     return totalLoanValue;
   }
 
-  public void setTotalLoanValue(BigDecimal totalLoanValue) {
-    this.totalLoanValue = totalLoanValue;
+  public void setTotalLoanValue(@NotNull BigDecimal totalLoanValue) {
+    this.totalLoanValue = Objects.requireNonNull(totalLoanValue, "totalLoanValue");
   }
 
   public BigDecimal getMonthlyInterestRate() {
     return monthlyInterestRate;
   }
 
-  public void setMonthlyInterestRate(BigDecimal monthlyInterestRate) {
-    this.monthlyInterestRate = monthlyInterestRate;
+  public void setMonthlyInterestRate(@NotNull BigDecimal monthlyInterestRate) {
+    this.monthlyInterestRate = Objects.requireNonNull(monthlyInterestRate, "monthlyInterestRate");
   }
 
   public BigDecimal getMonthlyOperatingFee() {
     return monthlyOperatingFee;
   }
 
-  public void setMonthlyOperatingFee(BigDecimal monthlyOperatingFee) {
-    this.monthlyOperatingFee = monthlyOperatingFee;
+  public void setMonthlyOperatingFee(@NotNull BigDecimal monthlyOperatingFee) {
+    this.monthlyOperatingFee = Objects.requireNonNull(monthlyOperatingFee, "monthlyOperatingFee");
   }
 
   public boolean isManualMonthlyOperatingFeeRequired() {
@@ -208,39 +219,41 @@ public class LoanPawnTicketEntity {
     return totalInterestAmount;
   }
 
-  public void setTotalInterestAmount(BigDecimal totalInterestAmount) {
-    this.totalInterestAmount = totalInterestAmount;
+  public void setTotalInterestAmount(@NotNull BigDecimal totalInterestAmount) {
+    this.totalInterestAmount = Objects.requireNonNull(totalInterestAmount, "totalInterestAmount");
   }
 
   public BigDecimal getTotalOperatingFeeAmount() {
     return totalOperatingFeeAmount;
   }
 
-  public void setTotalOperatingFeeAmount(BigDecimal totalOperatingFeeAmount) {
-    this.totalOperatingFeeAmount = totalOperatingFeeAmount;
+  public void setTotalOperatingFeeAmount(@NotNull BigDecimal totalOperatingFeeAmount) {
+    this.totalOperatingFeeAmount =
+        Objects.requireNonNull(totalOperatingFeeAmount, "totalOperatingFeeAmount");
   }
 
   public BigDecimal getTotalRepaymentAmount() {
     return totalRepaymentAmount;
   }
 
-  public void setTotalRepaymentAmount(BigDecimal totalRepaymentAmount) {
-    this.totalRepaymentAmount = totalRepaymentAmount;
+  public void setTotalRepaymentAmount(@NotNull BigDecimal totalRepaymentAmount) {
+    this.totalRepaymentAmount =
+        Objects.requireNonNull(totalRepaymentAmount, "totalRepaymentAmount");
   }
 
   public String getLegalText() {
     return legalText;
   }
 
-  public void setLegalText(String legalText) {
-    this.legalText = legalText;
+  public void setLegalText(@NotNull String legalText) {
+    this.legalText = Objects.requireNonNull(legalText, "legalText");
   }
 
   public Integer getSortOrder() {
     return sortOrder;
   }
 
-  public void setSortOrder(Integer sortOrder) {
-    this.sortOrder = sortOrder;
+  public void setSortOrder(@NotNull Integer sortOrder) {
+    this.sortOrder = Objects.requireNonNull(sortOrder, "sortOrder");
   }
 }

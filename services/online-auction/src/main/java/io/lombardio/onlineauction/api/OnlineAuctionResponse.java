@@ -29,4 +29,20 @@ public record OnlineAuctionResponse(
     Instant countdownEndsAt,
     Instant closedAt,
     List<OnlineAuctionLotResponse> lots,
-    List<BidderRegistrationResponse> registrations) {}
+    List<BidderRegistrationResponse> registrations) {
+
+  public OnlineAuctionResponse {
+    lots = List.copyOf(lots == null ? List.of() : lots);
+    registrations = List.copyOf(registrations == null ? List.of() : registrations);
+  }
+
+  @Override
+  public List<OnlineAuctionLotResponse> lots() {
+    return List.copyOf(lots);
+  }
+
+  @Override
+  public List<BidderRegistrationResponse> registrations() {
+    return List.copyOf(registrations);
+  }
+}

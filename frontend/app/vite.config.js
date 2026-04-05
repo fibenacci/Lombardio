@@ -29,15 +29,7 @@ export default defineConfig({
           }
 
           if (id.includes("primevue")) {
-            return "primevue-core";
-          }
-
-          if (id.includes("vue-router")) {
-            return "router";
-          }
-
-          if (id.includes("/vue/")) {
-            return "vue";
+            return "primevue";
           }
 
           return "vendor";

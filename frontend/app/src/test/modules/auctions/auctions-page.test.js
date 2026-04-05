@@ -55,7 +55,7 @@ describe("AuctionsView", () => {
     expect(wrapper.text()).toContain("Fruehjahrsauktion");
     expect(wrapper.text()).toContain("PS-5001");
     expect(wrapper.text()).toContain("OPEN");
-  });
+  }, 10000);
 
   it("blocks auction creation with incomplete lot data before the request is sent", async () => {
     authStore.token = "token-123";

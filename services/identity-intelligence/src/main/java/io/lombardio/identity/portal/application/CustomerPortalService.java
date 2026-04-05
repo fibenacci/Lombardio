@@ -10,6 +10,7 @@
  */
 package io.lombardio.identity.portal.application;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.identity.config.CustomerPortalSessionProperties;
 import io.lombardio.identity.domain.model.Customer;
 import io.lombardio.identity.domain.port.CustomerRepository;
@@ -32,6 +33,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,6 +52,10 @@ public class CustomerPortalService {
   private final Clock clock;
   private final CustomerPortalSessionProperties sessionProperties;
 
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification =
+          "Spring-managed repositories are shared infrastructure dependencies and cannot be defensively copied")
   public CustomerPortalService(
       CustomerRepository customerRepository,
       CustomerPortalCredentialRepository credentialRepository,
@@ -287,7 +293,7 @@ public class CustomerPortalService {
   }
 
   private String normalizeEmail(String email) {
-    return email == null ? "" : email.trim().toLowerCase();
+    return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
   }
 
   private CustomerPortalInvitationEntity findInvitationByToken(String token) {

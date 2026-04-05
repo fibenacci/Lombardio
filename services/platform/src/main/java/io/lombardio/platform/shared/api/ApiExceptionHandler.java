@@ -10,6 +10,7 @@
  */
 package io.lombardio.platform.shared.api;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.platform.iam.application.IdentityProviderUnavailableException;
 import io.lombardio.platform.security.ForbiddenException;
 import io.lombardio.platform.security.TraceIdContext;

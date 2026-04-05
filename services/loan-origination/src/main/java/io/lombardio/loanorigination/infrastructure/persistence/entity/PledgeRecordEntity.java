@@ -10,6 +10,7 @@
  */
 package io.lombardio.loanorigination.infrastructure.persistence.entity;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,8 +18,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "pledge_records")
@@ -89,52 +92,59 @@ public class PledgeRecordEntity {
     this.id = id;
   }
 
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP",
+      justification = "JPA relationship references must expose the managed entity association")
   public LoanCaseEntity getLoanCase() {
     return loanCase;
   }
 
-  public void setLoanCase(LoanCaseEntity loanCase) {
-    this.loanCase = loanCase;
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification =
+          "JPA relationship references must store the managed entity association directly")
+  public void setLoanCase(@NotNull LoanCaseEntity loanCase) {
+    this.loanCase = Objects.requireNonNull(loanCase, "loanCase");
   }
 
   public String getTenantId() {
     return tenantId;
   }
 
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
+  public void setTenantId(@NotNull String tenantId) {
+    this.tenantId = Objects.requireNonNull(tenantId, "tenantId");
   }
 
   public Instant getRecordedAt() {
     return recordedAt;
   }
 
-  public void setRecordedAt(Instant recordedAt) {
-    this.recordedAt = recordedAt;
+  public void setRecordedAt(@NotNull Instant recordedAt) {
+    this.recordedAt = Objects.requireNonNull(recordedAt, "recordedAt");
   }
 
   public String getLanguageCode() {
     return languageCode;
   }
 
-  public void setLanguageCode(String languageCode) {
-    this.languageCode = languageCode;
+  public void setLanguageCode(@NotNull String languageCode) {
+    this.languageCode = Objects.requireNonNull(languageCode, "languageCode");
   }
 
   public LocalDate getRetentionUntil() {
     return retentionUntil;
   }
 
-  public void setRetentionUntil(LocalDate retentionUntil) {
-    this.retentionUntil = retentionUntil;
+  public void setRetentionUntil(@NotNull LocalDate retentionUntil) {
+    this.retentionUntil = Objects.requireNonNull(retentionUntil, "retentionUntil");
   }
 
   public String getPledgorName() {
     return pledgorName;
   }
 
-  public void setPledgorName(String pledgorName) {
-    this.pledgorName = pledgorName;
+  public void setPledgorName(@NotNull String pledgorName) {
+    this.pledgorName = Objects.requireNonNull(pledgorName, "pledgorName");
   }
 
   public String getPledgorStreet() {
@@ -229,7 +239,7 @@ public class PledgeRecordEntity {
     return sortOrder;
   }
 
-  public void setSortOrder(Integer sortOrder) {
-    this.sortOrder = sortOrder;
+  public void setSortOrder(@NotNull Integer sortOrder) {
+    this.sortOrder = Objects.requireNonNull(sortOrder, "sortOrder");
   }
 }

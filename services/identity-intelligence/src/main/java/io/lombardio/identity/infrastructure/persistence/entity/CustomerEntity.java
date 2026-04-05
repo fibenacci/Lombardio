@@ -14,7 +14,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "customers")
@@ -70,32 +72,32 @@ public class CustomerEntity {
     return tenantId;
   }
 
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
+  public void setTenantId(@NotNull String tenantId) {
+    this.tenantId = Objects.requireNonNull(tenantId, "tenantId");
   }
 
   public String getCustomerNumber() {
     return customerNumber;
   }
 
-  public void setCustomerNumber(String customerNumber) {
-    this.customerNumber = customerNumber;
+  public void setCustomerNumber(@NotNull String customerNumber) {
+    this.customerNumber = Objects.requireNonNull(customerNumber, "customerNumber");
   }
 
   public String getFirstName() {
     return firstName;
   }
 
-  public void setFirstName(String firstName) {
-    this.firstName = firstName;
+  public void setFirstName(@NotNull String firstName) {
+    this.firstName = Objects.requireNonNull(firstName, "firstName");
   }
 
   public String getLastName() {
     return lastName;
   }
 
-  public void setLastName(String lastName) {
-    this.lastName = lastName;
+  public void setLastName(@NotNull String lastName) {
+    this.lastName = Objects.requireNonNull(lastName, "lastName");
   }
 
   public String getPhone() {
@@ -106,12 +108,12 @@ public class CustomerEntity {
     return birthDate;
   }
 
-  public void setBirthDate(LocalDate birthDate) {
-    this.birthDate = birthDate;
+  public void setBirthDate(@NotNull LocalDate birthDate) {
+    this.birthDate = Objects.requireNonNull(birthDate, "birthDate");
   }
 
-  public void setPhone(String phone) {
-    this.phone = phone;
+  public void setPhone(@NotNull String phone) {
+    this.phone = Objects.requireNonNull(phone, "phone");
   }
 
   public String getEmail() {
@@ -134,8 +136,8 @@ public class CustomerEntity {
     return onlineAccessStatus;
   }
 
-  public void setOnlineAccessStatus(String onlineAccessStatus) {
-    this.onlineAccessStatus = onlineAccessStatus;
+  public void setOnlineAccessStatus(@NotNull String onlineAccessStatus) {
+    this.onlineAccessStatus = Objects.requireNonNull(onlineAccessStatus, "onlineAccessStatus");
   }
 
   public String getStreet() {

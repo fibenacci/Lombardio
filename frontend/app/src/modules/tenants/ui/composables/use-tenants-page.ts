@@ -5,6 +5,28 @@ import { createHttpTenantsAdapter } from "../../infrastructure/adapters/http-ten
 import { createCreateTenantService } from "../../application/services/create-tenant.service";
 import { createUpdateTenantFeatureService } from "../../application/services/update-tenant-feature.service";
 
+type TenantSummary = {
+  id: string;
+  key: string;
+  displayName: string;
+  status: string;
+};
+
+type TenantFeature = {
+  featureKey: string;
+  enabled: boolean;
+};
+
+type TenantStoreLike = {
+  tenants: TenantSummary[];
+  selectedTenant: TenantSummary | null;
+  selectedTenantId: string;
+  features: TenantFeature[];
+  refreshTenants: () => Promise<void>;
+  selectTenant: (id: string) => Promise<void>;
+  refreshFeatures: () => Promise<void>;
+};
+
 const FEATURE_CATALOG = [
   { key: "identity-access" },
   { key: "customer-management" },
@@ -23,15 +45,7 @@ export function useTenantsPage({
   tenantStore
 }: {
   t: (key: string, params?: Record<string, unknown>) => string;
-  tenantStore: {
-    tenants: any[];
-    selectedTenant: any;
-    selectedTenantId: string;
-    features: any[];
-    refreshTenants: () => Promise<void>;
-    selectTenant: (id: string) => Promise<void>;
-    refreshFeatures: () => Promise<void>;
-  };
+  tenantStore: TenantStoreLike;
 }) {
   const toast = useAppToast();
   const { errorMessage, successMessage, resetFeedback, handleError } = useRequestFeedback(t);

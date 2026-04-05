@@ -10,6 +10,7 @@
  */
 package io.lombardio.pawnticket.infrastructure.persistence.entity;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,7 +18,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @Entity
 @Table(name = "pawn_ticket_positions")
@@ -55,59 +58,66 @@ public class PawnTicketPositionEntity {
     this.id = id;
   }
 
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP",
+      justification = "JPA relationship references must expose the managed entity association")
   public PawnTicketEntity getPawnTicket() {
     return pawnTicket;
   }
 
-  public void setPawnTicket(PawnTicketEntity pawnTicket) {
-    this.pawnTicket = pawnTicket;
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification =
+          "JPA relationship references must store the managed entity association directly")
+  public void setPawnTicket(@NotNull PawnTicketEntity pawnTicket) {
+    this.pawnTicket = Objects.requireNonNull(pawnTicket, "pawnTicket");
   }
 
   public String getItemNumber() {
     return itemNumber;
   }
 
-  public void setItemNumber(String itemNumber) {
-    this.itemNumber = itemNumber;
+  public void setItemNumber(@NotNull String itemNumber) {
+    this.itemNumber = Objects.requireNonNull(itemNumber, "itemNumber");
   }
 
   public String getItemBarcode() {
     return itemBarcode;
   }
 
-  public void setItemBarcode(String itemBarcode) {
-    this.itemBarcode = itemBarcode;
+  public void setItemBarcode(@NotNull String itemBarcode) {
+    this.itemBarcode = Objects.requireNonNull(itemBarcode, "itemBarcode");
   }
 
   public String getLabel() {
     return label;
   }
 
-  public void setLabel(String label) {
-    this.label = label;
+  public void setLabel(@NotNull String label) {
+    this.label = Objects.requireNonNull(label, "label");
   }
 
   public String getDescription() {
     return description;
   }
 
-  public void setDescription(String description) {
-    this.description = description;
+  public void setDescription(@NotNull String description) {
+    this.description = Objects.requireNonNull(description, "description");
   }
 
   public BigDecimal getPledgedValue() {
     return pledgedValue;
   }
 
-  public void setPledgedValue(BigDecimal pledgedValue) {
-    this.pledgedValue = pledgedValue;
+  public void setPledgedValue(@NotNull BigDecimal pledgedValue) {
+    this.pledgedValue = Objects.requireNonNull(pledgedValue, "pledgedValue");
   }
 
   public Integer getSortOrder() {
     return sortOrder;
   }
 
-  public void setSortOrder(Integer sortOrder) {
-    this.sortOrder = sortOrder;
+  public void setSortOrder(@NotNull Integer sortOrder) {
+    this.sortOrder = Objects.requireNonNull(sortOrder, "sortOrder");
   }
 }

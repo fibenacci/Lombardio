@@ -13,6 +13,7 @@ package io.lombardio.loanorigination.api.http;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 
 public record PawnTicketResponse(
     String contractNumber,
@@ -32,4 +33,14 @@ public record PawnTicketResponse(
     BigDecimal totalOperatingFeeAmount,
     BigDecimal totalRepaymentAmount,
     String legalText,
-    java.util.List<PawnTicketPositionResponse> positions) {}
+    List<PawnTicketPositionResponse> positions) {
+
+  public PawnTicketResponse {
+    positions = List.copyOf(positions == null ? List.of() : positions);
+  }
+
+  @Override
+  public List<PawnTicketPositionResponse> positions() {
+    return List.copyOf(positions);
+  }
+}

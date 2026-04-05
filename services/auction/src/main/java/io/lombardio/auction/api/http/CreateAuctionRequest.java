@@ -18,4 +18,14 @@ import java.util.List;
 public record CreateAuctionRequest(
     @NotBlank String title,
     @NotBlank String location,
-    @NotEmpty List<@Valid AuctionLotRequest> lots) {}
+    @NotEmpty List<@Valid AuctionLotRequest> lots) {
+
+  public CreateAuctionRequest {
+    lots = List.copyOf(lots == null ? List.of() : lots);
+  }
+
+  @Override
+  public List<AuctionLotRequest> lots() {
+    return List.copyOf(lots);
+  }
+}

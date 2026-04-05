@@ -18,7 +18,9 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "kyc_records")
@@ -82,32 +84,32 @@ public class KycRecordEntity {
     return tenantId;
   }
 
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
+  public void setTenantId(@NotNull String tenantId) {
+    this.tenantId = Objects.requireNonNull(tenantId, "tenantId");
   }
 
   public String getCustomerId() {
     return customerId;
   }
 
-  public void setCustomerId(String customerId) {
-    this.customerId = customerId;
+  public void setCustomerId(@NotNull String customerId) {
+    this.customerId = Objects.requireNonNull(customerId, "customerId");
   }
 
   public KycVerificationMode getVerificationMode() {
     return verificationMode;
   }
 
-  public void setVerificationMode(KycVerificationMode verificationMode) {
-    this.verificationMode = verificationMode;
+  public void setVerificationMode(@NotNull KycVerificationMode verificationMode) {
+    this.verificationMode = Objects.requireNonNull(verificationMode, "verificationMode");
   }
 
   public KycStatus getStatus() {
     return status;
   }
 
-  public void setStatus(KycStatus status) {
-    this.status = status;
+  public void setStatus(@NotNull KycStatus status) {
+    this.status = Objects.requireNonNull(status, "status");
   }
 
   public LocalDate getVerifiedUntil() {

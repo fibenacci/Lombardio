@@ -25,4 +25,14 @@ public record AuctionResponse(
     Instant liveStartedAt,
     Instant closedAt,
     String announcementReference,
-    List<AuctionLotResponse> lots) {}
+    List<AuctionLotResponse> lots) {
+
+  public AuctionResponse {
+    lots = List.copyOf(lots == null ? List.of() : lots);
+  }
+
+  @Override
+  public List<AuctionLotResponse> lots() {
+    return List.copyOf(lots);
+  }
+}

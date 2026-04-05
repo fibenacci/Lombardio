@@ -19,7 +19,6 @@ import {
   fetchTenantHomeAmlStatus,
   fetchTenantHomePawnTicketDocument,
   fetchTenantHomePawnTicketLabels,
-  searchTenantHomeCustomers,
   updateTenantHomeAmlStatus,
   updateTenantHomeKycStatus
 } from "../../infrastructure/adapters/http-tenant-dashboard.adapter";
@@ -33,7 +32,6 @@ import {
   getRiskLevelLabel,
   getTransactionTypeLabel,
   getVerificationModeLabel,
-  isRecoverableStartupError,
   mergeAmlStatus,
   mergeKycDocuments,
   mergeKycStatus,
@@ -44,6 +42,28 @@ import { useTenantDashboardCustomerLookup } from "./sub-composables/use-tenant-d
 import { useTenantDashboardLoanForm } from "./sub-composables/use-tenant-dashboard-loan-form";
 import { useTenantDashboardCompliance } from "./sub-composables/use-tenant-dashboard-compliance";
 import type { TenantHomeCustomerModel } from "../../domain/model/tenant-dashboard";
+import type { TenantHomeLoanDto } from "../../infrastructure/dto/tenant-dashboard.dto";
+import type { FieldError } from "../../../../shared/kernel/http/types";
+
+type ErrorWithFieldErrors = {
+  fieldErrors?: unknown;
+};
+
+type TenantHomeOptionLabelValue = {
+  label: string;
+  value: string;
+};
+
+type TenantStatusValue = string | null | undefined;
+
+function isFieldError(value: unknown): value is FieldError {
+  return typeof value === "object"
+    && value !== null
+    && "field" in value
+    && typeof value.field === "string"
+    && "message" in value
+    && typeof value.message === "string";
+}
 
 export function useTenantDashboardService({
   t,
@@ -57,7 +77,7 @@ export function useTenantDashboardService({
   const selectedTenant = computed(() => tenantStore.selectedTenant);
   
   const errorMessage = ref("");
-  const fieldErrors = ref<Array<{ field: string; message: string }>>([]);
+  const fieldErrors = ref<FieldError[]>([]);
   const successMessage = ref("");
   const isLoading = ref(true);
   const isSubmitting = ref(false);
@@ -114,7 +134,7 @@ export function useTenantDashboardService({
          hasValidNewCustomerAmlStateForOrigination(customerLookup.newCustomerAml, amlFeatureEnabled.value))
       : hasValidExistingCustomerStateForSelection(
           customerLookup.selectedCustomerId.value,
-          customerLookup.selectedCustomer.value as any,
+          customerLookup.selectedCustomer.value,
           amlFeatureEnabled.value
         );
 
@@ -219,7 +239,7 @@ export function useTenantDashboardService({
         powerOfAttorneyDocumentDataUrl: loanForm.pledgePresentation.powerOfAttorneyDocumentDataUrl
       };
 
-      createdLoan.value = await createTenantHomeLoan(selectedTenantId.value, payload) as Record<string, unknown>;
+      createdLoan.value = await createTenantHomeLoan(selectedTenantId.value, payload) as TenantHomeLoanDto & Record<string, unknown>;
       await reporting.loadReportingOverview();
       
       successMessage.value = t("tenantHome.messages.loanCreated");
@@ -240,8 +260,11 @@ export function useTenantDashboardService({
   }
 
   function handleError(error: unknown) {
+    const errorWithFieldErrors = error as ErrorWithFieldErrors;
     errorMessage.value = getRequestErrorMessage(error, t("common.requestFailed"));
-    fieldErrors.value = Array.isArray((error as any)?.fieldErrors) ? (error as any).fieldErrors : [];
+    fieldErrors.value = Array.isArray(errorWithFieldErrors?.fieldErrors)
+      ? errorWithFieldErrors.fieldErrors.filter(isFieldError)
+      : [];
   }
 
   async function openPawnTicketDocument(ticketNumber: string, printMode = false) {
@@ -291,20 +314,20 @@ export function useTenantDashboardService({
       }
     },
     resolveDocumentImageSrc: (v: string) => normalizeDocumentImageSrc(v),
-    getAmlStatusLabel: (s: any) => getAmlStatusLabel(t, s),
-    getKycStatusLabel: (s: any) => getKycStatusLabel(t, s),
-    getRiskLevelLabel: (l: any) => getRiskLevelLabel(t, l),
-    getTransactionTypeLabel: (ty: any) => getTransactionTypeLabel(t, ty),
-    getVerificationModeLabel: (m: any) => getVerificationModeLabel(t, m),
-    documentTypeOptions: computed(() => createDocumentTypeOptions(t)),
-    amlStatusOptions: computed(() => createAmlStatusOptions(t)),
-    amlRiskLevelOptions: computed(() => createAmlRiskLevelOptions(t)),
+    getAmlStatusLabel: (s: TenantStatusValue) => getAmlStatusLabel(t, s),
+    getKycStatusLabel: (s: TenantStatusValue) => getKycStatusLabel(t, s),
+    getRiskLevelLabel: (l: TenantStatusValue) => getRiskLevelLabel(t, l),
+    getTransactionTypeLabel: (ty: TenantStatusValue) => getTransactionTypeLabel(t, ty),
+    getVerificationModeLabel: (m: TenantStatusValue) => getVerificationModeLabel(t, m),
+    documentTypeOptions: computed<TenantHomeOptionLabelValue[]>(() => createDocumentTypeOptions(t)),
+    amlStatusOptions: computed<TenantHomeOptionLabelValue[]>(() => createAmlStatusOptions(t)),
+    amlRiskLevelOptions: computed<TenantHomeOptionLabelValue[]>(() => createAmlRiskLevelOptions(t)),
     approveSelectedCustomerKyc: async () => {
       if (customerLookup.selectedCustomerId.value) {
         await compliance.updateSelectedCustomerKyc(
           customerLookup.selectedCustomerId.value,
           "MANUAL",
-          customerLookup.selectedCustomer.value as any
+          customerLookup.selectedCustomer.value
         );
       }
     },

@@ -23,6 +23,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -167,7 +168,7 @@ public class OnlineAuctionDevelopmentSeeder {
               "Demo Bieter " + index,
               LocalDate.of(1970 + index, ((index - 1) % 12) + 1, ((index - 1) % 27) + 1).toString(),
               "DE1250010517064848" + String.format("%02d", index),
-              tenant.key().substring(0, Math.min(3, tenant.key().length())).toUpperCase()
+              tenant.key().substring(0, Math.min(3, tenant.key().length())).toUpperCase(Locale.ROOT)
                   + String.format("%03d", auctionIndex * 10 + index),
               "token-" + tenant.key() + "-" + auctionIndex + "-" + index,
               io.lombardio.onlineauction.application.BidderAccessTokenHasher.sha256(
@@ -205,6 +206,6 @@ public class OnlineAuctionDevelopmentSeeder {
   }
 
   private String normalize(String scale) {
-    return scale == null ? "medium" : scale.trim().toLowerCase();
+    return scale == null ? "medium" : scale.trim().toLowerCase(Locale.ROOT);
   }
 }

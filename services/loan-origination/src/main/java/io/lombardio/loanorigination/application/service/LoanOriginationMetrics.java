@@ -10,6 +10,7 @@
  */
 package io.lombardio.loanorigination.application.service;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -23,6 +24,10 @@ public class LoanOriginationMetrics {
   private final Counter createdCounter;
   private final DistributionSummary loanAmountSummary;
 
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification =
+          "MeterRegistry is a managed metrics dependency that must be retained directly")
   public LoanOriginationMetrics(MeterRegistry meterRegistry) {
     this.meterRegistry = meterRegistry;
     this.createdCounter =

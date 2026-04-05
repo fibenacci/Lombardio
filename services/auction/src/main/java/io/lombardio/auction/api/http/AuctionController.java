@@ -10,6 +10,7 @@
  */
 package io.lombardio.auction.api.http;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.auction.application.service.AnnounceAuctionCommand;
 import io.lombardio.auction.application.service.AuctionService;
 import io.lombardio.auction.application.service.CreateAuctionCommand;
@@ -40,6 +41,10 @@ public class AuctionController {
   private final AuctionService auctionService;
   private final AuctionAuthorizationService authorizationService;
 
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification =
+          "Spring-managed service references are intentional dependencies, not mutable state")
   public AuctionController(
       AuctionService auctionService, AuctionAuthorizationService authorizationService) {
     this.auctionService = auctionService;
