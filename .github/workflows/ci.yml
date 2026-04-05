@@ -67,7 +67,7 @@ jobs:
           java-version: '21'
           cache: maven
       - name: Static Analysis (SpotBugs)
-        run: ./mvnw spotbugs:check
+        run: ./mvnw compile spotbugs:check
 
   build-and-push:
     if: github.event_name == 'push'
