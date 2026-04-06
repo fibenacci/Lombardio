@@ -19,7 +19,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.lombardio.platform.security.AuthenticatedUser;
+import io.lombardio.platform.tenant.application.BranchView;
 import io.lombardio.platform.tenant.application.TenantCatalogService;
+import io.lombardio.platform.tenant.application.TenantUserView;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,7 +60,17 @@ class TenantAdministrationControllerTest {
                 "ACTIVE",
                 List.of("users.write"),
                 List.of()));
-    when(tenantCatalogService.listTenantUsers("tenant-default")).thenReturn(expected);
+    when(tenantCatalogService.listTenantUsers("tenant-default"))
+        .thenReturn(
+            List.of(
+                new TenantUserView(
+                    "user-1",
+                    "admin@lombardio.local",
+                    "admin@lombardio.local",
+                    "Tenant Admin",
+                    "ACTIVE",
+                    List.of("users.write"),
+                    List.of())));
 
     List<TenantUserResponse> actual = controller.listUsers("tenant-default", user);
 
@@ -101,7 +113,8 @@ class TenantAdministrationControllerTest {
             List.of("branches.read"));
     List<BranchResponse> expected =
         List.of(new BranchResponse("branch-1", "hq", "Headquarters", "ACTIVE"));
-    when(tenantCatalogService.listBranches("tenant-default")).thenReturn(expected);
+    when(tenantCatalogService.listBranches("tenant-default"))
+        .thenReturn(List.of(new BranchView("branch-1", "hq", "Headquarters", "ACTIVE")));
 
     List<BranchResponse> actual = controller.listBranches("tenant-default", user);
 

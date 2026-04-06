@@ -10,10 +10,7 @@
  */
 package io.lombardio.platform.tenant.application;
 
-import io.lombardio.platform.iam.application.KeycloakService;
-import io.lombardio.platform.tenant.api.CreateTenantUserRequest;
-import io.lombardio.platform.tenant.api.TenantUserResponse;
-import io.lombardio.platform.tenant.api.UpdateTenantUserRequest;
+import io.lombardio.platform.iam.application.IdentityAdministration;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -34,22 +31,22 @@ public class TenantUserService {
           "cash-transactions.",
           "reporting.");
 
-  private final KeycloakService keycloakService;
+  private final IdentityAdministration identityAdministration;
   private final TenantLifecycleService tenantLifecycleService;
   private final TenantBranchService tenantBranchService;
 
   public TenantUserService(
-      KeycloakService keycloakService,
+      IdentityAdministration identityAdministration,
       TenantLifecycleService tenantLifecycleService,
       TenantBranchService tenantBranchService) {
-    this.keycloakService = keycloakService;
+    this.identityAdministration = identityAdministration;
     this.tenantLifecycleService = tenantLifecycleService;
     this.tenantBranchService = tenantBranchService;
   }
 
-  public TenantUserResponse createTenantUser(String tenantId, CreateTenantUserRequest request) {
+  public TenantUserView createTenantUser(String tenantId, CreateTenantUserCommand request) {
     tenantLifecycleService.requireTenant(tenantId);
-    return keycloakService.createTenantUser(
+    return identityAdministration.createTenantUser(
         tenantId,
         request.email(),
         request.password(),
@@ -59,18 +56,18 @@ public class TenantUserService {
   }
 
   public List<String> listAvailableRoles() {
-    return keycloakService.getAvailableRoles();
+    return identityAdministration.getAvailableRoles();
   }
 
-  public List<TenantUserResponse> listTenantUsers(String tenantId) {
+  public List<TenantUserView> listTenantUsers(String tenantId) {
     tenantLifecycleService.requireTenant(tenantId);
-    return keycloakService.listTenantUsers(tenantId);
+    return identityAdministration.listTenantUsers(tenantId);
   }
 
-  public TenantUserResponse updateTenantUser(
-      String tenantId, String userId, UpdateTenantUserRequest request) {
+  public TenantUserView updateTenantUser(
+      String tenantId, String userId, UpdateTenantUserCommand request) {
     tenantLifecycleService.requireTenant(tenantId);
-    return keycloakService.updateTenantUser(
+    return identityAdministration.updateTenantUser(
         tenantId,
         userId,
         request.email(),
@@ -82,7 +79,7 @@ public class TenantUserService {
 
   public List<String> listAvailableRolesForTenant(String tenantId) {
     tenantLifecycleService.requireTenant(tenantId);
-    return keycloakService.getAvailableRoles().stream()
+    return identityAdministration.getAvailableRoles().stream()
         .filter(this::isTenantAssignableRole)
         .toList();
   }

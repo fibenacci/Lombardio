@@ -10,7 +10,10 @@
  */
 package io.lombardio.identity.aml.api.http;
 
+import io.lombardio.identity.aml.application.service.AmlStatusView;
 import io.lombardio.identity.aml.application.service.AmlService;
+import io.lombardio.identity.aml.application.service.OriginationAssessmentCommand;
+import io.lombardio.identity.aml.application.service.UpdateAmlStatusCommand;
 import io.lombardio.identity.aml.infrastructure.security.AmlAuthorizationService;
 import io.lombardio.platform.security.AuthenticatedUser;
 import jakarta.validation.Valid;
@@ -36,7 +39,7 @@ public class AmlController {
   }
 
   @GetMapping
-  public AmlStatusResponse getStatus(
+  public AmlStatusView getStatus(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @PathVariable String tenantId,
       @PathVariable String customerId) {
@@ -45,23 +48,38 @@ public class AmlController {
   }
 
   @PostMapping
-  public AmlStatusResponse updateStatus(
+  public AmlStatusView updateStatus(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @PathVariable String tenantId,
       @PathVariable String customerId,
       @Valid @RequestBody UpdateAmlStatusRequest request) {
     authorizationService.requireWrite(principal, tenantId);
-    return amlService.updateStatus(tenantId, customerId, request);
+    return amlService.updateStatus(
+        tenantId,
+        customerId,
+        new UpdateAmlStatusCommand(
+            request.status(),
+            request.riskLevel(),
+            request.pepFlag(),
+            request.sanctionsHit(),
+            request.unusualTransactionFlag(),
+            request.sourceOfFundsChecked(),
+            request.suspiciousActivityReported(),
+            request.goamlReference(),
+            request.decisionNote(),
+            request.lastScreenedAt(),
+            request.reviewedAt()));
   }
 
   @PostMapping("/origination-check")
-  public AmlStatusResponse assessForOrigination(
+  public AmlStatusView assessForOrigination(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @PathVariable String tenantId,
       @PathVariable String customerId,
       @Valid @RequestBody OriginationAssessmentRequest request) {
     authorizationService.requireRead(principal, tenantId);
-    return amlService.assessForOrigination(tenantId, customerId, request);
+    return amlService.assessForOrigination(
+        tenantId, customerId, new OriginationAssessmentCommand(request.loanAmount()));
   }
 
   @GetMapping("/health")

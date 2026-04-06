@@ -11,6 +11,7 @@
 package io.lombardio.identity.portal.infrastructure.notification;
 
 import io.lombardio.identity.domain.model.Customer;
+import io.lombardio.identity.portal.application.CustomerPortalNotificationSender;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;

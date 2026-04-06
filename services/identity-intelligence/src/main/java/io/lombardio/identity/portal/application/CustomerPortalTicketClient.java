@@ -8,14 +8,12 @@
  *
  * For partnership or cooperation inquiries, please contact the author.
  */
-package io.lombardio.identity.portal.infrastructure.ticket;
+package io.lombardio.identity.portal.application;
 
-import io.lombardio.identity.portal.api.CustomerPortalPawnTicketResponse;
 import java.util.List;
 
 public interface CustomerPortalTicketClient {
-
-  List<CustomerPortalPawnTicketResponse> listTickets(String tenantId, String customerId);
+  List<CustomerPortalPawnTicketView> listTickets(String tenantId, String customerId);
 
   byte[] downloadDocument(String tenantId, String customerId, String ticketNumber);
 }

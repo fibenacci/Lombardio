@@ -16,8 +16,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.lombardio.identity.config.CustomerPortalSessionProperties;
+import io.lombardio.identity.portal.application.AuthenticatedCustomerPortalUser;
+import io.lombardio.identity.portal.application.CustomerPortalCustomerView;
+import io.lombardio.identity.portal.application.CustomerPortalLoginCommand;
+import io.lombardio.identity.portal.application.CustomerPortalLoginView;
 import io.lombardio.identity.portal.application.CustomerPortalService;
-import io.lombardio.identity.portal.infrastructure.security.AuthenticatedCustomerPortalUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -47,17 +50,17 @@ class CustomerPortalControllerTest {
 
   @Test
   void loginSetsSessionCookie() {
-    CustomerPortalLoginResponse session =
-        new CustomerPortalLoginResponse(
+    CustomerPortalLoginView session =
+        new CustomerPortalLoginView(
             "portal-token",
-            new CustomerPortalMeResponse(
+            new CustomerPortalCustomerView(
                 "customer-1", "tenant-default", "Anna Example", "anna@example.test", "ACTIVE"));
     when(customerPortalService.login(
-            new CustomerPortalLoginRequest("anna@example.test", "secret123")))
+            new CustomerPortalLoginCommand("anna@example.test", "secret123")))
         .thenReturn(session);
 
     MockHttpServletResponse response = new MockHttpServletResponse();
-    CustomerPortalLoginResponse body =
+    CustomerPortalLoginView body =
         controller.login(
             new CustomerPortalLoginRequest("anna@example.test", "secret123"), response);
 
@@ -71,7 +74,7 @@ class CustomerPortalControllerTest {
 
   @Test
   void refreshReturnsNoContentWithoutCookie() {
-    ResponseEntity<CustomerPortalLoginResponse> response =
+    ResponseEntity<CustomerPortalLoginView> response =
         controller.refresh(new MockHttpServletRequest(), new MockHttpServletResponse());
 
     assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
@@ -95,15 +98,23 @@ class CustomerPortalControllerTest {
   void meReturnsCurrentCustomer() {
     when(customerPortalService.currentCustomer(
             new AuthenticatedCustomerPortalUser(
-                "customer-1", "tenant-default", "Anna Example", "anna@example.test")))
+                "customer-1",
+                "tenant-default",
+                "Anna Example",
+                "anna@example.test",
+                "session-token")))
         .thenReturn(
-            new CustomerPortalMeResponse(
+            new CustomerPortalCustomerView(
                 "customer-1", "tenant-default", "Anna Example", "anna@example.test", "ACTIVE"));
 
-    CustomerPortalMeResponse response =
+    CustomerPortalCustomerView response =
         controller.me(
             new AuthenticatedCustomerPortalUser(
-                "customer-1", "tenant-default", "Anna Example", "anna@example.test"));
+                "customer-1",
+                "tenant-default",
+                "Anna Example",
+                "anna@example.test",
+                "session-token"));
 
     assertEquals("customer-1", response.customerId());
     assertEquals("anna@example.test", response.email());

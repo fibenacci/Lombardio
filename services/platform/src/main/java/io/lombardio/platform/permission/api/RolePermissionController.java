@@ -10,7 +10,7 @@
  */
 package io.lombardio.platform.permission.api;
 
-import io.lombardio.platform.iam.application.KeycloakService;
+import io.lombardio.platform.iam.application.IdentityAdministration;
 import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,15 +21,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/platform/operator/permissions")
 public class RolePermissionController {
 
-  private final KeycloakService keycloakService;
+  private final IdentityAdministration identityAdministration;
 
-  public RolePermissionController(KeycloakService keycloakService) {
-    this.keycloakService = keycloakService;
+  public RolePermissionController(IdentityAdministration identityAdministration) {
+    this.identityAdministration = identityAdministration;
   }
 
   @GetMapping("/roles")
   @PreAuthorize("hasAuthority('platform.tenants.read')")
   public List<String> listRoles() {
-    return keycloakService.getAvailableRoles();
+    return identityAdministration.getAvailableRoles();
   }
 }

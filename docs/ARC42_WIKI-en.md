@@ -64,6 +64,26 @@ The system runs as a microservice landscape in Kubernetes. Communication takes p
 4.  **Events:** Use of the Outbox pattern for consistent data storage and audit logs.
 5.  **Multi-Jurisdiction Policy Engine:** Centralized management of country-specific compliance rules.
 
+### 4.1 Hexagonal Architecture Hardening
+To keep the described hexagonal vision more than a wish, the following strict guardrails apply:
+1.  **Dependency rules:** Domain models may not import Spring/JPA/Vue/Keycloak types nor call `fetch`/`axios` directly. Application use cases may only reference domain modules and declared ports. Infrastructure adapters implement ports and glue together the actual frameworks.
+2.  **Ports at the edge:** Keycloak, persistence, messaging, external services, schedulers, clock, and UUIDs are modeled as ports. Adapters implement them and live solely in the infrastructure or BFF layer.
+3.  **DTO/Entity boundary:** Requests/responses, JPA entities, API mapping, and DTOs remain in adapters/API layers and never leak into the domain. Mappers live right at the adapter boundary.
+4.  **Explicit use cases:** Every business flow (`CreateTenant`, `IssuePawnTicket`, `InviteCustomerPortalUser`, etc.) has defined input/output DTOs and explicit ports for tenant/auth context. Policy decisions stay transparent and testable inside the use case.
+5.  **Tenant/auth context as parameters:** `tenantId`, `actorId`, permissions, transaction IDs, and timestamps are use-case inputs or provided via explicit context ports rather than global static access.
+6.  **Cross-service contracts:** Communication across contexts happens only via defined APIs, events, or dedicated client ports; no internal domain models are re-exported.
+7.  **Frontend adapter hardness:** Frontend modules call only their own application services, which in turn speak to ports; shared adapters do not allow direct `fetch` calls between modules.
+8.  **Architecture tests:** ArchUnit rules (backend) and Dep-Cruiser/ESLint rules (frontend) guard import and layer violations. They fail the build if a new module breaks the boundary.
+9.  **Reference modules:** Harden one service or feature as the benchmark (e.g., `identity-intelligence` or the `customers` frontend) before rolling out the pattern further.
+
+### 4.2 Auction Boundaries and Projections
+The split between `services/auction` and `services/online-auction` follows these ownership rules:
+1.  **Canonical auction core in `auction`:** The `auction` service is the business source of truth for disposition auctions, lot identity, hammer result, disposition evidence, settlement, and surplus.
+2.  **Online channel in `online-auction`:** The `online-auction` service owns realtime sessions, bidder registration, bidder approval, access tokens, countdown logic, minimum increments, and the live bid stream.
+3.  **Projection instead of a second truth:** `online-auction` may hold auction and lot data as projections or replicated read models, but not as a second canonical business truth for hammer results, settlement, surplus, or disposition status.
+4.  **Explicit contracts:** Synchronization between both services happens through defined APIs, events, or dedicated client ports. Internal domain models are neither shared nor reused directly.
+5.  **One channel, not a second bounded context for the same core logic:** Online auctions are a specialized execution channel of the auction domain core, not a replacement for that core's business ownership.
+
 ---
 
 ## 5. Building Block View
@@ -132,6 +152,10 @@ The preparation of an auction is subject to strict legal requirements (PfandlV) 
     *   Content: Lot number, item description, estimated value, minimum bid (limit), and if applicable, internal notes on the condition.
 3.  **Proof of Disposition:**
     *   After the auction, a report on the successful bids is created, which serves as the basis for calculating the surplus.
+4.  **Online channel as projection:**
+    *   When an auction is executed online, `services/online-auction` consumes the relevant auction and lot data as a projection of the canonical auction core.
+    *   Realtime bids, bidder sessions, and channel-specific interaction state are managed in the online service.
+    *   The authoritative business decisions for hammer result, settlement, surplus, and final disposition status remain in `auction`.
 
 ---
 

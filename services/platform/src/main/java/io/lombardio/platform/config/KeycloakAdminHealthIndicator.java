@@ -10,8 +10,8 @@
  */
 package io.lombardio.platform.config;
 
+import io.lombardio.platform.iam.application.IdentityAdministration;
 import io.lombardio.platform.iam.application.IdentityProviderUnavailableException;
-import io.lombardio.platform.iam.application.KeycloakService;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;
@@ -19,16 +19,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class KeycloakAdminHealthIndicator implements HealthIndicator {
 
-  private final KeycloakService keycloakService;
+  private final IdentityAdministration identityAdministration;
 
-  public KeycloakAdminHealthIndicator(KeycloakService keycloakService) {
-    this.keycloakService = keycloakService;
+  public KeycloakAdminHealthIndicator(IdentityAdministration identityAdministration) {
+    this.identityAdministration = identityAdministration;
   }
 
   @Override
   public Health health() {
     try {
-      return keycloakService.canReachAdminApi()
+      return identityAdministration.canReachAdminApi()
           ? Health.up().withDetail("keycloakAdminApi", "reachable").build()
           : Health.unknown().withDetail("keycloakAdminApi", "unknown").build();
     } catch (IdentityProviderUnavailableException exception) {

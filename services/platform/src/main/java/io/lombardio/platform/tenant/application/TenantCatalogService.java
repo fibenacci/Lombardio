@@ -10,16 +10,6 @@
  */
 package io.lombardio.platform.tenant.application;
 
-import io.lombardio.platform.tenant.api.BranchResponse;
-import io.lombardio.platform.tenant.api.CreateTenantBranchRequest;
-import io.lombardio.platform.tenant.api.CreateTenantRequest;
-import io.lombardio.platform.tenant.api.CreateTenantUserRequest;
-import io.lombardio.platform.tenant.api.TenantFeatureResponse;
-import io.lombardio.platform.tenant.api.TenantResponse;
-import io.lombardio.platform.tenant.api.TenantUserResponse;
-import io.lombardio.platform.tenant.api.UpdateTenantRequest;
-import io.lombardio.platform.tenant.api.UpdateTenantUserRequest;
-import io.lombardio.platform.tenant.api.UpsertTenantFeatureRequest;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -42,15 +32,15 @@ public class TenantCatalogService {
     this.tenantUserService = tenantUserService;
   }
 
-  public List<TenantResponse> listTenants() {
+  public List<TenantView> listTenants() {
     return tenantLifecycleService.listTenants();
   }
 
-  public TenantResponse createTenant(CreateTenantRequest request) {
+  public TenantView createTenant(CreateTenantCommand request) {
     return tenantLifecycleService.createTenant(request);
   }
 
-  public TenantUserResponse createTenantUser(String tenantId, CreateTenantUserRequest request) {
+  public TenantUserView createTenantUser(String tenantId, CreateTenantUserCommand request) {
     return tenantUserService.createTenantUser(tenantId, request);
   }
 
@@ -58,12 +48,12 @@ public class TenantCatalogService {
     return tenantUserService.listAvailableRoles();
   }
 
-  public List<TenantUserResponse> listTenantUsers(String tenantId) {
+  public List<TenantUserView> listTenantUsers(String tenantId) {
     return tenantUserService.listTenantUsers(tenantId);
   }
 
-  public TenantUserResponse updateTenantUser(
-      String tenantId, String userId, UpdateTenantUserRequest request) {
+  public TenantUserView updateTenantUser(
+      String tenantId, String userId, UpdateTenantUserCommand request) {
     return tenantUserService.updateTenantUser(tenantId, userId, request);
   }
 
@@ -71,24 +61,24 @@ public class TenantCatalogService {
     return tenantUserService.listAvailableRolesForTenant(tenantId);
   }
 
-  public List<BranchResponse> listBranches(String tenantId) {
+  public List<BranchView> listBranches(String tenantId) {
     return tenantBranchService.listBranches(tenantId);
   }
 
-  public BranchResponse createBranch(String tenantId, CreateTenantBranchRequest request) {
+  public BranchView createBranch(String tenantId, CreateTenantBranchCommand request) {
     return tenantBranchService.createBranch(tenantId, request);
   }
 
-  public TenantResponse updateTenant(String tenantId, UpdateTenantRequest request) {
+  public TenantView updateTenant(String tenantId, UpdateTenantCommand request) {
     return tenantLifecycleService.updateTenant(tenantId, request);
   }
 
-  public List<TenantFeatureResponse> listFeatures(String tenantId) {
+  public List<TenantFeatureView> listFeatures(String tenantId) {
     return tenantFeatureService.listFeatures(tenantId);
   }
 
-  public TenantFeatureResponse upsertFeature(
-      String tenantId, String featureKey, UpsertTenantFeatureRequest request) {
+  public TenantFeatureView upsertFeature(
+      String tenantId, String featureKey, UpsertTenantFeatureCommand request) {
     return tenantFeatureService.upsertFeature(tenantId, featureKey, request);
   }
 }

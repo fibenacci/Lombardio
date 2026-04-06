@@ -11,7 +11,6 @@
 package io.lombardio.platform.config;
 
 import io.lombardio.platform.integration.api.IntegrationOutboxProperties;
-import io.lombardio.platform.integration.api.IntegrationRabbitMqProperties;
 import java.time.Clock;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

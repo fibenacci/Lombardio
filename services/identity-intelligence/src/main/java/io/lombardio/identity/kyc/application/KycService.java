@@ -11,11 +11,6 @@
 package io.lombardio.identity.kyc.application;
 
 import io.lombardio.identity.domain.port.TenantFeatureDirectory;
-import io.lombardio.identity.kyc.api.DocumentPrefillRequest;
-import io.lombardio.identity.kyc.api.DocumentPrefillResponse;
-import io.lombardio.identity.kyc.api.KycDocumentImagesResponse;
-import io.lombardio.identity.kyc.api.KycStatusResponse;
-import io.lombardio.identity.kyc.api.UpdateKycStatusRequest;
 import io.lombardio.identity.kyc.domain.DocumentOcrProvider;
 import io.lombardio.identity.kyc.domain.KycRecord;
 import io.lombardio.identity.kyc.domain.KycRepository;
@@ -64,7 +59,7 @@ public class KycService {
     this.metrics = metrics;
   }
 
-  public KycStatusResponse getStatus(String tenantId, String customerId) {
+  public KycStatusView getStatus(String tenantId, String customerId) {
     KycRecord record =
         kycRepository
             .findByTenantIdAndCustomerId(tenantId, customerId)
@@ -72,20 +67,20 @@ public class KycService {
     return toResponse(record, providerVerificationAvailable(tenantId));
   }
 
-  public KycDocumentImagesResponse getDocumentImages(String tenantId, String customerId) {
+  public KycDocumentImagesView getDocumentImages(String tenantId, String customerId) {
     KycRecord record =
         kycRepository
             .findByTenantIdAndCustomerId(tenantId, customerId)
             .orElseGet(() -> KycRecordFactory.empty(tenantId, customerId));
 
-    return new KycDocumentImagesResponse(
+    return new KycDocumentImagesView(
         record.customerId(),
         DocumentImageDataUrlNormalizer.normalize(record.documentFrontImageDataUrl()),
         DocumentImageDataUrlNormalizer.normalize(record.documentBackImageDataUrl()));
   }
 
-  public KycStatusResponse updateStatus(
-      String tenantId, String customerId, UpdateKycStatusRequest request) {
+  public KycStatusView updateStatus(
+      String tenantId, String customerId, UpdateKycStatusCommand request) {
     KycVerificationMode verificationMode =
         request.verificationMode() == null
             ? KycVerificationMode.MANUAL
@@ -107,7 +102,7 @@ public class KycService {
     KycRecord updated =
         KycRecordFactory.update(existing, tenantId, customerId, verificationMode, request);
 
-    KycStatusResponse response =
+    KycStatusView response =
         toResponse(kycRepository.save(updated), providerVerificationAvailable(tenantId));
     metrics.recordStatusUpdate(updated.status(), updated.verificationMode());
     return response;
@@ -123,14 +118,14 @@ public class KycService {
         .isPresent();
   }
 
-  public DocumentPrefillResponse prefillDocumentData(
-      String tenantId, DocumentPrefillRequest request) {
+  public DocumentPrefillView prefillDocumentData(
+      String tenantId, DocumentPrefillCommand request) {
     if (!tenantFeatureDirectory.isFeatureEnabled(tenantId, OCR_FEATURE_KEY)) {
-      return new DocumentPrefillResponse(
+      return new DocumentPrefillView(
           false, false, null, null, null, null, null, null, null, null, 0);
     }
 
-    DocumentPrefillResponse response =
+    DocumentPrefillView response =
         documentOcrProvider
             .prefill(
                 tenantId,
@@ -138,7 +133,7 @@ public class KycService {
                 DocumentImageDataUrlNormalizer.normalize(request.documentBackImageDataUrl()))
             .map(
                 result ->
-                    new DocumentPrefillResponse(
+                    new DocumentPrefillView(
                         true,
                         true,
                         result.firstName(),
@@ -152,7 +147,7 @@ public class KycService {
                         result.confidence()))
             .orElseGet(
                 () ->
-                    new DocumentPrefillResponse(
+                    new DocumentPrefillView(
                         true, false, null, null, null, null, null, null, null, null, 0));
     metrics.recordDocumentPrefill(response.matched(), response.providerName());
     return response;
@@ -162,8 +157,8 @@ public class KycService {
     return tenantFeatureDirectory.isFeatureEnabled(tenantId, PROVIDER_FEATURE_KEY);
   }
 
-  private KycStatusResponse toResponse(KycRecord record, boolean providerVerificationAvailable) {
-    return new KycStatusResponse(
+  private KycStatusView toResponse(KycRecord record, boolean providerVerificationAvailable) {
+    return new KycStatusView(
         record.customerId(),
         record.verificationMode(),
         record.status(),

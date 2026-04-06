@@ -10,7 +10,6 @@
  */
 package io.lombardio.identity.kyc.application;
 
-import io.lombardio.identity.kyc.api.UpdateKycStatusRequest;
 import io.lombardio.identity.kyc.domain.KycStatus;
 import io.lombardio.identity.kyc.domain.KycVerificationMode;
 import java.time.LocalDate;
@@ -20,7 +19,7 @@ final class KycValidationRules {
   private KycValidationRules() {}
 
   static void validateManualDocumentData(
-      UpdateKycStatusRequest request, KycVerificationMode verificationMode) {
+      UpdateKycStatusCommand request, KycVerificationMode verificationMode) {
     if (verificationMode != KycVerificationMode.MANUAL) {
       return;
     }

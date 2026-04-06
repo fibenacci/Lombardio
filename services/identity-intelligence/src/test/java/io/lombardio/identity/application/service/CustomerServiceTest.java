@@ -12,8 +12,6 @@ package io.lombardio.identity.application.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.lombardio.identity.api.http.CreateCustomerRequest;
-import io.lombardio.identity.api.http.UpdateCustomerRequest;
 import io.lombardio.identity.domain.port.KycDirectory;
 import io.lombardio.identity.infrastructure.persistence.support.InMemoryCustomerRepository;
 import io.lombardio.identity.portal.application.CustomerPortalService;
@@ -44,7 +42,7 @@ class CustomerServiceTest {
     var created =
         customerService.create(
             "tenant-default",
-            new CreateCustomerRequest(
+            new CreateCustomerCommand(
                 "KD-3001",
                 "Lena",
                 "Sommer",
@@ -75,7 +73,7 @@ class CustomerServiceTest {
         customerService.update(
             "tenant-default",
             "customer-berlin-1",
-            new UpdateCustomerRequest(
+            new UpdateCustomerCommand(
                 "KD-1001",
                 "Anna",
                 "Schneider",

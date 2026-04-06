@@ -10,7 +10,7 @@
  */
 package io.lombardio.platform.auth.api;
 
-import io.lombardio.platform.security.AuthenticatedUser;
+import io.lombardio.platform.auth.application.OperatorSessionUserView;
 import java.util.List;
 
 public record OperatorSessionUserResponse(
@@ -28,9 +28,9 @@ public record OperatorSessionUserResponse(
     permissions = List.copyOf(permissions != null ? permissions : List.of());
   }
 
-  public static OperatorSessionUserResponse fromAuthenticatedUser(AuthenticatedUser user) {
+  public static OperatorSessionUserResponse fromView(OperatorSessionUserView user) {
     return new OperatorSessionUserResponse(
-        user.userId(),
+        user.id(),
         user.actorUserId(),
         user.tenantId(),
         user.email(),

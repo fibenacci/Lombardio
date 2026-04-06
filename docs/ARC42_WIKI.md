@@ -70,6 +70,28 @@ Das System läuft als Microservice-Landschaft in Kubernetes. Die Kommunikation e
 
 ---
 
+### 4.1 Hexagonale Architektur-Härte
+Damit die beschriebene Hexagonale Vision nicht nur ein Wunsch bleibt, gelten folgende harte Leitplanken:
+1.  **Abhängigkeitsregeln:** Domain-Modelle dürfen weder Spring-/JPA-/Vue- oder Keycloak-Typen importieren noch direkt `fetch`/`axios`-Funktionen verwenden. Application-Use-Cases dürfen nur Domain-Module sowie deklarierte Ports einbinden. Infrastruktur-Adapter implementieren Ports und führen die eigentlichen Frameworks zusammen.
+2.  **Ports an der Grenze:** Keycloak, Persistence, Messaging, externe Services, Scheduler, Clock und UUID werden als Ports modelliert. Adapter implementieren diese Ports und leben ausschließlich in der Infrastruktur- oder App-BFF-Schicht.
+3.  **DTO- und Entity-Grenze:** Requests/Responses, JPA-Entities, API-Mapping und DTOs bleiben auf Adapter- bzw. API-Ebene und gelangen nicht ungefiltert ins Fachmodell. Mapper leben direkt an der Adaptergrenze.
+4.  **Use Cases explizit:** Jeder fachliche Ablauf (`CreateTenant`, `IssuePawnTicket`, `InviteCustomerPortalUser`, etc.) erhält Input-/Output-DTOs sowie explizite Ports zur Tenant-/Auth-Kontext-Quelle. Policy-Entscheidungen werden im Use Case transparent dokumentiert und getestet.
+5.  **Tenant- und Auth-Kontext als Parameter:** `tenantId`, `actorId`, Berechtigungen, Transaktions-ID und Zeitstempel sind Use-Case-Inputs oder werden über explizite Context-Ports geliefert, nicht als globaler Static-Zugriff.
+6.  **Service-übergreifende Verträge:** Grenzüberschreitende Kommunikation erfolgt einzig über definierte APIs, Events oder dedizierte Client-Ports; keine internen Domain-Modelle werden extern reexportiert.
+7.  **Frontend-Adapterhärte:** Frontend-Module rufen nur eigene Application Services an, die wiederum gegen Ports sprechen; Shared-Adapter dürfen keine direkten `fetch`-Aufrufe zwischen Modulen erlauben.
+8.  **Architekturtests:** ArchUnit-Regeln (Backend) und Dep-Cruiser/ESLint-Lint-Regeln (Frontend) prüfen Import- und Layer-Verstöße. Die Regeln melden Verstöße bereits in der Buildphase und dienen als Gatekeeper für neue Module.
+9.  **Referenzmodule:** Ein Service oder Modul wird als Referenz-Härtung ausgebaut (z. B. `identity-intelligence` oder das `customers`-Frontend), bevor das Muster auf weitere Bereiche übertragen wird.
+
+### 4.2 Auktionsgrenzen und Projektionen
+Für die Aufteilung zwischen `services/auction` und `services/online-auction` gelten folgende Ownership-Regeln:
+1.  **Kanonischer Auktionskern in `auction`:** Der Service `auction` ist die fachliche Quelle für Verwertungsauktionen, Los-Identität, Zuschlag, Verwertungsnachweis, Settlement und Verwertungsüberschuss.
+2.  **Online-Kanal in `online-auction`:** Der Service `online-auction` besitzt Realtime-Sitzungen, Bieterregistrierung, Bieterfreigabe, Zugangstoken, Countdown-Logik, Mindestinkremente und den Live-Bid-Strom.
+3.  **Projektion statt zweiter Wahrheit:** `online-auction` darf Auktions- und Losdaten als Projektion oder repliziertes Read Model halten, aber nicht als zweite kanonische fachliche Wahrheit über Zuschlag, Settlement, Überschuss oder Verwertungsstatus.
+4.  **Explizite Verträge:** Die Synchronisation zwischen beiden Services erfolgt über definierte APIs, Events oder dedizierte Client-Ports. Interne Domain-Modelle werden nicht geteilt oder direkt wiederverwendet.
+5.  **Ein Kanal, kein zweiter Bounded Context für dieselbe Fachlogik:** Online-Auktionen sind ein spezialisierter Ausführungskanal des Auktionsdomänenkerns, kein separater Ersatz für dessen fachliche Ownership.
+
+---
+
 ## 5. Bausteinsicht
 
 ### 5.1 Gesamtsystem (Level 1)
@@ -156,6 +178,10 @@ Die Vorbereitung einer Versteigerung unterliegt strengen gesetzlichen Auflagen (
     *   Inhalt: Losnummer, Gegenstandsbeschreibung, Schätzwert, Mindestgebot (limit) und ggf. interne Hinweise zum Erhaltungszustand.
 3.  **Verwertungsnachweis:**
     *   Nach der Auktion wird ein Protokoll über die Zuschläge erstellt, das als Basis für die Berechnung des Verwertungsüberschusses dient.
+4.  **Online-Kanal als Projektion:**
+    *   Wenn eine Auktion online durchgeführt wird, konsumiert `services/online-auction` die relevanten Auktions- und Losdaten als Projektion des kanonischen Auktionskerns.
+    *   Realtime-Bids, Bieter-Sessions und kanalbezogene Zustände werden im Online-Service geführt.
+    *   Die fachlich maßgeblichen Entscheidungen über Zuschlag, Settlement, Verwertungsüberschuss und den endgültigen Verwertungsstatus verbleiben im Service `auction`.
 
 ---
 

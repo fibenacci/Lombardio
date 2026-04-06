@@ -10,8 +10,6 @@
  */
 package io.lombardio.platform.tenant.application;
 
-import io.lombardio.platform.tenant.api.BranchResponse;
-import io.lombardio.platform.tenant.api.CreateTenantBranchRequest;
 import io.lombardio.platform.tenant.domain.Branch;
 import io.lombardio.platform.tenant.domain.BranchRepository;
 import java.time.Clock;
@@ -37,13 +35,13 @@ public class TenantBranchService {
     this.clock = clock;
   }
 
-  public List<BranchResponse> listBranches(String tenantId) {
+  public List<BranchView> listBranches(String tenantId) {
     tenantLifecycleService.requireTenant(tenantId);
     return branchRepository.findByTenantId(tenantId).stream().map(this::toBranchResponse).toList();
   }
 
   @Transactional
-  public BranchResponse createBranch(String tenantId, CreateTenantBranchRequest request) {
+  public BranchView createBranch(String tenantId, CreateTenantBranchCommand request) {
     tenantLifecycleService.requireTenant(tenantId);
     branchRepository
         .findByTenantIdAndKey(tenantId, request.key())
@@ -81,7 +79,7 @@ public class TenantBranchService {
     return requestedBranchIds;
   }
 
-  private BranchResponse toBranchResponse(Branch branch) {
-    return new BranchResponse(branch.id(), branch.key(), branch.displayName(), branch.status());
+  private BranchView toBranchResponse(Branch branch) {
+    return new BranchView(branch.id(), branch.key(), branch.displayName(), branch.status());
   }
 }

@@ -11,6 +11,7 @@
 package io.lombardio.identity.portal.infrastructure.security;
 
 import io.lombardio.identity.config.CustomerPortalSessionProperties;
+import io.lombardio.identity.portal.application.AuthenticatedCustomerPortalUser;
 import io.lombardio.identity.portal.application.CustomerPortalService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

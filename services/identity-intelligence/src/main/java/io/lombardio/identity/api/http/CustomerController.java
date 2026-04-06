@@ -11,6 +11,9 @@
 package io.lombardio.identity.api.http;
 
 import io.lombardio.identity.application.service.CustomerService;
+import io.lombardio.identity.application.service.CustomerView;
+import io.lombardio.identity.application.service.CreateCustomerCommand;
+import io.lombardio.identity.application.service.UpdateCustomerCommand;
 import io.lombardio.identity.infrastructure.security.CustomerAuthorizationService;
 import io.lombardio.platform.security.AuthenticatedUser;
 import jakarta.validation.Valid;
@@ -40,7 +43,7 @@ public class CustomerController {
   }
 
   @GetMapping("/customers")
-  public List<CustomerResponse> search(
+  public List<CustomerView> search(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @PathVariable String tenantId,
       @RequestParam(name = "query", required = false, defaultValue = "") String query) {
@@ -49,16 +52,28 @@ public class CustomerController {
   }
 
   @PostMapping("/customers")
-  public CustomerResponse create(
+  public CustomerView create(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @PathVariable String tenantId,
       @Valid @RequestBody CreateCustomerRequest request) {
     authorizationService.requireWrite(principal, tenantId);
-    return customerService.create(tenantId, request);
+    return customerService.create(
+        tenantId,
+        new CreateCustomerCommand(
+            request.customerNumber(),
+            request.firstName(),
+            request.lastName(),
+            request.birthDate(),
+            request.phone(),
+            request.email(),
+            request.wantsDigitalPawnTicket(),
+            request.street(),
+            request.postalCode(),
+            request.city()));
   }
 
   @GetMapping("/customers/{customerId}")
-  public CustomerResponse getById(
+  public CustomerView getById(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @PathVariable String tenantId,
       @PathVariable String customerId) {
@@ -67,13 +82,26 @@ public class CustomerController {
   }
 
   @PutMapping("/customers/{customerId}")
-  public CustomerResponse update(
+  public CustomerView update(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @PathVariable String tenantId,
       @PathVariable String customerId,
       @Valid @RequestBody UpdateCustomerRequest request) {
     authorizationService.requireWrite(principal, tenantId);
-    return customerService.update(tenantId, customerId, request);
+    return customerService.update(
+        tenantId,
+        customerId,
+        new UpdateCustomerCommand(
+            request.customerNumber(),
+            request.firstName(),
+            request.lastName(),
+            request.birthDate(),
+            request.phone(),
+            request.email(),
+            request.wantsDigitalPawnTicket(),
+            request.street(),
+            request.postalCode(),
+            request.city()));
   }
 
   @GetMapping("/health")

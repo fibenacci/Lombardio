@@ -8,10 +8,7 @@
  *
  * For partnership or cooperation inquiries, please contact the author.
  */
-package io.lombardio.platform.auth.application;
+package io.lombardio.identity.kyc.application;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-public record KeycloakTokenResponse(
-    @JsonProperty("access_token") String accessToken,
-    @JsonProperty("refresh_token") String refreshToken) {}
+public record KycDocumentImagesView(
+    String customerId, String documentFrontImageDataUrl, String documentBackImageDataUrl) {}

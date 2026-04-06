@@ -10,7 +10,6 @@
  */
 package io.lombardio.identity.kyc.application;
 
-import io.lombardio.identity.kyc.api.UpdateKycStatusRequest;
 import io.lombardio.identity.kyc.domain.KycRecord;
 import io.lombardio.identity.kyc.domain.KycStatus;
 import io.lombardio.identity.kyc.domain.KycVerificationMode;
@@ -44,7 +43,7 @@ final class KycRecordFactory {
       String tenantId,
       String customerId,
       KycVerificationMode verificationMode,
-      UpdateKycStatusRequest request) {
+      UpdateKycStatusCommand request) {
     return new KycRecord(
         existing.id(),
         tenantId,

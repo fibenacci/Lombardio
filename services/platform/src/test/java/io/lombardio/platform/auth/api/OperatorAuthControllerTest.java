@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 
 import io.lombardio.platform.auth.application.OperatorAuthService;
 import io.lombardio.platform.auth.application.OperatorSession;
+import io.lombardio.platform.auth.application.OperatorSessionUserView;
 import io.lombardio.platform.auth.application.StoredOperatorSession;
 import io.lombardio.platform.auth.application.StoredOperatorSessionService;
 import io.lombardio.platform.config.OperatorSessionProperties;
@@ -48,8 +49,8 @@ class OperatorAuthControllerTest {
 
   @Test
   void loginSetsHttpOnlySessionCookie() {
-    OperatorSessionUserResponse user =
-        new OperatorSessionUserResponse(
+    OperatorSessionUserView user =
+        new OperatorSessionUserView(
             "user-1",
             "user-1",
             "tenant-default",
@@ -90,8 +91,8 @@ class OperatorAuthControllerTest {
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.setCookies(new jakarta.servlet.http.Cookie("lombardio_operator_session", "session-id"));
     MockHttpServletResponse response = new MockHttpServletResponse();
-    OperatorSessionUserResponse user =
-        new OperatorSessionUserResponse(
+    OperatorSessionUserView user =
+        new OperatorSessionUserView(
             "user-1",
             "user-1",
             "tenant-default",

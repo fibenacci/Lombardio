@@ -17,6 +17,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.lombardio.identity.config.CustomerPortalSessionProperties;
+import io.lombardio.identity.portal.application.AuthenticatedCustomerPortalUser;
 import io.lombardio.identity.portal.application.CustomerPortalService;
 import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.AfterEach;
@@ -45,7 +46,11 @@ class CustomerPortalAuthenticationFilterTest {
     FilterChain chain = mock(FilterChain.class);
     AuthenticatedCustomerPortalUser principal =
         new AuthenticatedCustomerPortalUser(
-            "customer-1", "tenant-default", "Anna Example", "anna@example.test");
+            "customer-1",
+            "tenant-default",
+            "Anna Example",
+            "anna@example.test",
+            "session-token");
     when(customerPortalService.authenticate("portal-cookie")).thenReturn(principal);
 
     filter.doFilter(request, response, chain);

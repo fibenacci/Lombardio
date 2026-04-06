@@ -12,6 +12,7 @@ package io.lombardio.platform.auth.api;
 
 import io.lombardio.platform.auth.application.OperatorAuthService;
 import io.lombardio.platform.auth.application.OperatorSession;
+import io.lombardio.platform.auth.application.OperatorSessionUserView;
 import io.lombardio.platform.auth.application.StoredOperatorSession;
 import io.lombardio.platform.auth.application.StoredOperatorSessionService;
 import io.lombardio.platform.config.OperatorSessionProperties;
@@ -84,11 +85,12 @@ public class OperatorAuthController {
   @GetMapping("/me")
   public OperatorSessionUserResponse me(
       @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-    return OperatorSessionUserResponse.fromAuthenticatedUser(authenticatedUser);
+    return OperatorSessionUserResponse.fromView(
+        OperatorSessionUserView.fromAuthenticatedUser(authenticatedUser));
   }
 
-  private OperatorSessionResponse toCookieBackedSessionResponse(OperatorSessionUserResponse user) {
-    return new OperatorSessionResponse("AUTHENTICATED", user);
+  private OperatorSessionResponse toCookieBackedSessionResponse(OperatorSessionUserView user) {
+    return new OperatorSessionResponse("AUTHENTICATED", OperatorSessionUserResponse.fromView(user));
   }
 
   private void writeSessionCookie(HttpServletResponse response, String sessionId) {

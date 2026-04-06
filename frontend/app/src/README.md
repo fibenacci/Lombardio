@@ -1,5 +1,7 @@
 # Frontend Architecture
 
+Weiterfuehrende Architektur-Roadmap: [docs/hexagonal-architecture-roadmap.md](/home/fibenacci/Dokumente/Projekte/Lombardio/frontend/app/docs/hexagonal-architecture-roadmap.md)
+
 Dieses Verzeichnis folgt einem klaren `app / shared / modules`-Schnitt.
 
 ## Zielbild

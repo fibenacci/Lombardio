@@ -10,9 +10,6 @@
  */
 package io.lombardio.identity.application.service;
 
-import io.lombardio.identity.api.http.CreateCustomerRequest;
-import io.lombardio.identity.api.http.CustomerResponse;
-import io.lombardio.identity.api.http.UpdateCustomerRequest;
 import io.lombardio.identity.domain.model.Customer;
 import io.lombardio.identity.domain.port.CustomerRepository;
 import io.lombardio.identity.domain.port.ExternalCrmConnector;
@@ -45,7 +42,7 @@ public class CustomerService {
     this.customerPortalService = customerPortalService;
   }
 
-  public List<CustomerResponse> search(String tenantId, String query) {
+  public List<CustomerView> search(String tenantId, String query) {
     List<Customer> result = new ArrayList<>(customerRepository.search(tenantId, query));
 
     externalCrmConnectors.stream()
@@ -58,7 +55,7 @@ public class CustomerService {
     return result.stream().map(customer -> toResponse(customer, accessToken)).toList();
   }
 
-  public CustomerResponse create(String tenantId, CreateCustomerRequest request) {
+  public CustomerView create(String tenantId, CreateCustomerCommand request) {
     String email = normalizeEmail(request.email());
     validateDigitalPawnTicketRequest(email, request.wantsDigitalPawnTicket());
     Customer customer =
@@ -86,7 +83,7 @@ public class CustomerService {
     return toResponse(customer, AuthenticatedUser.currentAccessToken());
   }
 
-  public CustomerResponse requireById(String tenantId, String customerId) {
+  public CustomerView requireById(String tenantId, String customerId) {
     Customer customer =
         customerRepository
             .findById(customerId)
@@ -95,8 +92,8 @@ public class CustomerService {
     return toResponse(customer, AuthenticatedUser.currentAccessToken());
   }
 
-  public CustomerResponse update(
-      String tenantId, String customerId, UpdateCustomerRequest request) {
+  public CustomerView update(
+      String tenantId, String customerId, UpdateCustomerCommand request) {
     Customer existing =
         customerRepository
             .findById(customerId)
@@ -138,10 +135,10 @@ public class CustomerService {
     return toResponse(updated, AuthenticatedUser.currentAccessToken());
   }
 
-  private CustomerResponse toResponse(Customer customer, Optional<String> accessToken) {
+  private CustomerView toResponse(Customer customer, Optional<String> accessToken) {
     KycDirectory.KycProjection kyc =
         kycDirectory.getStatus(customer.tenantId(), customer.id(), accessToken);
-    return new CustomerResponse(
+    return new CustomerView(
         customer.id(),
         customer.customerNumber(),
         customer.firstName(),

@@ -8,10 +8,12 @@
  *
  * For partnership or cooperation inquiries, please contact the author.
  */
-package io.lombardio.platform.iam.application;
+package io.lombardio.platform.iam.infrastructure.keycloak;
 
 import io.lombardio.platform.config.KeycloakProperties;
-import io.lombardio.platform.tenant.api.TenantUserResponse;
+import io.lombardio.platform.iam.application.IdentityAdministration;
+import io.lombardio.platform.iam.application.IdentityProviderUnavailableException;
+import io.lombardio.platform.tenant.application.TenantUserView;
 import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.core.Response;
@@ -30,7 +32,7 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
 @Service
-public class KeycloakService {
+public class KeycloakService implements IdentityAdministration {
 
   private final Keycloak keycloak;
   private final KeycloakProperties props;
@@ -40,6 +42,7 @@ public class KeycloakService {
     this.props = props;
   }
 
+  @Override
   public String createTenantGroup(String tenantId, String displayName) {
     return execute(
         "create tenant group",
@@ -66,7 +69,8 @@ public class KeycloakService {
         });
   }
 
-  public TenantUserResponse createTenantUser(
+  @Override
+  public TenantUserView createTenantUser(
       String tenantId,
       String email,
       String password,
@@ -118,7 +122,7 @@ public class KeycloakService {
                         .toList());
           }
 
-          return new TenantUserResponse(
+          return new TenantUserView(
               userId,
               email,
               email,
@@ -129,6 +133,7 @@ public class KeycloakService {
         });
   }
 
+  @Override
   public List<String> getAvailableRoles() {
     return execute(
         "list available roles",
@@ -141,7 +146,8 @@ public class KeycloakService {
         });
   }
 
-  public List<TenantUserResponse> listTenantUsers(String tenantId) {
+  @Override
+  public List<TenantUserView> listTenantUsers(String tenantId) {
     return execute(
         "list tenant users",
         () -> {
@@ -155,7 +161,8 @@ public class KeycloakService {
         });
   }
 
-  public TenantUserResponse updateTenantUser(
+  @Override
+  public TenantUserView updateTenantUser(
       String tenantId,
       String userId,
       String email,
@@ -201,6 +208,7 @@ public class KeycloakService {
         });
   }
 
+  @Override
   public boolean canReachAdminApi() {
     return execute(
         "check Keycloak admin connectivity",
@@ -236,7 +244,7 @@ public class KeycloakService {
     }
   }
 
-  private TenantUserResponse toTenantUserResponse(
+  private TenantUserView toTenantUserResponse(
       RealmResource realmResource, UserRepresentation user) {
     List<String> roleIds =
         realmResource.users().get(user.getId()).roles().realmLevel().listAll().stream()
@@ -245,7 +253,7 @@ public class KeycloakService {
             .filter(name -> !name.startsWith("default-roles-"))
             .toList();
 
-    return new TenantUserResponse(
+    return new TenantUserView(
         user.getId(),
         user.getUsername(),
         user.getEmail(),

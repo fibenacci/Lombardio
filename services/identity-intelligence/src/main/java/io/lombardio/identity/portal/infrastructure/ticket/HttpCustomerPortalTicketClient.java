@@ -10,7 +10,8 @@
  */
 package io.lombardio.identity.portal.infrastructure.ticket;
 
-import io.lombardio.identity.portal.api.CustomerPortalPawnTicketResponse;
+import io.lombardio.identity.portal.application.CustomerPortalPawnTicketView;
+import io.lombardio.identity.portal.application.CustomerPortalTicketClient;
 import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,9 +37,9 @@ public final class HttpCustomerPortalTicketClient implements CustomerPortalTicke
   }
 
   @Override
-  public List<CustomerPortalPawnTicketResponse> listTickets(String tenantId, String customerId) {
+  public List<CustomerPortalPawnTicketView> listTickets(String tenantId, String customerId) {
     try {
-      CustomerPortalPawnTicketResponse[] response =
+      CustomerPortalPawnTicketView[] response =
           restClient
               .get()
               .uri(
@@ -47,7 +48,7 @@ public final class HttpCustomerPortalTicketClient implements CustomerPortalTicke
                   customerId)
               .header(INTERNAL_AUTH_HEADER, internalServiceToken)
               .retrieve()
-              .body(CustomerPortalPawnTicketResponse[].class);
+              .body(CustomerPortalPawnTicketView[].class);
       return response == null ? List.of() : Arrays.asList(response);
     } catch (RestClientException exception) {
       throw new IllegalStateException("Pawn ticket service unavailable", exception);

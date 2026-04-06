@@ -8,7 +8,7 @@
  *
  * For partnership or cooperation inquiries, please contact the author.
  */
-package io.lombardio.platform.integration.api;
+package io.lombardio.platform.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
