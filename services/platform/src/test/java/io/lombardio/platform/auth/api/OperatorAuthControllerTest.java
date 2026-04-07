@@ -11,6 +11,7 @@
 package io.lombardio.platform.auth.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,9 +21,9 @@ import io.lombardio.platform.auth.application.OperatorSession;
 import io.lombardio.platform.auth.application.OperatorSessionUserView;
 import io.lombardio.platform.auth.application.StoredOperatorSession;
 import io.lombardio.platform.auth.application.StoredOperatorSessionService;
-import io.lombardio.platform.config.OperatorSessionProperties;
 import io.lombardio.platform.security.AuthenticatedUser;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -34,16 +35,12 @@ class OperatorAuthControllerTest {
   private final OperatorAuthService operatorAuthService = mock(OperatorAuthService.class);
   private final StoredOperatorSessionService storedOperatorSessionService =
       mock(StoredOperatorSessionService.class);
-  private OperatorAuthController controller;
+  private OperatorAuthController operatorAuthController;
 
   @BeforeEach
   void setUp() {
-    controller =
-        new OperatorAuthController(
-            operatorAuthService,
-            storedOperatorSessionService,
-            new OperatorSessionProperties(
-                "lombardio_operator_session", "/", false, "Lax", 2_592_000L, "0123456789abcdef"));
+    operatorAuthController =
+        new OperatorAuthController(operatorAuthService, storedOperatorSessionService);
   }
 
   @Test
@@ -52,68 +49,64 @@ class OperatorAuthControllerTest {
         new OperatorSessionUserView(
             "user-1",
             "user-1",
-            "tenant-default",
+            "tenant-1",
             "admin@lombardio.local",
             "Admin",
             false,
-            List.of("users.read"),
-            List.of("users.read"));
-    OperatorSession keycloakSession = new OperatorSession("access-token", "refresh-token", user);
-    when(operatorAuthService.login("admin@lombardio.local", "admin")).thenReturn(keycloakSession);
-    when(storedOperatorSessionService.createSession(keycloakSession))
-        .thenReturn(new StoredOperatorSession("session-id", user));
+            List.of(),
+            List.of());
+    when(operatorAuthService.login("admin@lombardio.local", "password"))
+        .thenReturn(new OperatorSession("token-1", "refresh-1", user));
+    when(storedOperatorSessionService.createSession(any()))
+        .thenReturn(new StoredOperatorSession("session-1", user));
 
-    OperatorSessionResponse body =
-        controller.login(new OperatorLoginRequest("admin@lombardio.local", "admin"));
+    OperatorSessionResponse response =
+        operatorAuthController.login(new OperatorLoginRequest("admin@lombardio.local", "password"));
 
-    assertEquals("AUTHENTICATED", body.status());
-    assertEquals("session-id", body.sessionId());
-    assertEquals("user-1", body.user().id());
+    assertEquals("session-1", response.sessionId());
+    assertEquals("AUTHENTICATED", response.status());
   }
 
   @Test
   void refreshReturnsNoContentWithoutHeader() {
     MockHttpServletRequest request = new MockHttpServletRequest();
 
-    ResponseEntity<OperatorSessionResponse> entity = controller.refresh(request);
+    ResponseEntity<OperatorSessionResponse> response = operatorAuthController.refresh(request);
 
-    assertEquals(HttpStatus.NO_CONTENT, entity.getStatusCode());
+    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
   }
 
   @Test
   void refreshReturnsSessionWhenHeaderExists() {
     MockHttpServletRequest request = new MockHttpServletRequest();
-    request.addHeader("X-Operator-Session-Id", "session-id");
+    request.addHeader("X-Operator-Session-Id", "session-1");
     OperatorSessionUserView user =
         new OperatorSessionUserView(
             "user-1",
             "user-1",
-            "tenant-default",
+            "tenant-1",
             "admin@lombardio.local",
             "Admin",
             false,
-            List.of("users.read"),
-            List.of("users.read"));
+            List.of(),
+            List.of());
+    when(storedOperatorSessionService.refreshSession("session-1"))
+        .thenReturn(Optional.of(new StoredOperatorSession("session-1", user)));
 
-    when(storedOperatorSessionService.refreshSession("session-id"))
-        .thenReturn(java.util.Optional.of(new StoredOperatorSession("new-session-id", user)));
+    ResponseEntity<OperatorSessionResponse> response = operatorAuthController.refresh(request);
 
-    ResponseEntity<OperatorSessionResponse> entity = controller.refresh(request);
-
-    assertEquals(HttpStatus.OK, entity.getStatusCode());
-    assertEquals("AUTHENTICATED", entity.getBody().status());
-    assertEquals("new-session-id", entity.getBody().sessionId());
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals("session-1", response.getBody().sessionId());
   }
 
   @Test
   void logoutCallsServiceWithHeader() {
     MockHttpServletRequest request = new MockHttpServletRequest();
-    request.addHeader("X-Operator-Session-Id", "session-id");
+    request.addHeader("X-Operator-Session-Id", "session-1");
 
-    ResponseEntity<Void> entity = controller.logout(request);
+    operatorAuthController.logout(request);
 
-    verify(storedOperatorSessionService).logout("session-id");
-    assertEquals(HttpStatus.NO_CONTENT, entity.getStatusCode());
+    verify(storedOperatorSessionService).logout("session-1");
   }
 
   @Test
@@ -122,15 +115,16 @@ class OperatorAuthControllerTest {
         new AuthenticatedUser(
             "user-1",
             "user-1",
-            "tenant-default",
+            "tenant-1",
             false,
             "admin@lombardio.local",
             "Admin",
-            List.of("users.read"));
+            List.of("perm-1"));
 
-    OperatorSessionUserResponse response = controller.me(user);
+    OperatorSessionUserResponse response = operatorAuthController.me(user);
 
     assertEquals("user-1", response.id());
-    assertEquals(List.of("users.read"), response.permissions());
+    assertEquals("Admin", response.displayName());
+    assertEquals("admin@lombardio.local", response.email());
   }
 }

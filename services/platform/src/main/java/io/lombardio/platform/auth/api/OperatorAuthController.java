@@ -37,15 +37,12 @@ public class OperatorAuthController {
 
   private final OperatorAuthService operatorAuthService;
   private final StoredOperatorSessionService storedOperatorSessionService;
-  private final OperatorSessionProperties sessionProperties;
 
   public OperatorAuthController(
       OperatorAuthService operatorAuthService,
-      StoredOperatorSessionService storedOperatorSessionService,
-      OperatorSessionProperties sessionProperties) {
+      StoredOperatorSessionService storedOperatorSessionService) {
     this.operatorAuthService = operatorAuthService;
     this.storedOperatorSessionService = storedOperatorSessionService;
-    this.sessionProperties = sessionProperties;
   }
 
   @PostMapping("/login")
