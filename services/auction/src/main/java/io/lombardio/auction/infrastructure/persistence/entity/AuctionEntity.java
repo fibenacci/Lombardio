@@ -10,6 +10,7 @@
  */
 package io.lombardio.auction.infrastructure.persistence.entity;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.auction.domain.model.AuctionStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -20,15 +21,22 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "auctions")
+@Getter
+@Setter
+@NoArgsConstructor
+@SuppressFBWarnings(
+    value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"},
+    justification = "JPA entities and collections")
 public class AuctionEntity {
 
   @Id private String id;
@@ -68,116 +76,4 @@ public class AuctionEntity {
 
   @Column(nullable = false)
   private Instant updatedAt;
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getTenantId() {
-    return tenantId;
-  }
-
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
-  }
-
-  public String getTitle() {
-    return title;
-  }
-
-  public void setTitle(String title) {
-    this.title = title;
-  }
-
-  public String getLocation() {
-    return location;
-  }
-
-  public void setLocation(String location) {
-    this.location = location;
-  }
-
-  public AuctionStatus getStatus() {
-    return status;
-  }
-
-  public void setStatus(AuctionStatus status) {
-    this.status = status;
-  }
-
-  public LocalDate getPublicAnnouncementDate() {
-    return publicAnnouncementDate;
-  }
-
-  public void setPublicAnnouncementDate(LocalDate publicAnnouncementDate) {
-    this.publicAnnouncementDate = publicAnnouncementDate;
-  }
-
-  public LocalDate getAuctionDate() {
-    return auctionDate;
-  }
-
-  public void setAuctionDate(LocalDate auctionDate) {
-    this.auctionDate = auctionDate;
-  }
-
-  public Instant getLiveStartedAt() {
-    return liveStartedAt;
-  }
-
-  public void setLiveStartedAt(Instant liveStartedAt) {
-    this.liveStartedAt = liveStartedAt;
-  }
-
-  public Instant getClosedAt() {
-    return closedAt;
-  }
-
-  public void setClosedAt(Instant closedAt) {
-    this.closedAt = closedAt;
-  }
-
-  public String getAnnouncementReference() {
-    return announcementReference;
-  }
-
-  public void setAnnouncementReference(String announcementReference) {
-    this.announcementReference = announcementReference;
-  }
-
-  public String getRealtimeChannel() {
-    return realtimeChannel;
-  }
-
-  public void setRealtimeChannel(String realtimeChannel) {
-    this.realtimeChannel = realtimeChannel;
-  }
-
-  public List<AuctionLotEntity> getLots() {
-    return List.copyOf(lots);
-  }
-
-  public void setLots(@NotNull List<AuctionLotEntity> lots) {
-    this.lots = new ArrayList<>(Objects.requireNonNull(lots, "lots"));
-  }
-
-  public Instant getCreatedAt() {
-    return createdAt;
-  }
-
-  public void setCreatedAt(Instant createdAt) {
-    this.createdAt = createdAt;
-  }
-
-  public Instant getUpdatedAt() {
-    return updatedAt;
-  }
-
-  public void setUpdatedAt(Instant updatedAt) {
-    this.updatedAt = updatedAt;
-  }
 }

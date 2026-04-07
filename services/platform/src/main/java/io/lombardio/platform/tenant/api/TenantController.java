@@ -10,11 +10,10 @@
  */
 package io.lombardio.platform.tenant.api;
 
-import io.lombardio.platform.tenant.application.BranchView;
 import io.lombardio.platform.tenant.application.CreateTenantCommand;
 import io.lombardio.platform.tenant.application.CreateTenantUserCommand;
-import io.lombardio.platform.tenant.application.TenantFeatureView;
 import io.lombardio.platform.tenant.application.TenantCatalogService;
+import io.lombardio.platform.tenant.application.TenantFeatureView;
 import io.lombardio.platform.tenant.application.TenantUserView;
 import io.lombardio.platform.tenant.application.TenantView;
 import io.lombardio.platform.tenant.application.UpdateTenantCommand;

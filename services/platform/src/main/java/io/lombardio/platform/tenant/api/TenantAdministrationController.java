@@ -14,8 +14,8 @@ import io.lombardio.platform.security.AuthenticatedUser;
 import io.lombardio.platform.tenant.application.BranchView;
 import io.lombardio.platform.tenant.application.CreateTenantBranchCommand;
 import io.lombardio.platform.tenant.application.CreateTenantUserCommand;
-import io.lombardio.platform.tenant.application.TenantFeatureView;
 import io.lombardio.platform.tenant.application.TenantCatalogService;
+import io.lombardio.platform.tenant.application.TenantFeatureView;
 import io.lombardio.platform.tenant.application.TenantUserView;
 import io.lombardio.platform.tenant.application.UpdateTenantUserCommand;
 import jakarta.validation.Valid;
@@ -108,7 +108,9 @@ public class TenantAdministrationController {
   public List<BranchResponse> listBranches(
       @PathVariable String tenantId, @AuthenticationPrincipal AuthenticatedUser user) {
     authorizationService.requireTenantBranchRead(user, tenantId);
-    return tenantCatalogService.listBranches(tenantId).stream().map(this::toBranchResponse).toList();
+    return tenantCatalogService.listBranches(tenantId).stream()
+        .map(this::toBranchResponse)
+        .toList();
   }
 
   @PostMapping("/branches")
@@ -120,8 +122,7 @@ public class TenantAdministrationController {
     return toBranchResponse(
         tenantCatalogService.createBranch(
             tenantId,
-            new CreateTenantBranchCommand(
-                request.key(), request.displayName(), request.status())));
+            new CreateTenantBranchCommand(request.key(), request.displayName(), request.status())));
   }
 
   private TenantUserResponse toTenantUserResponse(TenantUserView user) {

@@ -12,12 +12,12 @@ package io.lombardio.identity.integration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.lombardio.identity.aml.application.service.AmlService;
 import io.lombardio.identity.aml.application.service.AmlStatusView;
 import io.lombardio.identity.aml.application.service.OriginationAssessmentCommand;
-import io.lombardio.identity.aml.application.service.AmlService;
 import io.lombardio.identity.application.service.CreateCustomerCommand;
-import io.lombardio.identity.application.service.CustomerView;
 import io.lombardio.identity.application.service.CustomerService;
+import io.lombardio.identity.application.service.CustomerView;
 import io.lombardio.identity.kyc.application.KycService;
 import io.lombardio.identity.kyc.application.UpdateKycStatusCommand;
 import io.lombardio.identity.kyc.domain.KycStatus;

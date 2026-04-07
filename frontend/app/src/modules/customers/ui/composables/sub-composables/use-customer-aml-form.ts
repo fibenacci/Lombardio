@@ -5,6 +5,7 @@ import {
   mapAmlDomainToUpdatePayload,
   mapAmlToDomain
 } from "../../../infrastructure/mappers/customer-api.mapper";
+import { AmlRiskLevel, AmlStatus } from "../../../domain/model/customer-enums";
 
 export function useCustomerAmlForm({
   tenantId,
@@ -22,34 +23,35 @@ export function useCustomerAmlForm({
   const isSaving = ref(false);
 
   const state = reactive({
-    status: "NOT_REVIEWED",
-    riskLevel: "MEDIUM",
+    customerId: "",
+    status: AmlStatus.NOT_REVIEWED,
+    riskLevel: AmlRiskLevel.MEDIUM,
     pepFlag: false,
     sanctionsHit: false,
     unusualTransactionFlag: false,
     sourceOfFundsChecked: false,
     suspiciousActivityReported: false,
-    goamlReference: "",
-    decisionNote: "",
-    lastScreenedAt: "",
-    reviewedAt: "",
+    goamlReference: null as string | null,
+    decisionNote: null as string | null,
+    lastScreenedAt: null as string | null,
+    reviewedAt: null as string | null,
     originationAllowed: false,
-    decisionReason: "",
+    decisionReason: null as string | null,
     featureAvailable: false
   });
 
   const statusOptions = computed(() => [
-    { label: t("customerDetail.statusOptions.aml.NOT_REVIEWED"), value: "NOT_REVIEWED" },
-    { label: t("customerDetail.statusOptions.aml.CLEAR"), value: "CLEAR" },
-    { label: t("customerDetail.statusOptions.aml.REVIEW_REQUIRED"), value: "REVIEW_REQUIRED" },
-    { label: t("customerDetail.statusOptions.aml.BLOCKED"), value: "BLOCKED" },
-    { label: t("customerDetail.statusOptions.aml.REPORTED"), value: "REPORTED" }
+    { label: t("customerDetail.statusOptions.aml.NOT_REVIEWED"), value: AmlStatus.NOT_REVIEWED },
+    { label: t("customerDetail.statusOptions.aml.CLEAR"), value: AmlStatus.CLEAR },
+    { label: t("customerDetail.statusOptions.aml.REVIEW_REQUIRED"), value: AmlStatus.REVIEW_REQUIRED },
+    { label: t("customerDetail.statusOptions.aml.BLOCKED"), value: AmlStatus.BLOCKED },
+    { label: t("customerDetail.statusOptions.aml.REPORTED"), value: AmlStatus.REPORTED }
   ]);
 
   const riskLevelOptions = computed(() => [
-    { label: t("customerDetail.riskLevels.LOW"), value: "LOW" },
-    { label: t("customerDetail.riskLevels.MEDIUM"), value: "MEDIUM" },
-    { label: t("customerDetail.riskLevels.HIGH"), value: "HIGH" }
+    { label: t("customerDetail.riskLevels.LOW"), value: AmlRiskLevel.LOW },
+    { label: t("customerDetail.riskLevels.MEDIUM"), value: AmlRiskLevel.MEDIUM },
+    { label: t("customerDetail.riskLevels.HIGH"), value: AmlRiskLevel.HIGH }
   ]);
 
   async function save() {
@@ -63,7 +65,7 @@ export function useCustomerAmlForm({
         customerId.value,
         mapAmlDomainToUpdatePayload(state)
       );
-      Object.assign(state, mapAmlToDomain(updated, amlFeatureEnabled.value));
+      Object.assign(state, mapAmlToDomain(updated));
       successMessage.value = t("customerDetail.messages.amlSaved");
     } catch (error) {
       handleError(error);

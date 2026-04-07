@@ -64,5 +64,4 @@ public class OperatorAuthService {
     OperatorSessionUserView user = profileFromAccessToken(response.accessToken());
     return new OperatorSession(response.accessToken(), response.refreshToken(), user);
   }
-
 }

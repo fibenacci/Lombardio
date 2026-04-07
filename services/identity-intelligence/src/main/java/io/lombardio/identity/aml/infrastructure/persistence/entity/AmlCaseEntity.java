@@ -18,12 +18,16 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
-import java.util.Objects;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "aml_cases")
+@Getter
+@Setter
+@NoArgsConstructor
 public class AmlCaseEntity {
 
   @Id private String id;
@@ -71,124 +75,4 @@ public class AmlCaseEntity {
 
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getTenantId() {
-    return tenantId;
-  }
-
-  public void setTenantId(@NotNull String tenantId) {
-    this.tenantId = Objects.requireNonNull(tenantId, "tenantId");
-  }
-
-  public String getCustomerId() {
-    return customerId;
-  }
-
-  public void setCustomerId(@NotNull String customerId) {
-    this.customerId = Objects.requireNonNull(customerId, "customerId");
-  }
-
-  public AmlStatus getStatus() {
-    return status;
-  }
-
-  public void setStatus(@NotNull AmlStatus status) {
-    this.status = Objects.requireNonNull(status, "status");
-  }
-
-  public AmlRiskLevel getRiskLevel() {
-    return riskLevel;
-  }
-
-  public void setRiskLevel(@NotNull AmlRiskLevel riskLevel) {
-    this.riskLevel = Objects.requireNonNull(riskLevel, "riskLevel");
-  }
-
-  public boolean isPepFlag() {
-    return pepFlag;
-  }
-
-  public void setPepFlag(boolean pepFlag) {
-    this.pepFlag = pepFlag;
-  }
-
-  public boolean isSanctionsHit() {
-    return sanctionsHit;
-  }
-
-  public void setSanctionsHit(boolean sanctionsHit) {
-    this.sanctionsHit = sanctionsHit;
-  }
-
-  public boolean isUnusualTransactionFlag() {
-    return unusualTransactionFlag;
-  }
-
-  public void setUnusualTransactionFlag(boolean unusualTransactionFlag) {
-    this.unusualTransactionFlag = unusualTransactionFlag;
-  }
-
-  public boolean isSourceOfFundsChecked() {
-    return sourceOfFundsChecked;
-  }
-
-  public void setSourceOfFundsChecked(boolean sourceOfFundsChecked) {
-    this.sourceOfFundsChecked = sourceOfFundsChecked;
-  }
-
-  public boolean isSuspiciousActivityReported() {
-    return suspiciousActivityReported;
-  }
-
-  public void setSuspiciousActivityReported(boolean suspiciousActivityReported) {
-    this.suspiciousActivityReported = suspiciousActivityReported;
-  }
-
-  public String getGoamlReference() {
-    return goamlReference;
-  }
-
-  public void setGoamlReference(String goamlReference) {
-    this.goamlReference = goamlReference;
-  }
-
-  public String getDecisionNote() {
-    return decisionNote;
-  }
-
-  public void setDecisionNote(String decisionNote) {
-    this.decisionNote = decisionNote;
-  }
-
-  public Instant getLastScreenedAt() {
-    return lastScreenedAt;
-  }
-
-  public void setLastScreenedAt(Instant lastScreenedAt) {
-    this.lastScreenedAt = lastScreenedAt;
-  }
-
-  public Instant getReviewedAt() {
-    return reviewedAt;
-  }
-
-  public void setReviewedAt(Instant reviewedAt) {
-    this.reviewedAt = reviewedAt;
-  }
-
-  public Instant getUpdatedAt() {
-    return updatedAt;
-  }
-
-  public void setUpdatedAt(@NotNull Instant updatedAt) {
-    this.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt");
-  }
 }

@@ -10,5 +10,4 @@
  */
 package io.lombardio.identity.portal.application;
 
-public record CustomerPortalLoginView(
-    String accessToken, CustomerPortalCustomerView customer) {}
+public record CustomerPortalLoginView(String accessToken, CustomerPortalCustomerView customer) {}

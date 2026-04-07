@@ -3,6 +3,7 @@ import { useRequestFeedback } from "../../../../../shared/ui/composables/use-req
 import { createHttpCustomerAdapter } from "../../../infrastructure/adapters/http-customer.adapter";
 import { mapKycDomainToUpdatePayload } from "../../../infrastructure/mappers/customer-api.mapper";
 import { readFileAsDataUrl, firstSelectedFile } from "../../../../../shared/kernel/files/data-url";
+import { KycStatus, KycVerificationMode } from "../../../domain/model/customer-enums";
 
 export function useCustomerKycForm({
   tenantId,
@@ -21,25 +22,29 @@ export function useCustomerKycForm({
   const isPrefilling = ref(false);
 
   const state = reactive({
-    status: "NOT_STARTED",
-    verificationMode: "MANUAL",
-    verifiedUntil: "",
-    documentType: "PERSONALAUSWEIS",
-    documentNumber: "",
-    documentValidUntil: "",
+    customerId: "",
+    status: KycStatus.NOT_STARTED,
+    verificationMode: KycVerificationMode.MANUAL,
+    verifiedUntil: null as string | null,
+    documentType: null as string | null,
+    documentNumber: null as string | null,
+    documentValidUntil: null as string | null,
     documentFrontImageDataUrl: "",
     documentBackImageDataUrl: "",
-    portraitImageDataUrl: "",
-    decisionNote: ""
+    decisionNote: null as string | null,
+    providerName: null as string | null,
+    providerReference: null as string | null,
+    providerStatus: null as string | null,
+    providerVerificationAvailable: false
   });
 
   const canPrefill = computed(() => Boolean(state.documentFrontImageDataUrl));
 
   const statusOptions = computed(() => [
-    { label: t("customerDetail.statusOptions.kyc.NOT_STARTED"), value: "NOT_STARTED" },
-    { label: t("customerDetail.statusOptions.kyc.IN_PROGRESS"), value: "IN_PROGRESS" },
-    { label: t("customerDetail.statusOptions.kyc.APPROVED"), value: "APPROVED" },
-    { label: t("customerDetail.statusOptions.kyc.REJECTED"), value: "REJECTED" }
+    { label: t("customerDetail.statusOptions.kyc.NOT_STARTED"), value: KycStatus.NOT_STARTED },
+    { label: t("customerDetail.statusOptions.kyc.IN_PROGRESS"), value: KycStatus.IN_PROGRESS },
+    { label: t("customerDetail.statusOptions.kyc.APPROVED"), value: KycStatus.APPROVED },
+    { label: t("customerDetail.statusOptions.kyc.REJECTED"), value: KycStatus.REJECTED }
   ]);
 
   const documentTypeOptions = computed(() => [
@@ -62,17 +67,25 @@ export function useCustomerKycForm({
       const updated = await adapter.saveKyc(
         tenantId.value,
         customerId.value,
-        mapKycDomainToUpdatePayload(state)
+        mapKycDomainToUpdatePayload(state, {
+          documentFrontImageDataUrl: state.documentFrontImageDataUrl,
+          documentBackImageDataUrl: state.documentBackImageDataUrl
+        })
       );
       Object.assign(state, {
         ...state,
+        customerId: updated.customerId,
         status: updated.status,
-        verificationMode: updated.verificationMode ?? "MANUAL",
-        verifiedUntil: updated.verifiedUntil ?? "",
-        documentType: updated.documentType ?? "PERSONALAUSWEIS",
-        documentNumber: updated.documentNumber ?? "",
-        documentValidUntil: updated.documentValidUntil ?? "",
-        decisionNote: updated.decisionNote ?? ""
+        verificationMode: updated.verificationMode,
+        verifiedUntil: updated.verifiedUntil,
+        documentType: updated.documentType,
+        documentNumber: updated.documentNumber,
+        documentValidUntil: updated.documentValidUntil,
+        decisionNote: updated.decisionNote,
+        providerName: updated.providerName,
+        providerReference: updated.providerReference,
+        providerStatus: updated.providerStatus,
+        providerVerificationAvailable: updated.providerVerificationAvailable
       });
       successMessage.value = t("customerDetail.messages.kycSaved");
     } catch (error) {
@@ -103,7 +116,6 @@ export function useCustomerKycForm({
       state.documentType = result.documentType ?? state.documentType;
       state.documentNumber = result.documentNumber ?? state.documentNumber;
       state.documentValidUntil = result.documentValidUntil ?? state.documentValidUntil;
-      state.portraitImageDataUrl = result.portraitImageDataUrl ?? state.portraitImageDataUrl;
     } catch (error) {
       handleError(error);
     } finally {

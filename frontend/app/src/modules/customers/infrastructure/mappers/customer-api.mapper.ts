@@ -11,37 +11,45 @@ export function mapLoanDtosToDomain(dtos: LoanDto[]): CustomerLoanModel[] {
 
 export function mapKycToDomain(statusDto: KycStatusDto, documentsDto: KycDocumentsDto): CustomerKycModel {
   return {
+    customerId: statusDto.customerId,
     status: statusDto.status,
-    verificationMode: statusDto.verificationMode ?? "MANUAL",
-    verifiedUntil: statusDto.verifiedUntil ?? "",
-    documentType: statusDto.documentType ?? "PERSONALAUSWEIS",
-    documentNumber: statusDto.documentNumber ?? "",
-    documentValidUntil: statusDto.documentValidUntil ?? "",
-    documentFrontImageDataUrl: documentsDto.documentFrontImageDataUrl ?? "",
-    documentBackImageDataUrl: documentsDto.documentBackImageDataUrl ?? "",
-    portraitImageDataUrl: "",
-    decisionNote: statusDto.decisionNote ?? ""
+    verificationMode: statusDto.verificationMode,
+    verifiedUntil: statusDto.verifiedUntil,
+    documentType: statusDto.documentType,
+    documentNumber: statusDto.documentNumber,
+    documentValidUntil: statusDto.documentValidUntil,
+    documentFrontImageDataUrl: documentsDto.documentFrontImageDataUrl,
+    documentBackImageDataUrl: documentsDto.documentBackImageDataUrl,
+    decisionNote: statusDto.decisionNote,
+    providerName: statusDto.providerName,
+    providerReference: statusDto.providerReference,
+    providerStatus: statusDto.providerStatus,
+    providerVerificationAvailable: statusDto.providerVerificationAvailable
   };
 }
 
-export function mapAmlToDomain(dto: AmlStatusDto | null | undefined, featureEnabled: boolean): CustomerAmlModel {
+export function mapAmlToDomain(dto: AmlStatusDto): CustomerAmlModel {
   return {
-    status: dto?.status ?? "NOT_REVIEWED",
-    riskLevel: dto?.riskLevel ?? "MEDIUM",
-    pepFlag: dto?.pepFlag ?? false,
-    sanctionsHit: dto?.sanctionsHit ?? false,
-    unusualTransactionFlag: dto?.unusualTransactionFlag ?? false,
-    sourceOfFundsChecked: dto?.sourceOfFundsChecked ?? false,
-    suspiciousActivityReported: dto?.suspiciousActivityReported ?? false,
-    goamlReference: dto?.goamlReference ?? "",
-    decisionNote: dto?.decisionNote ?? "",
-    lastScreenedAt: toDateTimeLocal(dto?.lastScreenedAt),
-    reviewedAt: toDateTimeLocal(dto?.reviewedAt),
-    originationAllowed: dto?.originationAllowed ?? false,
-    decisionReason: dto?.decisionReason ?? "",
-    featureAvailable: dto?.featureAvailable ?? featureEnabled
+    customerId: dto.customerId,
+    status: dto.status,
+    riskLevel: dto.riskLevel,
+    pepFlag: dto.pepFlag,
+    sanctionsHit: dto.sanctionsHit,
+    unusualTransactionFlag: dto.unusualTransactionFlag,
+    sourceOfFundsChecked: dto.sourceOfFundsChecked,
+    suspiciousActivityReported: dto.suspiciousActivityReported,
+    goamlReference: dto.goamlReference,
+    decisionNote: dto.decisionNote,
+    lastScreenedAt: toDateTimeLocal(dto.lastScreenedAt),
+    reviewedAt: toDateTimeLocal(dto.reviewedAt),
+    originationAllowed: dto.originationAllowed,
+    decisionReason: dto.decisionReason,
+    featureAvailable: dto.featureAvailable
   };
 }
+
+
+
 
 export function mapCustomerDomainToUpdatePayload(model: CustomerModel) {
   return {
@@ -58,22 +66,24 @@ export function mapCustomerDomainToUpdatePayload(model: CustomerModel) {
   };
 }
 
-export function mapKycDomainToUpdatePayload(model: CustomerKycModel) {
+export function mapKycDomainToUpdatePayload(model: CustomerKycModel, images: KycDocumentsDto) {
   return {
     status: model.status,
-    verificationMode: "MANUAL",
+    verificationMode: model.verificationMode,
     verifiedUntil: model.verifiedUntil || model.documentValidUntil,
     documentType: model.documentType,
     documentNumber: model.documentNumber,
     documentValidUntil: model.documentValidUntil,
-    documentFrontImageDataUrl: model.documentFrontImageDataUrl,
-    documentBackImageDataUrl: model.documentBackImageDataUrl,
+    documentFrontImageDataUrl: images.documentFrontImageDataUrl,
+    documentBackImageDataUrl: images.documentBackImageDataUrl,
     decisionNote: model.decisionNote,
-    providerName: null,
-    providerReference: null,
-    providerStatus: null
+    providerName: model.providerName,
+    providerReference: model.providerReference,
+    providerStatus: model.providerStatus
   };
 }
+
+
 
 export function mapAmlDomainToUpdatePayload(model: CustomerAmlModel) {
   return {
@@ -107,10 +117,11 @@ function toDateTimeLocal(value?: string | null) {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
-function toInstant(value: string) {
+function toInstant(value: string | null) {
   if (!value) {
     return null;
   }
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
+

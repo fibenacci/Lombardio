@@ -72,7 +72,9 @@ class TenantCatalogServiceTest {
 
   @Test
   void shouldCreateTenant() {
-    var created = tenantCatalogService.createTenant(new CreateTenantCommand("alpha", "Pfandhaus Alpha", "ACTIVE"));
+    var created =
+        tenantCatalogService.createTenant(
+            new CreateTenantCommand("alpha", "Pfandhaus Alpha", "ACTIVE"));
 
     assertEquals("alpha", created.key());
     assertEquals(2, tenantCatalogService.listTenants().size());

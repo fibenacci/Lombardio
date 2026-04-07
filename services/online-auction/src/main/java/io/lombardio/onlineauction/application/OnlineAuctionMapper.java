@@ -16,50 +16,27 @@ import io.lombardio.onlineauction.api.OnlineAuctionResponse;
 import io.lombardio.onlineauction.domain.BidderRegistration;
 import io.lombardio.onlineauction.domain.OnlineAuction;
 import io.lombardio.onlineauction.domain.OnlineAuctionLot;
-import java.util.List;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 
-final class OnlineAuctionMapper {
+@Mapper(componentModel = "spring")
+public abstract class OnlineAuctionMapper {
 
-  OnlineAuctionResponse toAdminResponse(OnlineAuction auction) {
-    return new OnlineAuctionResponse(
-        auction.id(),
-        auction.tenantId(),
-        auction.title(),
-        auction.slug(),
-        auction.status(),
-        auction.channelName(),
-        auction.minimumIncrement(),
-        auction.countdownSeconds(),
-        auction.publishedAt(),
-        auction.liveStartedAt(),
-        auction.countdownEndsAt(),
-        auction.closedAt(),
-        auction.lots().stream().map(this::toLotResponse).toList(),
-        auction.registrations().stream()
-            .map(registration -> toRegistrationResponse(registration, false))
-            .toList());
-  }
+  @Mapping(
+      target = "registrations",
+      source = "registrations",
+      qualifiedByName = "mapPublicRegistration")
+  public abstract OnlineAuctionResponse toAdminResponse(OnlineAuction auction);
 
-  OnlineAuctionResponse toPublicResponse(OnlineAuction auction) {
-    return new OnlineAuctionResponse(
-        auction.id(),
-        auction.tenantId(),
-        auction.title(),
-        auction.slug(),
-        auction.status(),
-        auction.channelName(),
-        auction.minimumIncrement(),
-        auction.countdownSeconds(),
-        auction.publishedAt(),
-        auction.liveStartedAt(),
-        auction.countdownEndsAt(),
-        auction.closedAt(),
-        auction.lots().stream().map(this::toLotResponse).toList(),
-        List.of());
-  }
+  @Mapping(target = "registrations", expression = "java(java.util.List.of())")
+  public abstract OnlineAuctionResponse toPublicResponse(OnlineAuction auction);
 
-  BidderRegistrationResponse toRegistrationResponse(
+  public BidderRegistrationResponse toRegistrationResponse(
       BidderRegistration registration, boolean includeAccessToken) {
+    if (registration == null) {
+      return null;
+    }
     return new BidderRegistrationResponse(
         registration.id(),
         registration.displayName(),
@@ -77,18 +54,14 @@ final class OnlineAuctionMapper {
         registration.createdAt());
   }
 
-  private OnlineAuctionLotResponse toLotResponse(OnlineAuctionLot lot) {
-    return new OnlineAuctionLotResponse(
-        lot.id(),
-        lot.lotNumber(),
-        lot.title(),
-        lot.description(),
-        lot.startingBid(),
-        lot.currentBid(),
-        lot.highestBidderAlias());
+  @Named("mapPublicRegistration")
+  protected BidderRegistrationResponse mapPublicRegistration(BidderRegistration registration) {
+    return toRegistrationResponse(registration, false);
   }
 
-  private String maskIban(String iban) {
+  protected abstract OnlineAuctionLotResponse toLotResponse(OnlineAuctionLot lot);
+
+  protected String maskIban(String iban) {
     if (iban == null || iban.length() < 4) {
       return "****";
     }

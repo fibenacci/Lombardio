@@ -15,7 +15,6 @@ import io.lombardio.onlineauction.api.OnlineAuctionNotFoundException;
 import io.lombardio.onlineauction.api.OnlineAuctionResponse;
 import io.lombardio.onlineauction.domain.OnlineAuction;
 import io.lombardio.onlineauction.domain.OnlineAuctionRepository;
-import io.lombardio.onlineauction.domain.OnlineAuctionStatus;
 import io.lombardio.onlineauction.domain.RealtimePublisher;
 import java.time.Instant;
 import java.util.Comparator;
@@ -34,11 +33,12 @@ public class OnlineAuctionLifecycleService {
   public OnlineAuctionLifecycleService(
       OnlineAuctionRepository auctionRepository,
       RealtimePublisher realtimePublisher,
-      OnlineAuctionMetrics metrics) {
+      OnlineAuctionMetrics metrics,
+      OnlineAuctionMapper mapper) {
     this.auctionRepository = auctionRepository;
     this.realtimePublisher = realtimePublisher;
     this.metrics = metrics;
-    this.mapper = new OnlineAuctionMapper();
+    this.mapper = mapper;
   }
 
   public List<OnlineAuctionResponse> listAdminAuctions(String tenantId) {
@@ -50,18 +50,14 @@ public class OnlineAuctionLifecycleService {
 
   public OnlineAuctionResponse createAuction(String tenantId, CreateOnlineAuctionRequest request) {
     OnlineAuction saved =
-        auctionRepository.save(
-            OnlineAuctionMutations.createDraftAuction(tenantId, request, Instant.now()));
+        auctionRepository.save(OnlineAuction.createDraft(tenantId, request, Instant.now()));
     metrics.recordAuctionCreated();
     return mapper.toAdminResponse(saved);
   }
 
   public OnlineAuctionResponse publishAuction(String tenantId, String auctionId) {
     OnlineAuction current = requireAuction(tenantId, auctionId);
-    if (current.status() != OnlineAuctionStatus.DRAFT) {
-      throw new IllegalArgumentException("Only draft auctions can be published");
-    }
-    OnlineAuction updated = OnlineAuctionMutations.publish(current, Instant.now());
+    OnlineAuction updated = current.publish(Instant.now());
     OnlineAuction saved = auctionRepository.save(updated);
     publishEvent(saved.channelName(), "auction_published", saved);
     return mapper.toAdminResponse(saved);
@@ -69,10 +65,7 @@ public class OnlineAuctionLifecycleService {
 
   public OnlineAuctionResponse startAuction(String tenantId, String auctionId) {
     OnlineAuction current = requireAuction(tenantId, auctionId);
-    if (current.status() != OnlineAuctionStatus.PUBLISHED) {
-      throw new IllegalArgumentException("Only published auctions can go live");
-    }
-    OnlineAuction updated = OnlineAuctionMutations.start(current, Instant.now());
+    OnlineAuction updated = current.start(Instant.now());
     OnlineAuction saved = auctionRepository.save(updated);
     publishEvent(saved.channelName(), "auction_live", saved);
     return mapper.toAdminResponse(saved);
@@ -80,10 +73,7 @@ public class OnlineAuctionLifecycleService {
 
   public OnlineAuctionResponse closeAuction(String tenantId, String auctionId) {
     OnlineAuction current = requireAuction(tenantId, auctionId);
-    if (current.status() != OnlineAuctionStatus.LIVE) {
-      throw new IllegalArgumentException("Only live auctions can be closed");
-    }
-    OnlineAuction updated = OnlineAuctionMutations.close(current, Instant.now());
+    OnlineAuction updated = current.close(Instant.now());
     OnlineAuction saved = auctionRepository.save(updated);
     publishEvent(saved.channelName(), "auction_closed", saved);
     return mapper.toAdminResponse(saved);

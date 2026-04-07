@@ -10,6 +10,7 @@
  */
 package io.lombardio.onlineauction.infrastructure.persistence;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.onlineauction.domain.OnlineAuctionStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -20,15 +21,22 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "online_auctions")
+@Getter
+@Setter
+@NoArgsConstructor
+@SuppressFBWarnings(
+    value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"},
+    justification = "JPA entities")
 public class OnlineAuctionEntity {
 
   @Id private String id;
@@ -73,132 +81,4 @@ public class OnlineAuctionEntity {
   @OneToMany(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("createdAt asc")
   private List<BidderRegistrationEntity> registrations = new ArrayList<>();
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getTenantId() {
-    return tenantId;
-  }
-
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
-  }
-
-  public String getTitle() {
-    return title;
-  }
-
-  public void setTitle(String title) {
-    this.title = title;
-  }
-
-  public String getSlug() {
-    return slug;
-  }
-
-  public void setSlug(String slug) {
-    this.slug = slug;
-  }
-
-  public OnlineAuctionStatus getStatus() {
-    return status;
-  }
-
-  public void setStatus(OnlineAuctionStatus status) {
-    this.status = status;
-  }
-
-  public String getChannelName() {
-    return channelName;
-  }
-
-  public void setChannelName(String channelName) {
-    this.channelName = channelName;
-  }
-
-  public BigDecimal getMinimumIncrement() {
-    return minimumIncrement;
-  }
-
-  public void setMinimumIncrement(BigDecimal minimumIncrement) {
-    this.minimumIncrement = minimumIncrement;
-  }
-
-  public int getCountdownSeconds() {
-    return countdownSeconds;
-  }
-
-  public void setCountdownSeconds(int countdownSeconds) {
-    this.countdownSeconds = countdownSeconds;
-  }
-
-  public Instant getPublishedAt() {
-    return publishedAt;
-  }
-
-  public void setPublishedAt(Instant publishedAt) {
-    this.publishedAt = publishedAt;
-  }
-
-  public Instant getLiveStartedAt() {
-    return liveStartedAt;
-  }
-
-  public void setLiveStartedAt(Instant liveStartedAt) {
-    this.liveStartedAt = liveStartedAt;
-  }
-
-  public Instant getCountdownEndsAt() {
-    return countdownEndsAt;
-  }
-
-  public void setCountdownEndsAt(Instant countdownEndsAt) {
-    this.countdownEndsAt = countdownEndsAt;
-  }
-
-  public Instant getClosedAt() {
-    return closedAt;
-  }
-
-  public void setClosedAt(Instant closedAt) {
-    this.closedAt = closedAt;
-  }
-
-  public Instant getCreatedAt() {
-    return createdAt;
-  }
-
-  public void setCreatedAt(Instant createdAt) {
-    this.createdAt = createdAt;
-  }
-
-  public Instant getUpdatedAt() {
-    return updatedAt;
-  }
-
-  public void setUpdatedAt(Instant updatedAt) {
-    this.updatedAt = updatedAt;
-  }
-
-  public List<OnlineAuctionLotEntity> getLots() {
-    return List.copyOf(lots);
-  }
-
-  public void setLots(@NotNull List<OnlineAuctionLotEntity> lots) {
-    this.lots = new ArrayList<>(Objects.requireNonNull(lots, "lots"));
-  }
-
-  public List<BidderRegistrationEntity> getRegistrations() {
-    return List.copyOf(registrations);
-  }
-
-  public void setRegistrations(@NotNull List<BidderRegistrationEntity> registrations) {
-    this.registrations = new ArrayList<>(Objects.requireNonNull(registrations, "registrations"));
-  }
 }

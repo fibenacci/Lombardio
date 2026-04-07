@@ -11,6 +11,7 @@
 package io.lombardio.loanorigination.domain.model;
 
 import java.util.List;
+import java.util.UUID;
 
 public record LoanCase(
     String id,
@@ -23,5 +24,15 @@ public record LoanCase(
   public LoanCase {
     positions = List.copyOf(positions != null ? positions : List.of());
     pawnTickets = List.copyOf(pawnTickets != null ? pawnTickets : List.of());
+  }
+
+  public static LoanCase create(
+      String tenantId,
+      CustomerProfile customer,
+      PledgeRecord pledgeRecord,
+      List<LoanPosition> positions,
+      List<PawnTicket> pawnTickets) {
+    return new LoanCase(
+        "loan-" + UUID.randomUUID(), tenantId, customer, pledgeRecord, positions, pawnTickets);
   }
 }

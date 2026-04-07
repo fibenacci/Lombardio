@@ -60,11 +60,14 @@ public class KeycloakJwtAuthenticationConverter
 
   private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
     Map<String, Object> realmAccess = jwt.getClaim("realm_access");
-    if (realmAccess == null || !realmAccess.containsKey("roles")) {
+    if (realmAccess == null || !(realmAccess.get("roles") instanceof List<?> roles)) {
       return List.of();
     }
 
-    List<String> roles = (List<String>) realmAccess.get("roles");
-    return roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
+    return roles.stream()
+        .filter(String.class::isInstance)
+        .map(String.class::cast)
+        .map(SimpleGrantedAuthority::new)
+        .collect(Collectors.toSet());
   }
 }

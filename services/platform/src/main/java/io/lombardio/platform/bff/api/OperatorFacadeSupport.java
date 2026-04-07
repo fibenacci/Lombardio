@@ -20,7 +20,7 @@ import org.springframework.http.ResponseEntity;
 
 abstract class OperatorFacadeSupport {
 
-  private final OperatorBffProxyService proxyService;
+  protected final OperatorBffProxyService proxyService;
 
   protected OperatorFacadeSupport(OperatorBffProxyService proxyService) {
     this.proxyService = proxyService;

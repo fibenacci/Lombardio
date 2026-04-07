@@ -28,15 +28,10 @@ public class OperatorBffProxyService {
   private final OperatorBffHeaderPolicy headerPolicy;
 
   public OperatorBffProxyService(
-      OperatorBffTargetResolver targetResolver, OperatorBffHeaderPolicy headerPolicy) {
-    this(RestClient.create(), targetResolver, headerPolicy);
-  }
-
-  OperatorBffProxyService(
-      RestClient restClient,
+      RestClient.Builder restClientBuilder,
       OperatorBffTargetResolver targetResolver,
       OperatorBffHeaderPolicy headerPolicy) {
-    this.restClient = restClient;
+    this.restClient = restClientBuilder.build();
     this.targetResolver = targetResolver;
     this.headerPolicy = headerPolicy;
   }

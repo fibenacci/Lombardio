@@ -10,8 +10,8 @@
  */
 package io.lombardio.identity.aml.api.http;
 
-import io.lombardio.identity.aml.application.service.AmlStatusView;
 import io.lombardio.identity.aml.application.service.AmlService;
+import io.lombardio.identity.aml.application.service.AmlStatusView;
 import io.lombardio.identity.aml.application.service.OriginationAssessmentCommand;
 import io.lombardio.identity.aml.application.service.UpdateAmlStatusCommand;
 import io.lombardio.identity.aml.infrastructure.security.AmlAuthorizationService;

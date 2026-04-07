@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.lombardio.platform.config.OperatorBffProperties;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class OperatorBffTargetResolverTest {
@@ -43,11 +44,12 @@ class OperatorBffTargetResolverTest {
 
   private OperatorBffProperties properties() {
     return new OperatorBffProperties(
-        "http://identity:8084",
-        "http://origination:8083",
-        "http://pawn-ticket:8085",
-        "http://auction:8089",
-        "http://online-auction:8090",
-        "http://reporting:8091");
+        Map.of(
+            "identity", "http://identity:8084",
+            "origination", "http://origination:8083",
+            "pawn-ticket", "http://pawn-ticket:8085",
+            "auction", "http://auction:8089",
+            "online-auction", "http://online-auction:8090",
+            "reporting", "http://reporting:8091"));
   }
 }

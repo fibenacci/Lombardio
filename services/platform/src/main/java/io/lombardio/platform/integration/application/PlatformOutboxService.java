@@ -15,9 +15,7 @@ import io.lombardio.platform.integration.domain.IntegrationOutboxEventRepository
 import io.lombardio.platform.integration.domain.OutboxEventStatus;
 import java.time.Clock;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,23 +32,9 @@ public class PlatformOutboxService {
 
   public IntegrationOutboxEvent record(
       String aggregateType, String aggregateId, String eventType, String tenantId, String payload) {
-    Instant now = Instant.now(clock);
     return repository.save(
-        new IntegrationOutboxEvent(
-            "outbox-" + UUID.randomUUID(),
-            aggregateType,
-            aggregateId,
-            eventType,
-            tenantId,
-            payload,
-            OutboxEventStatus.PENDING,
-            0,
-            now,
-            now,
-            null,
-            null,
-            null,
-            null));
+        IntegrationOutboxEvent.create(
+            aggregateType, aggregateId, eventType, tenantId, payload, Instant.now(clock)));
   }
 
   @Transactional
@@ -58,24 +42,7 @@ public class PlatformOutboxService {
     Instant now = Instant.now(clock);
     List<IntegrationOutboxEvent> events =
         repository.findClaimable(now, limit).stream()
-            .map(
-                event ->
-                    repository.save(
-                        new IntegrationOutboxEvent(
-                            event.id(),
-                            event.aggregateType(),
-                            event.aggregateId(),
-                            event.eventType(),
-                            event.tenantId(),
-                            event.payload(),
-                            OutboxEventStatus.PROCESSING,
-                            event.attemptCount(),
-                            event.occurredAt(),
-                            event.nextAttemptAt(),
-                            now,
-                            consumer,
-                            event.publishedAt(),
-                            event.lastError())))
+            .map(event -> repository.save(event.claim(consumer, now)))
             .toList();
 
     return events.stream().map(this::toResponse).toList();
@@ -84,47 +51,13 @@ public class PlatformOutboxService {
   @Transactional
   public void complete(String outboxEventId, String consumer) {
     IntegrationOutboxEvent event = requireOwned(outboxEventId, consumer);
-    repository.save(
-        new IntegrationOutboxEvent(
-            event.id(),
-            event.aggregateType(),
-            event.aggregateId(),
-            event.eventType(),
-            event.tenantId(),
-            event.payload(),
-            OutboxEventStatus.PUBLISHED,
-            event.attemptCount(),
-            event.occurredAt(),
-            event.nextAttemptAt(),
-            event.lockedAt(),
-            consumer,
-            Instant.now(clock),
-            null));
+    repository.save(event.complete(Instant.now(clock)));
   }
 
   @Transactional
   public void fail(String outboxEventId, String consumer, String errorMessage) {
     IntegrationOutboxEvent event = requireOwned(outboxEventId, consumer);
-    int nextAttemptCount = event.attemptCount() + 1;
-    long delayMinutes = Math.min(30, 1L << Math.min(nextAttemptCount - 1, 4));
-    Instant now = Instant.now(clock);
-
-    repository.save(
-        new IntegrationOutboxEvent(
-            event.id(),
-            event.aggregateType(),
-            event.aggregateId(),
-            event.eventType(),
-            event.tenantId(),
-            event.payload(),
-            OutboxEventStatus.PENDING,
-            nextAttemptCount,
-            event.occurredAt(),
-            now.plus(delayMinutes, ChronoUnit.MINUTES),
-            null,
-            null,
-            null,
-            errorMessage));
+    repository.save(event.fail(errorMessage, Instant.now(clock)));
   }
 
   private IntegrationOutboxEvent requireOwned(String outboxEventId, String consumer) {

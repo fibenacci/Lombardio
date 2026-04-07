@@ -11,8 +11,4 @@
 package io.lombardio.identity.portal.application;
 
 public record AuthenticatedCustomerPortalUser(
-    String customerId,
-    String tenantId,
-    String displayName,
-    String email,
-    String sessionToken) {}
+    String customerId, String tenantId, String displayName, String email, String sessionToken) {}

@@ -28,12 +28,34 @@ public record OnlineAuctionResponse(
     Instant liveStartedAt,
     Instant countdownEndsAt,
     Instant closedAt,
+    Instant createdAt,
+    Instant updatedAt,
     List<OnlineAuctionLotResponse> lots,
     List<BidderRegistrationResponse> registrations) {
 
   public OnlineAuctionResponse {
     lots = List.copyOf(lots == null ? List.of() : lots);
     registrations = List.copyOf(registrations == null ? List.of() : registrations);
+  }
+
+  public OnlineAuctionResponse withRegistrations(List<BidderRegistrationResponse> registrations) {
+    return new OnlineAuctionResponse(
+        id,
+        tenantId,
+        title,
+        slug,
+        status,
+        channelName,
+        minimumIncrement,
+        countdownSeconds,
+        publishedAt,
+        liveStartedAt,
+        countdownEndsAt,
+        closedAt,
+        createdAt,
+        updatedAt,
+        lots,
+        registrations);
   }
 
   @Override

@@ -46,11 +46,7 @@ class CustomerPortalAuthenticationFilterTest {
     FilterChain chain = mock(FilterChain.class);
     AuthenticatedCustomerPortalUser principal =
         new AuthenticatedCustomerPortalUser(
-            "customer-1",
-            "tenant-default",
-            "Anna Example",
-            "anna@example.test",
-            "session-token");
+            "customer-1", "tenant-default", "Anna Example", "anna@example.test", "session-token");
     when(customerPortalService.authenticate("portal-cookie")).thenReturn(principal);
 
     filter.doFilter(request, response, chain);

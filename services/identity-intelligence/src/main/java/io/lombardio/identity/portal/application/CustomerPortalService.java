@@ -198,7 +198,11 @@ public class CustomerPortalService {
     try {
       Customer customer = requireActiveCustomer(session.customerId());
       return new AuthenticatedCustomerPortalUser(
-          customer.id(), customer.tenantId(), customer.displayName(), customer.email(), session.token());
+          customer.id(),
+          customer.tenantId(),
+          customer.displayName(),
+          customer.email(),
+          session.token());
     } catch (IllegalArgumentException exception) {
       return null;
     }

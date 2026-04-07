@@ -10,6 +10,7 @@
  */
 package io.lombardio.onlineauction.api;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.onlineauction.application.OnlineAuctionService;
 import io.lombardio.onlineauction.infrastructure.security.OnlineAuctionAuthorizationService;
 import io.lombardio.platform.security.AuthenticatedUser;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/tenants/{tenantId}/online-auctions")
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring managed singleton beans")
 public class AdminOnlineAuctionController {
 
   private final OnlineAuctionService onlineAuctionService;

@@ -19,4 +19,15 @@ public record OnlineAuctionLot(
     String description,
     BigDecimal startingBid,
     BigDecimal currentBid,
-    String highestBidderAlias) {}
+    String leadingPaddleNumber) {
+
+  public OnlineAuctionLot applyBid(
+      OnlineAuction auction, BidderRegistration bidder, BigDecimal amount) {
+    BigDecimal minimumBid = currentBid.max(startingBid).add(auction.minimumIncrement());
+    if (amount.compareTo(minimumBid) < 0) {
+      throw new IllegalArgumentException("Bid must satisfy the minimum increment");
+    }
+    return new OnlineAuctionLot(
+        id, lotNumber, title, description, startingBid, amount, bidder.paddleNumber());
+  }
+}

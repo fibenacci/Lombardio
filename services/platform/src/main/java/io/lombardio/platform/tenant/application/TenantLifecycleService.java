@@ -77,15 +77,8 @@ public class TenantLifecycleService {
   @Transactional
   public TenantView updateTenant(String tenantId, UpdateTenantCommand request) {
     Tenant existing = requireTenant(tenantId);
-
     Tenant updated =
-        new Tenant(
-            existing.id(),
-            request.key(),
-            request.displayName(),
-            request.status(),
-            existing.createdAt(),
-            Instant.now(clock));
+        existing.update(request.key(), request.displayName(), request.status(), Instant.now(clock));
 
     Tenant saved = tenantRepository.save(updated);
     recordTenantEvent("platform.tenant.updated", saved);

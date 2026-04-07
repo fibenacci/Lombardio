@@ -18,7 +18,6 @@ import io.lombardio.identity.portal.application.CustomerPortalService;
 import io.lombardio.platform.security.AuthenticatedUser;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -56,8 +55,6 @@ public class CustomerService {
   }
 
   public CustomerView create(String tenantId, CreateCustomerCommand request) {
-    String email = normalizeEmail(request.email());
-    validateDigitalPawnTicketRequest(email, request.wantsDigitalPawnTicket());
     Customer customer =
         customerRepository.save(
             new Customer(
@@ -68,7 +65,7 @@ public class CustomerService {
                 request.lastName(),
                 request.birthDate(),
                 request.phone(),
-                email,
+                request.email(),
                 request.wantsDigitalPawnTicket(),
                 request.wantsDigitalPawnTicket() ? "INVITED" : "NOT_REQUESTED",
                 request.street(),
@@ -92,39 +89,31 @@ public class CustomerService {
     return toResponse(customer, AuthenticatedUser.currentAccessToken());
   }
 
-  public CustomerView update(
-      String tenantId, String customerId, UpdateCustomerCommand request) {
+  public CustomerView update(String tenantId, String customerId, UpdateCustomerCommand request) {
     Customer existing =
         customerRepository
             .findById(customerId)
             .filter(item -> item.tenantId().equals(tenantId))
             .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
-    String email = normalizeEmail(request.email());
-    validateDigitalPawnTicketRequest(email, request.wantsDigitalPawnTicket());
-
-    boolean emailChanged = !java.util.Objects.equals(existing.email(), email);
-    String onlineAccessStatus =
-        determineOnlineAccessStatus(existing, request.wantsDigitalPawnTicket(), emailChanged);
 
     Customer updated =
-        customerRepository.save(
-            new Customer(
-                existing.id(),
-                tenantId,
-                request.customerNumber(),
-                request.firstName(),
-                request.lastName(),
-                request.birthDate(),
-                request.phone(),
-                email,
-                request.wantsDigitalPawnTicket(),
-                onlineAccessStatus,
-                request.street(),
-                request.postalCode(),
-                request.city()));
+        existing.update(
+            request.customerNumber(),
+            request.firstName(),
+            request.lastName(),
+            request.birthDate(),
+            request.phone(),
+            request.email(),
+            request.wantsDigitalPawnTicket(),
+            request.street(),
+            request.postalCode(),
+            request.city());
+
+    customerRepository.save(updated);
+
     if (updated.wantsDigitalPawnTicket()) {
       if (!existing.wantsDigitalPawnTicket()
-          || emailChanged
+          || !java.util.Objects.equals(existing.email(), updated.email())
           || !"ACTIVE".equals(existing.onlineAccessStatus())) {
         customerPortalService.issueInvitation(updated);
       }
@@ -155,36 +144,5 @@ public class CustomerService {
         customer.street(),
         customer.postalCode(),
         customer.city());
-  }
-
-  private String normalizeEmail(String email) {
-    if (email == null) {
-      return null;
-    }
-    String normalized = email.trim().toLowerCase(Locale.ROOT);
-    return normalized.isEmpty() ? null : normalized;
-  }
-
-  private String determineOnlineAccessStatus(
-      Customer existing, boolean wantsDigitalPawnTicket, boolean emailChanged) {
-    if (!wantsDigitalPawnTicket) {
-      return "NOT_REQUESTED";
-    }
-    if (emailChanged) {
-      return "INVITED";
-    }
-    if (existing.wantsDigitalPawnTicket()
-        && existing.onlineAccessStatus() != null
-        && !existing.onlineAccessStatus().isBlank()) {
-      return existing.onlineAccessStatus();
-    }
-    return "INVITED";
-  }
-
-  private void validateDigitalPawnTicketRequest(String email, boolean wantsDigitalPawnTicket) {
-    if (wantsDigitalPawnTicket && (email == null || email.isBlank())) {
-      throw new IllegalArgumentException(
-          "Digital pawn ticket access requires a customer email address");
-    }
   }
 }

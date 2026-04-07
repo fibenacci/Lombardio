@@ -10,9 +10,9 @@
  */
 package io.lombardio.identity.api.http;
 
+import io.lombardio.identity.application.service.CreateCustomerCommand;
 import io.lombardio.identity.application.service.CustomerService;
 import io.lombardio.identity.application.service.CustomerView;
-import io.lombardio.identity.application.service.CreateCustomerCommand;
 import io.lombardio.identity.application.service.UpdateCustomerCommand;
 import io.lombardio.identity.infrastructure.security.CustomerAuthorizationService;
 import io.lombardio.platform.security.AuthenticatedUser;

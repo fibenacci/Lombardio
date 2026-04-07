@@ -10,4 +10,10 @@
         <Bug pattern="SPRING_ENDPOINT"/>
     </Match>
 
+    <!-- Ignore MapStruct generated implementation classes which often trigger false positive null load warnings -->
+    <Match>
+        <Class name="~.*MapperImpl"/>
+        <Bug pattern="NP_LOAD_OF_KNOWN_NULL_VALUE"/>
+    </Match>
+
 </FindBugsFilter>

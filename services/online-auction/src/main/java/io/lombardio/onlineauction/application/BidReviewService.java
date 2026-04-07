@@ -36,12 +36,13 @@ public class BidReviewService {
       OnlineAuctionRepository auctionRepository,
       OnlineAuctionLifecycleService lifecycleService,
       RealtimePublisher realtimePublisher,
-      OnlineAuctionMetrics metrics) {
+      OnlineAuctionMetrics metrics,
+      OnlineAuctionMapper mapper) {
     this.auctionRepository = auctionRepository;
     this.lifecycleService = lifecycleService;
     this.realtimePublisher = realtimePublisher;
     this.metrics = metrics;
-    this.mapper = new OnlineAuctionMapper();
+    this.mapper = mapper;
   }
 
   public OnlineAuctionResponse placeBid(
@@ -61,8 +62,9 @@ public class BidReviewService {
     if (bidder.approvalStatus() != BidderApprovalStatus.APPROVED) {
       throw new IllegalArgumentException("Bidder is not approved for live bidding");
     }
+
     OnlineAuction updated =
-        OnlineAuctionMutations.applyBid(current, request, bidder, Instant.now());
+        current.applyBid(request.lotId(), request.amount(), bidder, Instant.now());
     OnlineAuction saved = auctionRepository.save(updated);
     publishEvent(saved.channelName(), "bid_placed", mapper.toAdminResponse(saved));
     metrics.recordBidPlaced(request.amount());

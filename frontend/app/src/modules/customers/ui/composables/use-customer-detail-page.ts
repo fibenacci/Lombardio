@@ -56,7 +56,11 @@ export function useCustomerDetailPage({
       Object.assign(profileForm.state, mapCustomerDtoToDomain(result.customer));
       loans.value = mapLoanDtosToDomain(result.loans);
       Object.assign(kycForm.state, mapKycToDomain(result.kycStatus, result.kycDocuments));
-      Object.assign(amlForm.state, mapAmlToDomain(result.aml, amlFeatureEnabled.value));
+      if (result.aml) {
+        Object.assign(amlForm.state, mapAmlToDomain(result.aml));
+      }
+
+
     } catch (error) {
       handleError(error);
     } finally {

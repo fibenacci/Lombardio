@@ -113,7 +113,8 @@ public class ScenarioDataSeeder {
     Instant timestamp = Instant.now().minusSeconds(86_400); // 24 hours ago
 
     for (var tenantDefinition : DEMO_TENANTS) {
-      identityAdministration.createTenantGroup(tenantDefinition.id(), tenantDefinition.displayName());
+      identityAdministration.createTenantGroup(
+          tenantDefinition.id(), tenantDefinition.displayName());
       tenantRepository.save(PlatformSeedFixtures.toTenant(tenantDefinition, timestamp));
       for (var feature : PlatformSeedFixtures.tenantFeatures(tenantDefinition, timestamp)) {
         tenantFeatureRepository.save(feature);

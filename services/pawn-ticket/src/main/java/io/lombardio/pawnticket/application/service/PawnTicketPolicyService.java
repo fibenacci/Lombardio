@@ -28,10 +28,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class PawnTicketPolicyService {
 
-  private static final BigDecimal MONTHLY_INTEREST_RATE = new BigDecimal("1.00");
   private static final int DEFAULT_TERM_MONTHS = 3;
-  private static final String LEGAL_TEXT =
-      "Kostenmodell gemaess PfandlV: monatlicher Zins 1 Prozent nach § 10 Abs. 1 Nr. 1 PfandlV, Betriebsverguetung nach Anlage zu § 10 Abs. 1 Nr. 2 PfandlV bis 300 Euro Darlehensbetrag, Mindestfaelligkeit 3 Monate nach § 5 Abs. 1 PfandlV. Eine Pfandverwertung ist fruehestens einen Monat nach Faelligkeit zulaessig (§ 9 Abs. 1 PfandlV).";
 
   private final PawnTicketRepository pawnTicketRepository;
   private final PawnTicketTermsService termsService;
@@ -65,61 +62,21 @@ public class PawnTicketPolicyService {
   }
 
   public PawnTicket quote(PawnTicketQuoteCommand command) {
-    BigDecimal loanAmount = command.loanAmount();
     PawnTicketTermsService.TermsSnapshot termsSnapshot = termsService.currentTerms();
     int normalizedTermMonths =
         command.termMonths() == null
             ? DEFAULT_TERM_MONTHS
             : Math.max(command.termMonths(), DEFAULT_TERM_MONTHS);
-    OperatingFeeResult operatingFeeResult =
-        resolveOperatingFee(loanAmount, command.manualMonthlyOperatingFee());
-    LocalDate contractDate = LocalDate.now(clock);
-    LocalDate dueDate = contractDate.plusMonths(normalizedTermMonths);
 
-    BigDecimal totalInterestAmount =
-        loanAmount
-            .multiply(MONTHLY_INTEREST_RATE)
-            .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP)
-            .multiply(new BigDecimal(normalizedTermMonths))
-            .setScale(2, RoundingMode.HALF_UP);
-    BigDecimal totalOperatingFeeAmount =
-        operatingFeeResult
-            .monthlyOperatingFee()
-            .multiply(new BigDecimal(normalizedTermMonths))
-            .setScale(2, RoundingMode.HALF_UP);
-    BigDecimal totalRepaymentAmount =
-        loanAmount
-            .add(totalInterestAmount)
-            .add(totalOperatingFeeAmount)
-            .setScale(2, RoundingMode.HALF_UP);
-
-    return new PawnTicket(
+    return PawnTicket.createQuote(
         "quote-" + UUID.randomUUID(),
-        "quote",
-        "quote",
-        "QUOTE",
-        "Angebot",
-        null,
-        "QUOTE",
-        "QUOTE",
-        "PS-" + ticketSequence.get(),
         termsSnapshot.version(),
         termsSnapshot.text(),
         Instant.now(clock),
-        dueDate,
-        dueDate.plusMonths(1),
+        LocalDate.now(clock),
         normalizedTermMonths,
-        loanAmount.setScale(2, RoundingMode.HALF_UP),
-        MONTHLY_INTEREST_RATE,
-        operatingFeeResult.monthlyOperatingFee(),
-        operatingFeeResult.manualRequired(),
-        totalInterestAmount,
-        totalOperatingFeeAmount,
-        totalRepaymentAmount,
-        LEGAL_TEXT,
-        List.of(
-            new PawnTicketPosition(
-                "QUOTE-01", "QUOTE-01", "Pfandgegenstand", "Angebotsvorschau", loanAmount)));
+        command.loanAmount(),
+        command.manualMonthlyOperatingFee());
   }
 
   public PawnTicket issue(IssuePawnTicketCommand command) {
@@ -130,6 +87,7 @@ public class PawnTicketPolicyService {
     String contractNumber = "PS-" + ticketSequence.incrementAndGet();
     List<PawnTicketPosition> normalizedPositions =
         normalizePositions(contractNumber, command.positions());
+
     PawnTicket issued =
         new PawnTicket(
             "ticket-" + UUID.randomUUID(),
@@ -156,6 +114,7 @@ public class PawnTicketPolicyService {
             quote.totalRepaymentAmount(),
             quote.legalText(),
             normalizedPositions);
+
     PawnTicket saved = pawnTicketRepository.save(issued);
     metrics.recordIssued(saved.loanAmount(), saved.positions().size());
     return saved;
@@ -194,7 +153,7 @@ public class PawnTicketPolicyService {
         quote.totalInterestAmount(),
         quote.totalOperatingFeeAmount(),
         quote.totalRepaymentAmount(),
-        LEGAL_TEXT);
+        PawnTicket.DEFAULT_LEGAL_TEXT);
   }
 
   public PawnTicketSettlementResult redeem(PawnTicketSettlementCommand command) {
@@ -211,7 +170,7 @@ public class PawnTicketPolicyService {
         quote.totalInterestAmount(),
         quote.totalOperatingFeeAmount(),
         quote.totalRepaymentAmount(),
-        LEGAL_TEXT);
+        PawnTicket.DEFAULT_LEGAL_TEXT);
   }
 
   public PawnTicket getIssuedTicket(String ticketNumber) {
@@ -244,41 +203,4 @@ public class PawnTicketPolicyService {
     }
     return normalized;
   }
-
-  private OperatingFeeResult resolveOperatingFee(
-      BigDecimal loanAmount, BigDecimal manualMonthlyOperatingFee) {
-    if (loanAmount.compareTo(new BigDecimal("15.00")) <= 0) {
-      return new OperatingFeeResult(new BigDecimal("1.00"), false);
-    }
-    if (loanAmount.compareTo(new BigDecimal("30.00")) <= 0) {
-      return new OperatingFeeResult(new BigDecimal("1.50"), false);
-    }
-    if (loanAmount.compareTo(new BigDecimal("50.00")) <= 0) {
-      return new OperatingFeeResult(new BigDecimal("2.00"), false);
-    }
-    if (loanAmount.compareTo(new BigDecimal("100.00")) <= 0) {
-      return new OperatingFeeResult(new BigDecimal("2.50"), false);
-    }
-    if (loanAmount.compareTo(new BigDecimal("150.00")) <= 0) {
-      return new OperatingFeeResult(new BigDecimal("3.50"), false);
-    }
-    if (loanAmount.compareTo(new BigDecimal("200.00")) <= 0) {
-      return new OperatingFeeResult(new BigDecimal("4.50"), false);
-    }
-    if (loanAmount.compareTo(new BigDecimal("250.00")) <= 0) {
-      return new OperatingFeeResult(new BigDecimal("5.50"), false);
-    }
-    if (loanAmount.compareTo(new BigDecimal("300.00")) <= 0) {
-      return new OperatingFeeResult(new BigDecimal("6.50"), false);
-    }
-
-    if (manualMonthlyOperatingFee == null) {
-      return new OperatingFeeResult(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP), true);
-    }
-
-    return new OperatingFeeResult(
-        manualMonthlyOperatingFee.setScale(2, RoundingMode.HALF_UP), false);
-  }
-
-  private record OperatingFeeResult(BigDecimal monthlyOperatingFee, boolean manualRequired) {}
 }

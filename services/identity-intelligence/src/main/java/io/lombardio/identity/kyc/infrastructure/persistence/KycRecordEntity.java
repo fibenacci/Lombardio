@@ -18,12 +18,16 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.Objects;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "kyc_records")
+@Getter
+@Setter
+@NoArgsConstructor
 public class KycRecordEntity {
 
   @Id private String id;
@@ -71,124 +75,4 @@ public class KycRecordEntity {
 
   @Column(name = "provider_status")
   private String providerStatus;
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getTenantId() {
-    return tenantId;
-  }
-
-  public void setTenantId(@NotNull String tenantId) {
-    this.tenantId = Objects.requireNonNull(tenantId, "tenantId");
-  }
-
-  public String getCustomerId() {
-    return customerId;
-  }
-
-  public void setCustomerId(@NotNull String customerId) {
-    this.customerId = Objects.requireNonNull(customerId, "customerId");
-  }
-
-  public KycVerificationMode getVerificationMode() {
-    return verificationMode;
-  }
-
-  public void setVerificationMode(@NotNull KycVerificationMode verificationMode) {
-    this.verificationMode = Objects.requireNonNull(verificationMode, "verificationMode");
-  }
-
-  public KycStatus getStatus() {
-    return status;
-  }
-
-  public void setStatus(@NotNull KycStatus status) {
-    this.status = Objects.requireNonNull(status, "status");
-  }
-
-  public LocalDate getVerifiedUntil() {
-    return verifiedUntil;
-  }
-
-  public void setVerifiedUntil(LocalDate verifiedUntil) {
-    this.verifiedUntil = verifiedUntil;
-  }
-
-  public String getDocumentType() {
-    return documentType;
-  }
-
-  public void setDocumentType(String documentType) {
-    this.documentType = documentType;
-  }
-
-  public String getDocumentNumber() {
-    return documentNumber;
-  }
-
-  public void setDocumentNumber(String documentNumber) {
-    this.documentNumber = documentNumber;
-  }
-
-  public LocalDate getDocumentValidUntil() {
-    return documentValidUntil;
-  }
-
-  public void setDocumentValidUntil(LocalDate documentValidUntil) {
-    this.documentValidUntil = documentValidUntil;
-  }
-
-  public String getDocumentFrontImageDataUrl() {
-    return documentFrontImageDataUrl;
-  }
-
-  public void setDocumentFrontImageDataUrl(String documentFrontImageDataUrl) {
-    this.documentFrontImageDataUrl = documentFrontImageDataUrl;
-  }
-
-  public String getDocumentBackImageDataUrl() {
-    return documentBackImageDataUrl;
-  }
-
-  public void setDocumentBackImageDataUrl(String documentBackImageDataUrl) {
-    this.documentBackImageDataUrl = documentBackImageDataUrl;
-  }
-
-  public String getDecisionNote() {
-    return decisionNote;
-  }
-
-  public void setDecisionNote(String decisionNote) {
-    this.decisionNote = decisionNote;
-  }
-
-  public String getProviderName() {
-    return providerName;
-  }
-
-  public void setProviderName(String providerName) {
-    this.providerName = providerName;
-  }
-
-  public String getProviderReference() {
-    return providerReference;
-  }
-
-  public void setProviderReference(String providerReference) {
-    this.providerReference = providerReference;
-  }
-
-  public String getProviderStatus() {
-    return providerStatus;
-  }
-
-  public void setProviderStatus(String providerStatus) {
-    this.providerStatus = providerStatus;
-  }
 }

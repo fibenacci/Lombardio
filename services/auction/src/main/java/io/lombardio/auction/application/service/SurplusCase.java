@@ -10,6 +10,7 @@
  */
 package io.lombardio.auction.application.service;
 
+import io.lombardio.auction.domain.model.AuctionLot;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -22,4 +23,18 @@ public record SurplusCase(
     BigDecimal outstandingClaim,
     BigDecimal surplusAmount,
     LocalDate authorityTransferDueDate,
-    String authorityTransferStatus) {}
+    String authorityTransferStatus) {
+
+  public static SurplusCase from(AuctionLot lot) {
+    return new SurplusCase(
+        lot.auctionId(),
+        lot.id(),
+        lot.lotNumber(),
+        lot.contractNumber(),
+        lot.hammerPrice(),
+        lot.outstandingClaim(),
+        lot.surplusAmount(),
+        lot.authorityTransferDueDate(),
+        lot.authorityTransferStatus());
+  }
+}

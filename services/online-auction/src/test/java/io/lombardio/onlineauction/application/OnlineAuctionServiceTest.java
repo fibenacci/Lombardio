@@ -18,9 +18,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.lombardio.onlineauction.api.BidderRegistrationResponse;
 import io.lombardio.onlineauction.api.CreateOnlineAuctionRequest;
 import io.lombardio.onlineauction.api.OnlineAuctionLotRequest;
+import io.lombardio.onlineauction.api.OnlineAuctionLotResponse;
+import io.lombardio.onlineauction.api.OnlineAuctionResponse;
 import io.lombardio.onlineauction.api.PlaceOnlineBidRequest;
 import io.lombardio.onlineauction.api.RegisterBidderRequest;
 import io.lombardio.onlineauction.domain.OnlineAuction;
+import io.lombardio.onlineauction.domain.OnlineAuctionLot;
 import io.lombardio.onlineauction.domain.OnlineAuctionRepository;
 import io.lombardio.onlineauction.domain.RealtimeSession;
 import java.math.BigDecimal;
@@ -36,24 +39,68 @@ class OnlineAuctionServiceTest {
     InMemoryOnlineAuctionRepository repository = new InMemoryOnlineAuctionRepository();
     List<Object> publishedPayloads = new ArrayList<>();
     OnlineAuctionMetrics metrics = OnlineAuctionMetrics.noop();
+    OnlineAuctionMapper mapper =
+        new OnlineAuctionMapper() {
+          @Override
+          public OnlineAuctionResponse toAdminResponse(OnlineAuction auction) {
+            return new OnlineAuctionResponse(
+                auction.id(),
+                auction.tenantId(),
+                auction.title(),
+                auction.slug(),
+                auction.status(),
+                auction.channelName(),
+                auction.minimumIncrement(),
+                auction.countdownSeconds(),
+                auction.publishedAt(),
+                auction.liveStartedAt(),
+                auction.countdownEndsAt(),
+                auction.closedAt(),
+                auction.createdAt(),
+                auction.updatedAt(),
+                auction.lots().stream().map(this::toLotResponse).toList(),
+                auction.registrations().stream()
+                    .map(r -> toRegistrationResponse(r, false))
+                    .toList());
+          }
+
+          @Override
+          public OnlineAuctionResponse toPublicResponse(OnlineAuction auction) {
+            return toAdminResponse(auction).withRegistrations(List.of());
+          }
+
+          @Override
+          protected OnlineAuctionLotResponse toLotResponse(OnlineAuctionLot lot) {
+            return new OnlineAuctionLotResponse(
+                lot.id(),
+                lot.lotNumber(),
+                lot.title(),
+                lot.description(),
+                lot.startingBid(),
+                lot.currentBid(),
+                lot.leadingPaddleNumber());
+          }
+        };
 
     OnlineAuctionLifecycleService lifecycleService =
         new OnlineAuctionLifecycleService(
-            repository, (channel, payload) -> publishedPayloads.add(payload), metrics);
+            repository, (channel, payload) -> publishedPayloads.add(payload), metrics, mapper);
 
     BidderRegistrationService registrationService =
         new BidderRegistrationService(
             repository,
             lifecycleService,
             (channel, payload) -> publishedPayloads.add(payload),
-            metrics);
+            metrics,
+            mapper);
 
     BidReviewService bidReviewService =
         new BidReviewService(
             repository,
             lifecycleService,
             (channel, payload) -> publishedPayloads.add(payload),
-            metrics);
+            metrics,
+            mapper);
 
     RealtimeSessionService realtimeSessionService =
         new RealtimeSessionService(

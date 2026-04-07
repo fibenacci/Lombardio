@@ -118,8 +118,7 @@ public class KycService {
         .isPresent();
   }
 
-  public DocumentPrefillView prefillDocumentData(
-      String tenantId, DocumentPrefillCommand request) {
+  public DocumentPrefillView prefillDocumentData(String tenantId, DocumentPrefillCommand request) {
     if (!tenantFeatureDirectory.isFeatureEnabled(tenantId, OCR_FEATURE_KEY)) {
       return new DocumentPrefillView(
           false, false, null, null, null, null, null, null, null, null, 0);

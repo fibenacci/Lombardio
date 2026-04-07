@@ -11,10 +11,12 @@
 package io.lombardio.pawnticket.api.http;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.lombardio.pawnticket.api.http.mapper.ApiMapper;
 import io.lombardio.pawnticket.application.service.PawnTicketDocumentService;
 import io.lombardio.pawnticket.application.service.PawnTicketPolicyService;
 import io.lombardio.pawnticket.domain.model.PawnTicket;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -27,27 +29,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/internal/v1/customers/{tenantId}/{customerId}/pawn-tickets")
+@RequiredArgsConstructor
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring managed singleton beans")
 public class InternalPawnTicketController {
 
   private final PawnTicketPolicyService pawnTicketPolicyService;
   private final PawnTicketDocumentService pawnTicketDocumentService;
-
-  @SuppressFBWarnings(
-      value = "EI_EXPOSE_REP2",
-      justification =
-          "Spring-managed service references are intentional dependencies, not mutable state")
-  public InternalPawnTicketController(
-      PawnTicketPolicyService pawnTicketPolicyService,
-      PawnTicketDocumentService pawnTicketDocumentService) {
-    this.pawnTicketPolicyService = pawnTicketPolicyService;
-    this.pawnTicketDocumentService = pawnTicketDocumentService;
-  }
+  private final ApiMapper mapper;
 
   @GetMapping
   public List<PawnTicketOverviewResponse> listCustomerTickets(
       @PathVariable String tenantId, @PathVariable String customerId) {
     return pawnTicketPolicyService.listIssuedTickets(tenantId, customerId).stream()
-        .map(this::toOverview)
+        .map(mapper::toOverviewResponse)
         .toList();
   }
 
@@ -68,21 +62,5 @@ public class InternalPawnTicketController {
             ContentDisposition.inline().filename(ticketNumber + ".pdf").build().toString())
         .contentType(MediaType.APPLICATION_PDF)
         .body(pdf);
-  }
-
-  private PawnTicketOverviewResponse toOverview(PawnTicket pawnTicket) {
-    return new PawnTicketOverviewResponse(
-        pawnTicket.contractNumber(),
-        pawnTicket.ticketNumber(),
-        pawnTicket.contractBarcode(),
-        pawnTicket.termsVersion(),
-        pawnTicket.customerNumber(),
-        pawnTicket.customerDisplayName(),
-        pawnTicket.createdAt(),
-        pawnTicket.dueDate(),
-        pawnTicket.earliestAuctionDate(),
-        pawnTicket.loanAmount(),
-        pawnTicket.totalRepaymentAmount(),
-        pawnTicket.positions().size());
   }
 }

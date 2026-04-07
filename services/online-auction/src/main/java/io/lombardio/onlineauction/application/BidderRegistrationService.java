@@ -38,32 +38,31 @@ public class BidderRegistrationService {
       OnlineAuctionRepository auctionRepository,
       OnlineAuctionLifecycleService lifecycleService,
       RealtimePublisher realtimePublisher,
-      OnlineAuctionMetrics metrics) {
+      OnlineAuctionMetrics metrics,
+      OnlineAuctionMapper mapper) {
     this.auctionRepository = auctionRepository;
     this.lifecycleService = lifecycleService;
     this.realtimePublisher = realtimePublisher;
     this.metrics = metrics;
-    this.mapper = new OnlineAuctionMapper();
+    this.mapper = mapper;
   }
 
   public BidderRegistrationResponse registerBidder(
       String tenantId, String auctionId, RegisterBidderRequest request) {
     OnlineAuction current = lifecycleService.requirePublicAuction(tenantId, auctionId);
     String rawAccessToken = UUID.randomUUID().toString().replace("-", "");
-    BidderRegistration persistedRegistration =
-        OnlineAuctionMutations.createPersistedRegistration(
-            current, request, rawAccessToken, Instant.now());
-    BidderRegistration responseRegistration =
-        OnlineAuctionMutations.exposeAccessToken(persistedRegistration, rawAccessToken);
-    OnlineAuction updated =
-        OnlineAuctionMutations.appendRegistration(current, persistedRegistration, Instant.now());
+    String hashedToken = BidderAccessTokenHasher.sha256(rawAccessToken);
+
+    BidderRegistration persisted =
+        BidderRegistration.create(current, request, null, hashedToken, Instant.now());
+    OnlineAuction updated = current.appendRegistration(persisted, Instant.now());
+
     OnlineAuction saved = auctionRepository.save(updated);
     publishEvent(
-        saved.channelName(),
-        "bidder_registered",
-        mapper.toRegistrationResponse(persistedRegistration, false));
+        saved.channelName(), "bidder_registered", mapper.toRegistrationResponse(persisted, false));
     metrics.recordBidderRegistration();
-    return mapper.toRegistrationResponse(responseRegistration, true);
+
+    return mapper.toRegistrationResponse(persisted.withAccessToken(rawAccessToken), true);
   }
 
   public OnlineAuctionResponse reviewRegistration(
@@ -71,25 +70,27 @@ public class BidderRegistrationService {
     OnlineAuction current = lifecycleService.requireAuction(tenantId, auctionId);
     ReviewCheckStatus kycStatus = parseCheckStatus(request.kycStatus());
     ReviewCheckStatus accountCheckStatus = parseCheckStatus(request.accountCheckStatus());
-    BidderApprovalStatus status = parseDecision(request.decision());
-    if (status == BidderApprovalStatus.APPROVED
+    BidderApprovalStatus decision = parseDecision(request.decision());
+
+    if (decision == BidderApprovalStatus.APPROVED
         && (kycStatus != ReviewCheckStatus.PASSED
             || accountCheckStatus != ReviewCheckStatus.PASSED)) {
       throw new IllegalArgumentException("Bidder approval requires passed KYC and account checks");
     }
-    OnlineAuction updated =
-        OnlineAuctionMutations.reviewRegistration(
-            current,
-            registrationId,
-            status,
-            kycStatus,
-            accountCheckStatus,
-            request,
-            status == BidderApprovalStatus.APPROVED ? Instant.now() : null,
-            Instant.now());
+
+    BidderRegistration target =
+        current.registrations().stream()
+            .filter(r -> r.id().equals(registrationId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("Registration not found"));
+
+    BidderRegistration reviewed =
+        target.review(decision, kycStatus, accountCheckStatus, request.reviewNote(), Instant.now());
+    OnlineAuction updated = current.reviewRegistration(registrationId, reviewed, Instant.now());
+
     OnlineAuction saved = auctionRepository.save(updated);
     publishEvent(saved.channelName(), "registration_reviewed", mapper.toAdminResponse(saved));
-    metrics.recordBidderReview(status, kycStatus, accountCheckStatus);
+    metrics.recordBidderReview(decision, kycStatus, accountCheckStatus);
     return mapper.toAdminResponse(saved);
   }
 
