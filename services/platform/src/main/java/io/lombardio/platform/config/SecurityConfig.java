@@ -12,8 +12,10 @@ package io.lombardio.platform.config;
 
 import io.lombardio.platform.auth.application.StoredOperatorSessionService;
 import io.lombardio.platform.auth.infrastructure.security.OperatorSessionAuthenticationFilter;
+import io.lombardio.platform.security.AuditService;
 import io.lombardio.platform.security.KeycloakJwtAuthenticationConverter;
 import io.lombardio.platform.security.KeycloakJwtValidators;
+import io.lombardio.platform.security.Slf4jAuditService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -49,6 +51,11 @@ public class SecurityConfig {
   private String operatorClientId;
 
   @Bean
+  public AuditService auditService() {
+    return new Slf4jAuditService();
+  }
+
+  @Bean
   public SecurityFilterChain filterChain(
       HttpSecurity http,
       CorsConfigurationSource corsConfigurationSource,
@@ -64,10 +71,13 @@ public class SecurityConfig {
                 auth.requestMatchers("/api/v1/platform/health")
                     .permitAll()
                     .requestMatchers(
-                        "/api/v1/platform/auth/login",
-                        "/api/v1/platform/auth/refresh",
-                        "/api/v1/platform/auth/logout")
+                        "/api/v1/platform/auth/login")
                     .permitAll()
+                    .requestMatchers(
+                        "/api/v1/platform/auth/refresh",
+                        "/api/v1/platform/auth/logout",
+                        "/api/v1/platform/auth/me")
+                    .authenticated()
                     .requestMatchers("/actuator/health", "/actuator/info")
                     .permitAll()
                     .anyRequest()

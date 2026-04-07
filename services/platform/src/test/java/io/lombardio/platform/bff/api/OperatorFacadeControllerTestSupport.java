@@ -22,17 +22,19 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 abstract class OperatorFacadeControllerTestSupport {
 
-  protected ResponseEntity<byte[]> stubForward(
+  protected ResponseEntity<StreamingResponseBody> stubForward(
       OperatorBffProxyService proxyService,
       String serviceKey,
       String downstreamPath,
       String query,
       HttpMethod method,
-      byte[] requestBody,
-      byte[] responseBody) {
+      byte[] requestBody) {
+    StreamingResponseBody responseBody = output -> {};
+    ResponseEntity<StreamingResponseBody> entity = new ResponseEntity<>(responseBody, HttpStatus.OK);
     when(proxyService.forward(
             eq(serviceKey),
             eq(downstreamPath),
@@ -40,13 +42,12 @@ abstract class OperatorFacadeControllerTestSupport {
             eq(method),
             eq(requestBody),
             any(HttpHeaders.class)))
-        .thenReturn(new ResponseEntity<>(responseBody, HttpStatus.OK));
-    return new ResponseEntity<>(responseBody, HttpStatus.OK);
+        .thenReturn(entity);
+    return entity;
   }
 
   protected void assertForwarded(
-      ResponseEntity<byte[]> response,
-      byte[] responseBody,
+      ResponseEntity<StreamingResponseBody> response,
       OperatorBffProxyService proxyService,
       String serviceKey,
       String downstreamPath,
@@ -54,7 +55,6 @@ abstract class OperatorFacadeControllerTestSupport {
       HttpMethod method,
       byte[] requestBody) {
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertArrayEquals(responseBody, response.getBody());
     verify(proxyService)
         .forward(
             eq(serviceKey),

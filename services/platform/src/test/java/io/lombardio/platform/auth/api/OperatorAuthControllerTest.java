@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 class OperatorAuthControllerTest {
 
@@ -48,7 +47,7 @@ class OperatorAuthControllerTest {
   }
 
   @Test
-  void loginSetsHttpOnlySessionCookie() {
+  void loginReturnsSessionInResponseBody() {
     OperatorSessionUserView user =
         new OperatorSessionUserView(
             "user-1",
@@ -64,33 +63,27 @@ class OperatorAuthControllerTest {
     when(storedOperatorSessionService.createSession(keycloakSession))
         .thenReturn(new StoredOperatorSession("session-id", user));
 
-    MockHttpServletResponse response = new MockHttpServletResponse();
     OperatorSessionResponse body =
-        controller.login(new OperatorLoginRequest("admin@lombardio.local", "admin"), response);
+        controller.login(new OperatorLoginRequest("admin@lombardio.local", "admin"));
 
     assertEquals("AUTHENTICATED", body.status());
-    String[] cookies = response.getHeaders("Set-Cookie").toArray(String[]::new);
-    assertEquals(1, cookies.length);
-    assertEquals(true, cookies[0].contains("lombardio_operator_session=session-id"));
-    assertEquals(true, cookies[0].contains("HttpOnly"));
-    assertEquals(true, cookies[0].contains("SameSite=Lax"));
+    assertEquals("session-id", body.sessionId());
+    assertEquals("user-1", body.user().id());
   }
 
   @Test
-  void refreshReturnsNoContentWithoutSessionCookie() {
+  void refreshReturnsNoContentWithoutHeader() {
     MockHttpServletRequest request = new MockHttpServletRequest();
-    MockHttpServletResponse response = new MockHttpServletResponse();
 
-    ResponseEntity<OperatorSessionResponse> entity = controller.refresh(request, response);
+    ResponseEntity<OperatorSessionResponse> entity = controller.refresh(request);
 
     assertEquals(HttpStatus.NO_CONTENT, entity.getStatusCode());
   }
 
   @Test
-  void refreshReturnsSessionWhenCookieExists() {
+  void refreshReturnsSessionWhenHeaderExists() {
     MockHttpServletRequest request = new MockHttpServletRequest();
-    request.setCookies(new jakarta.servlet.http.Cookie("lombardio_operator_session", "session-id"));
-    MockHttpServletResponse response = new MockHttpServletResponse();
+    request.addHeader("X-Operator-Session-Id", "session-id");
     OperatorSessionUserView user =
         new OperatorSessionUserView(
             "user-1",
@@ -103,35 +96,24 @@ class OperatorAuthControllerTest {
             List.of("users.read"));
 
     when(storedOperatorSessionService.refreshSession("session-id"))
-        .thenReturn(java.util.Optional.of(new StoredOperatorSession("session-id", user)));
+        .thenReturn(java.util.Optional.of(new StoredOperatorSession("new-session-id", user)));
 
-    ResponseEntity<OperatorSessionResponse> entity = controller.refresh(request, response);
+    ResponseEntity<OperatorSessionResponse> entity = controller.refresh(request);
 
     assertEquals(HttpStatus.OK, entity.getStatusCode());
     assertEquals("AUTHENTICATED", entity.getBody().status());
-    assertEquals(1, response.getHeaders("Set-Cookie").size());
-    assertEquals(
-        true,
-        response
-            .getHeaders("Set-Cookie")
-            .getFirst()
-            .contains("lombardio_operator_session=session-id"));
+    assertEquals("new-session-id", entity.getBody().sessionId());
   }
 
   @Test
-  void logoutClearsSessionCookie() {
+  void logoutCallsServiceWithHeader() {
     MockHttpServletRequest request = new MockHttpServletRequest();
-    request.setCookies(new jakarta.servlet.http.Cookie("lombardio_operator_session", "session-id"));
-    MockHttpServletResponse response = new MockHttpServletResponse();
+    request.addHeader("X-Operator-Session-Id", "session-id");
 
-    ResponseEntity<Void> entity = controller.logout(request, response);
+    ResponseEntity<Void> entity = controller.logout(request);
 
     verify(storedOperatorSessionService).logout("session-id");
     assertEquals(HttpStatus.NO_CONTENT, entity.getStatusCode());
-    String[] cookies = response.getHeaders("Set-Cookie").toArray(String[]::new);
-    assertEquals(1, cookies.length);
-    assertEquals(true, cookies[0].contains("lombardio_operator_session="));
-    assertEquals(true, cookies[0].contains("Max-Age=0"));
   }
 
   @Test

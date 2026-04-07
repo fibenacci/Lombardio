@@ -19,6 +19,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.lombardio.platform.bff.application.OperatorBffProxyService;
+import io.lombardio.platform.security.AuditService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -28,6 +29,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
 @WebMvcTest(GenericOperatorFacadeController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class GenericOperatorFacadeControllerTest {
@@ -35,6 +38,10 @@ class GenericOperatorFacadeControllerTest {
   @Autowired private MockMvc mockMvc;
 
   @MockBean private OperatorBffProxyService proxyService;
+
+  @MockBean private OperatorBffAuthorizationService authorizationService;
+
+  @MockBean private AuditService auditService;
 
   @Test
   void forwardsGetRequestToResolvedServiceUsingPathAsKey() throws Exception {
@@ -45,7 +52,7 @@ class GenericOperatorFacadeControllerTest {
             eq(HttpMethod.GET),
             any(),
             any()))
-        .thenReturn(ResponseEntity.ok(new byte[0]));
+        .thenReturn(ResponseEntity.ok(output -> {}));
 
     mockMvc
         .perform(get("/api/v1/platform/operator/tenants/tenant-1/auctions"))
@@ -62,6 +69,13 @@ class GenericOperatorFacadeControllerTest {
   }
 
   @Test
+  void rejectsPathTraversalAttempts() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/platform/operator/tenants/tenant-1/customers/../../actuator/env"))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
   void forwardsPostRequestToResolvedServiceUsingPathAsKey() throws Exception {
     byte[] body = "{}".getBytes();
     when(proxyService.forward(
@@ -71,7 +85,7 @@ class GenericOperatorFacadeControllerTest {
             eq(HttpMethod.POST),
             eq(body),
             any()))
-        .thenReturn(ResponseEntity.ok(new byte[0]));
+        .thenReturn(ResponseEntity.ok(output -> {}));
 
     mockMvc
         .perform(post("/api/v1/platform/operator/tenants/tenant-1/customers").content(body))

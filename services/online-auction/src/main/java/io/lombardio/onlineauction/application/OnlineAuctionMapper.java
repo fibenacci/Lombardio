@@ -27,9 +27,11 @@ public abstract class OnlineAuctionMapper {
       target = "registrations",
       source = "registrations",
       qualifiedByName = "mapPublicRegistration")
+  @Mapping(target = "withRegistrations", ignore = true)
   public abstract OnlineAuctionResponse toAdminResponse(OnlineAuction auction);
 
   @Mapping(target = "registrations", expression = "java(java.util.List.of())")
+  @Mapping(target = "withRegistrations", ignore = true)
   public abstract OnlineAuctionResponse toPublicResponse(OnlineAuction auction);
 
   public BidderRegistrationResponse toRegistrationResponse(

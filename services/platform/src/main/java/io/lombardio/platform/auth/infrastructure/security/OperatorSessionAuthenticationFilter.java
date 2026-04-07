@@ -61,16 +61,10 @@ public class OperatorSessionAuthenticationFilter extends OncePerRequestFilter {
   }
 
   private java.util.Optional<String> readSessionId(HttpServletRequest request) {
-    if (request.getCookies() == null) {
+    String sessionId = request.getHeader("X-Operator-Session-Id");
+    if (sessionId == null || sessionId.isBlank()) {
       return java.util.Optional.empty();
     }
-    for (Cookie cookie : request.getCookies()) {
-      if (properties.cookieName().equals(cookie.getName())
-          && cookie.getValue() != null
-          && !cookie.getValue().isBlank()) {
-        return java.util.Optional.of(cookie.getValue());
-      }
-    }
-    return java.util.Optional.empty();
+    return java.util.Optional.of(sessionId);
   }
 }

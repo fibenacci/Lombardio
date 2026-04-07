@@ -49,18 +49,15 @@ public class OperatorAuthController {
   }
 
   @PostMapping("/login")
-  public OperatorSessionResponse login(
-      @Valid @RequestBody OperatorLoginRequest request, HttpServletResponse response) {
+  public OperatorSessionResponse login(@Valid @RequestBody OperatorLoginRequest request) {
     OperatorSession session = operatorAuthService.login(request.email(), request.password());
     StoredOperatorSession storedSession = storedOperatorSessionService.createSession(session);
-    writeSessionCookie(response, storedSession.sessionId());
-    return toCookieBackedSessionResponse(storedSession.user());
+    return toSessionResponse(storedSession.sessionId(), storedSession.user());
   }
 
   @PostMapping("/refresh")
-  public ResponseEntity<OperatorSessionResponse> refresh(
-      HttpServletRequest request, HttpServletResponse response) {
-    String sessionId = readSessionId(request);
+  public ResponseEntity<OperatorSessionResponse> refresh(HttpServletRequest request) {
+    String sessionId = request.getHeader("X-Operator-Session-Id");
     if (sessionId == null || sessionId.isBlank()) {
       return ResponseEntity.noContent().build();
     }
@@ -68,17 +65,17 @@ public class OperatorAuthController {
     return storedOperatorSessionService
         .refreshSession(sessionId)
         .map(
-            session -> {
-              writeSessionCookie(response, session.sessionId());
-              return ResponseEntity.ok(toCookieBackedSessionResponse(session.user()));
-            })
+            session ->
+                ResponseEntity.ok(toSessionResponse(session.sessionId(), session.user())))
         .orElseGet(() -> ResponseEntity.noContent().build());
   }
 
   @PostMapping("/logout")
-  public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
-    storedOperatorSessionService.logout(readSessionId(request));
-    clearSessionCookie(response);
+  public ResponseEntity<Void> logout(HttpServletRequest request) {
+    String sessionId = request.getHeader("X-Operator-Session-Id");
+    if (sessionId != null && !sessionId.isBlank()) {
+      storedOperatorSessionService.logout(sessionId);
+    }
     return ResponseEntity.noContent().build();
   }
 
@@ -89,40 +86,8 @@ public class OperatorAuthController {
         OperatorSessionUserView.fromAuthenticatedUser(authenticatedUser));
   }
 
-  private OperatorSessionResponse toCookieBackedSessionResponse(OperatorSessionUserView user) {
-    return new OperatorSessionResponse("AUTHENTICATED", OperatorSessionUserResponse.fromView(user));
-  }
-
-  private void writeSessionCookie(HttpServletResponse response, String sessionId) {
-    response.addHeader(
-        HttpHeaders.SET_COOKIE,
-        buildSessionCookie(sessionId, sessionProperties.cookieMaxAgeSeconds()).toString());
-  }
-
-  private void clearSessionCookie(HttpServletResponse response) {
-    response.addHeader(HttpHeaders.SET_COOKIE, buildSessionCookie("", 0).toString());
-  }
-
-  private ResponseCookie buildSessionCookie(String value, long maxAgeSeconds) {
-    return ResponseCookie.from(sessionProperties.cookieName(), value)
-        .httpOnly(true)
-        .secure(sessionProperties.cookieSecure())
-        .sameSite(sessionProperties.cookieSameSite())
-        .path(sessionProperties.cookiePath())
-        .maxAge(maxAgeSeconds)
-        .build();
-  }
-
-  private String readSessionId(HttpServletRequest request) {
-    if (request.getCookies() == null) {
-      return null;
-    }
-
-    for (Cookie cookie : request.getCookies()) {
-      if (sessionProperties.cookieName().equals(cookie.getName())) {
-        return cookie.getValue();
-      }
-    }
-    return null;
+  private OperatorSessionResponse toSessionResponse(String sessionId, OperatorSessionUserView user) {
+    return new OperatorSessionResponse(
+        "AUTHENTICATED", sessionId, OperatorSessionUserResponse.fromView(user));
   }
 }

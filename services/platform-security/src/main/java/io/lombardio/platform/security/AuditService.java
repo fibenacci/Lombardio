@@ -8,6 +8,12 @@
  *
  * For partnership or cooperation inquiries, please contact the author.
  */
-package io.lombardio.platform.auth.api;
+package io.lombardio.platform.security;
 
-public record OperatorSessionResponse(String status, String sessionId, OperatorSessionUserResponse user) {}
+/**
+ * Port for audit event recording.
+ * Concrete adapters can implement this via database, event-stream, or logs.
+ */
+public interface AuditService {
+  void record(AuditEvent event);
+}
