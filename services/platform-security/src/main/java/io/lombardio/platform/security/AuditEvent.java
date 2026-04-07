@@ -13,9 +13,7 @@ package io.lombardio.platform.security;
 import java.time.Instant;
 import java.util.Map;
 
-/**
- * Represents an immutable audit trail entry for security- and business-relevant actions.
- */
+/** Represents an immutable audit trail entry for security- and business-relevant actions. */
 public record AuditEvent(
     Instant timestamp,
     String actorUserId,

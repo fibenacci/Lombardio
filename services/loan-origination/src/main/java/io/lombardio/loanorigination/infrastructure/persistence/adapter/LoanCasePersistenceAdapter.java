@@ -12,33 +12,43 @@ package io.lombardio.loanorigination.infrastructure.persistence.adapter;
 
 import io.lombardio.loanorigination.domain.model.LoanCase;
 import io.lombardio.loanorigination.domain.port.LoanCaseRepository;
+import io.lombardio.loanorigination.infrastructure.persistence.entity.LoanCaseEntity;
 import io.lombardio.loanorigination.infrastructure.persistence.mapper.PersistenceMapper;
 import io.lombardio.loanorigination.infrastructure.persistence.repository.SpringDataLoanCaseRepository;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
+import java.util.Objects;
+import org.springframework.stereotype.Component;
 
-@Repository
-@RequiredArgsConstructor
-public class LoanCasePersistenceAdapter implements LoanCaseRepository {
+@Component
+public final class LoanCasePersistenceAdapter implements LoanCaseRepository {
 
   private final SpringDataLoanCaseRepository repository;
   private final PersistenceMapper mapper;
 
+  public LoanCasePersistenceAdapter(
+      SpringDataLoanCaseRepository repository, PersistenceMapper mapper) {
+    this.repository = Objects.requireNonNull(repository);
+    this.mapper = Objects.requireNonNull(mapper);
+  }
+
   @Override
   public LoanCase save(LoanCase loanCase) {
-    return mapper.toDomain(repository.save(mapper.toEntity(loanCase)));
+    LoanCaseEntity entity = mapper.toEntity(loanCase);
+    mapper.linkEntities(entity, loanCase);
+    return mapper.toDomain(repository.save(entity));
   }
 
   @Override
   public List<LoanCase> findByTenantId(String tenantId) {
-    return repository.findByTenantId(tenantId).stream().map(mapper::toDomain).toList();
+    return repository.findByTenantId(tenantId).stream()
+        .map(entity -> mapper.toDomain(entity))
+        .toList();
   }
 
   @Override
   public List<LoanCase> findByTenantIdAndCustomerId(String tenantId, String customerId) {
     return repository.findByTenantIdAndCustomerId(tenantId, customerId).stream()
-        .map(mapper::toDomain)
+        .map(entity -> mapper.toDomain(entity))
         .toList();
   }
 }

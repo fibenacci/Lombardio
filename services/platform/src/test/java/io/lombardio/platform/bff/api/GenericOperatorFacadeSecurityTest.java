@@ -25,13 +25,15 @@ import org.springframework.mock.web.MockHttpServletRequest;
 class GenericOperatorFacadeSecurityTest {
 
   private final OperatorBffProxyService proxyService = mock(OperatorBffProxyService.class);
-  private final OperatorBffAuthorizationService authorizationService = new OperatorBffAuthorizationService();
+  private final OperatorBffAuthorizationService authorizationService =
+      new OperatorBffAuthorizationService();
   private final AuditService auditService = mock(AuditService.class);
   private GenericOperatorFacadeController controller;
 
   @BeforeEach
   void setUp() {
-    controller = new GenericOperatorFacadeController(proxyService, authorizationService, auditService);
+    controller =
+        new GenericOperatorFacadeController(proxyService, authorizationService, auditService);
   }
 
   @Test
@@ -71,15 +73,21 @@ class GenericOperatorFacadeSecurityTest {
             List.of("auctions.read"));
 
     MockHttpServletRequest request = new MockHttpServletRequest();
-    request.setAttribute(org.springframework.web.servlet.HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE, "/api/v1/platform/operator/tenants/tenant-1/auctions");
-    request.setAttribute(org.springframework.web.servlet.HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE, "/api/v1/platform/operator/tenants/{tenantId}/auctions/**");
+    request.setAttribute(
+        org.springframework.web.servlet.HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE,
+        "/api/v1/platform/operator/tenants/tenant-1/auctions");
+    request.setAttribute(
+        org.springframework.web.servlet.HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE,
+        "/api/v1/platform/operator/tenants/{tenantId}/auctions/**");
 
     // WHEN: Accessing own tenant-1
-    // THEN: No exception should be thrown (proxy call will fail because of missing stubs, but that's okay for this security test)
+    // THEN: No exception should be thrown (proxy call will fail because of missing stubs, but
+    // that's okay for this security test)
     try {
-        controller.forwardGet(user, "tenant-1", "auctions", request);
+      controller.forwardGet(user, "tenant-1", "auctions", request);
     } catch (NullPointerException e) {
-        // Expected because we didn't stub the proxyService fully for the complex path extraction logic
+      // Expected because we didn't stub the proxyService fully for the complex path extraction
+      // logic
     }
   }
 }

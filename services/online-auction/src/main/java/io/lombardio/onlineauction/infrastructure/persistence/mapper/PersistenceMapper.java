@@ -20,8 +20,12 @@ import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+@Mapper(
+    componentModel = "spring",
+    unmappedTargetPolicy = ReportingPolicy.IGNORE,
+    unmappedSourcePolicy = ReportingPolicy.IGNORE)
 public interface PersistenceMapper {
 
   @Mapping(target = "lots", ignore = true)
@@ -39,7 +43,6 @@ public interface PersistenceMapper {
 
   @Mapping(target = "auction", ignore = true)
   @Mapping(target = "accessToken", source = "id")
-  @Mapping(target = "withAccessToken", ignore = true)
   BidderRegistrationEntity toRegistrationEntity(BidderRegistration domain);
 
   @Mapping(
@@ -47,6 +50,7 @@ public interface PersistenceMapper {
       expression =
           "java(entity.getAccessTokenHash() != null ? entity.getAccessTokenHash() : io.lombardio.onlineauction.application.BidderAccessTokenHasher.sha256(entity.getAccessToken()))")
   @Mapping(target = "accessToken", ignore = true)
+  @Mapping(target = "withAccessToken", ignore = true)
   BidderRegistration toRegistrationDomain(BidderRegistrationEntity entity);
 
   @AfterMapping

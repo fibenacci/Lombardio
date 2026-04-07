@@ -15,15 +15,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Standard implementation that writes audit events to logs.
- * In a production environment, logs should be collected by a log management system (e.g., Loki, ELK).
+ * Standard implementation that writes audit events to logs. In a production environment, logs
+ * should be collected by a log management system (e.g., Loki, ELK).
  */
 public class Slf4jAuditService implements AuditService {
 
   private static final Logger auditLogger = LoggerFactory.getLogger("AUDIT");
 
   @Override
-  @SuppressFBWarnings(value = "CRLF_INJECTION_LOGS", justification = "Audit logs are structured and validated")
+  @SuppressFBWarnings(
+      value = "CRLF_INJECTION_LOGS",
+      justification = "Audit logs are structured and validated")
   public void record(AuditEvent event) {
     // Structured log format for easy parsing (JSON-like or key-value)
     auditLogger.info(

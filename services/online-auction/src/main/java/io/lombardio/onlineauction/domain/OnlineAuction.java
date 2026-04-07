@@ -78,7 +78,7 @@ public record OnlineAuction(
         List.of());
   }
 
-  public OnlineAuction publish(Instant now) {
+  public OnlineAuction markAsPublished(Instant now) {
     if (status != OnlineAuctionStatus.DRAFT) {
       throw new IllegalArgumentException("Only draft auctions can be published");
     }
@@ -101,7 +101,7 @@ public record OnlineAuction(
         registrations);
   }
 
-  public OnlineAuction start(Instant now) {
+  public OnlineAuction markAsLive(Instant now) {
     if (status != OnlineAuctionStatus.PUBLISHED) {
       throw new IllegalArgumentException("Only published auctions can go live");
     }
@@ -124,7 +124,7 @@ public record OnlineAuction(
         registrations);
   }
 
-  public OnlineAuction close(Instant now) {
+  public OnlineAuction markAsClosed(Instant now) {
     if (status != OnlineAuctionStatus.LIVE) {
       throw new IllegalArgumentException("Only live auctions can be closed");
     }

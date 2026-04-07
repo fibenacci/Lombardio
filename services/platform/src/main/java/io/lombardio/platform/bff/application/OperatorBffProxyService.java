@@ -19,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.client.RestClient;
-
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 @Service

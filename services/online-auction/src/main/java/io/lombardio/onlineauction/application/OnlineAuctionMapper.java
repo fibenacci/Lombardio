@@ -61,6 +61,7 @@ public abstract class OnlineAuctionMapper {
     return toRegistrationResponse(registration, false);
   }
 
+  @Mapping(target = "highestBidderAlias", source = "leadingPaddleNumber")
   protected abstract OnlineAuctionLotResponse toLotResponse(OnlineAuctionLot lot);
 
   protected String maskIban(String iban) {

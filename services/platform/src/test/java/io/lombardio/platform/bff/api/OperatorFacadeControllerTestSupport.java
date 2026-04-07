@@ -10,7 +10,6 @@
  */
 package io.lombardio.platform.bff.api;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -34,7 +33,8 @@ abstract class OperatorFacadeControllerTestSupport {
       HttpMethod method,
       byte[] requestBody) {
     StreamingResponseBody responseBody = output -> {};
-    ResponseEntity<StreamingResponseBody> entity = new ResponseEntity<>(responseBody, HttpStatus.OK);
+    ResponseEntity<StreamingResponseBody> entity =
+        new ResponseEntity<>(responseBody, HttpStatus.OK);
     when(proxyService.forward(
             eq(serviceKey),
             eq(downstreamPath),

@@ -16,7 +16,9 @@ import io.lombardio.loanorigination.infrastructure.security.LoanAuthorizationSer
 import io.lombardio.platform.security.AuthenticatedUser;
 import jakarta.validation.Valid;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
+import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,21 +30,32 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1")
-@RequiredArgsConstructor
-public class LoanOriginationController {
+public final class LoanOriginationController {
+
+  private static final Logger log = LoggerFactory.getLogger(LoanOriginationController.class);
 
   private final LoanOriginationService loanOriginationService;
   private final LoanAuthorizationService authorizationService;
   private final ApiMapper mapper;
+
+  public LoanOriginationController(
+      LoanOriginationService loanOriginationService,
+      LoanAuthorizationService authorizationService,
+      ApiMapper mapper) {
+    this.loanOriginationService = Objects.requireNonNull(loanOriginationService);
+    this.authorizationService = Objects.requireNonNull(authorizationService);
+    this.mapper = Objects.requireNonNull(mapper);
+    log.debug("Initialized with mapper: {}", mapper.getClass().getSimpleName());
+  }
 
   @PostMapping("/tenants/{tenantId}/loan-origination/cases")
   public LoanCaseResponse create(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @PathVariable String tenantId,
       @Valid @RequestBody CreateLoanRequest request) {
-    authorizationService.requireWrite(principal, tenantId);
-    return mapper.toResponse(
-        loanOriginationService.createLoan(tenantId, mapper.toCommand(request)));
+    this.authorizationService.requireWrite(principal, tenantId);
+    return this.mapper.toResponse(
+        this.loanOriginationService.createLoan(tenantId, this.mapper.toCommand(request)));
   }
 
   @GetMapping("/tenants/{tenantId}/loan-origination/cases")
@@ -50,18 +63,18 @@ public class LoanOriginationController {
       @AuthenticationPrincipal AuthenticatedUser principal,
       @PathVariable String tenantId,
       @RequestParam(required = false) String customerId) {
-    authorizationService.requireRead(principal, tenantId);
-    return loanOriginationService.listLoans(tenantId, customerId).stream()
-        .map(mapper::toResponse)
+    this.authorizationService.requireRead(principal, tenantId);
+    return this.loanOriginationService.listLoans(tenantId, customerId).stream()
+        .map(loan -> this.mapper.toResponse(loan))
         .toList();
   }
 
   @GetMapping("/tenants/{tenantId}/loan-origination/valuation-guidelines")
   public List<ValuationGuidelineResponse> listGuidelines(
       @AuthenticationPrincipal AuthenticatedUser principal, @PathVariable String tenantId) {
-    authorizationService.requireRead(principal, tenantId);
-    return loanOriginationService.listGuidelines(tenantId).stream()
-        .map(mapper::toResponse)
+    this.authorizationService.requireRead(principal, tenantId);
+    return this.loanOriginationService.listGuidelines(tenantId).stream()
+        .map(guideline -> this.mapper.toResponse(guideline))
         .toList();
   }
 }

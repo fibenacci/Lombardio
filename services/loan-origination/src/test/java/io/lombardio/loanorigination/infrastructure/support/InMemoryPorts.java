@@ -151,8 +151,10 @@ public final class InMemoryPorts {
       return Optional.ofNullable(store.get(id));
     }
 
-    public void save(ValuationGuideline guideline) {
+    @Override
+    public ValuationGuideline save(ValuationGuideline guideline) {
       store.put(guideline.id(), guideline);
+      return guideline;
     }
   }
 

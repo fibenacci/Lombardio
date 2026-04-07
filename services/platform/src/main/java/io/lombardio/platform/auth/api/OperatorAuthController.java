@@ -15,14 +15,9 @@ import io.lombardio.platform.auth.application.OperatorSession;
 import io.lombardio.platform.auth.application.OperatorSessionUserView;
 import io.lombardio.platform.auth.application.StoredOperatorSession;
 import io.lombardio.platform.auth.application.StoredOperatorSessionService;
-import io.lombardio.platform.config.OperatorSessionProperties;
 import io.lombardio.platform.security.AuthenticatedUser;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,9 +56,7 @@ public class OperatorAuthController {
 
     return storedOperatorSessionService
         .refreshSession(sessionId)
-        .map(
-            session ->
-                ResponseEntity.ok(toSessionResponse(session.sessionId(), session.user())))
+        .map(session -> ResponseEntity.ok(toSessionResponse(session.sessionId(), session.user())))
         .orElseGet(() -> ResponseEntity.noContent().build());
   }
 
@@ -83,7 +76,8 @@ public class OperatorAuthController {
         OperatorSessionUserView.fromAuthenticatedUser(authenticatedUser));
   }
 
-  private OperatorSessionResponse toSessionResponse(String sessionId, OperatorSessionUserView user) {
+  private OperatorSessionResponse toSessionResponse(
+      String sessionId, OperatorSessionUserView user) {
     return new OperatorSessionResponse(
         "AUTHENTICATED", sessionId, OperatorSessionUserResponse.fromView(user));
   }

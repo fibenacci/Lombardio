@@ -57,7 +57,7 @@ public class OnlineAuctionLifecycleService {
 
   public OnlineAuctionResponse publishAuction(String tenantId, String auctionId) {
     OnlineAuction current = requireAuction(tenantId, auctionId);
-    OnlineAuction updated = current.publish(Instant.now());
+    OnlineAuction updated = current.markAsPublished(Instant.now());
     OnlineAuction saved = auctionRepository.save(updated);
     publishEvent(saved.channelName(), "auction_published", saved);
     return mapper.toAdminResponse(saved);
@@ -65,7 +65,7 @@ public class OnlineAuctionLifecycleService {
 
   public OnlineAuctionResponse startAuction(String tenantId, String auctionId) {
     OnlineAuction current = requireAuction(tenantId, auctionId);
-    OnlineAuction updated = current.start(Instant.now());
+    OnlineAuction updated = current.markAsLive(Instant.now());
     OnlineAuction saved = auctionRepository.save(updated);
     publishEvent(saved.channelName(), "auction_live", saved);
     return mapper.toAdminResponse(saved);
@@ -73,7 +73,7 @@ public class OnlineAuctionLifecycleService {
 
   public OnlineAuctionResponse closeAuction(String tenantId, String auctionId) {
     OnlineAuction current = requireAuction(tenantId, auctionId);
-    OnlineAuction updated = current.close(Instant.now());
+    OnlineAuction updated = current.markAsClosed(Instant.now());
     OnlineAuction saved = auctionRepository.save(updated);
     publishEvent(saved.channelName(), "auction_closed", saved);
     return mapper.toAdminResponse(saved);

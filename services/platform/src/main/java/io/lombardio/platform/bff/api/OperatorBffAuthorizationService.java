@@ -18,10 +18,9 @@ import org.springframework.stereotype.Service;
 class OperatorBffAuthorizationService extends BaseAuthorizationService {
 
   /**
-   * Enforces that the operator has access to the requested tenant.
-   * Access is granted if:
-   * 1. The operator belongs to the tenant and has at least one of the service permissions.
-   * 2. The operator has a global "cross-tenant" permission (e.g. for support/platform admins).
+   * Enforces that the operator has access to the requested tenant. Access is granted if: 1. The
+   * operator belongs to the tenant and has at least one of the service permissions. 2. The operator
+   * has a global "cross-tenant" permission (e.g. for support/platform admins).
    */
   public void requireTenantAccess(AuthenticatedUser principal, String tenantId, String serviceKey) {
     // We use a generic naming convention for permissions: {serviceKey}.read/write
@@ -29,7 +28,7 @@ class OperatorBffAuthorizationService extends BaseAuthorizationService {
     // Specific domain services will perform more fine-grained checks.
     String permission = serviceKey + ".read";
     String crossTenantPermission = "platform.tenants.read";
-    
+
     requireTenantAccess(principal, tenantId, permission, crossTenantPermission);
   }
 }

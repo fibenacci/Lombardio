@@ -14,15 +14,20 @@ import io.lombardio.loanorigination.domain.model.PledgeRecord;
 import io.lombardio.loanorigination.domain.port.PledgeRecordRepository;
 import io.lombardio.loanorigination.infrastructure.persistence.mapper.PersistenceMapper;
 import io.lombardio.loanorigination.infrastructure.persistence.repository.SpringDataPledgeRecordRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
+import java.util.Objects;
+import org.springframework.stereotype.Component;
 
-@Repository
-@RequiredArgsConstructor
-public class PledgeRecordPersistenceAdapter implements PledgeRecordRepository {
+@Component
+public final class PledgeRecordPersistenceAdapter implements PledgeRecordRepository {
 
   private final SpringDataPledgeRecordRepository repository;
   private final PersistenceMapper mapper;
+
+  public PledgeRecordPersistenceAdapter(
+      SpringDataPledgeRecordRepository repository, PersistenceMapper mapper) {
+    this.repository = Objects.requireNonNull(repository);
+    this.mapper = Objects.requireNonNull(mapper);
+  }
 
   @Override
   public PledgeRecord save(PledgeRecord pledgeRecord) {

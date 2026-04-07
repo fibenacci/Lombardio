@@ -122,7 +122,7 @@ public class CustomerDevelopmentSeeder {
             + " "
             + String.format("%06d", 100000 + customerIndex),
         email,
-        customerIndex % 3 != 0,
+        email != null && customerIndex % 3 != 0,
         onlineAccessStatus,
         STREETS[(customerIndex + tenantIndex) % STREETS.length] + " " + (10 + customerIndex),
         tenant.postalCode(),

@@ -29,8 +29,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
 @WebMvcTest(GenericOperatorFacadeController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class GenericOperatorFacadeControllerTest {

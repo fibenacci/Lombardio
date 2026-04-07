@@ -48,7 +48,7 @@ public class PawnTicketController {
   public PawnTicketResponse quote(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @Valid @RequestBody PawnTicketQuoteRequest request) {
-    authorizationService.requireTicketWrite(principal);
+    authorizationService.requireTicketWrite(principal, request.tenantId());
     return mapper.toPawnTicketResponse(
         pawnTicketPolicyService.quote(mapper.toQuoteCommand(request)));
   }
@@ -66,7 +66,7 @@ public class PawnTicketController {
   public PawnTicketResponse extend(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @Valid @RequestBody ExtendPawnTicketRequest request) {
-    authorizationService.requireTicketRead(principal);
+    authorizationService.requireTicketRead(principal, request.tenantId());
     return mapper.toPawnTicketResponse(pawnTicketPolicyService.extend(toExtensionCommand(request)));
   }
 
@@ -74,7 +74,7 @@ public class PawnTicketController {
   public SettlementResponse partialRepayment(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @Valid @RequestBody PartialRepaymentRequest request) {
-    authorizationService.requireCashRead(principal);
+    authorizationService.requireCashRead(principal, request.tenantId());
     return mapper.toSettlementResponse(
         pawnTicketPolicyService.settlePartial(toPartialSettlementCommand(request)));
   }
@@ -83,7 +83,7 @@ public class PawnTicketController {
   public SettlementResponse redeem(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @Valid @RequestBody RedeemPawnTicketRequest request) {
-    authorizationService.requireCashRead(principal);
+    authorizationService.requireCashRead(principal, request.tenantId());
     return mapper.toSettlementResponse(pawnTicketPolicyService.redeem(toRedeemCommand(request)));
   }
 

@@ -11,6 +11,7 @@
 package io.lombardio.loanorigination.infrastructure.persistence.mapper;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.lombardio.loanorigination.domain.model.CustomerProfile;
 import io.lombardio.loanorigination.domain.model.LoanCase;
 import io.lombardio.loanorigination.domain.model.LoanPosition;
 import io.lombardio.loanorigination.domain.model.PawnTicket;
@@ -22,6 +23,7 @@ import io.lombardio.loanorigination.infrastructure.persistence.entity.LoanPawnTi
 import io.lombardio.loanorigination.infrastructure.persistence.entity.LoanPositionEntity;
 import io.lombardio.loanorigination.infrastructure.persistence.entity.PledgeRecordEntity;
 import io.lombardio.loanorigination.infrastructure.persistence.entity.ValuationGuidelineEntity;
+import java.util.List;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -48,28 +50,32 @@ public interface PersistenceMapper {
   @Mapping(target = "customerCheckedDocumentType", source = "customer.checkedDocumentType")
   LoanCaseEntity toEntity(LoanCase domain);
 
-  @Mapping(target = "customer.id", source = "customerId")
-  @Mapping(target = "customer.customerNumber", source = "customerNumber")
-  @Mapping(target = "customer.displayName", source = "customerDisplayName")
-  @Mapping(target = "customer.birthDate", source = "customerBirthDate")
-  @Mapping(target = "customer.phone", source = "customerPhone")
-  @Mapping(target = "customer.street", source = "customerStreet")
-  @Mapping(target = "customer.postalCode", source = "customerPostalCode")
-  @Mapping(target = "customer.city", source = "customerCity")
-  @Mapping(target = "customer.kycStatus", source = "customerKycStatus")
-  @Mapping(target = "customer.kycApproved", source = "customerKycApproved")
-  @Mapping(target = "customer.checkedDocumentType", source = "customerCheckedDocumentType")
+  @Mapping(target = "customer", source = "entity")
   @Mapping(
       target = "pledgeRecord",
       expression =
           "java(entity.getPledgeRecords().isEmpty() ? null : toDomain(entity.getPledgeRecords().get(0)))")
   LoanCase toDomain(LoanCaseEntity entity);
 
+  @Mapping(target = "id", source = "customerId")
+  @Mapping(target = "customerNumber", source = "customerNumber")
+  @Mapping(target = "displayName", source = "customerDisplayName")
+  @Mapping(target = "birthDate", source = "customerBirthDate")
+  @Mapping(target = "phone", source = "customerPhone")
+  @Mapping(target = "street", source = "customerStreet")
+  @Mapping(target = "postalCode", source = "customerPostalCode")
+  @Mapping(target = "city", source = "customerCity")
+  @Mapping(target = "kycStatus", source = "customerKycStatus")
+  @Mapping(target = "kycApproved", source = "customerKycApproved")
+  @Mapping(target = "checkedDocumentType", source = "customerCheckedDocumentType")
+  CustomerProfile toCustomerProfile(LoanCaseEntity entity);
+
   // PledgeRecord mapping
   @Mapping(target = "loanCase", ignore = true)
   @Mapping(target = "sortOrder", ignore = true)
   PledgeRecordEntity toEntity(PledgeRecord domain);
 
+  @Mapping(target = "loanCaseId", source = "loanCase.id")
   PledgeRecord toDomain(PledgeRecordEntity entity);
 
   // LoanPosition mapping
@@ -85,11 +91,13 @@ public interface PersistenceMapper {
   @Mapping(target = "sortOrder", ignore = true)
   LoanPawnTicketEntity toEntity(PawnTicket domain);
 
+  @Mapping(target = "positions", source = "loanCase.positions")
   PawnTicket toDomain(LoanPawnTicketEntity entity);
 
   // Position mapping
-  PawnTicketPosition toPositionDomain(
-      io.lombardio.loanorigination.infrastructure.persistence.entity.LoanPositionEntity entity);
+  @Mapping(target = "itemNumber", source = "ticketGroup")
+  @Mapping(target = "itemBarcode", source = "id")
+  PawnTicketPosition toPositionDomain(LoanPositionEntity entity);
 
   // ValuationGuideline mapping
   ValuationGuidelineEntity toEntity(ValuationGuideline domain);
@@ -105,16 +113,18 @@ public interface PersistenceMapper {
       entity.getPledgeRecords().add(recordEntity);
     }
     if (domain.positions() != null) {
-      for (int i = 0; i < domain.positions().size(); i++) {
-        LoanPositionEntity posEntity = toEntity(domain.positions().get(i));
+      List<LoanPosition> positions = domain.positions();
+      for (int i = 0; i < positions.size(); i++) {
+        LoanPositionEntity posEntity = toEntity(positions.get(i));
         posEntity.setLoanCase(entity);
         posEntity.setSortOrder(i);
         entity.getPositions().add(posEntity);
       }
     }
     if (domain.pawnTickets() != null) {
-      for (int i = 0; i < domain.pawnTickets().size(); i++) {
-        LoanPawnTicketEntity ticketEntity = toEntity(domain.pawnTickets().get(i));
+      List<PawnTicket> tickets = domain.pawnTickets();
+      for (int i = 0; i < tickets.size(); i++) {
+        LoanPawnTicketEntity ticketEntity = toEntity(tickets.get(i));
         ticketEntity.setLoanCase(entity);
         ticketEntity.setSortOrder(i);
         entity.getPawnTickets().add(ticketEntity);

@@ -15,30 +15,36 @@ import io.lombardio.loanorigination.domain.port.ValuationGuidelineRepository;
 import io.lombardio.loanorigination.infrastructure.persistence.mapper.PersistenceMapper;
 import io.lombardio.loanorigination.infrastructure.persistence.repository.SpringDataValuationGuidelineRepository;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
-@Repository
-@RequiredArgsConstructor
-public class ValuationGuidelinePersistenceAdapter implements ValuationGuidelineRepository {
+@Component
+public final class ValuationGuidelinePersistenceAdapter implements ValuationGuidelineRepository {
 
   private final SpringDataValuationGuidelineRepository repository;
   private final PersistenceMapper mapper;
 
+  public ValuationGuidelinePersistenceAdapter(
+      SpringDataValuationGuidelineRepository repository, PersistenceMapper mapper) {
+    this.repository = Objects.requireNonNull(repository);
+    this.mapper = Objects.requireNonNull(mapper);
+  }
+
   @Override
-  public List<ValuationGuideline> findByTenantId(String tenantId) {
-    return repository.findByTenantIdOrderByCategoryAscLabelAsc(tenantId).stream()
-        .map(mapper::toDomain)
-        .toList();
+  public ValuationGuideline save(ValuationGuideline guideline) {
+    return mapper.toDomain(repository.save(mapper.toEntity(guideline)));
   }
 
   @Override
   public Optional<ValuationGuideline> findById(String id) {
-    return repository.findById(id).map(mapper::toDomain);
+    return repository.findById(id).map(entity -> mapper.toDomain(entity));
   }
 
-  public ValuationGuideline save(ValuationGuideline guideline) {
-    return mapper.toDomain(repository.save(mapper.toEntity(guideline)));
+  @Override
+  public List<ValuationGuideline> findByTenantId(String tenantId) {
+    return repository.findByTenantIdOrderByCategoryAscLabelAsc(tenantId).stream()
+        .map(entity -> mapper.toDomain(entity))
+        .toList();
   }
 }

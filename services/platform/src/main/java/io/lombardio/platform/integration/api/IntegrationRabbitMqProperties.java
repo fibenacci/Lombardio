@@ -10,8 +10,10 @@
  */
 package io.lombardio.platform.config;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "integration.rabbitmq")
+@SuppressFBWarnings(value = "UUF_UNUSED_FIELD", justification = "Configuration properties")
 public record IntegrationRabbitMqProperties(
     String exchange, int publisherBatchSize, boolean publisherEnabled) {}

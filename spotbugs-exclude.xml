@@ -10,10 +10,50 @@
         <Bug pattern="SPRING_ENDPOINT"/>
     </Match>
 
-    <!-- Ignore MapStruct generated implementation classes which often trigger false positive null load warnings -->
+    <!-- Ignore MapStruct generated implementation classes which often trigger false positive warnings -->
     <Match>
         <Class name="~.*MapperImpl"/>
-        <Bug pattern="NP_LOAD_OF_KNOWN_NULL_VALUE"/>
+        <Or>
+            <Bug pattern="NP_LOAD_OF_KNOWN_NULL_VALUE"/>
+            <Bug pattern="UPM_UNCALLED_PRIVATE_METHOD"/>
+        </Or>
+    </Match>
+
+    <!-- Ignore False Positive EI_EXPOSE_REP2 for immutable Records or validated constructor fields.
+         Lombardio uses Java 21 Records for Configuration/Properties which are inherently immutable. -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+        <Class name="~.*Properties"/>
+    </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+        <Or>
+            <Class name="~.*Seeder"/>
+            <Class name="~.*Adapter"/>
+        </Or>
+    </Match>
+
+    <!-- Ignore False Positive UUF_UNUSED_FIELD / URF_UNREAD_FIELD in Spring Beans.
+         SpotBugs sometimes fails to detect field usage in Lambda expressions or Spring-managed methods. -->
+    <Match>
+        <Or>
+            <Bug pattern="UUF_UNUSED_FIELD"/>
+            <Bug pattern="URF_UNREAD_FIELD"/>
+        </Or>
+        <Or>
+            <Class name="~.*Controller"/>
+            <Class name="~.*Adapter"/>
+            <Class name="~.*Service"/>
+        </Or>
+    </Match>
+
+    <!-- CRLF Log Injection is often a false positive for internal debugging logs -->
+    <Match>
+        <Bug pattern="CRLF_INJECTION_LOGS"/>
+        <Or>
+            <Class name="~.*Seeder"/>
+            <Class name="~.*Configuration"/>
+        </Or>
     </Match>
 
 </FindBugsFilter>

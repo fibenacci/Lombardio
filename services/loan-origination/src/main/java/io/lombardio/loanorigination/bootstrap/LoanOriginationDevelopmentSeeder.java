@@ -27,10 +27,15 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LoanOriginationDevelopmentSeeder {
+public final class LoanOriginationDevelopmentSeeder {
+
+  private static final Logger log = LoggerFactory.getLogger(LoanOriginationDevelopmentSeeder.class);
 
   private static final String[] FIRST_NAMES = {
     "Anna", "Murat", "Leonie", "Jonas", "Sofia", "Mila", "Emre", "Paul", "Nina", "David", "Lina",
@@ -69,25 +74,26 @@ public class LoanOriginationDevelopmentSeeder {
   private final ValuationGuidelineRepository valuationGuidelineRepository;
   private final DemoDataProperties demoDataProperties;
 
-  LoanOriginationDevelopmentSeeder(
+  public LoanOriginationDevelopmentSeeder(
       LoanCasePersistenceAdapter loanCaseRepository,
       ValuationGuidelineRepository valuationGuidelineRepository,
       DemoDataProperties demoDataProperties) {
-    this.loanCaseRepository = loanCaseRepository;
-    this.valuationGuidelineRepository = valuationGuidelineRepository;
-    this.demoDataProperties = demoDataProperties;
+    this.loanCaseRepository = Objects.requireNonNull(loanCaseRepository);
+    this.valuationGuidelineRepository = Objects.requireNonNull(valuationGuidelineRepository);
+    this.demoDataProperties = Objects.requireNonNull(demoDataProperties);
+    log.debug("Seeder initialized for scale: {}", this.demoDataProperties.effectiveScale());
   }
 
   public void seed() {
-    int tenantCount = tenantCount(demoDataProperties.effectiveScale());
-    int casesPerTenant = casesPerTenant(demoDataProperties.effectiveScale());
+    int tenantCount = tenantCount(this.demoDataProperties.effectiveScale());
+    int casesPerTenant = casesPerTenant(this.demoDataProperties.effectiveScale());
 
     for (int tenantIndex = 0; tenantIndex < tenantCount; tenantIndex++) {
       ReferenceDataSeeder.DemoTenant tenant = ReferenceDataSeeder.TENANTS.get(tenantIndex);
       List<ValuationGuideline> guidelines =
-          valuationGuidelineRepository.findByTenantId(tenant.id());
+          this.valuationGuidelineRepository.findByTenantId(tenant.id());
       for (int caseIndex = 1; caseIndex <= casesPerTenant; caseIndex++) {
-        loanCaseRepository.save(buildLoanCase(tenant, tenantIndex, caseIndex, guidelines));
+        this.loanCaseRepository.save(buildLoanCase(tenant, tenantIndex, caseIndex, guidelines));
       }
     }
   }

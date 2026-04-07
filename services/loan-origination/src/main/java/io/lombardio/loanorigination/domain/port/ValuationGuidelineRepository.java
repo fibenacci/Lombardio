@@ -16,6 +16,8 @@ import java.util.Optional;
 
 public interface ValuationGuidelineRepository {
 
+  ValuationGuideline save(ValuationGuideline guideline);
+
   List<ValuationGuideline> findByTenantId(String tenantId);
 
   Optional<ValuationGuideline> findById(String id);

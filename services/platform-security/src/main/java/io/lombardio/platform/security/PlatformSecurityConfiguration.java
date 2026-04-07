@@ -10,10 +10,16 @@
  */
 package io.lombardio.platform.security;
 
-/**
- * Port for audit event recording. Concrete adapters can implement this via database, event-stream,
- * or logs.
- */
-public interface AuditService {
-  void record(AuditEvent event);
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class PlatformSecurityConfiguration {
+
+  @Bean
+  @ConditionalOnMissingBean(AuditService.class)
+  public AuditService auditService() {
+    return new Slf4jAuditService();
+  }
 }
