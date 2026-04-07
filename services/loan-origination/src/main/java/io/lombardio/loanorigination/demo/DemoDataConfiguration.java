@@ -22,7 +22,7 @@ import org.springframework.context.annotation.Configuration;
 class DemoDataConfiguration {
 
   @Bean
-  @ConditionalOnProperty(value = "demo.data.enabled", havingValue = "true", matchIfMissing = true)
+  @ConditionalOnProperty(value = "demo.data.enabled", havingValue = "true", matchIfMissing = false)
   ApplicationRunner seedDemoData(
       ReferenceDataSeeder referenceDataSeeder,
       LoanOriginationDevelopmentSeeder scenarioDataSeeder) {
