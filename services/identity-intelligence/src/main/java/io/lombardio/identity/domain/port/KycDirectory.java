@@ -14,11 +14,10 @@ import java.util.Optional;
 
 @FunctionalInterface
 public interface KycDirectory {
-  KycProjection getStatus(String tenantId, String customerId);
+  KycProjection getStatus(String tenantId, String customerId, Optional<String> accessToken);
 
-  default KycProjection getStatus(
-      String tenantId, String customerId, Optional<String> accessToken) {
-    return getStatus(tenantId, customerId);
+  default KycProjection getStatus(String tenantId, String customerId) {
+    return getStatus(tenantId, customerId, Optional.empty());
   }
 
   record KycProjection(String status, boolean approved, String documentType) {}

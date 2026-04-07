@@ -16,6 +16,7 @@ import io.lombardio.identity.domain.port.KycDirectory;
 import io.lombardio.identity.infrastructure.persistence.support.InMemoryCustomerRepository;
 import io.lombardio.identity.portal.application.CustomerPortalService;
 import java.time.LocalDate;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -24,14 +25,19 @@ class CustomerServiceTest {
   private final CustomerService customerService =
       new CustomerService(
           new InMemoryCustomerRepository(),
-          (tenantId, customerId) ->
-              new KycDirectory.KycProjection("APPROVED", true, "PERSONALAUSWEIS"),
+          new KycDirectory() {
+            @Override
+            public KycProjection getStatus(
+                String tenantId, String customerId, Optional<String> accessToken) {
+              return new KycProjection("APPROVED", true, "PERSONALAUSWEIS");
+            }
+          },
           java.util.List.of(),
           Mockito.mock(CustomerPortalService.class));
 
   @Test
   void shouldSearchCustomersWithinTenant() {
-    var customers = customerService.search("tenant-default", "Anna");
+    var customers = customerService.search("tenant-default", "Anna", Optional.empty());
 
     assertEquals(1, customers.size());
     assertEquals("Anna Becker", customers.get(0).displayName());
@@ -52,7 +58,8 @@ class CustomerServiceTest {
                 false,
                 "Beispielweg 3",
                 "10405",
-                "Berlin"));
+                "Berlin"),
+            Optional.empty());
 
     assertEquals("KD-3001", created.customerNumber());
     assertEquals("Lena Sommer", created.displayName());
@@ -62,7 +69,8 @@ class CustomerServiceTest {
 
   @Test
   void shouldLoadCustomerByIdWithinTenant() {
-    var customer = customerService.requireById("tenant-default", "customer-berlin-1");
+    var customer =
+        customerService.requireById("tenant-default", "customer-berlin-1", Optional.empty());
 
     assertEquals("Anna Becker", customer.displayName());
   }
@@ -83,7 +91,8 @@ class CustomerServiceTest {
                 true,
                 "Neue Str. 9",
                 "10117",
-                "Berlin"));
+                "Berlin"),
+            Optional.empty());
 
     assertEquals("Anna Schneider", updated.displayName());
     assertEquals("+49 170 999999", updated.phone());

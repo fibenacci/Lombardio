@@ -24,6 +24,7 @@ import io.lombardio.identity.kyc.domain.KycStatus;
 import io.lombardio.identity.kyc.domain.KycVerificationMode;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -58,7 +59,7 @@ public class IdentityIntelligencePipelineIntegrationTest {
             "Musterstraße 1",
             "12345",
             "Musterstadt");
-    CustomerView customer = customerService.create(tenantId, createRequest);
+    CustomerView customer = customerService.create(tenantId, createRequest, Optional.empty());
     assertNotNull(customer.id());
     assertEquals("NOT_STARTED", customer.kycStatus());
 
@@ -80,7 +81,8 @@ public class IdentityIntelligencePipelineIntegrationTest {
     kycService.updateStatus(tenantId, customer.id(), kycRequest);
 
     // Check if Customer Profile now reflects the KYC status (In-JVM integration)
-    CustomerView updatedCustomer = customerService.requireById(tenantId, customer.id());
+    CustomerView updatedCustomer =
+        customerService.requireById(tenantId, customer.id(), Optional.empty());
     assertEquals("APPROVED", updatedCustomer.kycStatus());
     assertTrue(updatedCustomer.kycApproved());
 
@@ -110,7 +112,7 @@ public class IdentityIntelligencePipelineIntegrationTest {
             "Beispielstraße 2",
             "54321",
             "Beispielstadt");
-    CustomerView customer = customerService.create(tenantId, createRequest);
+    CustomerView customer = customerService.create(tenantId, createRequest, Optional.empty());
 
     String pngBase64 =
         "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO7Z4xkAAAAASUVORK5CYII=";

@@ -15,7 +15,6 @@ import io.lombardio.identity.domain.port.CustomerRepository;
 import io.lombardio.identity.domain.port.ExternalCrmConnector;
 import io.lombardio.identity.domain.port.KycDirectory;
 import io.lombardio.identity.portal.application.CustomerPortalService;
-import io.lombardio.platform.security.AuthenticatedUser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +40,7 @@ public class CustomerService {
     this.customerPortalService = customerPortalService;
   }
 
-  public List<CustomerView> search(String tenantId, String query) {
+  public List<CustomerView> search(String tenantId, String query, Optional<String> accessToken) {
     List<Customer> result = new ArrayList<>(customerRepository.search(tenantId, query));
 
     externalCrmConnectors.stream()
@@ -49,12 +48,11 @@ public class CustomerService {
         .findFirst()
         .ifPresent(connector -> result.addAll(connector.search(tenantId, query)));
 
-    Optional<String> accessToken = AuthenticatedUser.currentAccessToken();
-
     return result.stream().map(customer -> toResponse(customer, accessToken)).toList();
   }
 
-  public CustomerView create(String tenantId, CreateCustomerCommand request) {
+  public CustomerView create(
+      String tenantId, CreateCustomerCommand request, Optional<String> accessToken) {
     Customer customer =
         customerRepository.save(
             new Customer(
@@ -77,19 +75,24 @@ public class CustomerService {
       customerPortalService.disableAccess(customer);
     }
 
-    return toResponse(customer, AuthenticatedUser.currentAccessToken());
+    return toResponse(customer, accessToken);
   }
 
-  public CustomerView requireById(String tenantId, String customerId) {
+  public CustomerView requireById(
+      String tenantId, String customerId, Optional<String> accessToken) {
     Customer customer =
         customerRepository
             .findById(customerId)
             .filter(item -> item.tenantId().equals(tenantId))
             .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
-    return toResponse(customer, AuthenticatedUser.currentAccessToken());
+    return toResponse(customer, accessToken);
   }
 
-  public CustomerView update(String tenantId, String customerId, UpdateCustomerCommand request) {
+  public CustomerView update(
+      String tenantId,
+      String customerId,
+      UpdateCustomerCommand request,
+      Optional<String> accessToken) {
     Customer existing =
         customerRepository
             .findById(customerId)
@@ -121,7 +124,7 @@ public class CustomerService {
       customerPortalService.disableAccess(updated);
     }
 
-    return toResponse(updated, AuthenticatedUser.currentAccessToken());
+    return toResponse(updated, accessToken);
   }
 
   private CustomerView toResponse(Customer customer, Optional<String> accessToken) {

@@ -11,7 +11,6 @@
 package io.lombardio.platform.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Instant;
 import java.util.List;
@@ -47,11 +46,11 @@ class AuthenticatedUserTest {
   }
 
   @Test
-  void ignoresStringCredentialsFromNonAuthenticatedUserPrincipal() {
+  void returnsStringCredentialsForAnyAuthenticatedPrincipal() {
     SecurityContextHolder.getContext()
         .setAuthentication(
-            new UsernamePasswordAuthenticationToken("internal-service", "secret", List.of()));
+            new UsernamePasswordAuthenticationToken("any-principal", "secret", List.of()));
 
-    assertTrue(AuthenticatedUser.currentAccessToken().isEmpty());
+    assertEquals("secret", AuthenticatedUser.currentAccessToken().orElseThrow());
   }
 }

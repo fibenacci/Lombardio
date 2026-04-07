@@ -11,7 +11,6 @@
 package io.lombardio.platform.auth.application;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.lombardio.platform.iam.application.IdentityProviderUnavailableException;
 import io.lombardio.platform.security.AuthenticatedUser;
 import org.springframework.stereotype.Service;
 
@@ -30,38 +29,36 @@ public class OperatorAuthService {
     this.tokenDecoder = tokenDecoder;
   }
 
-  public OperatorSession login(String email, String password) {
-    return toOperatorSession(identityProvider.login(email, password));
+  public OperatorIdentityTokens login(String email, String password) {
+    return identityProvider.login(email, password);
   }
 
-  public OperatorSession refresh(String refreshToken) {
-    return toOperatorSession(identityProvider.refresh(refreshToken));
+  public OperatorIdentityTokens refresh(String refreshToken) {
+    return identityProvider.refresh(refreshToken);
   }
 
   public void logout(String refreshToken) {
     identityProvider.logout(refreshToken);
   }
 
-  public AuthenticatedUser authenticatedUserFromAccessToken(String accessToken) {
-    return tokenDecoder.decode(accessToken);
+  public Operator resolveOperator(String accessToken) {
+    return toOperator(tokenDecoder.decode(accessToken));
   }
 
-  public OperatorSessionUserView profileFromAccessToken(String accessToken) {
-    AuthenticatedUser user = authenticatedUserFromAccessToken(accessToken);
-    return OperatorSessionUserView.fromAuthenticatedUser(user);
+  public OperatorSessionUserView resolveProfile(String accessToken) {
+    Operator operator = resolveOperator(accessToken);
+    return OperatorSessionUserView.fromOperator(operator);
   }
 
-  private OperatorSession toOperatorSession(OperatorIdentityTokens response) {
-    if (response == null
-        || response.accessToken() == null
-        || response.accessToken().isBlank()
-        || response.refreshToken() == null
-        || response.refreshToken().isBlank()) {
-      throw new IdentityProviderUnavailableException(
-          "Operator authentication failed", new IllegalStateException("Incomplete token response"));
-    }
-
-    OperatorSessionUserView user = profileFromAccessToken(response.accessToken());
-    return new OperatorSession(response.accessToken(), response.refreshToken(), user);
+  private Operator toOperator(AuthenticatedUser user) {
+    return new Operator(
+        user.userId(),
+        user.actorUserId(),
+        user.tenantId(),
+        user.impersonating(),
+        user.email(),
+        user.displayName(),
+        user.permissions(),
+        user.permissions());
   }
 }

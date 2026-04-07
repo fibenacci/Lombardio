@@ -11,17 +11,16 @@
 package io.lombardio.platform.auth.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.lombardio.platform.auth.application.Operator;
 import io.lombardio.platform.auth.application.OperatorAuthService;
+import io.lombardio.platform.auth.application.OperatorIdentityTokens;
 import io.lombardio.platform.auth.application.OperatorSession;
 import io.lombardio.platform.auth.application.OperatorSessionUserView;
-import io.lombardio.platform.auth.application.StoredOperatorSession;
 import io.lombardio.platform.auth.application.StoredOperatorSessionService;
-import io.lombardio.platform.security.AuthenticatedUser;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,16 +54,18 @@ class OperatorAuthControllerTest {
             false,
             List.of(),
             List.of());
-    when(operatorAuthService.login("admin@lombardio.local", "password"))
-        .thenReturn(new OperatorSession("token-1", "refresh-1", user));
-    when(storedOperatorSessionService.createSession(any()))
-        .thenReturn(new StoredOperatorSession("session-1", user));
+    OperatorIdentityTokens tokens = new OperatorIdentityTokens("token-1", "refresh-1");
+
+    when(operatorAuthService.login("admin@lombardio.local", "password")).thenReturn(tokens);
+    when(storedOperatorSessionService.createSession(tokens))
+        .thenReturn(new OperatorSession("session-1", user));
 
     OperatorSessionResponse response =
         operatorAuthController.login(new OperatorLoginRequest("admin@lombardio.local", "password"));
 
     assertEquals("session-1", response.sessionId());
     assertEquals("AUTHENTICATED", response.status());
+    assertEquals(user, response.user());
   }
 
   @Test
@@ -91,7 +92,7 @@ class OperatorAuthControllerTest {
             List.of(),
             List.of());
     when(storedOperatorSessionService.refreshSession("session-1"))
-        .thenReturn(Optional.of(new StoredOperatorSession("session-1", user)));
+        .thenReturn(Optional.of(new OperatorSession("session-1", user)));
 
     ResponseEntity<OperatorSessionResponse> response = operatorAuthController.refresh(request);
 
@@ -111,17 +112,18 @@ class OperatorAuthControllerTest {
 
   @Test
   void meReturnsAuthenticatedUserProfile() {
-    AuthenticatedUser user =
-        new AuthenticatedUser(
+    Operator operator =
+        new Operator(
             "user-1",
             "user-1",
             "tenant-1",
             false,
             "admin@lombardio.local",
             "Admin",
+            List.of(),
             List.of("perm-1"));
 
-    OperatorSessionUserResponse response = operatorAuthController.me(user);
+    OperatorSessionUserView response = operatorAuthController.me(operator);
 
     assertEquals("user-1", response.id());
     assertEquals("Admin", response.displayName());

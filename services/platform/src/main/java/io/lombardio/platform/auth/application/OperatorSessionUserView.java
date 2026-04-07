@@ -10,7 +10,6 @@
  */
 package io.lombardio.platform.auth.application;
 
-import io.lombardio.platform.security.AuthenticatedUser;
 import java.util.List;
 
 public record OperatorSessionUserView(
@@ -28,15 +27,15 @@ public record OperatorSessionUserView(
     permissions = List.copyOf(permissions != null ? permissions : List.of());
   }
 
-  public static OperatorSessionUserView fromAuthenticatedUser(AuthenticatedUser user) {
+  public static OperatorSessionUserView fromOperator(Operator operator) {
     return new OperatorSessionUserView(
-        user.userId(),
-        user.actorUserId(),
-        user.tenantId(),
-        user.email(),
-        user.displayName(),
-        user.impersonating(),
-        user.permissions(),
-        user.permissions());
+        operator.id(),
+        operator.actorUserId(),
+        operator.tenantId(),
+        operator.email(),
+        operator.displayName(),
+        operator.impersonating(),
+        operator.roles(),
+        operator.permissions());
   }
 }

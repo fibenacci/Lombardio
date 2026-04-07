@@ -48,7 +48,7 @@ public class CustomerController {
       @PathVariable String tenantId,
       @RequestParam(name = "query", required = false, defaultValue = "") String query) {
     authorizationService.requireRead(principal, tenantId);
-    return customerService.search(tenantId, query);
+    return customerService.search(tenantId, query, AuthenticatedUser.currentAccessToken());
   }
 
   @PostMapping("/customers")
@@ -69,7 +69,8 @@ public class CustomerController {
             request.wantsDigitalPawnTicket(),
             request.street(),
             request.postalCode(),
-            request.city()));
+            request.city()),
+        AuthenticatedUser.currentAccessToken());
   }
 
   @GetMapping("/customers/{customerId}")
@@ -78,7 +79,8 @@ public class CustomerController {
       @PathVariable String tenantId,
       @PathVariable String customerId) {
     authorizationService.requireRead(principal, tenantId);
-    return customerService.requireById(tenantId, customerId);
+    return customerService.requireById(
+        tenantId, customerId, AuthenticatedUser.currentAccessToken());
   }
 
   @PutMapping("/customers/{customerId}")
@@ -101,7 +103,8 @@ public class CustomerController {
             request.wantsDigitalPawnTicket(),
             request.street(),
             request.postalCode(),
-            request.city()));
+            request.city()),
+        AuthenticatedUser.currentAccessToken());
   }
 
   @GetMapping("/health")

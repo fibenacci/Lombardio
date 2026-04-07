@@ -12,7 +12,6 @@ package io.lombardio.platform.auth.application;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.platform.config.OperatorSessionProperties;
-import io.lombardio.platform.security.AuthenticatedUser;
 import io.lombardio.platform.security.UnauthorizedException;
 import java.security.SecureRandom;
 import java.time.Instant;
@@ -43,23 +42,24 @@ public class StoredOperatorSessionService {
   }
 
   @Transactional
-  public StoredOperatorSession createSession(OperatorSession session) {
+  public OperatorSession createSession(OperatorIdentityTokens tokens) {
     Instant now = Instant.now();
     PersistedOperatorSession entity =
         repository.save(
             new PersistedOperatorSession(
                 generateSessionId(),
-                crypto.encrypt(session.accessToken()),
-                crypto.encrypt(session.refreshToken()),
+                crypto.encrypt(tokens.accessToken()),
+                crypto.encrypt(tokens.refreshToken()),
                 now.plusSeconds(properties.cookieMaxAgeSeconds()),
                 now,
                 now));
     cleanupExpiredSessions(now);
-    return new StoredOperatorSession(entity.id(), session.user());
+    OperatorSessionUserView user = operatorAuthService.resolveProfile(tokens.accessToken());
+    return new OperatorSession(entity.id(), user);
   }
 
   @Transactional
-  public Optional<StoredOperatorSession> refreshSession(String sessionId) {
+  public Optional<OperatorSession> refreshSession(String sessionId) {
     return repository
         .findById(sessionId)
         .filter(entity -> !isExpired(entity))
@@ -67,9 +67,11 @@ public class StoredOperatorSessionService {
             entity -> {
               try {
                 String refreshToken = crypto.decrypt(entity.refreshTokenCiphertext());
-                OperatorSession refreshed = operatorAuthService.refresh(refreshToken);
+                OperatorIdentityTokens refreshed = operatorAuthService.refresh(refreshToken);
                 updateTokens(entity, refreshed);
-                return Optional.of(new StoredOperatorSession(entity.id(), refreshed.user()));
+                OperatorSessionUserView user =
+                    operatorAuthService.resolveProfile(refreshed.accessToken());
+                return Optional.of(new OperatorSession(entity.id(), user));
               } catch (RuntimeException exception) {
                 repository.deleteById(entity.id());
                 return Optional.empty();
@@ -90,9 +92,8 @@ public class StoredOperatorSessionService {
 
               try {
                 String accessToken = crypto.decrypt(entity.accessTokenCiphertext());
-                AuthenticatedUser user =
-                    operatorAuthService.authenticatedUserFromAccessToken(accessToken);
-                return Optional.of(new StoredOperatorAuthentication(accessToken, user));
+                Operator operator = operatorAuthService.resolveOperator(accessToken);
+                return Optional.of(new StoredOperatorAuthentication(accessToken, operator));
               } catch (UnauthorizedException exception) {
                 return refreshForAuthentication(entity);
               } catch (RuntimeException exception) {
@@ -124,11 +125,10 @@ public class StoredOperatorSessionService {
       PersistedOperatorSession entity) {
     try {
       String refreshToken = crypto.decrypt(entity.refreshTokenCiphertext());
-      OperatorSession refreshed = operatorAuthService.refresh(refreshToken);
+      OperatorIdentityTokens refreshed = operatorAuthService.refresh(refreshToken);
       updateTokens(entity, refreshed);
-      AuthenticatedUser user =
-          operatorAuthService.authenticatedUserFromAccessToken(refreshed.accessToken());
-      return Optional.of(new StoredOperatorAuthentication(refreshed.accessToken(), user));
+      Operator operator = operatorAuthService.resolveOperator(refreshed.accessToken());
+      return Optional.of(new StoredOperatorAuthentication(refreshed.accessToken(), operator));
     } catch (RuntimeException exception) {
       repository.deleteById(entity.id());
       return Optional.empty();
@@ -136,13 +136,13 @@ public class StoredOperatorSessionService {
   }
 
   private PersistedOperatorSession updateTokens(
-      PersistedOperatorSession entity, OperatorSession session) {
+      PersistedOperatorSession entity, OperatorIdentityTokens tokens) {
     Instant now = Instant.now();
     return repository.save(
         new PersistedOperatorSession(
             entity.id(),
-            crypto.encrypt(session.accessToken()),
-            crypto.encrypt(session.refreshToken()),
+            crypto.encrypt(tokens.accessToken()),
+            crypto.encrypt(tokens.refreshToken()),
             now.plusSeconds(properties.cookieMaxAgeSeconds()),
             entity.createdAt(),
             now));

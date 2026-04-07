@@ -10,12 +10,12 @@
  */
 package io.lombardio.platform.auth.api;
 
+import io.lombardio.platform.auth.application.Operator;
 import io.lombardio.platform.auth.application.OperatorAuthService;
+import io.lombardio.platform.auth.application.OperatorIdentityTokens;
 import io.lombardio.platform.auth.application.OperatorSession;
 import io.lombardio.platform.auth.application.OperatorSessionUserView;
-import io.lombardio.platform.auth.application.StoredOperatorSession;
 import io.lombardio.platform.auth.application.StoredOperatorSessionService;
-import io.lombardio.platform.security.AuthenticatedUser;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -42,9 +42,9 @@ public class OperatorAuthController {
 
   @PostMapping("/login")
   public OperatorSessionResponse login(@Valid @RequestBody OperatorLoginRequest request) {
-    OperatorSession session = operatorAuthService.login(request.email(), request.password());
-    StoredOperatorSession storedSession = storedOperatorSessionService.createSession(session);
-    return toSessionResponse(storedSession.sessionId(), storedSession.user());
+    OperatorIdentityTokens tokens = operatorAuthService.login(request.email(), request.password());
+    OperatorSession session = storedOperatorSessionService.createSession(tokens);
+    return toSessionResponse(session.sessionId(), session.user());
   }
 
   @PostMapping("/refresh")
@@ -70,15 +70,15 @@ public class OperatorAuthController {
   }
 
   @GetMapping("/me")
-  public OperatorSessionUserResponse me(
-      @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-    return OperatorSessionUserResponse.fromView(
-        OperatorSessionUserView.fromAuthenticatedUser(authenticatedUser));
+  public OperatorSessionUserView me(@AuthenticationPrincipal Operator operator) {
+    if (operator == null) {
+      throw new io.lombardio.platform.security.UnauthorizedException("Not authenticated");
+    }
+    return OperatorSessionUserView.fromOperator(operator);
   }
 
   private OperatorSessionResponse toSessionResponse(
       String sessionId, OperatorSessionUserView user) {
-    return new OperatorSessionResponse(
-        "AUTHENTICATED", sessionId, OperatorSessionUserResponse.fromView(user));
+    return new OperatorSessionResponse("AUTHENTICATED", sessionId, user);
   }
 }

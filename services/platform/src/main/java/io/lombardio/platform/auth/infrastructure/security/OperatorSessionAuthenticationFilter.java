@@ -52,9 +52,9 @@ public class OperatorSessionAuthenticationFilter extends OncePerRequestFilter {
   private void authenticate(StoredOperatorAuthentication session) {
     UsernamePasswordAuthenticationToken authentication =
         new UsernamePasswordAuthenticationToken(
-            session.user(),
+            session.operator(),
             session.accessToken(),
-            session.user().permissions().stream()
+            session.operator().permissions().stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toSet()));
     SecurityContextHolder.getContext().setAuthentication(authentication);

@@ -8,35 +8,30 @@
  *
  * For partnership or cooperation inquiries, please contact the author.
  */
-package io.lombardio.platform.auth.api;
+package io.lombardio.platform.auth.application;
 
-import io.lombardio.platform.auth.application.OperatorSessionUserView;
 import java.util.List;
 
-public record OperatorSessionUserResponse(
+/**
+ * Domain-specific representation of an authenticated operator. This is a pure domain object without
+ * any dependencies on security frameworks.
+ */
+public record Operator(
     String id,
     String actorUserId,
     String tenantId,
+    boolean impersonating,
     String email,
     String displayName,
-    boolean impersonating,
     List<String> roles,
     List<String> permissions) {
 
-  public OperatorSessionUserResponse {
+  public Operator {
     roles = List.copyOf(roles != null ? roles : List.of());
     permissions = List.copyOf(permissions != null ? permissions : List.of());
   }
 
-  public static OperatorSessionUserResponse fromView(OperatorSessionUserView user) {
-    return new OperatorSessionUserResponse(
-        user.id(),
-        user.actorUserId(),
-        user.tenantId(),
-        user.email(),
-        user.displayName(),
-        user.impersonating(),
-        user.permissions(),
-        user.permissions());
+  public boolean hasPermission(String permission) {
+    return permissions.contains(permission);
   }
 }

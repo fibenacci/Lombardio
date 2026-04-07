@@ -63,8 +63,7 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers("/api/v1/platform/health")
                     .permitAll()
-                    .requestMatchers(
-                        "/api/v1/platform/auth/login")
+                    .requestMatchers("/api/v1/platform/auth/login")
                     .permitAll()
                     .requestMatchers(
                         "/api/v1/platform/auth/refresh",
