@@ -12,7 +12,7 @@ package io.lombardio.platform.integration.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.lombardio.platform.config.IntegrationRabbitMqProperties;
+import io.lombardio.platform.integration.api.IntegrationRabbitMqProperties;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;

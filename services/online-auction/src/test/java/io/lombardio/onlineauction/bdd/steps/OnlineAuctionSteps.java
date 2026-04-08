@@ -26,8 +26,11 @@ import io.lombardio.onlineauction.api.OnlineAuctionLotResponse;
 import io.lombardio.onlineauction.api.OnlineAuctionResponse;
 import io.lombardio.onlineauction.api.RegisterBidderRequest;
 import io.lombardio.onlineauction.application.OnlineAuctionService;
+import io.lombardio.onlineauction.domain.BidderApprovalStatus;
 import io.lombardio.onlineauction.domain.OnlineAuctionStatus;
+import io.lombardio.onlineauction.domain.ReviewCheckStatus;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 
 public class OnlineAuctionSteps {
@@ -59,15 +62,22 @@ public class OnlineAuctionSteps {
             "channel-1",
             BigDecimal.TEN,
             30,
-            List.of(),
+            Instant.now(), // publishedAt
+            null, // liveStartedAt
+            null, // countdownEndsAt
+            null, // closedAt
+            Instant.now(), // createdAt
+            Instant.now(), // updatedAt
             List.of(
                 new OnlineAuctionLotResponse(
                     "lot-1",
+                    1,
                     "Gold Ring",
                     "18k",
                     BigDecimal.valueOf(100.0),
                     BigDecimal.valueOf(100.0),
-                    null)));
+                    null)),
+            List.of());
 
     when(onlineAuctionService.getPublicAuction(eq(tenantId), any())).thenReturn(lastAuction);
     when(onlineAuctionService.listPublicAuctions(tenantId)).thenReturn(List.of(lastAuction));
@@ -75,7 +85,22 @@ public class OnlineAuctionSteps {
 
   @When("I register as a bidder with email {string}")
   public void i_register_as_a_bidder_with_email(String email) {
-    lastRegistration = new BidderRegistrationResponse("reg-1", "paddle-1", "access-token");
+    lastRegistration =
+        new BidderRegistrationResponse(
+            "reg-1",
+            "Display Name",
+            email,
+            "Legal Name",
+            "1990-01-01",
+            "IBAN***",
+            "paddle-1",
+            "access-token",
+            BidderApprovalStatus.PENDING,
+            ReviewCheckStatus.PENDING,
+            ReviewCheckStatus.PENDING,
+            null,
+            null,
+            Instant.now());
 
     when(onlineAuctionService.registerBidder(
             eq(tenantId), eq(lastAuction.id()), any(RegisterBidderRequest.class)))
@@ -102,7 +127,22 @@ public class OnlineAuctionSteps {
   @Given("I am a registered and approved bidder for auction {string}")
   public void i_am_a_registered_and_approved_bidder_for_auction(String title) {
     a_published_online_auction_exists(title);
-    lastRegistration = new BidderRegistrationResponse("reg-1", "paddle-1", "access-token");
+    lastRegistration =
+        new BidderRegistrationResponse(
+            "reg-1",
+            "Display Name",
+            "bidder@example.com",
+            "Legal Name",
+            "1990-01-01",
+            "IBAN***",
+            "paddle-1",
+            "access-token",
+            BidderApprovalStatus.APPROVED,
+            ReviewCheckStatus.PASSED,
+            ReviewCheckStatus.PASSED,
+            null,
+            Instant.now(),
+            Instant.now());
   }
 
   @When("I place a bid of {double} on lot {string}")
@@ -117,15 +157,22 @@ public class OnlineAuctionSteps {
             lastAuction.channelName(),
             lastAuction.minimumIncrement(),
             lastAuction.countdownSeconds(),
-            List.of(),
+            lastAuction.publishedAt(),
+            Instant.now(), // liveStartedAt
+            Instant.now().plusSeconds(lastAuction.countdownSeconds()), // countdownEndsAt
+            null, // closedAt
+            lastAuction.createdAt(),
+            Instant.now(), // updatedAt
             List.of(
                 new OnlineAuctionLotResponse(
                     "lot-1",
+                    1,
                     "Gold Ring",
                     "18k",
                     BigDecimal.valueOf(amount),
                     BigDecimal.valueOf(amount),
-                    "paddle-1")));
+                    "paddle-1")),
+            lastAuction.registrations());
 
     when(onlineAuctionService.placeBid(eq(tenantId), eq(lastAuction.id()), any()))
         .thenReturn(bidResult);
