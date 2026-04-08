@@ -10,7 +10,6 @@
  */
 package io.lombardio.platform.integration.infrastructure.messaging;
 
-import io.lombardio.platform.integration.api.IntegrationRabbitMqProperties;
 import org.springframework.amqp.core.Declarables;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

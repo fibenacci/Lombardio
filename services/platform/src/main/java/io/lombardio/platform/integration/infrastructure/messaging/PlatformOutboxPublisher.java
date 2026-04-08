@@ -8,11 +8,12 @@
  *
  * For partnership or cooperation inquiries, please contact the author.
  */
-package io.lombardio.platform.integration.application;
+package io.lombardio.platform.integration.infrastructure.messaging;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.lombardio.platform.integration.api.IntegrationRabbitMqProperties;
+import io.lombardio.platform.integration.application.OutboxEventResponse;
+import io.lombardio.platform.integration.application.PlatformOutboxService;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;

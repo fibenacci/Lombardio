@@ -8,9 +8,8 @@
  *
  * For partnership or cooperation inquiries, please contact the author.
  */
-package io.lombardio.platform.integration.application;
+package io.lombardio.platform.integration.infrastructure.messaging;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -21,7 +20,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.lombardio.platform.integration.api.IntegrationRabbitMqProperties;
+import io.lombardio.platform.integration.application.OutboxEventResponse;
+import io.lombardio.platform.integration.application.PlatformOutboxService;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;

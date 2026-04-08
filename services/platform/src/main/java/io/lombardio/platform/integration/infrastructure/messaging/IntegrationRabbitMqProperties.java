@@ -8,7 +8,7 @@
  *
  * For partnership or cooperation inquiries, please contact the author.
  */
-package io.lombardio.platform.integration.api;
+package io.lombardio.platform.integration.infrastructure.messaging;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.boot.context.properties.ConfigurationProperties;

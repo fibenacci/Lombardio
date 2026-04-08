@@ -8,7 +8,7 @@
  *
  * For partnership or cooperation inquiries, please contact the author.
  */
-package io.lombardio.platform.integration.api;
+package io.lombardio.platform.integration.infrastructure.messaging;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
