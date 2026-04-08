@@ -10,16 +10,24 @@
  */
 package io.lombardio.loanorigination.infrastructure.persistence.entity;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.Objects;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "valuation_guidelines")
+@Getter
+@Setter
+@NoArgsConstructor
+@SuppressFBWarnings(
+    value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"},
+    justification = "JPA entities")
 public class ValuationGuidelineEntity {
 
   @Id private String id;
@@ -41,60 +49,4 @@ public class ValuationGuidelineEntity {
 
   @Column(name = "base_loan_value", nullable = false)
   private BigDecimal baseLoanValue;
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getTenantId() {
-    return tenantId;
-  }
-
-  public void setTenantId(@NotNull String tenantId) {
-    this.tenantId = Objects.requireNonNull(tenantId, "tenantId");
-  }
-
-  public String getCategory() {
-    return category;
-  }
-
-  public void setCategory(@NotNull String category) {
-    this.category = Objects.requireNonNull(category, "category");
-  }
-
-  public String getMaterial() {
-    return material;
-  }
-
-  public void setMaterial(@NotNull String material) {
-    this.material = Objects.requireNonNull(material, "material");
-  }
-
-  public String getLabel() {
-    return label;
-  }
-
-  public void setLabel(@NotNull String label) {
-    this.label = Objects.requireNonNull(label, "label");
-  }
-
-  public String getDescription() {
-    return description;
-  }
-
-  public void setDescription(@NotNull String description) {
-    this.description = Objects.requireNonNull(description, "description");
-  }
-
-  public BigDecimal getBaseLoanValue() {
-    return baseLoanValue;
-  }
-
-  public void setBaseLoanValue(@NotNull BigDecimal baseLoanValue) {
-    this.baseLoanValue = Objects.requireNonNull(baseLoanValue, "baseLoanValue");
-  }
 }

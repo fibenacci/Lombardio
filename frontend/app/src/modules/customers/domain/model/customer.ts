@@ -1,13 +1,19 @@
+import type { AmlRiskLevel, AmlStatus, KycStatus, KycVerificationMode } from "./customer-enums";
+
 export interface CustomerModel {
   id: string;
   customerNumber: string;
   firstName: string;
   lastName: string;
   birthDate: string;
+  displayName: string;
   phone: string;
   email: string;
   wantsDigitalPawnTicket: boolean;
   onlineAccessStatus: string;
+  kycStatus: KycStatus;
+  kycApproved: boolean;
+  kycDocumentType: string | null;
   street: string;
   postalCode: string;
   city: string;
@@ -19,44 +25,64 @@ export interface CustomerLoanModel {
     recordedAt: string;
     languageCode: string;
     retentionUntil: string;
-    checkedDocumentType?: string | null;
+    checkedDocumentType: string | null;
     powerOfAttorneyRequired: boolean;
-    bearerName?: string | null;
+    bearerName: string | null;
   };
-  positions: Array<unknown>;
+  positions: Array<{
+    positionNumber: number;
+    description: string;
+    weightGram: number | null;
+    purity: string | null;
+    estimatedValue: number;
+    loanAmount: number;
+  }>;
   pawnTickets: Array<{
+    contractNumber: string;
     ticketNumber: string;
-    totalLoanValue: number;
+    contractBarcode: string;
+    createdAt: string;
     dueDate: string;
+    earliestAuctionDate: string | null;
+    loanAmount: number;
+    totalRepaymentAmount: number;
+    positionCount: number;
   }>;
 }
 
 export interface CustomerKycModel {
-  status: string;
-  verificationMode: string;
-  verifiedUntil: string;
-  documentType: string;
-  documentNumber: string;
-  documentValidUntil: string;
-  documentFrontImageDataUrl: string;
-  documentBackImageDataUrl: string;
-  portraitImageDataUrl: string;
-  decisionNote: string;
+  customerId: string;
+  status: KycStatus;
+  verificationMode: KycVerificationMode;
+  verifiedUntil: string | null;
+  documentType: string | null;
+  documentNumber: string | null;
+  documentValidUntil: string | null;
+  documentFrontImageDataUrl?: string | null;
+  documentBackImageDataUrl?: string | null;
+  decisionNote: string | null;
+  providerName: string | null;
+  providerReference: string | null;
+  providerStatus: string | null;
+  providerVerificationAvailable: boolean;
 }
 
 export interface CustomerAmlModel {
-  status: string;
-  riskLevel: string;
+  customerId: string;
+  status: AmlStatus;
+  riskLevel: AmlRiskLevel;
   pepFlag: boolean;
   sanctionsHit: boolean;
   unusualTransactionFlag: boolean;
   sourceOfFundsChecked: boolean;
   suspiciousActivityReported: boolean;
-  goamlReference: string;
-  decisionNote: string;
-  lastScreenedAt: string;
-  reviewedAt: string;
-  originationAllowed: boolean;
-  decisionReason: string;
+  goamlReference: string | null;
+  decisionNote: string | null;
+  lastScreenedAt: string | null;
+  reviewedAt: string | null;
   featureAvailable: boolean;
+  originationAllowed: boolean;
+  decisionReason: string | null;
 }
+
+

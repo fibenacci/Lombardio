@@ -11,19 +11,13 @@
 package io.lombardio.auction.api.http;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.lombardio.auction.application.service.AnnounceAuctionCommand;
+import io.lombardio.auction.api.http.mapper.ApiMapper;
 import io.lombardio.auction.application.service.AuctionService;
-import io.lombardio.auction.application.service.CreateAuctionCommand;
-import io.lombardio.auction.application.service.CreateAuctionLotCommand;
-import io.lombardio.auction.application.service.PlaceBidCommand;
-import io.lombardio.auction.application.service.SettleAuctionLotCommand;
-import io.lombardio.auction.application.service.SurplusCase;
-import io.lombardio.auction.domain.model.Auction;
-import io.lombardio.auction.domain.model.AuctionLot;
 import io.lombardio.auction.infrastructure.security.AuctionAuthorizationService;
 import io.lombardio.platform.security.AuthenticatedUser;
 import jakarta.validation.Valid;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,163 +30,90 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/tenants/{tenantId}")
+@RequiredArgsConstructor
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring managed singleton beans")
 public class AuctionController {
 
   private final AuctionService auctionService;
   private final AuctionAuthorizationService authorizationService;
-
-  @SuppressFBWarnings(
-      value = "EI_EXPOSE_REP2",
-      justification =
-          "Spring-managed service references are intentional dependencies, not mutable state")
-  public AuctionController(
-      AuctionService auctionService, AuctionAuthorizationService authorizationService) {
-    this.auctionService = auctionService;
-    this.authorizationService = authorizationService;
-  }
+  private final ApiMapper mapper;
 
   @GetMapping("/auctions")
-  List<AuctionResponse> listAuctions(
+  public List<AuctionResponse> listAuctions(
       @PathVariable String tenantId, @AuthenticationPrincipal AuthenticatedUser user) {
     authorizationService.requireRead(user, tenantId);
-    return auctionService.listAuctions(tenantId).stream().map(this::toResponse).toList();
+    return auctionService.listAuctions(tenantId).stream().map(mapper::toResponse).toList();
   }
 
   @PostMapping("/auctions")
   @ResponseStatus(HttpStatus.CREATED)
-  AuctionResponse createAuction(
+  public AuctionResponse createAuction(
       @PathVariable String tenantId,
       @Valid @RequestBody CreateAuctionRequest request,
       @AuthenticationPrincipal AuthenticatedUser user) {
     authorizationService.requireWrite(user, tenantId);
-    return toResponse(auctionService.createAuction(tenantId, toCommand(request)));
+    return mapper.toResponse(auctionService.createAuction(tenantId, mapper.toCommand(request)));
   }
 
   @PostMapping("/auctions/{auctionId}/announce")
-  AuctionResponse announceAuction(
+  public AuctionResponse announceAuction(
       @PathVariable String tenantId,
       @PathVariable String auctionId,
       @Valid @RequestBody AuctionStatusUpdateRequest request,
       @AuthenticationPrincipal AuthenticatedUser user) {
     authorizationService.requireWrite(user, tenantId);
-    return toResponse(auctionService.announceAuction(tenantId, auctionId, toCommand(request)));
+    return mapper.toResponse(
+        auctionService.announceAuction(tenantId, auctionId, mapper.toCommand(request)));
   }
 
   @PostMapping("/auctions/{auctionId}/open")
-  AuctionResponse openAuction(
+  public AuctionResponse openAuction(
       @PathVariable String tenantId,
       @PathVariable String auctionId,
       @AuthenticationPrincipal AuthenticatedUser user) {
     authorizationService.requireWrite(user, tenantId);
-    return toResponse(auctionService.openAuction(tenantId, auctionId));
+    return mapper.toResponse(auctionService.openAuction(tenantId, auctionId));
   }
 
   @PostMapping("/auctions/{auctionId}/close")
-  AuctionResponse closeAuction(
+  public AuctionResponse closeAuction(
       @PathVariable String tenantId,
       @PathVariable String auctionId,
       @AuthenticationPrincipal AuthenticatedUser user) {
     authorizationService.requireWrite(user, tenantId);
-    return toResponse(auctionService.closeAuction(tenantId, auctionId));
+    return mapper.toResponse(auctionService.closeAuction(tenantId, auctionId));
   }
 
   @PostMapping("/auctions/{auctionId}/lots/{lotId}/bids")
-  AuctionResponse placeBid(
+  public AuctionResponse placeBid(
       @PathVariable String tenantId,
       @PathVariable String auctionId,
       @PathVariable String lotId,
       @Valid @RequestBody PlaceBidRequest request,
       @AuthenticationPrincipal AuthenticatedUser user) {
     authorizationService.requireWrite(user, tenantId);
-    return toResponse(auctionService.placeBid(tenantId, auctionId, lotId, toCommand(request)));
+    return mapper.toResponse(
+        auctionService.placeBid(tenantId, auctionId, lotId, mapper.toCommand(request)));
   }
 
   @PostMapping("/auctions/{auctionId}/lots/{lotId}/settle")
-  AuctionResponse settleLot(
+  public AuctionResponse settleLot(
       @PathVariable String tenantId,
       @PathVariable String auctionId,
       @PathVariable String lotId,
       @Valid @RequestBody AuctionSettlementRequest request,
       @AuthenticationPrincipal AuthenticatedUser user) {
     authorizationService.requireWrite(user, tenantId);
-    return toResponse(auctionService.settleLot(tenantId, auctionId, lotId, toCommand(request)));
+    return mapper.toResponse(
+        auctionService.settleLot(tenantId, auctionId, lotId, mapper.toCommand(request)));
   }
 
   @GetMapping("/surplus-cases")
-  List<SurplusCaseResponse> listSurplusCases(
+  public List<SurplusCaseResponse> listSurplusCases(
       @PathVariable String tenantId, @AuthenticationPrincipal AuthenticatedUser user) {
     authorizationService.requireRead(user, tenantId);
-    return auctionService.listSurplusCases(tenantId).stream().map(this::toResponse).toList();
-  }
-
-  private CreateAuctionCommand toCommand(CreateAuctionRequest request) {
-    return new CreateAuctionCommand(
-        request.title(), request.location(), request.lots().stream().map(this::toCommand).toList());
-  }
-
-  private CreateAuctionLotCommand toCommand(AuctionLotRequest request) {
-    return new CreateAuctionLotCommand(
-        request.contractNumber(),
-        request.itemNumber(),
-        request.description(),
-        request.estimatedValue(),
-        request.outstandingClaim());
-  }
-
-  private AnnounceAuctionCommand toCommand(AuctionStatusUpdateRequest request) {
-    return new AnnounceAuctionCommand(request.auctionDate(), request.announcementReference());
-  }
-
-  private PlaceBidCommand toCommand(PlaceBidRequest request) {
-    return new PlaceBidCommand(request.bidderDisplayName(), request.amount());
-  }
-
-  private SettleAuctionLotCommand toCommand(AuctionSettlementRequest request) {
-    return new SettleAuctionLotCommand(request.hammerPrice());
-  }
-
-  private AuctionResponse toResponse(Auction auction) {
-    return new AuctionResponse(
-        auction.id(),
-        auction.title(),
-        auction.location(),
-        auction.status(),
-        auction.publicAnnouncementDate(),
-        auction.auctionDate(),
-        auction.liveStartedAt(),
-        auction.closedAt(),
-        auction.announcementReference(),
-        auction.lots().stream().map(this::toResponse).toList());
-  }
-
-  private AuctionLotResponse toResponse(AuctionLot lot) {
-    return new AuctionLotResponse(
-        lot.id(),
-        lot.lotNumber(),
-        lot.contractNumber(),
-        lot.itemNumber(),
-        lot.description(),
-        lot.estimatedValue(),
-        lot.outstandingClaim(),
-        lot.latestBidAmount(),
-        lot.leadingBidder(),
-        lot.hammerPrice(),
-        lot.status(),
-        lot.surplusAmount(),
-        lot.authorityTransferDueDate(),
-        lot.authorityTransferStatus());
-  }
-
-  private SurplusCaseResponse toResponse(SurplusCase surplusCase) {
-    return new SurplusCaseResponse(
-        surplusCase.auctionId(),
-        surplusCase.lotId(),
-        surplusCase.lotNumber(),
-        surplusCase.contractNumber(),
-        surplusCase.hammerPrice(),
-        surplusCase.outstandingClaim(),
-        surplusCase.surplusAmount(),
-        surplusCase.authorityTransferDueDate(),
-        surplusCase.authorityTransferStatus());
+    return auctionService.listSurplusCases(tenantId).stream()
+        .map(mapper::toSurplusResponse)
+        .toList();
   }
 }

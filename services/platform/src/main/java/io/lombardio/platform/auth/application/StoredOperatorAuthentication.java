@@ -10,6 +10,4 @@
  */
 package io.lombardio.platform.auth.application;
 
-import io.lombardio.platform.security.AuthenticatedUser;
-
-public record StoredOperatorAuthentication(String accessToken, AuthenticatedUser user) {}
+public record StoredOperatorAuthentication(String accessToken, Operator operator) {}

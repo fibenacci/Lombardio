@@ -11,7 +11,13 @@
 package io.lombardio.platform.tenant.api;
 
 import io.lombardio.platform.security.AuthenticatedUser;
+import io.lombardio.platform.tenant.application.BranchView;
+import io.lombardio.platform.tenant.application.CreateTenantBranchCommand;
+import io.lombardio.platform.tenant.application.CreateTenantUserCommand;
 import io.lombardio.platform.tenant.application.TenantCatalogService;
+import io.lombardio.platform.tenant.application.TenantFeatureView;
+import io.lombardio.platform.tenant.application.TenantUserView;
+import io.lombardio.platform.tenant.application.UpdateTenantUserCommand;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -41,7 +47,9 @@ public class TenantAdministrationController {
   public List<TenantUserResponse> listUsers(
       @PathVariable String tenantId, @AuthenticationPrincipal AuthenticatedUser user) {
     authorizationService.requireTenantUserRead(user, tenantId);
-    return tenantCatalogService.listTenantUsers(tenantId);
+    return tenantCatalogService.listTenantUsers(tenantId).stream()
+        .map(this::toTenantUserResponse)
+        .toList();
   }
 
   @PostMapping("/users")
@@ -50,7 +58,15 @@ public class TenantAdministrationController {
       @Valid @RequestBody CreateTenantUserRequest request,
       @AuthenticationPrincipal AuthenticatedUser user) {
     authorizationService.requireTenantUserWrite(user, tenantId);
-    return tenantCatalogService.createTenantUser(tenantId, request);
+    return toTenantUserResponse(
+        tenantCatalogService.createTenantUser(
+            tenantId,
+            new CreateTenantUserCommand(
+                request.email(),
+                request.password(),
+                request.displayName(),
+                request.roles(),
+                request.branchIds())));
   }
 
   @PatchMapping("/users/{userId}")
@@ -60,7 +76,16 @@ public class TenantAdministrationController {
       @Valid @RequestBody UpdateTenantUserRequest request,
       @AuthenticationPrincipal AuthenticatedUser user) {
     authorizationService.requireTenantUserWrite(user, tenantId);
-    return tenantCatalogService.updateTenantUser(tenantId, userId, request);
+    return toTenantUserResponse(
+        tenantCatalogService.updateTenantUser(
+            tenantId,
+            userId,
+            new UpdateTenantUserCommand(
+                request.email(),
+                request.displayName(),
+                request.status(),
+                request.roles(),
+                request.branchIds())));
   }
 
   @GetMapping("/roles")
@@ -74,14 +99,18 @@ public class TenantAdministrationController {
   public List<TenantFeatureResponse> listFeatures(
       @PathVariable String tenantId, @AuthenticationPrincipal AuthenticatedUser user) {
     authorizationService.requireTenantFeatureRead(user, tenantId);
-    return tenantCatalogService.listFeatures(tenantId);
+    return tenantCatalogService.listFeatures(tenantId).stream()
+        .map(this::toFeatureResponse)
+        .toList();
   }
 
   @GetMapping("/branches")
   public List<BranchResponse> listBranches(
       @PathVariable String tenantId, @AuthenticationPrincipal AuthenticatedUser user) {
     authorizationService.requireTenantBranchRead(user, tenantId);
-    return tenantCatalogService.listBranches(tenantId);
+    return tenantCatalogService.listBranches(tenantId).stream()
+        .map(this::toBranchResponse)
+        .toList();
   }
 
   @PostMapping("/branches")
@@ -90,6 +119,29 @@ public class TenantAdministrationController {
       @Valid @RequestBody CreateTenantBranchRequest request,
       @AuthenticationPrincipal AuthenticatedUser user) {
     authorizationService.requireTenantBranchWrite(user, tenantId);
-    return tenantCatalogService.createBranch(tenantId, request);
+    return toBranchResponse(
+        tenantCatalogService.createBranch(
+            tenantId,
+            new CreateTenantBranchCommand(request.key(), request.displayName(), request.status())));
+  }
+
+  private TenantUserResponse toTenantUserResponse(TenantUserView user) {
+    return new TenantUserResponse(
+        user.id(),
+        user.username(),
+        user.email(),
+        user.displayName(),
+        user.status(),
+        user.roleIds(),
+        user.branchIds());
+  }
+
+  private TenantFeatureResponse toFeatureResponse(TenantFeatureView feature) {
+    return new TenantFeatureResponse(
+        feature.tenantId(), feature.featureKey(), feature.enabled(), feature.updatedAt());
+  }
+
+  private BranchResponse toBranchResponse(BranchView branch) {
+    return new BranchResponse(branch.id(), branch.key(), branch.displayName(), branch.status());
   }
 }

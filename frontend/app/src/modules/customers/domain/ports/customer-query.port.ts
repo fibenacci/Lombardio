@@ -1,4 +1,4 @@
-import type { CustomerDto, KycDocumentsDto, KycStatusDto, LoanDto, AmlStatusDto } from "../../infrastructure/dto/customer-response.dto";
+import type { CustomerDto, KycDocumentsDto, KycStatusDto, LoanDto, AmlStatusDto } from "../dto/customer-response.dto";
 
 export interface CustomerQueryPort {
   loadCustomerDetailData(

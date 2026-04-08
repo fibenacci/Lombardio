@@ -79,10 +79,16 @@ public final class InMemoryPorts {
     }
 
     @Override
-    public KycProjection getStatus(String tenantId, String customerId) {
+    public KycProjection getStatus(
+        String tenantId, String customerId, Optional<String> accessToken) {
       boolean approved = isApproved(tenantId, customerId);
       return new KycProjection(
           approved ? "APPROVED" : "NOT_STARTED", approved, approved ? "PERSONALAUSWEIS" : null);
+    }
+
+    @Override
+    public KycProjection getStatus(String tenantId, String customerId) {
+      return getStatus(tenantId, customerId, Optional.empty());
     }
 
     @Override
@@ -151,8 +157,10 @@ public final class InMemoryPorts {
       return Optional.ofNullable(store.get(id));
     }
 
-    public void save(ValuationGuideline guideline) {
+    @Override
+    public ValuationGuideline save(ValuationGuideline guideline) {
       store.put(guideline.id(), guideline);
+      return guideline;
     }
   }
 

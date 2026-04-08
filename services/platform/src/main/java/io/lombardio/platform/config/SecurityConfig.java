@@ -63,11 +63,13 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers("/api/v1/platform/health")
                     .permitAll()
-                    .requestMatchers(
-                        "/api/v1/platform/auth/login",
-                        "/api/v1/platform/auth/refresh",
-                        "/api/v1/platform/auth/logout")
+                    .requestMatchers("/api/v1/platform/auth/login")
                     .permitAll()
+                    .requestMatchers(
+                        "/api/v1/platform/auth/refresh",
+                        "/api/v1/platform/auth/logout",
+                        "/api/v1/platform/auth/me")
+                    .authenticated()
                     .requestMatchers("/actuator/health", "/actuator/info")
                     .permitAll()
                     .anyRequest()

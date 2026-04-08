@@ -11,18 +11,16 @@
 package io.lombardio.pawnticket.api.http;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.lombardio.pawnticket.application.service.IssuePawnTicketCommand;
+import io.lombardio.pawnticket.api.http.mapper.ApiMapper;
 import io.lombardio.pawnticket.application.service.PawnTicketDocumentService;
 import io.lombardio.pawnticket.application.service.PawnTicketPolicyService;
-import io.lombardio.pawnticket.application.service.PawnTicketQuoteCommand;
 import io.lombardio.pawnticket.application.service.PawnTicketSettlementCommand;
-import io.lombardio.pawnticket.application.service.PawnTicketSettlementResult;
 import io.lombardio.pawnticket.domain.model.PawnTicket;
-import io.lombardio.pawnticket.domain.model.PawnTicketPosition;
 import io.lombardio.pawnticket.infrastructure.security.PawnTicketAuthorizationService;
 import io.lombardio.platform.security.AuthenticatedUser;
 import jakarta.validation.Valid;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -37,31 +35,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/pawn-tickets")
+@RequiredArgsConstructor
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring managed singleton beans")
 public class PawnTicketController {
 
   private final PawnTicketPolicyService pawnTicketPolicyService;
   private final PawnTicketDocumentService pawnTicketDocumentService;
   private final PawnTicketAuthorizationService authorizationService;
-
-  @SuppressFBWarnings(
-      value = "EI_EXPOSE_REP2",
-      justification =
-          "Spring-managed service references are intentional dependencies, not mutable state")
-  public PawnTicketController(
-      PawnTicketPolicyService pawnTicketPolicyService,
-      PawnTicketDocumentService pawnTicketDocumentService,
-      PawnTicketAuthorizationService authorizationService) {
-    this.pawnTicketPolicyService = pawnTicketPolicyService;
-    this.pawnTicketDocumentService = pawnTicketDocumentService;
-    this.authorizationService = authorizationService;
-  }
+  private final ApiMapper mapper;
 
   @PostMapping("/quote")
   public PawnTicketResponse quote(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @Valid @RequestBody PawnTicketQuoteRequest request) {
-    authorizationService.requireTicketWrite(principal);
-    return toResponse(pawnTicketPolicyService.quote(toCommand(request)));
+    authorizationService.requireTicketWrite(principal, request.tenantId());
+    return mapper.toPawnTicketResponse(
+        pawnTicketPolicyService.quote(mapper.toQuoteCommand(request)));
   }
 
   @PostMapping("/issue")
@@ -69,23 +58,24 @@ public class PawnTicketController {
       @AuthenticationPrincipal AuthenticatedUser principal,
       @Valid @RequestBody IssuePawnTicketRequest request) {
     authorizationService.requireTicketWrite(principal, request.tenantId());
-    return toResponse(pawnTicketPolicyService.issue(toCommand(request)));
+    return mapper.toPawnTicketResponse(
+        pawnTicketPolicyService.issue(mapper.toIssueCommand(request)));
   }
 
   @PostMapping("/extend")
   public PawnTicketResponse extend(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @Valid @RequestBody ExtendPawnTicketRequest request) {
-    authorizationService.requireTicketRead(principal);
-    return toResponse(pawnTicketPolicyService.extend(toExtensionCommand(request)));
+    authorizationService.requireTicketRead(principal, request.tenantId());
+    return mapper.toPawnTicketResponse(pawnTicketPolicyService.extend(toExtensionCommand(request)));
   }
 
   @PostMapping("/partial-repayment")
   public SettlementResponse partialRepayment(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @Valid @RequestBody PartialRepaymentRequest request) {
-    authorizationService.requireCashRead(principal);
-    return toSettlementResponse(
+    authorizationService.requireCashRead(principal, request.tenantId());
+    return mapper.toSettlementResponse(
         pawnTicketPolicyService.settlePartial(toPartialSettlementCommand(request)));
   }
 
@@ -93,8 +83,8 @@ public class PawnTicketController {
   public SettlementResponse redeem(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @Valid @RequestBody RedeemPawnTicketRequest request) {
-    authorizationService.requireCashRead(principal);
-    return toSettlementResponse(pawnTicketPolicyService.redeem(toRedeemCommand(request)));
+    authorizationService.requireCashRead(principal, request.tenantId());
+    return mapper.toSettlementResponse(pawnTicketPolicyService.redeem(toRedeemCommand(request)));
   }
 
   @GetMapping("/health")
@@ -130,69 +120,6 @@ public class PawnTicketController {
             ContentDisposition.inline().filename(ticketNumber + "-labels.pdf").build().toString())
         .contentType(MediaType.APPLICATION_PDF)
         .body(pdf);
-  }
-
-  private PawnTicketResponse toResponse(PawnTicket pawnTicket) {
-    return new PawnTicketResponse(
-        pawnTicket.contractNumber(),
-        pawnTicket.contractBarcode(),
-        pawnTicket.ticketNumber(),
-        pawnTicket.termsVersion(),
-        pawnTicket.termsAndConditionsText(),
-        pawnTicket.createdAt(),
-        pawnTicket.dueDate(),
-        pawnTicket.earliestAuctionDate(),
-        pawnTicket.termMonths(),
-        pawnTicket.loanAmount(),
-        pawnTicket.monthlyInterestRate(),
-        pawnTicket.monthlyOperatingFee(),
-        pawnTicket.manualMonthlyOperatingFeeRequired(),
-        pawnTicket.totalInterestAmount(),
-        pawnTicket.totalOperatingFeeAmount(),
-        pawnTicket.totalRepaymentAmount(),
-        pawnTicket.legalText(),
-        pawnTicket.positions().stream()
-            .map(
-                position ->
-                    new PawnTicketPositionResponse(
-                        position.itemNumber(),
-                        position.itemBarcode(),
-                        position.label(),
-                        position.description(),
-                        position.pledgedValue()))
-            .toList());
-  }
-
-  private SettlementResponse toSettlementResponse(PawnTicketSettlementResult settlement) {
-    return new SettlementResponse(
-        settlement.outstandingLoanAmount(),
-        settlement.interestAmount(),
-        settlement.operatingFeeAmount(),
-        settlement.totalDueAmount(),
-        settlement.legalText());
-  }
-
-  private PawnTicketPosition toPosition(PawnTicketPositionPayload payload) {
-    return new PawnTicketPosition(
-        null, null, payload.label(), payload.description(), payload.pledgedValue());
-  }
-
-  private PawnTicketQuoteCommand toCommand(PawnTicketQuoteRequest request) {
-    return new PawnTicketQuoteCommand(
-        request.loanAmount(), request.termMonths(), request.manualMonthlyOperatingFee());
-  }
-
-  private IssuePawnTicketCommand toCommand(IssuePawnTicketRequest request) {
-    return new IssuePawnTicketCommand(
-        request.tenantId(),
-        request.customerId(),
-        request.customerNumber(),
-        request.customerDisplayName(),
-        request.customerPhone(),
-        request.positions().stream().map(this::toPosition).toList(),
-        request.loanAmount(),
-        request.termMonths(),
-        request.manualMonthlyOperatingFee());
   }
 
   private PawnTicketSettlementCommand toExtensionCommand(ExtendPawnTicketRequest request) {

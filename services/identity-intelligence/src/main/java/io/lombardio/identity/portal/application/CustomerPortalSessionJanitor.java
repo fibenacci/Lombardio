@@ -11,7 +11,6 @@
 package io.lombardio.identity.portal.application;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.lombardio.identity.portal.infrastructure.persistence.CustomerPortalSessionRepository;
 import java.time.Clock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -19,20 +18,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class CustomerPortalSessionJanitor {
 
-  private final CustomerPortalSessionRepository sessionRepository;
+  private final CustomerPortalSessionStore sessionStore;
   private final Clock clock;
 
   @SuppressFBWarnings(
       value = "EI_EXPOSE_REP2",
       justification = "Spring-managed repository dependency cannot be defensively copied")
-  public CustomerPortalSessionJanitor(
-      CustomerPortalSessionRepository sessionRepository, Clock clock) {
-    this.sessionRepository = sessionRepository;
+  public CustomerPortalSessionJanitor(CustomerPortalSessionStore sessionStore, Clock clock) {
+    this.sessionStore = sessionStore;
     this.clock = clock;
   }
 
   @Scheduled(fixedDelayString = "${customer-portal.session.cleanup-fixed-delay-ms}")
   public void deleteExpiredSessions() {
-    sessionRepository.deleteByExpiresAtBefore(clock.instant());
+    sessionStore.deleteExpiredBefore(clock.instant());
   }
 }

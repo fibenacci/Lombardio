@@ -10,6 +10,7 @@
  */
 package io.lombardio.reporting.api.http;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.platform.security.AuthenticatedUser;
 import io.lombardio.reporting.application.service.ReportingService;
 import io.lombardio.reporting.infrastructure.security.ReportingAuthorizationService;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 @RestController
 @RequestMapping("/api/v1/tenants/{tenantId}")
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring managed singleton beans")
 public class ReportingController {
 
   private final ReportingService reportingService;

@@ -10,7 +10,14 @@
  */
 package io.lombardio.platform.tenant.api;
 
+import io.lombardio.platform.tenant.application.CreateTenantCommand;
+import io.lombardio.platform.tenant.application.CreateTenantUserCommand;
 import io.lombardio.platform.tenant.application.TenantCatalogService;
+import io.lombardio.platform.tenant.application.TenantFeatureView;
+import io.lombardio.platform.tenant.application.TenantUserView;
+import io.lombardio.platform.tenant.application.TenantView;
+import io.lombardio.platform.tenant.application.UpdateTenantCommand;
+import io.lombardio.platform.tenant.application.UpsertTenantFeatureCommand;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,26 +43,30 @@ public class TenantController {
   @GetMapping
   @PreAuthorize("hasAuthority('platform.tenants.read')")
   public List<TenantResponse> listTenants() {
-    return tenantCatalogService.listTenants();
+    return tenantCatalogService.listTenants().stream().map(this::toTenantResponse).toList();
   }
 
   @PostMapping
   @PreAuthorize("hasAuthority('platform.tenants.write')")
   public TenantResponse createTenant(@Valid @RequestBody CreateTenantRequest request) {
-    return tenantCatalogService.createTenant(request);
+    return toTenantResponse(
+        tenantCatalogService.createTenant(
+            new CreateTenantCommand(request.key(), request.displayName(), request.status())));
   }
 
   @PatchMapping("/{id}")
   @PreAuthorize("hasAuthority('platform.tenants.write')")
   public TenantResponse updateTenant(
       @PathVariable String id, @Valid @RequestBody UpdateTenantRequest request) {
-    return tenantCatalogService.updateTenant(id, request);
+    return toTenantResponse(
+        tenantCatalogService.updateTenant(
+            id, new UpdateTenantCommand(request.key(), request.displayName(), request.status())));
   }
 
   @GetMapping("/{id}/features")
   @PreAuthorize("hasAuthority('platform.tenants.read')")
   public List<TenantFeatureResponse> listFeatures(@PathVariable String id) {
-    return tenantCatalogService.listFeatures(id);
+    return tenantCatalogService.listFeatures(id).stream().map(this::toFeatureResponse).toList();
   }
 
   @PutMapping("/{id}/features/{featureKey}")
@@ -64,19 +75,55 @@ public class TenantController {
       @PathVariable String id,
       @PathVariable String featureKey,
       @Valid @RequestBody UpsertTenantFeatureRequest request) {
-    return tenantCatalogService.upsertFeature(id, featureKey, request);
+    return toFeatureResponse(
+        tenantCatalogService.upsertFeature(
+            id, featureKey, new UpsertTenantFeatureCommand(request.enabled())));
   }
 
   @PostMapping("/{id}/users")
   @PreAuthorize("hasAuthority('platform.tenants.write')")
   public TenantUserResponse createTenantUser(
       @PathVariable String id, @Valid @RequestBody CreateTenantUserRequest request) {
-    return tenantCatalogService.createTenantUser(id, request);
+    return toTenantUserResponse(
+        tenantCatalogService.createTenantUser(
+            id,
+            new CreateTenantUserCommand(
+                request.email(),
+                request.password(),
+                request.displayName(),
+                request.roles(),
+                request.branchIds())));
   }
 
   @GetMapping("/roles")
   @PreAuthorize("hasAuthority('platform.tenants.read')")
   public List<String> listAvailableRoles() {
     return tenantCatalogService.listAvailableRoles();
+  }
+
+  private TenantResponse toTenantResponse(TenantView tenant) {
+    return new TenantResponse(
+        tenant.id(),
+        tenant.key(),
+        tenant.displayName(),
+        tenant.status(),
+        tenant.createdAt(),
+        tenant.updatedAt());
+  }
+
+  private TenantFeatureResponse toFeatureResponse(TenantFeatureView feature) {
+    return new TenantFeatureResponse(
+        feature.tenantId(), feature.featureKey(), feature.enabled(), feature.updatedAt());
+  }
+
+  private TenantUserResponse toTenantUserResponse(TenantUserView user) {
+    return new TenantUserResponse(
+        user.id(),
+        user.username(),
+        user.email(),
+        user.displayName(),
+        user.status(),
+        user.roleIds(),
+        user.branchIds());
   }
 }

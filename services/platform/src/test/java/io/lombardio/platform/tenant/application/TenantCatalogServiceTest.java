@@ -17,14 +17,8 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lombardio.platform.bootstrap.PlatformSeedFixtures;
-import io.lombardio.platform.iam.application.KeycloakService;
+import io.lombardio.platform.iam.application.IdentityAdministration;
 import io.lombardio.platform.integration.application.PlatformOutboxService;
-import io.lombardio.platform.tenant.api.BranchResponse;
-import io.lombardio.platform.tenant.api.CreateTenantRequest;
-import io.lombardio.platform.tenant.api.CreateTenantUserRequest;
-import io.lombardio.platform.tenant.api.TenantUserResponse;
-import io.lombardio.platform.tenant.api.UpdateTenantUserRequest;
-import io.lombardio.platform.tenant.api.UpsertTenantFeatureRequest;
 import io.lombardio.platform.tenant.application.support.InMemoryTenantRepositories;
 import java.time.Clock;
 import java.time.Instant;
@@ -44,7 +38,7 @@ class TenantCatalogServiceTest {
   private final InMemoryTenantRepositories.OutboxEvents outboxEvents =
       new InMemoryTenantRepositories.OutboxEvents();
   private final Clock clock = Clock.fixed(Instant.parse("2026-03-18T12:00:00Z"), ZoneOffset.UTC);
-  private final KeycloakService keycloakService = mock(KeycloakService.class);
+  private final IdentityAdministration identityAdministration = mock(IdentityAdministration.class);
 
   private TenantCatalogService tenantCatalogService;
 
@@ -58,7 +52,8 @@ class TenantCatalogServiceTest {
     PlatformOutboxService outboxService = new PlatformOutboxService(outboxEvents, clock);
 
     TenantLifecycleService tenantLifecycleService =
-        new TenantLifecycleService(tenants, outboxService, keycloakService, objectMapper, clock);
+        new TenantLifecycleService(
+            tenants, outboxService, identityAdministration, objectMapper, clock);
 
     TenantFeatureService tenantFeatureService =
         new TenantFeatureService(
@@ -68,7 +63,7 @@ class TenantCatalogServiceTest {
         new TenantBranchService(branches, tenantLifecycleService, clock);
 
     TenantUserService tenantUserService =
-        new TenantUserService(keycloakService, tenantLifecycleService, tenantBranchService);
+        new TenantUserService(identityAdministration, tenantLifecycleService, tenantBranchService);
 
     tenantCatalogService =
         new TenantCatalogService(
@@ -79,7 +74,7 @@ class TenantCatalogServiceTest {
   void shouldCreateTenant() {
     var created =
         tenantCatalogService.createTenant(
-            new CreateTenantRequest("alpha", "Pfandhaus Alpha", "ACTIVE"));
+            new CreateTenantCommand("alpha", "Pfandhaus Alpha", "ACTIVE"));
 
     assertEquals("alpha", created.key());
     assertEquals(2, tenantCatalogService.listTenants().size());
@@ -92,15 +87,15 @@ class TenantCatalogServiceTest {
         IllegalArgumentException.class,
         () ->
             tenantCatalogService.upsertFeature(
-                "tenant-default", "unsupported-module", new UpsertTenantFeatureRequest(true)));
+                "tenant-default", "unsupported-module", new UpsertTenantFeatureCommand(true)));
   }
 
   @Test
   void shouldListTenantUsersFromIdentityDirectory() {
-    when(keycloakService.listTenantUsers("tenant-default"))
+    when(identityAdministration.listTenantUsers("tenant-default"))
         .thenReturn(
             List.of(
-                new TenantUserResponse(
+                new TenantUserView(
                     "user-1",
                     "admin@lombardio.local",
                     "admin@lombardio.local",
@@ -109,7 +104,7 @@ class TenantCatalogServiceTest {
                     List.of("users.write", "roles.write"),
                     List.of())));
 
-    List<TenantUserResponse> users = tenantCatalogService.listTenantUsers("tenant-default");
+    List<TenantUserView> users = tenantCatalogService.listTenantUsers("tenant-default");
 
     assertEquals(1, users.size());
     assertEquals("Tenant Admin", users.getFirst().displayName());
@@ -117,7 +112,7 @@ class TenantCatalogServiceTest {
 
   @Test
   void shouldCreateTenantUserViaIdentityDirectory() {
-    when(keycloakService.createTenantUser(
+    when(identityAdministration.createTenantUser(
             "tenant-default",
             "ops@lombardio.local",
             "TempPass123!",
@@ -125,7 +120,7 @@ class TenantCatalogServiceTest {
             List.of("users.write"),
             List.of("branch-default-hq")))
         .thenReturn(
-            new TenantUserResponse(
+            new TenantUserView(
                 "user-2",
                 "ops@lombardio.local",
                 "ops@lombardio.local",
@@ -134,10 +129,10 @@ class TenantCatalogServiceTest {
                 List.of("users.write"),
                 List.of("branch-default-hq")));
 
-    TenantUserResponse created =
+    TenantUserView created =
         tenantCatalogService.createTenantUser(
             "tenant-default",
-            new CreateTenantUserRequest(
+            new CreateTenantUserCommand(
                 "ops@lombardio.local",
                 "TempPass123!",
                 "Operations",
@@ -151,7 +146,7 @@ class TenantCatalogServiceTest {
 
   @Test
   void shouldUpdateTenantUserViaIdentityDirectory() {
-    when(keycloakService.updateTenantUser(
+    when(identityAdministration.updateTenantUser(
             "tenant-default",
             "user-2",
             "ops@lombardio.local",
@@ -160,7 +155,7 @@ class TenantCatalogServiceTest {
             List.of("users.write", "roles.write"),
             List.of("branch-default-hq", "branch-default-berlin")))
         .thenReturn(
-            new TenantUserResponse(
+            new TenantUserView(
                 "user-2",
                 "ops@lombardio.local",
                 "ops@lombardio.local",
@@ -169,11 +164,11 @@ class TenantCatalogServiceTest {
                 List.of("users.write", "roles.write"),
                 List.of("branch-default-hq", "branch-default-berlin")));
 
-    TenantUserResponse updated =
+    TenantUserView updated =
         tenantCatalogService.updateTenantUser(
             "tenant-default",
             "user-2",
-            new UpdateTenantUserRequest(
+            new UpdateTenantUserCommand(
                 "ops@lombardio.local",
                 "Operations Lead",
                 "ACTIVE",
@@ -187,7 +182,7 @@ class TenantCatalogServiceTest {
 
   @Test
   void shouldListBranchesForTenant() {
-    List<BranchResponse> branchResponses = tenantCatalogService.listBranches("tenant-default");
+    List<BranchView> branchResponses = tenantCatalogService.listBranches("tenant-default");
 
     assertEquals(2, branchResponses.size());
     assertEquals("Headquarters", branchResponses.getFirst().displayName());
@@ -195,7 +190,7 @@ class TenantCatalogServiceTest {
 
   @Test
   void shouldLimitTenantRoleCatalogToTenantAssignableRoles() {
-    when(keycloakService.getAvailableRoles())
+    when(identityAdministration.getAvailableRoles())
         .thenReturn(
             List.of(
                 "users.read",

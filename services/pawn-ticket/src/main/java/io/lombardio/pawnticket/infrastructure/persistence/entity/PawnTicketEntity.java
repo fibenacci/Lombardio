@@ -10,6 +10,7 @@
  */
 package io.lombardio.pawnticket.infrastructure.persistence.entity;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,16 +19,23 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "pawn_tickets")
+@Getter
+@Setter
+@NoArgsConstructor
+@SuppressFBWarnings(
+    value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"},
+    justification = "JPA entities")
 public class PawnTicketEntity {
 
   @Id private String id;
@@ -105,196 +113,4 @@ public class PawnTicketEntity {
       fetch = FetchType.EAGER)
   @OrderBy("sortOrder ASC")
   private List<PawnTicketPositionEntity> positions = new ArrayList<>();
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getTenantId() {
-    return tenantId;
-  }
-
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
-  }
-
-  public String getCustomerId() {
-    return customerId;
-  }
-
-  public void setCustomerId(String customerId) {
-    this.customerId = customerId;
-  }
-
-  public String getCustomerNumber() {
-    return customerNumber;
-  }
-
-  public void setCustomerNumber(String customerNumber) {
-    this.customerNumber = customerNumber;
-  }
-
-  public String getCustomerDisplayName() {
-    return customerDisplayName;
-  }
-
-  public void setCustomerDisplayName(String customerDisplayName) {
-    this.customerDisplayName = customerDisplayName;
-  }
-
-  public String getCustomerPhone() {
-    return customerPhone;
-  }
-
-  public void setCustomerPhone(String customerPhone) {
-    this.customerPhone = customerPhone;
-  }
-
-  public String getContractNumber() {
-    return contractNumber;
-  }
-
-  public void setContractNumber(String contractNumber) {
-    this.contractNumber = contractNumber;
-  }
-
-  public String getContractBarcode() {
-    return contractBarcode;
-  }
-
-  public void setContractBarcode(String contractBarcode) {
-    this.contractBarcode = contractBarcode;
-  }
-
-  public String getTicketNumber() {
-    return ticketNumber;
-  }
-
-  public void setTicketNumber(String ticketNumber) {
-    this.ticketNumber = ticketNumber;
-  }
-
-  public String getTermsVersion() {
-    return termsVersion;
-  }
-
-  public void setTermsVersion(String termsVersion) {
-    this.termsVersion = termsVersion;
-  }
-
-  public String getTermsAndConditionsText() {
-    return termsAndConditionsText;
-  }
-
-  public void setTermsAndConditionsText(String termsAndConditionsText) {
-    this.termsAndConditionsText = termsAndConditionsText;
-  }
-
-  public Instant getCreatedAt() {
-    return createdAt;
-  }
-
-  public void setCreatedAt(Instant createdAt) {
-    this.createdAt = createdAt;
-  }
-
-  public LocalDate getDueDate() {
-    return dueDate;
-  }
-
-  public void setDueDate(LocalDate dueDate) {
-    this.dueDate = dueDate;
-  }
-
-  public LocalDate getEarliestAuctionDate() {
-    return earliestAuctionDate;
-  }
-
-  public void setEarliestAuctionDate(LocalDate earliestAuctionDate) {
-    this.earliestAuctionDate = earliestAuctionDate;
-  }
-
-  public Integer getTermMonths() {
-    return termMonths;
-  }
-
-  public void setTermMonths(Integer termMonths) {
-    this.termMonths = termMonths;
-  }
-
-  public BigDecimal getLoanAmount() {
-    return loanAmount;
-  }
-
-  public void setLoanAmount(BigDecimal loanAmount) {
-    this.loanAmount = loanAmount;
-  }
-
-  public BigDecimal getMonthlyInterestRate() {
-    return monthlyInterestRate;
-  }
-
-  public void setMonthlyInterestRate(BigDecimal monthlyInterestRate) {
-    this.monthlyInterestRate = monthlyInterestRate;
-  }
-
-  public BigDecimal getMonthlyOperatingFee() {
-    return monthlyOperatingFee;
-  }
-
-  public void setMonthlyOperatingFee(BigDecimal monthlyOperatingFee) {
-    this.monthlyOperatingFee = monthlyOperatingFee;
-  }
-
-  public boolean isManualMonthlyOperatingFeeRequired() {
-    return manualMonthlyOperatingFeeRequired;
-  }
-
-  public void setManualMonthlyOperatingFeeRequired(boolean manualMonthlyOperatingFeeRequired) {
-    this.manualMonthlyOperatingFeeRequired = manualMonthlyOperatingFeeRequired;
-  }
-
-  public BigDecimal getTotalInterestAmount() {
-    return totalInterestAmount;
-  }
-
-  public void setTotalInterestAmount(BigDecimal totalInterestAmount) {
-    this.totalInterestAmount = totalInterestAmount;
-  }
-
-  public BigDecimal getTotalOperatingFeeAmount() {
-    return totalOperatingFeeAmount;
-  }
-
-  public void setTotalOperatingFeeAmount(BigDecimal totalOperatingFeeAmount) {
-    this.totalOperatingFeeAmount = totalOperatingFeeAmount;
-  }
-
-  public BigDecimal getTotalRepaymentAmount() {
-    return totalRepaymentAmount;
-  }
-
-  public void setTotalRepaymentAmount(BigDecimal totalRepaymentAmount) {
-    this.totalRepaymentAmount = totalRepaymentAmount;
-  }
-
-  public String getLegalText() {
-    return legalText;
-  }
-
-  public void setLegalText(String legalText) {
-    this.legalText = legalText;
-  }
-
-  public List<PawnTicketPositionEntity> getPositions() {
-    return List.copyOf(positions);
-  }
-
-  public void setPositions(@NotNull List<PawnTicketPositionEntity> positions) {
-    this.positions = new ArrayList<>(Objects.requireNonNull(positions, "positions"));
-  }
 }

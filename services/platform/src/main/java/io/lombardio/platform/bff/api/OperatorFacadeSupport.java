@@ -17,33 +17,34 @@ import java.util.Enumeration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 abstract class OperatorFacadeSupport {
 
-  private final OperatorBffProxyService proxyService;
+  protected final OperatorBffProxyService proxyService;
 
   protected OperatorFacadeSupport(OperatorBffProxyService proxyService) {
     this.proxyService = proxyService;
   }
 
-  protected ResponseEntity<byte[]> forwardGet(
+  protected ResponseEntity<StreamingResponseBody> forwardGet(
       String serviceKey, HttpServletRequest request, String downstreamPath) {
     return forward(
         serviceKey, request, HttpMethod.GET, downstreamPath, request.getQueryString(), null);
   }
 
-  protected ResponseEntity<byte[]> forwardGet(
+  protected ResponseEntity<StreamingResponseBody> forwardGet(
       String serviceKey, HttpServletRequest request, String downstreamPath, String query) {
     return forward(serviceKey, request, HttpMethod.GET, downstreamPath, query, null);
   }
 
-  protected ResponseEntity<byte[]> forwardPost(
+  protected ResponseEntity<StreamingResponseBody> forwardPost(
       String serviceKey, HttpServletRequest request, String downstreamPath, byte[] body) {
     return forward(
         serviceKey, request, HttpMethod.POST, downstreamPath, request.getQueryString(), body);
   }
 
-  protected ResponseEntity<byte[]> forwardPost(
+  protected ResponseEntity<StreamingResponseBody> forwardPost(
       String serviceKey,
       HttpServletRequest request,
       String downstreamPath,
@@ -52,13 +53,13 @@ abstract class OperatorFacadeSupport {
     return forward(serviceKey, request, HttpMethod.POST, downstreamPath, query, body);
   }
 
-  protected ResponseEntity<byte[]> forwardPut(
+  protected ResponseEntity<StreamingResponseBody> forwardPut(
       String serviceKey, HttpServletRequest request, String downstreamPath, byte[] body) {
     return forward(
         serviceKey, request, HttpMethod.PUT, downstreamPath, request.getQueryString(), body);
   }
 
-  private ResponseEntity<byte[]> forward(
+  private ResponseEntity<StreamingResponseBody> forward(
       String serviceKey,
       HttpServletRequest request,
       HttpMethod method,

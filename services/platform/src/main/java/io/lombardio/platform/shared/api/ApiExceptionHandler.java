@@ -27,11 +27,24 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
   private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
+
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<ApiError> handleResponseStatus(
+      ResponseStatusException exception, HttpServletRequest request) {
+    return ResponseEntity.status(exception.getStatusCode())
+        .body(
+            new ApiError(
+                exception.getStatusCode().is4xxClientError() ? "client_error" : "server_error",
+                exception.getReason(),
+                TraceIdContext.getOrCreate(request),
+                List.of()));
+  }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ApiError> handleValidation(

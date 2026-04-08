@@ -14,8 +14,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.platform.integration.application.PlatformOutboxService;
-import io.lombardio.platform.tenant.api.TenantFeatureResponse;
-import io.lombardio.platform.tenant.api.UpsertTenantFeatureRequest;
 import io.lombardio.platform.tenant.domain.TenantFeature;
 import io.lombardio.platform.tenant.domain.TenantFeatureRepository;
 import java.time.Clock;
@@ -62,7 +60,7 @@ public class TenantFeatureService {
     this.clock = clock;
   }
 
-  public List<TenantFeatureResponse> listFeatures(String tenantId) {
+  public List<TenantFeatureView> listFeatures(String tenantId) {
     tenantLifecycleService.requireTenant(tenantId);
     return tenantFeatureRepository.findByTenantId(tenantId).stream()
         .map(this::toFeatureResponse)
@@ -70,8 +68,8 @@ public class TenantFeatureService {
   }
 
   @Transactional
-  public TenantFeatureResponse upsertFeature(
-      String tenantId, String featureKey, UpsertTenantFeatureRequest request) {
+  public TenantFeatureView upsertFeature(
+      String tenantId, String featureKey, UpsertTenantFeatureCommand request) {
     tenantLifecycleService.requireTenant(tenantId);
     validateFeatureKey(featureKey);
 
@@ -117,8 +115,8 @@ public class TenantFeatureService {
     }
   }
 
-  private TenantFeatureResponse toFeatureResponse(TenantFeature tenantFeature) {
-    return new TenantFeatureResponse(
+  private TenantFeatureView toFeatureResponse(TenantFeature tenantFeature) {
+    return new TenantFeatureView(
         tenantFeature.tenantId(),
         tenantFeature.featureKey(),
         tenantFeature.enabled(),

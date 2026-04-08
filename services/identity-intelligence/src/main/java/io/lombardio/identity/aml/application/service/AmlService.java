@@ -10,9 +10,6 @@
  */
 package io.lombardio.identity.aml.application.service;
 
-import io.lombardio.identity.aml.api.http.AmlStatusResponse;
-import io.lombardio.identity.aml.api.http.OriginationAssessmentRequest;
-import io.lombardio.identity.aml.api.http.UpdateAmlStatusRequest;
 import io.lombardio.identity.aml.domain.model.AmlCase;
 import io.lombardio.identity.aml.domain.model.AmlRiskLevel;
 import io.lombardio.identity.aml.domain.model.AmlStatus;
@@ -40,7 +37,7 @@ public class AmlService {
     this.clock = clock;
   }
 
-  public AmlStatusResponse getStatus(String tenantId, String customerId) {
+  public AmlStatusView getStatus(String tenantId, String customerId) {
     AmlCase amlCase =
         amlRepository
             .findByTenantIdAndCustomerId(tenantId, customerId)
@@ -49,8 +46,8 @@ public class AmlService {
     return toResponse(amlCase, assessment);
   }
 
-  public AmlStatusResponse updateStatus(
-      String tenantId, String customerId, UpdateAmlStatusRequest request) {
+  public AmlStatusView updateStatus(
+      String tenantId, String customerId, UpdateAmlStatusCommand request) {
     AmlCase existing =
         amlRepository
             .findByTenantIdAndCustomerId(tenantId, customerId)
@@ -84,8 +81,8 @@ public class AmlService {
     return toResponse(amlRepository.save(updated), assessment);
   }
 
-  public AmlStatusResponse assessForOrigination(
-      String tenantId, String customerId, OriginationAssessmentRequest request) {
+  public AmlStatusView assessForOrigination(
+      String tenantId, String customerId, OriginationAssessmentCommand request) {
     AmlCase amlCase =
         amlRepository
             .findByTenantIdAndCustomerId(tenantId, customerId)
@@ -146,8 +143,8 @@ public class AmlService {
         now);
   }
 
-  private AmlStatusResponse toResponse(AmlCase amlCase, Assessment assessment) {
-    return new AmlStatusResponse(
+  private AmlStatusView toResponse(AmlCase amlCase, Assessment assessment) {
+    return new AmlStatusView(
         amlCase.customerId(),
         amlCase.status(),
         amlCase.riskLevel(),

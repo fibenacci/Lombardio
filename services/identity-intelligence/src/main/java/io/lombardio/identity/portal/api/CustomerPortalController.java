@@ -11,8 +11,14 @@
 package io.lombardio.identity.portal.api;
 
 import io.lombardio.identity.config.CustomerPortalSessionProperties;
+import io.lombardio.identity.portal.application.AuthenticatedCustomerPortalUser;
+import io.lombardio.identity.portal.application.CustomerPortalAcceptInvitationCommand;
+import io.lombardio.identity.portal.application.CustomerPortalCustomerView;
+import io.lombardio.identity.portal.application.CustomerPortalInvitationView;
+import io.lombardio.identity.portal.application.CustomerPortalLoginCommand;
+import io.lombardio.identity.portal.application.CustomerPortalLoginView;
+import io.lombardio.identity.portal.application.CustomerPortalPawnTicketView;
 import io.lombardio.identity.portal.application.CustomerPortalService;
-import io.lombardio.identity.portal.infrastructure.security.AuthenticatedCustomerPortalUser;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -46,37 +52,41 @@ public class CustomerPortalController {
   }
 
   @PostMapping("/invitations/lookup")
-  public CustomerPortalInvitationResponse invitation(
+  public CustomerPortalInvitationView invitation(
       @Valid @RequestBody CustomerPortalInvitationLookupRequest request) {
     return customerPortalService.getInvitation(request.token());
   }
 
   @PostMapping("/invitations/accept")
-  public CustomerPortalLoginResponse acceptInvitation(
+  public CustomerPortalLoginView acceptInvitation(
       @Valid @RequestBody CustomerPortalAcceptInvitationRequest request,
       HttpServletResponse response) {
-    CustomerPortalLoginResponse session = customerPortalService.acceptInvitation(request);
+    CustomerPortalLoginView session =
+        customerPortalService.acceptInvitation(
+            new CustomerPortalAcceptInvitationCommand(request.token(), request.password()));
     writeSessionCookie(response, session.accessToken());
     return cookieOnlySession(session);
   }
 
   @PostMapping("/auth/login")
-  public CustomerPortalLoginResponse login(
+  public CustomerPortalLoginView login(
       @Valid @RequestBody CustomerPortalLoginRequest request, HttpServletResponse response) {
-    CustomerPortalLoginResponse session = customerPortalService.login(request);
+    CustomerPortalLoginView session =
+        customerPortalService.login(
+            new CustomerPortalLoginCommand(request.email(), request.password()));
     writeSessionCookie(response, session.accessToken());
     return cookieOnlySession(session);
   }
 
   @PostMapping("/auth/refresh")
-  public ResponseEntity<CustomerPortalLoginResponse> refresh(
+  public ResponseEntity<CustomerPortalLoginView> refresh(
       HttpServletRequest request, HttpServletResponse response) {
     String token = readSessionToken(request);
     if (token == null || token.isBlank()) {
       return ResponseEntity.noContent().build();
     }
 
-    CustomerPortalLoginResponse session = customerPortalService.refresh(token);
+    CustomerPortalLoginView session = customerPortalService.refresh(token);
     if (session == null) {
       clearSessionCookie(response);
       return ResponseEntity.noContent().build();
@@ -94,13 +104,13 @@ public class CustomerPortalController {
   }
 
   @GetMapping("/auth/me")
-  public CustomerPortalMeResponse me(
+  public CustomerPortalCustomerView me(
       @AuthenticationPrincipal AuthenticatedCustomerPortalUser principal) {
     return customerPortalService.currentCustomer(principal);
   }
 
   @GetMapping("/pawn-tickets")
-  public List<CustomerPortalPawnTicketResponse> pawnTickets(
+  public List<CustomerPortalPawnTicketView> pawnTickets(
       @AuthenticationPrincipal AuthenticatedCustomerPortalUser principal) {
     return customerPortalService.listPawnTickets(principal);
   }
@@ -153,7 +163,7 @@ public class CustomerPortalController {
     return null;
   }
 
-  private CustomerPortalLoginResponse cookieOnlySession(CustomerPortalLoginResponse session) {
-    return new CustomerPortalLoginResponse(null, session.customer());
+  private CustomerPortalLoginView cookieOnlySession(CustomerPortalLoginView session) {
+    return new CustomerPortalLoginView(null, session.customer());
   }
 }

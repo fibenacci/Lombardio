@@ -19,9 +19,7 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.Month;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -38,9 +36,7 @@ public class AuctionService {
   }
 
   public List<Auction> listAuctions(String tenantId) {
-    return auctionRepository.findByTenantId(tenantId).stream()
-        .sorted(Comparator.comparing(Auction::createdAt).reversed())
-        .toList();
+    return auctionRepository.findByTenantId(tenantId);
   }
 
   public Auction createAuction(String tenantId, CreateAuctionCommand request) {
@@ -90,143 +86,40 @@ public class AuctionService {
       String tenantId, String auctionId, AnnounceAuctionCommand request) {
     Auction auction = requireAuction(tenantId, auctionId);
     LocalDate announcementDate = LocalDate.now(clock);
-    if (request.auctionDate() == null) {
-      throw new IllegalArgumentException("auctionDate is required");
-    }
-    if (request.auctionDate().isBefore(announcementDate.plusDays(7))
-        || request.auctionDate().isAfter(announcementDate.plusDays(14))) {
-      throw new IllegalArgumentException(
-          "auctionDate must be between 7 and 14 days after public announcement");
-    }
-
     Auction updated =
-        new Auction(
-            auction.id(),
-            auction.tenantId(),
-            auction.title(),
-            auction.location(),
-            AuctionStatus.ANNOUNCED,
+        auction.announce(
             announcementDate,
             request.auctionDate(),
-            auction.liveStartedAt(),
-            auction.closedAt(),
             request.announcementReference(),
-            auction.lots(),
-            auction.createdAt(),
             Instant.now(clock));
     return auctionRepository.save(updated);
   }
 
   public Auction openAuction(String tenantId, String auctionId) {
     Auction auction = requireAuction(tenantId, auctionId);
-    if (auction.status() != AuctionStatus.ANNOUNCED) {
-      throw new IllegalArgumentException("Only announced auctions can be opened");
-    }
-    List<AuctionLot> lots =
-        auction.lots().stream()
-            .map(
-                lot ->
-                    new AuctionLot(
-                        lot.id(),
-                        lot.auctionId(),
-                        lot.lotNumber(),
-                        lot.contractNumber(),
-                        lot.itemNumber(),
-                        lot.description(),
-                        lot.estimatedValue(),
-                        lot.outstandingClaim(),
-                        lot.latestBidAmount(),
-                        lot.leadingBidder(),
-                        lot.hammerPrice(),
-                        AuctionLotStatus.OPEN,
-                        lot.surplusAmount(),
-                        lot.authorityTransferDueDate(),
-                        lot.authorityTransferStatus()))
-            .toList();
-    Auction updated =
-        new Auction(
-            auction.id(),
-            auction.tenantId(),
-            auction.title(),
-            auction.location(),
-            AuctionStatus.LIVE,
-            auction.publicAnnouncementDate(),
-            auction.auctionDate(),
-            Instant.now(clock),
-            auction.closedAt(),
-            auction.announcementReference(),
-            lots,
-            auction.createdAt(),
-            Instant.now(clock));
+    Auction updated = auction.open(Instant.now(clock));
     return auctionRepository.save(updated);
   }
 
   public Auction closeAuction(String tenantId, String auctionId) {
     Auction auction = requireAuction(tenantId, auctionId);
-    Auction updated =
-        new Auction(
-            auction.id(),
-            auction.tenantId(),
-            auction.title(),
-            auction.location(),
-            AuctionStatus.CLOSED,
-            auction.publicAnnouncementDate(),
-            auction.auctionDate(),
-            auction.liveStartedAt(),
-            Instant.now(clock),
-            auction.announcementReference(),
-            auction.lots(),
-            auction.createdAt(),
-            Instant.now(clock));
+    Auction updated = auction.close(Instant.now(clock));
     return auctionRepository.save(updated);
   }
 
   public Auction placeBid(
       String tenantId, String auctionId, String lotId, PlaceBidCommand request) {
     Auction auction = requireAuction(tenantId, auctionId);
-    if (auction.status() != AuctionStatus.LIVE) {
-      throw new IllegalArgumentException("Auction must be live before bids can be placed");
-    }
-    List<AuctionLot> lots =
-        auction.lots().stream().map(lot -> updateBid(lot, lotId, request)).toList();
     Auction updated =
-        new Auction(
-            auction.id(),
-            auction.tenantId(),
-            auction.title(),
-            auction.location(),
-            auction.status(),
-            auction.publicAnnouncementDate(),
-            auction.auctionDate(),
-            auction.liveStartedAt(),
-            auction.closedAt(),
-            auction.announcementReference(),
-            lots,
-            auction.createdAt(),
-            Instant.now(clock));
+        auction.placeBid(lotId, request.bidderDisplayName(), request.amount(), Instant.now(clock));
     return auctionRepository.save(updated);
   }
 
   public Auction settleLot(
       String tenantId, String auctionId, String lotId, SettleAuctionLotCommand request) {
     Auction auction = requireAuction(tenantId, auctionId);
-    List<AuctionLot> lots =
-        auction.lots().stream().map(lot -> settle(lot, lotId, request.hammerPrice())).toList();
     Auction updated =
-        new Auction(
-            auction.id(),
-            auction.tenantId(),
-            auction.title(),
-            auction.location(),
-            auction.status(),
-            auction.publicAnnouncementDate(),
-            auction.auctionDate(),
-            auction.liveStartedAt(),
-            auction.closedAt(),
-            auction.announcementReference(),
-            lots,
-            auction.createdAt(),
-            Instant.now(clock));
+        auction.settleLot(lotId, request.hammerPrice(), LocalDate.now(clock), Instant.now(clock));
     return auctionRepository.save(updated);
   }
 
@@ -236,76 +129,8 @@ public class AuctionService {
         .filter(
             lot ->
                 lot.surplusAmount() != null && lot.surplusAmount().compareTo(BigDecimal.ZERO) > 0)
-        .map(
-            lot ->
-                new SurplusCase(
-                    lot.auctionId(),
-                    lot.id(),
-                    lot.lotNumber(),
-                    lot.contractNumber(),
-                    lot.hammerPrice(),
-                    lot.outstandingClaim(),
-                    lot.surplusAmount(),
-                    lot.authorityTransferDueDate(),
-                    lot.authorityTransferStatus()))
+        .map(SurplusCase::from)
         .toList();
-  }
-
-  private AuctionLot updateBid(AuctionLot lot, String lotId, PlaceBidCommand request) {
-    if (!lot.id().equals(lotId)) {
-      return lot;
-    }
-    BigDecimal latest = lot.latestBidAmount() == null ? BigDecimal.ZERO : lot.latestBidAmount();
-    if (request.amount().compareTo(latest) <= 0) {
-      throw new IllegalArgumentException("Bid amount must be higher than the current bid");
-    }
-    return new AuctionLot(
-        lot.id(),
-        lot.auctionId(),
-        lot.lotNumber(),
-        lot.contractNumber(),
-        lot.itemNumber(),
-        lot.description(),
-        lot.estimatedValue(),
-        lot.outstandingClaim(),
-        request.amount(),
-        request.bidderDisplayName(),
-        lot.hammerPrice(),
-        AuctionLotStatus.OPEN,
-        lot.surplusAmount(),
-        lot.authorityTransferDueDate(),
-        lot.authorityTransferStatus());
-  }
-
-  private AuctionLot settle(AuctionLot lot, String lotId, BigDecimal hammerPrice) {
-    if (!lot.id().equals(lotId)) {
-      return lot;
-    }
-    BigDecimal surplus = hammerPrice.subtract(lot.outstandingClaim()).max(BigDecimal.ZERO);
-    LocalDate transferDueDate =
-        surplus.compareTo(BigDecimal.ZERO) > 0
-            ? LocalDate.of(LocalDate.now(clock).getYear(), Month.DECEMBER, 31)
-                .plusYears(3)
-                .plusMonths(1)
-            : null;
-    return new AuctionLot(
-        lot.id(),
-        lot.auctionId(),
-        lot.lotNumber(),
-        lot.contractNumber(),
-        lot.itemNumber(),
-        lot.description(),
-        lot.estimatedValue(),
-        lot.outstandingClaim(),
-        lot.latestBidAmount(),
-        lot.leadingBidder(),
-        hammerPrice,
-        hammerPrice.compareTo(BigDecimal.ZERO) > 0
-            ? AuctionLotStatus.SOLD
-            : AuctionLotStatus.UNSOLD,
-        surplus,
-        transferDueDate,
-        surplus.compareTo(BigDecimal.ZERO) > 0 ? "OPEN" : "NOT_APPLICABLE");
   }
 
   private Auction requireAuction(String tenantId, String auctionId) {

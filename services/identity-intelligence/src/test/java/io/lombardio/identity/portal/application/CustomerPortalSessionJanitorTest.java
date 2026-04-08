@@ -13,7 +13,6 @@ package io.lombardio.identity.portal.application;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import io.lombardio.identity.portal.infrastructure.persistence.CustomerPortalSessionRepository;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -23,12 +22,12 @@ class CustomerPortalSessionJanitorTest {
 
   @Test
   void deletesExpiredSessionsUsingCurrentClockInstant() {
-    CustomerPortalSessionRepository repository = mock(CustomerPortalSessionRepository.class);
+    CustomerPortalSessionStore sessionStore = mock(CustomerPortalSessionStore.class);
     Clock clock = Clock.fixed(Instant.parse("2026-04-02T00:00:00Z"), ZoneOffset.UTC);
-    CustomerPortalSessionJanitor janitor = new CustomerPortalSessionJanitor(repository, clock);
+    CustomerPortalSessionJanitor janitor = new CustomerPortalSessionJanitor(sessionStore, clock);
 
     janitor.deleteExpiredSessions();
 
-    verify(repository).deleteByExpiresAtBefore(Instant.parse("2026-04-02T00:00:00Z"));
+    verify(sessionStore).deleteExpiredBefore(Instant.parse("2026-04-02T00:00:00Z"));
   }
 }

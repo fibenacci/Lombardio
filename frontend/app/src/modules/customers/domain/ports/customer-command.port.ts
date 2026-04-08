@@ -1,4 +1,4 @@
-import type { AmlStatusDto, CustomerDto, KycStatusDto } from "../../infrastructure/dto/customer-response.dto";
+import type { AmlStatusDto, CustomerDto, KycStatusDto } from "../dto/customer-response.dto";
 
 export interface CustomerCommandPort {
   prefillKycDocument(tenantId: string, customerId: string, payload: object): Promise<unknown>;

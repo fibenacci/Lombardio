@@ -18,4 +18,9 @@ public record Tenant(
     String displayName,
     String status,
     Instant createdAt,
-    Instant updatedAt) {}
+    Instant updatedAt) {
+
+  public Tenant update(String key, String displayName, String status, Instant now) {
+    return new Tenant(id, key, displayName, status, createdAt, now);
+  }
+}

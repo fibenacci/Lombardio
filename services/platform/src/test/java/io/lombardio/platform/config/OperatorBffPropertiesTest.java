@@ -10,54 +10,30 @@
  */
 package io.lombardio.platform.config;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class OperatorBffPropertiesTest {
 
   @Test
-  void acceptsNonBlankTargets() {
-    assertDoesNotThrow(
-        () ->
-            new OperatorBffProperties(
-                "http://identity",
-                "http://origination",
-                "http://pawn-ticket",
-                "http://auction",
-                "http://online-auction",
-                "http://reporting"));
-  }
-
-  @Test
-  void resolvesConfiguredAliases() {
+  void resolvesConfiguredTargets() {
     OperatorBffProperties properties =
         new OperatorBffProperties(
-            "http://identity",
-            "http://origination",
-            "http://pawn-ticket",
-            "http://auction",
-            "http://online-auction",
-            "http://reporting");
+            Map.of(
+                "identity", "http://identity",
+                "auction", "http://auction"));
 
     assertEquals("http://identity", properties.resolve("identity").orElseThrow());
-    assertEquals("http://pawn-ticket", properties.resolve("pawn-ticket").orElseThrow());
-    assertEquals("http://reporting", properties.resolve("reporting").orElseThrow());
+    assertEquals("http://auction", properties.resolve("auction").orElseThrow());
+    assertTrue(properties.resolve("unknown").isEmpty());
   }
 
   @Test
-  void rejectsBlankTarget() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () ->
-            new OperatorBffProperties(
-                "",
-                "http://origination",
-                "http://pawn-ticket",
-                "http://auction",
-                "http://online-auction",
-                "http://reporting"));
+  void handlesEmptyTargets() {
+    OperatorBffProperties properties = new OperatorBffProperties(Map.of());
+    assertTrue(properties.resolve("any").isEmpty());
   }
 }

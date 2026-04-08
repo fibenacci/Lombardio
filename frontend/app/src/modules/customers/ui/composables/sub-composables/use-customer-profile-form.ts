@@ -5,6 +5,7 @@ import {
   mapCustomerDomainToUpdatePayload,
   mapCustomerDtoToDomain
 } from "../../../infrastructure/mappers/customer-api.mapper";
+import { KycStatus } from "../../../domain/model/customer-enums";
 
 export function useCustomerProfileForm({
   tenantId,
@@ -25,10 +26,14 @@ export function useCustomerProfileForm({
     firstName: "",
     lastName: "",
     birthDate: "",
+    displayName: "",
     phone: "",
     email: "",
     wantsDigitalPawnTicket: false,
     onlineAccessStatus: "NOT_REQUESTED",
+    kycStatus: KycStatus.NOT_STARTED,
+    kycApproved: false,
+    kycDocumentType: null as string | null,
     street: "",
     postalCode: "",
     city: ""

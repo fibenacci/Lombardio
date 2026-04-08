@@ -10,7 +10,12 @@
  */
 package io.lombardio.identity.kyc.api;
 
+import io.lombardio.identity.kyc.application.DocumentPrefillCommand;
+import io.lombardio.identity.kyc.application.DocumentPrefillView;
+import io.lombardio.identity.kyc.application.KycDocumentImagesView;
 import io.lombardio.identity.kyc.application.KycService;
+import io.lombardio.identity.kyc.application.KycStatusView;
+import io.lombardio.identity.kyc.application.UpdateKycStatusCommand;
 import io.lombardio.identity.kyc.infrastructure.security.KycAuthorizationService;
 import io.lombardio.platform.security.AuthenticatedUser;
 import jakarta.validation.Valid;
@@ -36,7 +41,7 @@ public class KycController {
   }
 
   @GetMapping
-  public KycStatusResponse getStatus(
+  public KycStatusView getStatus(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @PathVariable String tenantId,
       @PathVariable String customerId) {
@@ -45,7 +50,7 @@ public class KycController {
   }
 
   @GetMapping("/documents")
-  public KycDocumentImagesResponse getDocuments(
+  public KycDocumentImagesView getDocuments(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @PathVariable String tenantId,
       @PathVariable String customerId) {
@@ -54,23 +59,41 @@ public class KycController {
   }
 
   @PostMapping
-  public KycStatusResponse updateStatus(
+  public KycStatusView updateStatus(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @PathVariable String tenantId,
       @PathVariable String customerId,
       @Valid @RequestBody UpdateKycStatusRequest request) {
     authorizationService.requireWrite(principal, tenantId);
-    return kycService.updateStatus(tenantId, customerId, request);
+    return kycService.updateStatus(
+        tenantId,
+        customerId,
+        new UpdateKycStatusCommand(
+            request.status(),
+            request.verificationMode(),
+            request.verifiedUntil(),
+            request.documentType(),
+            request.documentNumber(),
+            request.documentValidUntil(),
+            request.documentFrontImageDataUrl(),
+            request.documentBackImageDataUrl(),
+            request.decisionNote(),
+            request.providerName(),
+            request.providerReference(),
+            request.providerStatus()));
   }
 
   @PostMapping("/document-prefill")
-  public DocumentPrefillResponse prefillDocument(
+  public DocumentPrefillView prefillDocument(
       @AuthenticationPrincipal AuthenticatedUser principal,
       @PathVariable String tenantId,
       @PathVariable String customerId,
       @Valid @RequestBody DocumentPrefillRequest request) {
     authorizationService.requireWrite(principal, tenantId);
-    return kycService.prefillDocumentData(tenantId, request);
+    return kycService.prefillDocumentData(
+        tenantId,
+        new DocumentPrefillCommand(
+            request.documentFrontImageDataUrl(), request.documentBackImageDataUrl()));
   }
 
   @GetMapping("/approval")

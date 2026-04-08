@@ -17,15 +17,15 @@ import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.lombardio.platform.iam.application.KeycloakService;
+import io.lombardio.platform.iam.application.IdentityAdministration;
 import io.lombardio.platform.integration.application.PlatformOutboxService;
-import io.lombardio.platform.tenant.api.CreateTenantRequest;
-import io.lombardio.platform.tenant.api.TenantResponse;
+import io.lombardio.platform.tenant.application.CreateTenantCommand;
 import io.lombardio.platform.tenant.application.TenantBranchService;
 import io.lombardio.platform.tenant.application.TenantCatalogService;
 import io.lombardio.platform.tenant.application.TenantFeatureService;
 import io.lombardio.platform.tenant.application.TenantLifecycleService;
 import io.lombardio.platform.tenant.application.TenantUserService;
+import io.lombardio.platform.tenant.application.TenantView;
 import io.lombardio.platform.tenant.application.support.InMemoryTenantRepositories;
 import java.time.Clock;
 import java.util.List;
@@ -41,10 +41,10 @@ public class TenantSteps {
       new InMemoryTenantRepositories.Branches();
   private final InMemoryTenantRepositories.OutboxEvents outboxEvents =
       new InMemoryTenantRepositories.OutboxEvents();
-  private final KeycloakService keycloakService = mock(KeycloakService.class);
+  private final IdentityAdministration identityAdministration = mock(IdentityAdministration.class);
 
   private TenantCatalogService tenantCatalogService;
-  private TenantResponse lastResponse;
+  private TenantView lastResponse;
 
   @Before
   public void setup() {
@@ -53,7 +53,8 @@ public class TenantSteps {
     PlatformOutboxService outboxService = new PlatformOutboxService(outboxEvents, clock);
 
     TenantLifecycleService tenantLifecycleService =
-        new TenantLifecycleService(tenants, outboxService, keycloakService, objectMapper, clock);
+        new TenantLifecycleService(
+            tenants, outboxService, identityAdministration, objectMapper, clock);
 
     TenantFeatureService tenantFeatureService =
         new TenantFeatureService(
@@ -63,7 +64,7 @@ public class TenantSteps {
         new TenantBranchService(branches, tenantLifecycleService, clock);
 
     TenantUserService tenantUserService =
-        new TenantUserService(keycloakService, tenantLifecycleService, tenantBranchService);
+        new TenantUserService(identityAdministration, tenantLifecycleService, tenantBranchService);
 
     tenantCatalogService =
         new TenantCatalogService(
@@ -78,7 +79,7 @@ public class TenantSteps {
 
   @When("I request to register a new tenant with name {string} and slug {string}")
   public void i_request_to_register_a_new_tenant_with_name_and_slug(String name, String slug) {
-    lastResponse = tenantCatalogService.createTenant(new CreateTenantRequest(slug, name, "ACTIVE"));
+    lastResponse = tenantCatalogService.createTenant(new CreateTenantCommand(slug, name, "ACTIVE"));
   }
 
   @Then("the tenant should be successfully created")
@@ -88,7 +89,7 @@ public class TenantSteps {
 
   @Then("the tenant {string} should be available in the system")
   public void the_tenant_should_be_available_in_the_system(String expectedName) {
-    List<TenantResponse> allTenants = tenantCatalogService.listTenants();
+    List<TenantView> allTenants = tenantCatalogService.listTenants();
     boolean exists = allTenants.stream().anyMatch(t -> t.displayName().equals(expectedName));
     Assertions.assertTrue(exists, "Tenant with name " + expectedName + " should exist");
   }

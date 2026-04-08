@@ -13,11 +13,8 @@ package io.lombardio.platform.tenant.application;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.lombardio.platform.iam.application.KeycloakService;
+import io.lombardio.platform.iam.application.IdentityAdministration;
 import io.lombardio.platform.integration.application.PlatformOutboxService;
-import io.lombardio.platform.tenant.api.CreateTenantRequest;
-import io.lombardio.platform.tenant.api.TenantResponse;
-import io.lombardio.platform.tenant.api.UpdateTenantRequest;
 import io.lombardio.platform.tenant.domain.Tenant;
 import io.lombardio.platform.tenant.domain.TenantRepository;
 import java.time.Clock;
@@ -33,7 +30,7 @@ public class TenantLifecycleService {
 
   private final TenantRepository tenantRepository;
   private final PlatformOutboxService platformOutboxService;
-  private final KeycloakService keycloakService;
+  private final IdentityAdministration identityAdministration;
   private final ObjectMapper objectMapper;
   private final Clock clock;
 
@@ -41,22 +38,22 @@ public class TenantLifecycleService {
   public TenantLifecycleService(
       TenantRepository tenantRepository,
       PlatformOutboxService platformOutboxService,
-      KeycloakService keycloakService,
+      IdentityAdministration identityAdministration,
       ObjectMapper objectMapper,
       Clock clock) {
     this.tenantRepository = tenantRepository;
     this.platformOutboxService = platformOutboxService;
-    this.keycloakService = keycloakService;
+    this.identityAdministration = identityAdministration;
     this.objectMapper = objectMapper;
     this.clock = clock;
   }
 
-  public List<TenantResponse> listTenants() {
+  public List<TenantView> listTenants() {
     return tenantRepository.findAll().stream().map(this::toTenantResponse).toList();
   }
 
   @Transactional
-  public TenantResponse createTenant(CreateTenantRequest request) {
+  public TenantView createTenant(CreateTenantCommand request) {
     tenantRepository
         .findByKey(request.key())
         .ifPresent(
@@ -70,7 +67,7 @@ public class TenantLifecycleService {
         new Tenant(tenantId, request.key(), request.displayName(), request.status(), now, now);
 
     // Create Keycloak group for tenant
-    keycloakService.createTenantGroup(tenantId, request.displayName());
+    identityAdministration.createTenantGroup(tenantId, request.displayName());
 
     Tenant saved = tenantRepository.save(tenant);
     recordTenantEvent("platform.tenant.created", saved);
@@ -78,17 +75,10 @@ public class TenantLifecycleService {
   }
 
   @Transactional
-  public TenantResponse updateTenant(String tenantId, UpdateTenantRequest request) {
+  public TenantView updateTenant(String tenantId, UpdateTenantCommand request) {
     Tenant existing = requireTenant(tenantId);
-
     Tenant updated =
-        new Tenant(
-            existing.id(),
-            request.key(),
-            request.displayName(),
-            request.status(),
-            existing.createdAt(),
-            Instant.now(clock));
+        existing.update(request.key(), request.displayName(), request.status(), Instant.now(clock));
 
     Tenant saved = tenantRepository.save(updated);
     recordTenantEvent("platform.tenant.updated", saved);
@@ -131,8 +121,8 @@ public class TenantLifecycleService {
     }
   }
 
-  private TenantResponse toTenantResponse(Tenant tenant) {
-    return new TenantResponse(
+  private TenantView toTenantResponse(Tenant tenant) {
+    return new TenantView(
         tenant.id(),
         tenant.key(),
         tenant.displayName(),

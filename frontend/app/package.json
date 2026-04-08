@@ -10,6 +10,7 @@
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "test": "vitest run",
+    "depcruise:customers": "dependency-cruiser -c dependency-cruiser.customers.mjs src/modules/customers",
     "test:watch": "vitest",
     "typecheck": "vue-tsc --noEmit"
   },
@@ -27,6 +28,7 @@
     "@types/node": "^25.5.0",
     "@vitejs/plugin-vue": "~5.2.1",
     "@vue/test-utils": "~2.4.6",
+    "dependency-cruiser": "^17.3.10",
     "eslint": "^9.39.4",
     "eslint-plugin-vue": "^10.8.0",
     "globals": "^17.4.0",

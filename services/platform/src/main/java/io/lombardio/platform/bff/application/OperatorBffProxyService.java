@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 @Service
 public class OperatorBffProxyService {
@@ -28,20 +29,15 @@ public class OperatorBffProxyService {
   private final OperatorBffHeaderPolicy headerPolicy;
 
   public OperatorBffProxyService(
-      OperatorBffTargetResolver targetResolver, OperatorBffHeaderPolicy headerPolicy) {
-    this(RestClient.create(), targetResolver, headerPolicy);
-  }
-
-  OperatorBffProxyService(
-      RestClient restClient,
+      RestClient.Builder restClientBuilder,
       OperatorBffTargetResolver targetResolver,
       OperatorBffHeaderPolicy headerPolicy) {
-    this.restClient = restClient;
+    this.restClient = restClientBuilder.build();
     this.targetResolver = targetResolver;
     this.headerPolicy = headerPolicy;
   }
 
-  public ResponseEntity<byte[]> forward(
+  public ResponseEntity<StreamingResponseBody> forward(
       String serviceKey,
       String downstreamPath,
       String query,
@@ -66,7 +62,8 @@ public class OperatorBffProxyService {
     return exchangeSpec.exchange(
         (request, response) -> {
           HttpHeaders responseHeaders = headerPolicy.sanitizeResponseHeaders(response.getHeaders());
-          byte[] responseBody = StreamUtils.copyToByteArray(response.getBody());
+          StreamingResponseBody responseBody =
+              outputStream -> StreamUtils.copy(response.getBody(), outputStream);
           return new ResponseEntity<>(
               responseBody,
               responseHeaders,

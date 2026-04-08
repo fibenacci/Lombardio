@@ -18,12 +18,19 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.Objects;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "online_auction_lots")
+@Getter
+@Setter
+@NoArgsConstructor
+@SuppressFBWarnings(
+    value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"},
+    justification = "JPA entities")
 public class OnlineAuctionLotEntity {
 
   @Id private String id;
@@ -48,75 +55,4 @@ public class OnlineAuctionLotEntity {
   private BigDecimal currentBid;
 
   private String highestBidderAlias;
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  @SuppressFBWarnings(
-      value = "EI_EXPOSE_REP",
-      justification = "JPA relationship references must expose the managed entity association")
-  public OnlineAuctionEntity getAuction() {
-    return auction;
-  }
-
-  @SuppressFBWarnings(
-      value = "EI_EXPOSE_REP2",
-      justification =
-          "JPA relationship references must store the managed entity association directly")
-  public void setAuction(@NotNull OnlineAuctionEntity auction) {
-    this.auction = Objects.requireNonNull(auction, "auction");
-  }
-
-  public int getLotNumber() {
-    return lotNumber;
-  }
-
-  public void setLotNumber(int lotNumber) {
-    this.lotNumber = lotNumber;
-  }
-
-  public String getTitle() {
-    return title;
-  }
-
-  public void setTitle(@NotNull String title) {
-    this.title = Objects.requireNonNull(title, "title");
-  }
-
-  public String getDescription() {
-    return description;
-  }
-
-  public void setDescription(@NotNull String description) {
-    this.description = Objects.requireNonNull(description, "description");
-  }
-
-  public BigDecimal getStartingBid() {
-    return startingBid;
-  }
-
-  public void setStartingBid(@NotNull BigDecimal startingBid) {
-    this.startingBid = Objects.requireNonNull(startingBid, "startingBid");
-  }
-
-  public BigDecimal getCurrentBid() {
-    return currentBid;
-  }
-
-  public void setCurrentBid(@NotNull BigDecimal currentBid) {
-    this.currentBid = Objects.requireNonNull(currentBid, "currentBid");
-  }
-
-  public String getHighestBidderAlias() {
-    return highestBidderAlias;
-  }
-
-  public void setHighestBidderAlias(String highestBidderAlias) {
-    this.highestBidderAlias = highestBidderAlias;
-  }
 }

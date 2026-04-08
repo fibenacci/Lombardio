@@ -10,7 +10,9 @@
  */
 package io.lombardio.loanorigination.domain.model;
 
+import io.lombardio.loanorigination.application.service.CreateLoanPositionCommand;
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public record LoanPosition(
     String id,
@@ -20,4 +22,21 @@ public record LoanPosition(
     String guidelineId,
     String guidelineLabel,
     BigDecimal baseLoanValue,
-    BigDecimal pledgedValue) {}
+    BigDecimal pledgedValue) {
+
+  public static LoanPosition create(
+      CreateLoanPositionCommand request, ValuationGuideline guideline) {
+    BigDecimal pledgedValue =
+        request.pledgedValue() != null ? request.pledgedValue() : guideline.baseLoanValue();
+
+    return new LoanPosition(
+        "position-" + UUID.randomUUID(),
+        request.ticketGroup(),
+        request.label(),
+        request.description(),
+        guideline.id(),
+        guideline.label(),
+        guideline.baseLoanValue(),
+        pledgedValue);
+  }
+}

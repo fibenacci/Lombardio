@@ -12,18 +12,19 @@ package io.lombardio.identity.integration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import io.lombardio.identity.aml.api.http.AmlStatusResponse;
-import io.lombardio.identity.aml.api.http.OriginationAssessmentRequest;
 import io.lombardio.identity.aml.application.service.AmlService;
-import io.lombardio.identity.api.http.CreateCustomerRequest;
-import io.lombardio.identity.api.http.CustomerResponse;
+import io.lombardio.identity.aml.application.service.AmlStatusView;
+import io.lombardio.identity.aml.application.service.OriginationAssessmentCommand;
+import io.lombardio.identity.application.service.CreateCustomerCommand;
 import io.lombardio.identity.application.service.CustomerService;
-import io.lombardio.identity.kyc.api.UpdateKycStatusRequest;
+import io.lombardio.identity.application.service.CustomerView;
 import io.lombardio.identity.kyc.application.KycService;
+import io.lombardio.identity.kyc.application.UpdateKycStatusCommand;
 import io.lombardio.identity.kyc.domain.KycStatus;
 import io.lombardio.identity.kyc.domain.KycVerificationMode;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -46,8 +47,8 @@ public class IdentityIntelligencePipelineIntegrationTest {
     String tenantId = "test-tenant";
 
     // 1. Create Customer (Stammdaten)
-    CreateCustomerRequest createRequest =
-        new CreateCustomerRequest(
+    CreateCustomerCommand createRequest =
+        new CreateCustomerCommand(
             "C12345",
             "John",
             "Doe",
@@ -58,13 +59,13 @@ public class IdentityIntelligencePipelineIntegrationTest {
             "Musterstraße 1",
             "12345",
             "Musterstadt");
-    CustomerResponse customer = customerService.create(tenantId, createRequest);
+    CustomerView customer = customerService.create(tenantId, createRequest, Optional.empty());
     assertNotNull(customer.id());
     assertEquals("NOT_STARTED", customer.kycStatus());
 
     // 2. Simulate KYC Process (Verifizierung)
-    UpdateKycStatusRequest kycRequest =
-        new UpdateKycStatusRequest(
+    UpdateKycStatusCommand kycRequest =
+        new UpdateKycStatusCommand(
             KycStatus.APPROVED,
             KycVerificationMode.MANUAL,
             LocalDate.now().plusYears(1),
@@ -80,14 +81,15 @@ public class IdentityIntelligencePipelineIntegrationTest {
     kycService.updateStatus(tenantId, customer.id(), kycRequest);
 
     // Check if Customer Profile now reflects the KYC status (In-JVM integration)
-    CustomerResponse updatedCustomer = customerService.requireById(tenantId, customer.id());
+    CustomerView updatedCustomer =
+        customerService.requireById(tenantId, customer.id(), Optional.empty());
     assertEquals("APPROVED", updatedCustomer.kycStatus());
     assertTrue(updatedCustomer.kycApproved());
 
     // 3. Simulate AML Check (Risiko-Prüfung)
-    OriginationAssessmentRequest amlRequest =
-        new OriginationAssessmentRequest(new BigDecimal("500.00"));
-    AmlStatusResponse amlResponse =
+    OriginationAssessmentCommand amlRequest =
+        new OriginationAssessmentCommand(new BigDecimal("500.00"));
+    AmlStatusView amlResponse =
         amlService.assessForOrigination(tenantId, customer.id(), amlRequest);
     assertNotNull(amlResponse);
     // Default might be allowed if no flags are present and loan amount is low
@@ -98,8 +100,8 @@ public class IdentityIntelligencePipelineIntegrationTest {
   public void shouldNormalizeLegacyBase64DocumentValuesInKycResponses() {
     String tenantId = "test-tenant";
 
-    CreateCustomerRequest createRequest =
-        new CreateCustomerRequest(
+    CreateCustomerCommand createRequest =
+        new CreateCustomerCommand(
             "C12346",
             "Jane",
             "Doe",
@@ -110,13 +112,13 @@ public class IdentityIntelligencePipelineIntegrationTest {
             "Beispielstraße 2",
             "54321",
             "Beispielstadt");
-    CustomerResponse customer = customerService.create(tenantId, createRequest);
+    CustomerView customer = customerService.create(tenantId, createRequest, Optional.empty());
 
     String pngBase64 =
         "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO7Z4xkAAAAASUVORK5CYII=";
 
-    UpdateKycStatusRequest kycRequest =
-        new UpdateKycStatusRequest(
+    UpdateKycStatusCommand kycRequest =
+        new UpdateKycStatusCommand(
             KycStatus.APPROVED,
             KycVerificationMode.MANUAL,
             LocalDate.now().plusYears(1),

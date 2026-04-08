@@ -12,7 +12,7 @@ package io.lombardio.platform.demo;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.platform.bootstrap.PlatformSeedFixtures;
-import io.lombardio.platform.iam.application.KeycloakService;
+import io.lombardio.platform.iam.application.IdentityAdministration;
 import io.lombardio.platform.tenant.domain.BranchRepository;
 import io.lombardio.platform.tenant.domain.TenantFeatureRepository;
 import io.lombardio.platform.tenant.domain.TenantRepository;
@@ -96,24 +96,25 @@ public class ScenarioDataSeeder {
   private final BranchRepository branchRepository;
 
   @SuppressFBWarnings(value = "URF_UNREAD_FIELD", justification = "Used in loop")
-  private final KeycloakService keycloakService;
+  private final IdentityAdministration identityAdministration;
 
   public ScenarioDataSeeder(
       TenantRepository tenantRepository,
       TenantFeatureRepository tenantFeatureRepository,
       BranchRepository branchRepository,
-      KeycloakService keycloakService) {
+      IdentityAdministration identityAdministration) {
     this.tenantRepository = tenantRepository;
     this.tenantFeatureRepository = tenantFeatureRepository;
     this.branchRepository = branchRepository;
-    this.keycloakService = keycloakService;
+    this.identityAdministration = identityAdministration;
   }
 
   public void seed() {
     Instant timestamp = Instant.now().minusSeconds(86_400); // 24 hours ago
 
     for (var tenantDefinition : DEMO_TENANTS) {
-      keycloakService.createTenantGroup(tenantDefinition.id(), tenantDefinition.displayName());
+      identityAdministration.createTenantGroup(
+          tenantDefinition.id(), tenantDefinition.displayName());
       tenantRepository.save(PlatformSeedFixtures.toTenant(tenantDefinition, timestamp));
       for (var feature : PlatformSeedFixtures.tenantFeatures(tenantDefinition, timestamp)) {
         tenantFeatureRepository.save(feature);

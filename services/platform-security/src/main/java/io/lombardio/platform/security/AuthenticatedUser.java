@@ -34,7 +34,7 @@ public record AuthenticatedUser(
 
   public static Optional<String> currentAccessToken() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication == null || !(authentication.getPrincipal() instanceof AuthenticatedUser)) {
+    if (authentication == null) {
       return Optional.empty();
     }
     if (authentication.getCredentials() instanceof String token) {

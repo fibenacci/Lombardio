@@ -10,18 +10,14 @@
  */
 package io.lombardio.platform.auth.api;
 
+import io.lombardio.platform.auth.application.Operator;
 import io.lombardio.platform.auth.application.OperatorAuthService;
+import io.lombardio.platform.auth.application.OperatorIdentityTokens;
 import io.lombardio.platform.auth.application.OperatorSession;
-import io.lombardio.platform.auth.application.StoredOperatorSession;
+import io.lombardio.platform.auth.application.OperatorSessionUserView;
 import io.lombardio.platform.auth.application.StoredOperatorSessionService;
-import io.lombardio.platform.config.OperatorSessionProperties;
-import io.lombardio.platform.security.AuthenticatedUser;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,91 +32,53 @@ public class OperatorAuthController {
 
   private final OperatorAuthService operatorAuthService;
   private final StoredOperatorSessionService storedOperatorSessionService;
-  private final OperatorSessionProperties sessionProperties;
 
   public OperatorAuthController(
       OperatorAuthService operatorAuthService,
-      StoredOperatorSessionService storedOperatorSessionService,
-      OperatorSessionProperties sessionProperties) {
+      StoredOperatorSessionService storedOperatorSessionService) {
     this.operatorAuthService = operatorAuthService;
     this.storedOperatorSessionService = storedOperatorSessionService;
-    this.sessionProperties = sessionProperties;
   }
 
   @PostMapping("/login")
-  public OperatorSessionResponse login(
-      @Valid @RequestBody OperatorLoginRequest request, HttpServletResponse response) {
-    OperatorSession session = operatorAuthService.login(request.email(), request.password());
-    StoredOperatorSession storedSession = storedOperatorSessionService.createSession(session);
-    writeSessionCookie(response, storedSession.sessionId());
-    return toCookieBackedSessionResponse(storedSession.user());
+  public OperatorSessionResponse login(@Valid @RequestBody OperatorLoginRequest request) {
+    OperatorIdentityTokens tokens = operatorAuthService.login(request.email(), request.password());
+    OperatorSession session = storedOperatorSessionService.createSession(tokens);
+    return toSessionResponse(session.sessionId(), session.user());
   }
 
   @PostMapping("/refresh")
-  public ResponseEntity<OperatorSessionResponse> refresh(
-      HttpServletRequest request, HttpServletResponse response) {
-    String sessionId = readSessionId(request);
+  public ResponseEntity<OperatorSessionResponse> refresh(HttpServletRequest request) {
+    String sessionId = request.getHeader("X-Operator-Session-Id");
     if (sessionId == null || sessionId.isBlank()) {
       return ResponseEntity.noContent().build();
     }
 
     return storedOperatorSessionService
         .refreshSession(sessionId)
-        .map(
-            session -> {
-              writeSessionCookie(response, session.sessionId());
-              return ResponseEntity.ok(toCookieBackedSessionResponse(session.user()));
-            })
+        .map(session -> ResponseEntity.ok(toSessionResponse(session.sessionId(), session.user())))
         .orElseGet(() -> ResponseEntity.noContent().build());
   }
 
   @PostMapping("/logout")
-  public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
-    storedOperatorSessionService.logout(readSessionId(request));
-    clearSessionCookie(response);
+  public ResponseEntity<Void> logout(HttpServletRequest request) {
+    String sessionId = request.getHeader("X-Operator-Session-Id");
+    if (sessionId != null && !sessionId.isBlank()) {
+      storedOperatorSessionService.logout(sessionId);
+    }
     return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/me")
-  public OperatorSessionUserResponse me(
-      @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-    return OperatorSessionUserResponse.fromAuthenticatedUser(authenticatedUser);
-  }
-
-  private OperatorSessionResponse toCookieBackedSessionResponse(OperatorSessionUserResponse user) {
-    return new OperatorSessionResponse("AUTHENTICATED", user);
-  }
-
-  private void writeSessionCookie(HttpServletResponse response, String sessionId) {
-    response.addHeader(
-        HttpHeaders.SET_COOKIE,
-        buildSessionCookie(sessionId, sessionProperties.cookieMaxAgeSeconds()).toString());
-  }
-
-  private void clearSessionCookie(HttpServletResponse response) {
-    response.addHeader(HttpHeaders.SET_COOKIE, buildSessionCookie("", 0).toString());
-  }
-
-  private ResponseCookie buildSessionCookie(String value, long maxAgeSeconds) {
-    return ResponseCookie.from(sessionProperties.cookieName(), value)
-        .httpOnly(true)
-        .secure(sessionProperties.cookieSecure())
-        .sameSite(sessionProperties.cookieSameSite())
-        .path(sessionProperties.cookiePath())
-        .maxAge(maxAgeSeconds)
-        .build();
-  }
-
-  private String readSessionId(HttpServletRequest request) {
-    if (request.getCookies() == null) {
-      return null;
+  public OperatorSessionUserView me(@AuthenticationPrincipal Operator operator) {
+    if (operator == null) {
+      throw new io.lombardio.platform.security.UnauthorizedException("Not authenticated");
     }
+    return OperatorSessionUserView.fromOperator(operator);
+  }
 
-    for (Cookie cookie : request.getCookies()) {
-      if (sessionProperties.cookieName().equals(cookie.getName())) {
-        return cookie.getValue();
-      }
-    }
-    return null;
+  private OperatorSessionResponse toSessionResponse(
+      String sessionId, OperatorSessionUserView user) {
+    return new OperatorSessionResponse("AUTHENTICATED", sessionId, user);
   }
 }

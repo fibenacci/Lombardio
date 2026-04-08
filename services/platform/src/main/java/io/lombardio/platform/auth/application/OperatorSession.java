@@ -10,7 +10,4 @@
  */
 package io.lombardio.platform.auth.application;
 
-import io.lombardio.platform.auth.api.OperatorSessionUserResponse;
-
-public record OperatorSession(
-    String accessToken, String refreshToken, OperatorSessionUserResponse user) {}
+public record OperatorSession(String sessionId, OperatorSessionUserView user) {}

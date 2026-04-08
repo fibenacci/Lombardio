@@ -52,25 +52,29 @@ public class OperatorSessionAuthenticationFilter extends OncePerRequestFilter {
   private void authenticate(StoredOperatorAuthentication session) {
     UsernamePasswordAuthenticationToken authentication =
         new UsernamePasswordAuthenticationToken(
-            session.user(),
+            session.operator(),
             session.accessToken(),
-            session.user().permissions().stream()
+            session.operator().permissions().stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toSet()));
     SecurityContextHolder.getContext().setAuthentication(authentication);
   }
 
   private java.util.Optional<String> readSessionId(HttpServletRequest request) {
-    if (request.getCookies() == null) {
+    String headerId = request.getHeader("X-Operator-Session-Id");
+    if (headerId != null && !headerId.isBlank()) {
+      return java.util.Optional.of(headerId);
+    }
+
+    Cookie[] cookies = request.getCookies();
+    if (cookies == null) {
       return java.util.Optional.empty();
     }
-    for (Cookie cookie : request.getCookies()) {
-      if (properties.cookieName().equals(cookie.getName())
-          && cookie.getValue() != null
-          && !cookie.getValue().isBlank()) {
-        return java.util.Optional.of(cookie.getValue());
-      }
-    }
-    return java.util.Optional.empty();
+
+    return java.util.Arrays.stream(cookies)
+        .filter(cookie -> properties.cookieName().equals(cookie.getName()))
+        .map(Cookie::getValue)
+        .filter(value -> value != null && !value.isBlank())
+        .findFirst();
   }
 }

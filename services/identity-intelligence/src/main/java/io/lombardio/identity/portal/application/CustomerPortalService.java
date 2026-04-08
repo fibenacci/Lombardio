@@ -14,21 +14,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lombardio.identity.config.CustomerPortalSessionProperties;
 import io.lombardio.identity.domain.model.Customer;
 import io.lombardio.identity.domain.port.CustomerRepository;
-import io.lombardio.identity.portal.api.CustomerPortalAcceptInvitationRequest;
-import io.lombardio.identity.portal.api.CustomerPortalInvitationResponse;
-import io.lombardio.identity.portal.api.CustomerPortalLoginRequest;
-import io.lombardio.identity.portal.api.CustomerPortalLoginResponse;
-import io.lombardio.identity.portal.api.CustomerPortalMeResponse;
-import io.lombardio.identity.portal.api.CustomerPortalPawnTicketResponse;
-import io.lombardio.identity.portal.infrastructure.notification.CustomerPortalNotificationSender;
-import io.lombardio.identity.portal.infrastructure.persistence.CustomerPortalCredentialEntity;
-import io.lombardio.identity.portal.infrastructure.persistence.CustomerPortalCredentialRepository;
-import io.lombardio.identity.portal.infrastructure.persistence.CustomerPortalInvitationEntity;
-import io.lombardio.identity.portal.infrastructure.persistence.CustomerPortalInvitationRepository;
-import io.lombardio.identity.portal.infrastructure.persistence.CustomerPortalSessionEntity;
-import io.lombardio.identity.portal.infrastructure.persistence.CustomerPortalSessionRepository;
-import io.lombardio.identity.portal.infrastructure.security.AuthenticatedCustomerPortalUser;
-import io.lombardio.identity.portal.infrastructure.ticket.CustomerPortalTicketClient;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -43,9 +28,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class CustomerPortalService {
 
   private final CustomerRepository customerRepository;
-  private final CustomerPortalCredentialRepository credentialRepository;
-  private final CustomerPortalInvitationRepository invitationRepository;
-  private final CustomerPortalSessionRepository sessionRepository;
+  private final CustomerPortalCredentialStore credentialStore;
+  private final CustomerPortalInvitationStore invitationStore;
+  private final CustomerPortalSessionStore sessionStore;
   private final CustomerPortalTicketClient ticketClient;
   private final CustomerPortalNotificationSender notificationSender;
   private final PasswordEncoder passwordEncoder;
@@ -58,18 +43,18 @@ public class CustomerPortalService {
           "Spring-managed repositories are shared infrastructure dependencies and cannot be defensively copied")
   public CustomerPortalService(
       CustomerRepository customerRepository,
-      CustomerPortalCredentialRepository credentialRepository,
-      CustomerPortalInvitationRepository invitationRepository,
-      CustomerPortalSessionRepository sessionRepository,
+      CustomerPortalCredentialStore credentialStore,
+      CustomerPortalInvitationStore invitationStore,
+      CustomerPortalSessionStore sessionStore,
       CustomerPortalTicketClient ticketClient,
       CustomerPortalNotificationSender notificationSender,
       PasswordEncoder passwordEncoder,
       Clock clock,
       CustomerPortalSessionProperties sessionProperties) {
     this.customerRepository = customerRepository;
-    this.credentialRepository = credentialRepository;
-    this.invitationRepository = invitationRepository;
-    this.sessionRepository = sessionRepository;
+    this.credentialStore = credentialStore;
+    this.invitationStore = invitationStore;
+    this.sessionStore = sessionStore;
     this.ticketClient = ticketClient;
     this.notificationSender = notificationSender;
     this.passwordEncoder = passwordEncoder;
@@ -85,58 +70,64 @@ public class CustomerPortalService {
       return;
     }
 
-    invitationRepository.deleteByCustomerIdAndUsedAtIsNull(customer.id());
+    invitationStore.deleteUnusedByCustomerId(customer.id());
 
     String invitationToken = UUID.randomUUID().toString();
-    CustomerPortalInvitationEntity invitation = new CustomerPortalInvitationEntity();
-    invitation.setToken(UUID.randomUUID().toString());
-    invitation.setTokenHash(CustomerPortalTokenHasher.sha256(invitationToken));
-    invitation.setCustomerId(customer.id());
-    invitation.setTenantId(customer.tenantId());
-    invitation.setEmail(customer.email());
-    invitation.setIssuedAt(Instant.now(clock));
-    invitation.setExpiresAt(Instant.now(clock).plus(7, ChronoUnit.DAYS));
-    invitationRepository.save(invitation);
+    CustomerPortalInvitation invitation =
+        invitationStore.save(
+            new CustomerPortalInvitation(
+                UUID.randomUUID().toString(),
+                CustomerPortalTokenHasher.sha256(invitationToken),
+                customer.id(),
+                customer.tenantId(),
+                customer.email(),
+                Instant.now(clock),
+                Instant.now(clock).plus(7, ChronoUnit.DAYS),
+                null));
 
-    notificationSender.sendInvitation(customer, invitationToken, invitation.getExpiresAt());
+    notificationSender.sendInvitation(customer, invitationToken, invitation.expiresAt());
   }
 
   @Transactional
   public void disableAccess(Customer customer) {
-    sessionRepository.deleteByCustomerId(customer.id());
-    invitationRepository.deleteByCustomerIdAndUsedAtIsNull(customer.id());
+    sessionStore.deleteByCustomerId(customer.id());
+    invitationStore.deleteUnusedByCustomerId(customer.id());
   }
 
   @Transactional(readOnly = true)
-  public CustomerPortalInvitationResponse getInvitation(String token) {
-    CustomerPortalInvitationEntity invitation = requireUsableInvitation(token);
-    Customer customer = requireCustomer(invitation.getCustomerId());
-    return new CustomerPortalInvitationResponse(
-        customer.displayName(), invitation.getEmail(), customer.onlineAccessStatus());
+  public CustomerPortalInvitationView getInvitation(String token) {
+    CustomerPortalInvitation invitation = requireUsableInvitation(token);
+    Customer customer = requireCustomer(invitation.customerId());
+    return new CustomerPortalInvitationView(
+        customer.displayName(), invitation.email(), customer.onlineAccessStatus());
   }
 
   @Transactional
-  public CustomerPortalLoginResponse acceptInvitation(
-      CustomerPortalAcceptInvitationRequest request) {
-    CustomerPortalInvitationEntity invitation = requireUsableInvitation(request.token());
-    Customer customer = requireCustomer(invitation.getCustomerId());
+  public CustomerPortalLoginView acceptInvitation(CustomerPortalAcceptInvitationCommand request) {
+    CustomerPortalInvitation invitation = requireUsableInvitation(request.token());
+    Customer customer = requireCustomer(invitation.customerId());
 
-    CustomerPortalCredentialEntity credential =
-        credentialRepository.findById(customer.id()).orElseGet(CustomerPortalCredentialEntity::new);
-    credential.setCustomerId(customer.id());
-    credential.setPasswordHash(passwordEncoder.encode(request.password()));
-    credential.setActivatedAt(Instant.now(clock));
-    credentialRepository.save(credential);
+    credentialStore.save(
+        new CustomerPortalCredential(
+            customer.id(), passwordEncoder.encode(request.password()), Instant.now(clock)));
 
-    invitation.setUsedAt(Instant.now(clock));
-    invitationRepository.save(invitation);
+    invitationStore.save(
+        new CustomerPortalInvitation(
+            invitation.token(),
+            invitation.tokenHash(),
+            invitation.customerId(),
+            invitation.tenantId(),
+            invitation.email(),
+            invitation.issuedAt(),
+            invitation.expiresAt(),
+            Instant.now(clock)));
 
     Customer activated = activateCustomer(customer);
-    return new CustomerPortalLoginResponse(issueSessionToken(activated), toMeResponse(activated));
+    return new CustomerPortalLoginView(issueSessionToken(activated), toMeResponse(activated));
   }
 
   @Transactional
-  public CustomerPortalLoginResponse login(CustomerPortalLoginRequest request) {
+  public CustomerPortalLoginView login(CustomerPortalLoginCommand request) {
     String normalizedEmail = normalizeEmail(request.email());
     Customer customer =
         customerRepository
@@ -147,37 +138,37 @@ public class CustomerPortalService {
       throw new IllegalArgumentException("Customer portal access is not active");
     }
 
-    CustomerPortalCredentialEntity credential =
-        credentialRepository
-            .findById(customer.id())
+    CustomerPortalCredential credential =
+        credentialStore
+            .findByCustomerId(customer.id())
             .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
 
-    if (!passwordEncoder.matches(request.password(), credential.getPasswordHash())) {
+    if (!passwordEncoder.matches(request.password(), credential.passwordHash())) {
       throw new IllegalArgumentException("Invalid email or password");
     }
 
-    return new CustomerPortalLoginResponse(issueSessionToken(customer), toMeResponse(customer));
+    return new CustomerPortalLoginView(issueSessionToken(customer), toMeResponse(customer));
   }
 
   @Transactional(readOnly = true)
-  public CustomerPortalMeResponse currentCustomer(AuthenticatedCustomerPortalUser principal) {
+  public CustomerPortalCustomerView currentCustomer(AuthenticatedCustomerPortalUser principal) {
     return toMeResponse(requireActiveCustomer(principal.customerId()));
   }
 
   @Transactional(readOnly = true)
-  public CustomerPortalLoginResponse refresh(String token) {
+  public CustomerPortalLoginView refresh(String token) {
     AuthenticatedCustomerPortalUser principal = authenticate(token);
     if (principal == null) {
       return null;
     }
 
-    sessionRepository.delete(principal.session());
+    sessionStore.deleteByToken(principal.sessionToken());
     Customer customer = requireActiveCustomer(principal.customerId());
-    return new CustomerPortalLoginResponse(issueSessionToken(customer), toMeResponse(customer));
+    return new CustomerPortalLoginView(issueSessionToken(customer), toMeResponse(customer));
   }
 
   @Transactional(readOnly = true)
-  public List<CustomerPortalPawnTicketResponse> listPawnTickets(
+  public List<CustomerPortalPawnTicketView> listPawnTickets(
       AuthenticatedCustomerPortalUser principal) {
     Customer customer = requireActiveCustomer(principal.customerId());
     return ticketClient.listTickets(customer.tenantId(), customer.id());
@@ -195,19 +186,23 @@ public class CustomerPortalService {
       return null;
     }
 
-    CustomerPortalSessionEntity session = findSessionByToken(token);
+    CustomerPortalSession session = findSessionByToken(token);
     if (session == null) {
       return null;
     }
-    if (session.getExpiresAt() == null || session.getExpiresAt().isBefore(Instant.now(clock))) {
-      sessionRepository.delete(session);
+    if (session.expiresAt() == null || session.expiresAt().isBefore(Instant.now(clock))) {
+      sessionStore.deleteByToken(session.token());
       return null;
     }
 
     try {
-      Customer customer = requireActiveCustomer(session.getCustomerId());
+      Customer customer = requireActiveCustomer(session.customerId());
       return new AuthenticatedCustomerPortalUser(
-          customer.id(), customer.tenantId(), customer.displayName(), customer.email(), session);
+          customer.id(),
+          customer.tenantId(),
+          customer.displayName(),
+          customer.email(),
+          session.token());
     } catch (IllegalArgumentException exception) {
       return null;
     }
@@ -218,23 +213,22 @@ public class CustomerPortalService {
     if (token == null || token.isBlank()) {
       return;
     }
-    CustomerPortalSessionEntity session = findSessionByToken(token);
+    CustomerPortalSession session = findSessionByToken(token);
     if (session != null) {
-      sessionRepository.delete(session);
+      sessionStore.deleteByToken(session.token());
     }
   }
 
   private String issueSessionToken(Customer customer) {
     String rawToken = UUID.randomUUID().toString();
-    CustomerPortalSessionEntity session = new CustomerPortalSessionEntity();
-    session.setToken(UUID.randomUUID().toString());
-    session.setTokenHash(CustomerPortalTokenHasher.sha256(rawToken));
-    session.setCustomerId(customer.id());
-    session.setTenantId(customer.tenantId());
-    session.setIssuedAt(Instant.now(clock));
-    session.setExpiresAt(
-        Instant.now(clock).plus(sessionProperties.sessionTtlSeconds(), ChronoUnit.SECONDS));
-    sessionRepository.save(session);
+    sessionStore.save(
+        new CustomerPortalSession(
+            UUID.randomUUID().toString(),
+            CustomerPortalTokenHasher.sha256(rawToken),
+            customer.id(),
+            customer.tenantId(),
+            Instant.now(clock),
+            Instant.now(clock).plus(sessionProperties.sessionTtlSeconds(), ChronoUnit.SECONDS)));
     return rawToken;
   }
 
@@ -271,20 +265,20 @@ public class CustomerPortalService {
         .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
   }
 
-  private CustomerPortalInvitationEntity requireUsableInvitation(String token) {
-    CustomerPortalInvitationEntity invitation = findInvitationByToken(token);
+  private CustomerPortalInvitation requireUsableInvitation(String token) {
+    CustomerPortalInvitation invitation = findInvitationByToken(token);
 
-    if (invitation.getUsedAt() != null) {
+    if (invitation.usedAt() != null) {
       throw new IllegalArgumentException("Invitation already used");
     }
-    if (invitation.getExpiresAt().isBefore(Instant.now(clock))) {
+    if (invitation.expiresAt().isBefore(Instant.now(clock))) {
       throw new IllegalArgumentException("Invitation expired");
     }
     return invitation;
   }
 
-  private CustomerPortalMeResponse toMeResponse(Customer customer) {
-    return new CustomerPortalMeResponse(
+  private CustomerPortalCustomerView toMeResponse(Customer customer) {
+    return new CustomerPortalCustomerView(
         customer.id(),
         customer.tenantId(),
         customer.displayName(),
@@ -296,19 +290,19 @@ public class CustomerPortalService {
     return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
   }
 
-  private CustomerPortalInvitationEntity findInvitationByToken(String token) {
+  private CustomerPortalInvitation findInvitationByToken(String token) {
     // Legacy fallback for invitations issued before token hashing was introduced.
-    return invitationRepository
+    return invitationStore
         .findByTokenHash(CustomerPortalTokenHasher.sha256(token))
-        .or(() -> invitationRepository.findById(token))
+        .or(() -> invitationStore.findByToken(token))
         .orElseThrow(() -> new IllegalArgumentException("Invitation not found"));
   }
 
-  private CustomerPortalSessionEntity findSessionByToken(String token) {
+  private CustomerPortalSession findSessionByToken(String token) {
     // Legacy fallback for sessions issued before token hashing was introduced.
-    return sessionRepository
+    return sessionStore
         .findByTokenHash(CustomerPortalTokenHasher.sha256(token))
-        .or(() -> sessionRepository.findById(token))
+        .or(() -> sessionStore.findByToken(token))
         .orElse(null);
   }
 }

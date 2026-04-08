@@ -35,7 +35,8 @@ class LoanOriginationServiceTest {
           new InMemoryPorts.Guidelines(),
           new InMemoryPorts.Loans(),
           new InMemoryPorts.PawnTickets(),
-          Clock.fixed(Instant.parse("2026-03-18T12:00:00Z"), ZoneOffset.UTC));
+          Clock.fixed(Instant.parse("2026-03-18T12:00:00Z"), ZoneOffset.UTC),
+          null);
 
   @Test
   void shouldCreateLoanForExistingCustomerAndDefaultToGuidelineValue() {

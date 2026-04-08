@@ -13,13 +13,17 @@ package io.lombardio.loanorigination.demo;
 import io.lombardio.loanorigination.domain.model.ValuationGuideline;
 import io.lombardio.loanorigination.infrastructure.persistence.adapter.ValuationGuidelinePersistenceAdapter;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ReferenceDataSeeder {
+public final class ReferenceDataSeeder {
+
+  private static final Logger log = LoggerFactory.getLogger(ReferenceDataSeeder.class);
 
   public record DemoTenant(
       String id, String key, String numberPrefix, String city, String postalCode) {}
@@ -35,22 +39,23 @@ public class ReferenceDataSeeder {
   private final ValuationGuidelinePersistenceAdapter guidelineRepository;
   private final DemoDataProperties demoDataProperties;
 
-  ReferenceDataSeeder(
+  public ReferenceDataSeeder(
       ValuationGuidelinePersistenceAdapter guidelineRepository,
       DemoDataProperties demoDataProperties) {
-    this.guidelineRepository = guidelineRepository;
-    this.demoDataProperties = demoDataProperties;
+    this.guidelineRepository = Objects.requireNonNull(guidelineRepository);
+    this.demoDataProperties = Objects.requireNonNull(demoDataProperties);
+    log.debug("Seeder initialized for scale: {}", this.demoDataProperties.effectiveScale());
   }
 
-  void seed() {
+  public void seed() {
     for (int tenantIndex = 0;
-        tenantIndex < tenantCount(demoDataProperties.effectiveScale());
+        tenantIndex < tenantCount(this.demoDataProperties.effectiveScale());
         tenantIndex++) {
       seedGuidelinesForTenant(TENANTS.get(tenantIndex));
     }
   }
 
-  private List<ValuationGuideline> seedGuidelinesForTenant(DemoTenant tenant) {
+  private void seedGuidelinesForTenant(DemoTenant tenant) {
     List<ValuationGuideline> guidelines =
         List.of(
             new ValuationGuideline(
@@ -102,11 +107,9 @@ public class ReferenceDataSeeder {
                 "gebraucht, guter Zustand",
                 new BigDecimal("420.00")));
 
-    List<ValuationGuideline> persisted = new ArrayList<>();
     for (ValuationGuideline guideline : guidelines) {
-      persisted.add(guidelineRepository.save(guideline));
+      this.guidelineRepository.save(guideline);
     }
-    return persisted;
   }
 
   private int tenantCount(String scale) {
