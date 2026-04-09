@@ -12,9 +12,7 @@ package io.lombardio.platform.tenant.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -29,14 +27,12 @@ import org.junit.jupiter.api.Test;
 class TenantAdministrationControllerTest {
 
   private final TenantCatalogService tenantCatalogService = mock(TenantCatalogService.class);
-  private final TenantAdministrationAuthorizationService authorizationService =
-      mock(TenantAdministrationAuthorizationService.class);
 
   private TenantAdministrationController controller;
 
   @BeforeEach
   void setUp() {
-    controller = new TenantAdministrationController(tenantCatalogService, authorizationService);
+    controller = new TenantAdministrationController(tenantCatalogService);
   }
 
   @Test
@@ -60,7 +56,7 @@ class TenantAdministrationControllerTest {
                 "ACTIVE",
                 List.of("users.write"),
                 List.of()));
-    when(tenantCatalogService.listTenantUsers("tenant-default"))
+    when(tenantCatalogService.listTenantUsers(user, "tenant-default"))
         .thenReturn(
             List.of(
                 new TenantUserView(
@@ -74,8 +70,7 @@ class TenantAdministrationControllerTest {
 
     List<TenantUserResponse> actual = controller.listUsers("tenant-default", user);
 
-    verify(authorizationService).requireTenantUserRead(user, "tenant-default");
-    verify(tenantCatalogService).listTenantUsers("tenant-default");
+    verify(tenantCatalogService).listTenantUsers(user, "tenant-default");
     assertEquals(expected, actual);
   }
 
@@ -90,13 +85,12 @@ class TenantAdministrationControllerTest {
             "admin@lombardio.local",
             "Tenant Admin",
             List.of("roles.read"));
-    when(tenantCatalogService.listAvailableRolesForTenant("tenant-default"))
+    when(tenantCatalogService.listAvailableRolesForTenant(user, "tenant-default"))
         .thenReturn(List.of("users.read", "roles.read"));
 
     List<String> actual = controller.listRoles("tenant-default", user);
 
-    verify(authorizationService).requireTenantRoleRead(user, "tenant-default");
-    verify(tenantCatalogService).listAvailableRolesForTenant("tenant-default");
+    verify(tenantCatalogService).listAvailableRolesForTenant(user, "tenant-default");
     assertEquals(List.of("users.read", "roles.read"), actual);
   }
 
@@ -113,13 +107,12 @@ class TenantAdministrationControllerTest {
             List.of("branches.read"));
     List<BranchResponse> expected =
         List.of(new BranchResponse("branch-1", "hq", "Headquarters", "ACTIVE"));
-    when(tenantCatalogService.listBranches("tenant-default"))
+    when(tenantCatalogService.listBranches(user, "tenant-default"))
         .thenReturn(List.of(new BranchView("branch-1", "hq", "Headquarters", "ACTIVE")));
 
     List<BranchResponse> actual = controller.listBranches("tenant-default", user);
 
-    verify(authorizationService).requireTenantBranchRead(user, "tenant-default");
-    verify(tenantCatalogService).listBranches("tenant-default");
+    verify(tenantCatalogService).listBranches(user, "tenant-default");
     assertEquals(expected, actual);
   }
 
@@ -135,13 +128,12 @@ class TenantAdministrationControllerTest {
             "Tenant Admin",
             List.of("users.read"));
 
-    doThrow(new io.lombardio.platform.security.ForbiddenException("Tenant access is limited"))
-        .when(authorizationService)
-        .requireTenantUserRead(user, "tenant-hamburg");
+    when(tenantCatalogService.listTenantUsers(user, "tenant-hamburg"))
+        .thenThrow(
+            new io.lombardio.platform.security.ForbiddenException("Tenant access is limited"));
 
     assertThrows(
         io.lombardio.platform.security.ForbiddenException.class,
         () -> controller.listUsers("tenant-hamburg", user));
-    verify(tenantCatalogService, never()).listTenantUsers("tenant-hamburg");
   }
 }

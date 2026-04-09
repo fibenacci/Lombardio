@@ -54,7 +54,7 @@ app:
     cookie-secure: false
     cookie-same-site: Lax
     cookie-max-age-seconds: 2592000
-    encryption-key: 0123456789abcdef
+    encryption-key: "9p4w3v-v3ry-s3cr3t-t3st-k3y-32ch"
   cors:
     allowed-origins: http://localhost:5173
     allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS

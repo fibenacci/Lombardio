@@ -1,1 +1,2 @@
 io.lombardio.platform.security.PlatformSecurityConfiguration
+io.lombardio.platform.security.AuditAspect

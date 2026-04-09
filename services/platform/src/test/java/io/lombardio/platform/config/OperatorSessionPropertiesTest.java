@@ -17,35 +17,63 @@ import org.junit.jupiter.api.Test;
 
 class OperatorSessionPropertiesTest {
 
+  private static final String VALID_KEY_16 = "a-v3ry-s3cr3t-16";
+  private static final String VALID_KEY_32 = "9p4w3v-v3ry-s3cr3t-t3st-k3y-32ch";
+
   @Test
   void acceptsSupportedSameSiteValues() {
     assertDoesNotThrow(
-        () -> new OperatorSessionProperties("session", "/", false, "Lax", 900, "0123456789abcdef"));
+        () -> new OperatorSessionProperties("session", "/", false, "Lax", 900, VALID_KEY_32));
     assertDoesNotThrow(
-        () ->
-            new OperatorSessionProperties("session", "/", true, "Strict", 900, "0123456789abcdef"));
+        () -> new OperatorSessionProperties("session", "/", true, "Strict", 900, VALID_KEY_16));
     assertDoesNotThrow(
-        () -> new OperatorSessionProperties("session", "/", true, "None", 900, "0123456789abcdef"));
+        () -> new OperatorSessionProperties("session", "/", true, "None", 900, VALID_KEY_32));
   }
 
   @Test
   void rejectsUnsupportedSameSiteValue() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new OperatorSessionProperties("session", "/", false, "lax", 900, "0123456789abcdef"));
+        () -> new OperatorSessionProperties("session", "/", false, "lax", 900, VALID_KEY_32));
   }
 
   @Test
   void rejectsNonPositiveCookieAge() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new OperatorSessionProperties("session", "/", false, "Lax", 0, "0123456789abcdef"));
+        () -> new OperatorSessionProperties("session", "/", false, "Lax", 0, VALID_KEY_32));
   }
 
   @Test
-  void rejectsShortEncryptionKey() {
+  void rejectsInvalidEncryptionKeyLength() {
+    // Too short
     assertThrows(
         IllegalArgumentException.class,
         () -> new OperatorSessionProperties("session", "/", false, "Lax", 900, "too-short"));
+    // Middle length (not 16 or 32)
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            new OperatorSessionProperties(
+                "session", "/", false, "Lax", 900, "this-is-exactly-25-chars-"));
+  }
+
+  @Test
+  void rejectsTrivialEncryptionKey() {
+    // Sequential characters
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> new OperatorSessionProperties("session", "/", false, "Lax", 900, "0123456789abcdef"));
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            new OperatorSessionProperties(
+                "session", "/", false, "Lax", 900, "abcdefghij1234567890abcdefghij12"));
+    // Repeating characters
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            new OperatorSessionProperties(
+                "session", "/", false, "Lax", 900, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
   }
 }

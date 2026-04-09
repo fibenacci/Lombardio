@@ -57,7 +57,7 @@ public class AuthenticationSteps {
 
     OperatorSessionProperties properties =
         new OperatorSessionProperties(
-            "lombardio-session", "/", false, "Lax", 3600, "very-secret-encryption-key-123");
+            "lombardio-session", "/", false, "Lax", 3600, "9p4w3v-v3ry-s3cr3t-t3st-k3y-32-ch");
     OperatorSessionCrypto crypto = new OperatorSessionCrypto(properties);
 
     operatorAuthService = new OperatorAuthService(identityProvider, tokenDecoder);

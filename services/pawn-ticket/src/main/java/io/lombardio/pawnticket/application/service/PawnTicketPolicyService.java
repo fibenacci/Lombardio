@@ -13,6 +13,7 @@ package io.lombardio.pawnticket.application.service;
 import io.lombardio.pawnticket.domain.model.PawnTicket;
 import io.lombardio.pawnticket.domain.model.PawnTicketPosition;
 import io.lombardio.pawnticket.domain.port.PawnTicketRepository;
+import io.lombardio.platform.security.Audited;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -79,6 +80,7 @@ public class PawnTicketPolicyService {
         command.manualMonthlyOperatingFee());
   }
 
+  @Audited(action = "ISSUE_PAWN_TICKET", targetType = "PAWN_TICKET")
   public PawnTicket issue(IssuePawnTicketCommand command) {
     PawnTicket quote =
         quote(

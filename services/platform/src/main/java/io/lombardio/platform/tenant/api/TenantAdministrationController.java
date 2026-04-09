@@ -11,6 +11,7 @@
 package io.lombardio.platform.tenant.api;
 
 import io.lombardio.platform.security.AuthenticatedUser;
+import io.lombardio.platform.tenant.application.TenantAdministrationAuthorizationService;
 import io.lombardio.platform.tenant.application.BranchView;
 import io.lombardio.platform.tenant.application.CreateTenantBranchCommand;
 import io.lombardio.platform.tenant.application.CreateTenantUserCommand;
@@ -34,20 +35,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class TenantAdministrationController {
 
   private final TenantCatalogService tenantCatalogService;
-  private final TenantAdministrationAuthorizationService authorizationService;
 
-  public TenantAdministrationController(
-      TenantCatalogService tenantCatalogService,
-      TenantAdministrationAuthorizationService authorizationService) {
+  public TenantAdministrationController(TenantCatalogService tenantCatalogService) {
     this.tenantCatalogService = tenantCatalogService;
-    this.authorizationService = authorizationService;
   }
 
   @GetMapping("/users")
   public List<TenantUserResponse> listUsers(
       @PathVariable String tenantId, @AuthenticationPrincipal AuthenticatedUser user) {
-    authorizationService.requireTenantUserRead(user, tenantId);
-    return tenantCatalogService.listTenantUsers(tenantId).stream()
+    return tenantCatalogService.listTenantUsers(user, tenantId).stream()
         .map(this::toTenantUserResponse)
         .toList();
   }
@@ -57,9 +53,9 @@ public class TenantAdministrationController {
       @PathVariable String tenantId,
       @Valid @RequestBody CreateTenantUserRequest request,
       @AuthenticationPrincipal AuthenticatedUser user) {
-    authorizationService.requireTenantUserWrite(user, tenantId);
     return toTenantUserResponse(
         tenantCatalogService.createTenantUser(
+            user,
             tenantId,
             new CreateTenantUserCommand(
                 request.email(),
@@ -75,9 +71,9 @@ public class TenantAdministrationController {
       @PathVariable String userId,
       @Valid @RequestBody UpdateTenantUserRequest request,
       @AuthenticationPrincipal AuthenticatedUser user) {
-    authorizationService.requireTenantUserWrite(user, tenantId);
     return toTenantUserResponse(
         tenantCatalogService.updateTenantUser(
+            user,
             tenantId,
             userId,
             new UpdateTenantUserCommand(
@@ -91,15 +87,13 @@ public class TenantAdministrationController {
   @GetMapping("/roles")
   public List<String> listRoles(
       @PathVariable String tenantId, @AuthenticationPrincipal AuthenticatedUser user) {
-    authorizationService.requireTenantRoleRead(user, tenantId);
-    return tenantCatalogService.listAvailableRolesForTenant(tenantId);
+    return tenantCatalogService.listAvailableRolesForTenant(user, tenantId);
   }
 
   @GetMapping("/features")
   public List<TenantFeatureResponse> listFeatures(
       @PathVariable String tenantId, @AuthenticationPrincipal AuthenticatedUser user) {
-    authorizationService.requireTenantFeatureRead(user, tenantId);
-    return tenantCatalogService.listFeatures(tenantId).stream()
+    return tenantCatalogService.listFeatures(user, tenantId).stream()
         .map(this::toFeatureResponse)
         .toList();
   }
@@ -107,8 +101,7 @@ public class TenantAdministrationController {
   @GetMapping("/branches")
   public List<BranchResponse> listBranches(
       @PathVariable String tenantId, @AuthenticationPrincipal AuthenticatedUser user) {
-    authorizationService.requireTenantBranchRead(user, tenantId);
-    return tenantCatalogService.listBranches(tenantId).stream()
+    return tenantCatalogService.listBranches(user, tenantId).stream()
         .map(this::toBranchResponse)
         .toList();
   }
@@ -118,9 +111,9 @@ public class TenantAdministrationController {
       @PathVariable String tenantId,
       @Valid @RequestBody CreateTenantBranchRequest request,
       @AuthenticationPrincipal AuthenticatedUser user) {
-    authorizationService.requireTenantBranchWrite(user, tenantId);
     return toBranchResponse(
         tenantCatalogService.createBranch(
+            user,
             tenantId,
             new CreateTenantBranchCommand(request.key(), request.displayName(), request.status())));
   }

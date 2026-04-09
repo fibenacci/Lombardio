@@ -22,6 +22,7 @@ import io.lombardio.loanorigination.domain.port.KycDirectory;
 import io.lombardio.loanorigination.domain.port.LoanCaseRepository;
 import io.lombardio.loanorigination.domain.port.PawnTicketIssuer;
 import io.lombardio.loanorigination.domain.port.ValuationGuidelineRepository;
+import io.lombardio.platform.security.Audited;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -76,6 +77,7 @@ public class LoanOriginationService {
     return loanCaseRepository.findByTenantIdAndCustomerId(tenantId, customerId);
   }
 
+  @Audited(action = "CREATE_LOAN_CASE", targetType = "LOAN_CASE")
   public LoanCase createLoan(String tenantId, CreateLoanCommand request) {
     try {
       CustomerProfile customer = customerDirectory.requireById(tenantId, request.customerId());

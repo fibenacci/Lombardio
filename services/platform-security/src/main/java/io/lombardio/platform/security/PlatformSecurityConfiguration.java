@@ -22,4 +22,9 @@ public class PlatformSecurityConfiguration {
   public AuditService auditService() {
     return new Slf4jAuditService();
   }
+
+  @Bean
+  public AuditAspect auditAspect(AuditService auditService) {
+    return new AuditAspect(auditService);
+  }
 }

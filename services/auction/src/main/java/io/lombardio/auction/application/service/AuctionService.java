@@ -15,6 +15,7 @@ import io.lombardio.auction.domain.model.AuctionLot;
 import io.lombardio.auction.domain.model.AuctionLotStatus;
 import io.lombardio.auction.domain.model.AuctionStatus;
 import io.lombardio.auction.domain.port.AuctionRepository;
+import io.lombardio.platform.security.Audited;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -39,6 +40,7 @@ public class AuctionService {
     return auctionRepository.findByTenantId(tenantId);
   }
 
+  @Audited(action = "CREATE_AUCTION", targetType = "AUCTION")
   public Auction createAuction(String tenantId, CreateAuctionCommand request) {
     Instant now = Instant.now(clock);
     String auctionId = "auction-" + UUID.randomUUID();
@@ -82,6 +84,7 @@ public class AuctionService {
     return auctionRepository.save(auction);
   }
 
+  @Audited(action = "ANNOUNCE_AUCTION", targetType = "AUCTION")
   public Auction announceAuction(
       String tenantId, String auctionId, AnnounceAuctionCommand request) {
     Auction auction = requireAuction(tenantId, auctionId);
@@ -107,6 +110,7 @@ public class AuctionService {
     return auctionRepository.save(updated);
   }
 
+  @Audited(action = "PLACE_BID", targetType = "AUCTION_LOT")
   public Auction placeBid(
       String tenantId, String auctionId, String lotId, PlaceBidCommand request) {
     Auction auction = requireAuction(tenantId, auctionId);

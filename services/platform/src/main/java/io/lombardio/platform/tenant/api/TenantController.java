@@ -10,6 +10,7 @@
  */
 package io.lombardio.platform.tenant.api;
 
+import io.lombardio.platform.security.AuthenticatedUser;
 import io.lombardio.platform.tenant.application.CreateTenantCommand;
 import io.lombardio.platform.tenant.application.CreateTenantUserCommand;
 import io.lombardio.platform.tenant.application.TenantCatalogService;
@@ -21,6 +22,7 @@ import io.lombardio.platform.tenant.application.UpsertTenantFeatureCommand;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,31 +44,40 @@ public class TenantController {
 
   @GetMapping
   @PreAuthorize("hasAuthority('platform.tenants.read')")
-  public List<TenantResponse> listTenants() {
-    return tenantCatalogService.listTenants().stream().map(this::toTenantResponse).toList();
+  public List<TenantResponse> listTenants(@AuthenticationPrincipal AuthenticatedUser user) {
+    return tenantCatalogService.listTenants(user).stream().map(this::toTenantResponse).toList();
   }
 
   @PostMapping
   @PreAuthorize("hasAuthority('platform.tenants.write')")
-  public TenantResponse createTenant(@Valid @RequestBody CreateTenantRequest request) {
+  public TenantResponse createTenant(
+      @Valid @RequestBody CreateTenantRequest request,
+      @AuthenticationPrincipal AuthenticatedUser user) {
     return toTenantResponse(
         tenantCatalogService.createTenant(
-            new CreateTenantCommand(request.key(), request.displayName(), request.status())));
+            user, new CreateTenantCommand(request.key(), request.displayName(), request.status())));
   }
 
   @PatchMapping("/{id}")
   @PreAuthorize("hasAuthority('platform.tenants.write')")
   public TenantResponse updateTenant(
-      @PathVariable String id, @Valid @RequestBody UpdateTenantRequest request) {
+      @PathVariable String id,
+      @Valid @RequestBody UpdateTenantRequest request,
+      @AuthenticationPrincipal AuthenticatedUser user) {
     return toTenantResponse(
         tenantCatalogService.updateTenant(
-            id, new UpdateTenantCommand(request.key(), request.displayName(), request.status())));
+            user,
+            id,
+            new UpdateTenantCommand(request.key(), request.displayName(), request.status())));
   }
 
   @GetMapping("/{id}/features")
   @PreAuthorize("hasAuthority('platform.tenants.read')")
-  public List<TenantFeatureResponse> listFeatures(@PathVariable String id) {
-    return tenantCatalogService.listFeatures(id).stream().map(this::toFeatureResponse).toList();
+  public List<TenantFeatureResponse> listFeatures(
+      @PathVariable String id, @AuthenticationPrincipal AuthenticatedUser user) {
+    return tenantCatalogService.listFeatures(user, id).stream()
+        .map(this::toFeatureResponse)
+        .toList();
   }
 
   @PutMapping("/{id}/features/{featureKey}")
@@ -74,18 +85,22 @@ public class TenantController {
   public TenantFeatureResponse upsertFeature(
       @PathVariable String id,
       @PathVariable String featureKey,
-      @Valid @RequestBody UpsertTenantFeatureRequest request) {
+      @Valid @RequestBody UpsertTenantFeatureRequest request,
+      @AuthenticationPrincipal AuthenticatedUser user) {
     return toFeatureResponse(
         tenantCatalogService.upsertFeature(
-            id, featureKey, new UpsertTenantFeatureCommand(request.enabled())));
+            user, id, featureKey, new UpsertTenantFeatureCommand(request.enabled())));
   }
 
   @PostMapping("/{id}/users")
   @PreAuthorize("hasAuthority('platform.tenants.write')")
   public TenantUserResponse createTenantUser(
-      @PathVariable String id, @Valid @RequestBody CreateTenantUserRequest request) {
+      @PathVariable String id,
+      @Valid @RequestBody CreateTenantUserRequest request,
+      @AuthenticationPrincipal AuthenticatedUser user) {
     return toTenantUserResponse(
         tenantCatalogService.createTenantUser(
+            user,
             id,
             new CreateTenantUserCommand(
                 request.email(),

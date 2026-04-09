@@ -14,6 +14,7 @@ import io.lombardio.pawnticket.domain.model.CashTransaction;
 import io.lombardio.pawnticket.domain.model.PawnTicket;
 import io.lombardio.pawnticket.domain.port.CashTransactionRepository;
 import io.lombardio.pawnticket.domain.port.PawnTicketRepository;
+import io.lombardio.platform.security.Audited;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Clock;
 import java.time.Instant;
@@ -72,6 +73,7 @@ public class CashTransactionService {
     this.metrics = metrics;
   }
 
+  @Audited(action = "EXECUTE_CASH_TRANSACTION", targetType = "CASH_TRANSACTION")
   public CashTransaction execute(ExecuteCashTransactionCommand request) {
     PawnTicket pawnTicket =
         pawnTicketRepository
