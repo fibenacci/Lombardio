@@ -12,122 +12,73 @@ package io.lombardio.platform.config;
 
 import io.lombardio.platform.auth.application.StoredOperatorSessionService;
 import io.lombardio.platform.auth.infrastructure.security.OperatorSessionAuthenticationFilter;
-import io.lombardio.platform.security.KeycloakJwtAuthenticationConverter;
-import io.lombardio.platform.security.KeycloakJwtValidators;
-import org.springframework.beans.factory.annotation.Value;
+import io.lombardio.platform.security.SecurityPolicyCustomizer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@EnableConfigurationProperties({
-  AppCorsProperties.class,
-  OperatorSessionProperties.class,
-  OperatorBffProperties.class
-})
+@EnableConfigurationProperties({OperatorSessionProperties.class, OperatorBffProperties.class})
 public class SecurityConfig {
 
-  @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
-  private String jwkSetUri;
+  private final StoredOperatorSessionService storedOperatorSessionService;
+  private final OperatorSessionProperties operatorSessionProperties;
 
-  @Value("${app.security.operator-client-id:${KEYCLOAK_OPERATOR_CLIENT_ID:lombardio-app}}")
-  private String operatorClientId;
-
-  @Bean
-  public SecurityFilterChain filterChain(
-      HttpSecurity http,
-      CorsConfigurationSource corsConfigurationSource,
+  public SecurityConfig(
       StoredOperatorSessionService storedOperatorSessionService,
-      OperatorSessionProperties operatorSessionProperties)
-      throws Exception {
-    http.csrf(
-            csrf ->
-                csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                    .ignoringRequestMatchers(
-                        request -> request.getHeader("Authorization") != null,
-                        new AntPathRequestMatcher("/api/v1/platform/health"),
-                        new AntPathRequestMatcher("/api/v1/platform/auth/login"),
-                        new AntPathRequestMatcher("/actuator/**"))
-                    .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
-        .cors(cors -> cors.configurationSource(corsConfigurationSource))
-        .sessionManagement(
-            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(
-            auth ->
-                auth.requestMatchers("/api/v1/platform/health")
-                    .permitAll()
-                    .requestMatchers("/api/v1/platform/auth/login")
-                    .permitAll()
-                    .requestMatchers(
-                        "/api/v1/platform/auth/refresh",
-                        "/api/v1/platform/auth/logout",
-                        "/api/v1/platform/auth/me")
-                    .authenticated()
-                    .requestMatchers("/actuator/health", "/actuator/info")
-                    .permitAll()
-                    .anyRequest()
-                    .authenticated())
-        .exceptionHandling(
-            exception ->
-                exception.authenticationEntryPoint(
-                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-        .oauth2ResourceServer(
-            oauth2 ->
-                oauth2.jwt(
-                    jwt ->
-                        jwt.jwtAuthenticationConverter(new KeycloakJwtAuthenticationConverter())));
-
-    http.addFilterBefore(
-        new OperatorSessionAuthenticationFilter(
-            storedOperatorSessionService, operatorSessionProperties),
-        BearerTokenAuthenticationFilter.class);
-
-    return http.build();
+      OperatorSessionProperties operatorSessionProperties) {
+    this.storedOperatorSessionService = storedOperatorSessionService;
+    this.operatorSessionProperties = operatorSessionProperties;
   }
 
   @Bean
-  public JwtDecoder jwtDecoder() {
-    NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
-    jwtDecoder.setJwtValidator(
-        KeycloakJwtValidators.operatorAccessTokenValidator(operatorClientId));
-    return jwtDecoder;
-  }
+  public SecurityPolicyCustomizer securityPolicy() {
+    return (http) -> {
+      // 3. Apply BFF specific CSRF protection
+      http.csrf(
+          csrf ->
+              csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                  .ignoringRequestMatchers(
+                      request -> request.getHeader("Authorization") != null,
+                      AntPathRequestMatcher.antMatcher("/api/v1/platform/health"),
+                      AntPathRequestMatcher.antMatcher("/api/v1/platform/auth/login"),
+                      AntPathRequestMatcher.antMatcher("/v3/api-docs/**"),
+                      AntPathRequestMatcher.antMatcher("/swagger-ui/**"),
+                      AntPathRequestMatcher.antMatcher("/actuator/**"))
+                  .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()));
 
-  @Bean
-  public CorsConfigurationSource corsConfigurationSource(AppCorsProperties corsProperties) {
-    if (corsProperties == null) {
-      UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-      source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
-      return source;
-    }
+      // 4. Apply service-specific path rules
+      http.authorizeHttpRequests(
+          auth ->
+              auth.requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/platform/health"))
+                  .permitAll()
+                  .requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/platform/auth/login"))
+                  .permitAll()
+                  .requestMatchers(
+                      AntPathRequestMatcher.antMatcher("/api/v1/platform/auth/refresh"),
+                      AntPathRequestMatcher.antMatcher("/api/v1/platform/auth/logout"),
+                      AntPathRequestMatcher.antMatcher("/api/v1/platform/auth/me"))
+                  .authenticated()
+                  .requestMatchers(
+                      AntPathRequestMatcher.antMatcher("/actuator/health"),
+                      AntPathRequestMatcher.antMatcher("/actuator/info"))
+                  .permitAll()
+                  .anyRequest()
+                  .authenticated());
 
-    CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(corsProperties.allowedOrigins());
-    configuration.setAllowedMethods(corsProperties.allowedMethods());
-    configuration.setAllowedHeaders(corsProperties.allowedHeaders());
-    configuration.setExposedHeaders(corsProperties.exposedHeaders());
-    configuration.setMaxAge(corsProperties.maxAgeSeconds());
-    configuration.setAllowCredentials(true);
-
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", configuration);
-    return source;
+      // 5. Add BFF specific session filter
+      http.addFilterBefore(
+          new OperatorSessionAuthenticationFilter(
+              storedOperatorSessionService, operatorSessionProperties),
+          BearerTokenAuthenticationFilter.class);
+    };
   }
 }

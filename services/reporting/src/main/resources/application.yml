@@ -11,13 +11,17 @@ loan-origination:
 pawn-ticket:
   base-url: ${PAWN_TICKET_BASE_URL}
 
-app:
-  cors:
-    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}
-    allowed-methods: ${APP_CORS_ALLOWED_METHODS}
-    allowed-headers: ${APP_CORS_ALLOWED_HEADERS}
-    exposed-headers: ${APP_CORS_EXPOSED_HEADERS}
-    max-age-seconds: ${APP_CORS_MAX_AGE_SECONDS}
+lombardio:
+  security:
+    jwk-set-uri: ${LOMBARDIO_SECURITY_JWK_SET_URI}
+    operator-client-id: ${LOMBARDIO_SECURITY_OPERATOR_CLIENT_ID}
+    operator-access-cookie-name: ${APP_OPERATOR_SESSION_ACCESS_COOKIE_NAME:lombardio_operator_access}
+    cors:
+      allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}
+      allowed-methods: ${APP_CORS_ALLOWED_METHODS}
+      allowed-headers: ${APP_CORS_ALLOWED_HEADERS}
+      exposed-headers: ${APP_CORS_EXPOSED_HEADERS}
+      max-age-seconds: ${APP_CORS_MAX_AGE_SECONDS}
 
 management:
   endpoints:

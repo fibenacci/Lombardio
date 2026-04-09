@@ -1,0 +1,133 @@
+openapi: 3.0.1
+info:
+  title: Lombardio Reporting API
+  description: Financial Reporting and DATEV Export API.
+  version: v1.0.0
+servers:
+- url: http://localhost
+  description: Generated server url
+paths:
+  /api/v1/tenants/{tenantId}/reporting/dashboard:
+    get:
+      tags:
+      - reporting-controller
+      operationId: dashboard
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: rangeDays
+        in: query
+        required: false
+        schema:
+          maximum: 90
+          minimum: 7
+          type: integer
+          format: int32
+          default: 14
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReportingDashboardResponse"
+  /api/v1/tenants/{tenantId}/health:
+    get:
+      tags:
+      - reporting-controller
+      operationId: health
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+components:
+  schemas:
+    FinanceSummaryResponse:
+      type: object
+      properties:
+        cashInflow:
+          type: number
+        cashOutflow:
+          type: number
+        netCashflow:
+          type: number
+        realizedRevenue:
+          type: number
+        activeLoanExposure:
+          type: number
+        activeTicketCount:
+          type: integer
+          format: int32
+        averageTicketValue:
+          type: number
+    FinanceTrendPointResponse:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        cashInflow:
+          type: number
+        cashOutflow:
+          type: number
+        realizedRevenue:
+          type: number
+    InventoryCategoryResponse:
+      type: object
+      properties:
+        category:
+          type: string
+        itemCount:
+          type: integer
+          format: int32
+        pledgedValue:
+          type: number
+    ReportingDashboardResponse:
+      type: object
+      properties:
+        rangeStart:
+          type: string
+          format: date
+        rangeEnd:
+          type: string
+          format: date
+        generatedAt:
+          type: string
+          format: date-time
+        finance:
+          $ref: "#/components/schemas/FinanceSummaryResponse"
+        financeTrend:
+          type: array
+          items:
+            $ref: "#/components/schemas/FinanceTrendPointResponse"
+        inventoryByCategory:
+          type: array
+          items:
+            $ref: "#/components/schemas/InventoryCategoryResponse"
+        transactionMix:
+          type: array
+          items:
+            $ref: "#/components/schemas/TransactionMixResponse"
+    TransactionMixResponse:
+      type: object
+      properties:
+        type:
+          type: string
+        transactionCount:
+          type: integer
+          format: int32
+        totalAmount:
+          type: number

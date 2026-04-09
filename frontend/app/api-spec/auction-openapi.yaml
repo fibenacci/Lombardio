@@ -1,0 +1,381 @@
+openapi: 3.0.1
+info:
+  title: Lombardio Auction API
+  description: Auction Management and Bidding API.
+  version: v1.0.0
+servers:
+- url: http://localhost
+  description: Generated server url
+paths:
+  /api/v1/tenants/{tenantId}/auctions:
+    get:
+      tags:
+      - auction-controller
+      operationId: listAuctions
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuctionResponse"
+    post:
+      tags:
+      - auction-controller
+      operationId: createAuction
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAuctionRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuctionResponse"
+  /api/v1/tenants/{tenantId}/auctions/{auctionId}/open:
+    post:
+      tags:
+      - auction-controller
+      operationId: openAuction
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: auctionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuctionResponse"
+  /api/v1/tenants/{tenantId}/auctions/{auctionId}/lots/{lotId}/settle:
+    post:
+      tags:
+      - auction-controller
+      operationId: settleLot
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: auctionId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: lotId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuctionSettlementRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuctionResponse"
+  /api/v1/tenants/{tenantId}/auctions/{auctionId}/lots/{lotId}/bids:
+    post:
+      tags:
+      - auction-controller
+      operationId: placeBid
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: auctionId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: lotId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlaceBidRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuctionResponse"
+  /api/v1/tenants/{tenantId}/auctions/{auctionId}/close:
+    post:
+      tags:
+      - auction-controller
+      operationId: closeAuction
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: auctionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuctionResponse"
+  /api/v1/tenants/{tenantId}/auctions/{auctionId}/announce:
+    post:
+      tags:
+      - auction-controller
+      operationId: announceAuction
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: auctionId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuctionStatusUpdateRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuctionResponse"
+  /api/v1/tenants/{tenantId}/surplus-cases:
+    get:
+      tags:
+      - auction-controller
+      operationId: listSurplusCases
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SurplusCaseResponse"
+components:
+  schemas:
+    AuctionLotRequest:
+      required:
+      - contractNumber
+      - description
+      - estimatedValue
+      - itemNumber
+      - outstandingClaim
+      type: object
+      properties:
+        contractNumber:
+          type: string
+        itemNumber:
+          type: string
+        description:
+          type: string
+        estimatedValue:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+        outstandingClaim:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+    CreateAuctionRequest:
+      required:
+      - location
+      - title
+      type: object
+      properties:
+        title:
+          type: string
+        location:
+          type: string
+        lots:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuctionLotRequest"
+    AuctionLotResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        lotNumber:
+          type: integer
+          format: int32
+        contractNumber:
+          type: string
+        itemNumber:
+          type: string
+        description:
+          type: string
+        estimatedValue:
+          type: number
+        outstandingClaim:
+          type: number
+        latestBidAmount:
+          type: number
+        leadingBidder:
+          type: string
+        hammerPrice:
+          type: number
+        status:
+          type: string
+          enum:
+          - PENDING
+          - OPEN
+          - SOLD
+          - UNSOLD
+        surplusAmount:
+          type: number
+        authorityTransferDueDate:
+          type: string
+          format: date
+        authorityTransferStatus:
+          type: string
+    AuctionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        location:
+          type: string
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - ANNOUNCED
+          - LIVE
+          - CLOSED
+          - SETTLED
+        publicAnnouncementDate:
+          type: string
+          format: date
+        auctionDate:
+          type: string
+          format: date
+        liveStartedAt:
+          type: string
+          format: date-time
+        closedAt:
+          type: string
+          format: date-time
+        announcementReference:
+          type: string
+        lots:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuctionLotResponse"
+    AuctionSettlementRequest:
+      required:
+      - hammerPrice
+      type: object
+      properties:
+        hammerPrice:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+    PlaceBidRequest:
+      required:
+      - amount
+      - bidderDisplayName
+      type: object
+      properties:
+        bidderDisplayName:
+          type: string
+        amount:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+    AuctionStatusUpdateRequest:
+      required:
+      - announcementReference
+      type: object
+      properties:
+        auctionDate:
+          type: string
+          format: date
+        announcementReference:
+          type: string
+    SurplusCaseResponse:
+      type: object
+      properties:
+        auctionId:
+          type: string
+        lotId:
+          type: string
+        lotNumber:
+          type: integer
+          format: int32
+        contractNumber:
+          type: string
+        hammerPrice:
+          type: number
+        outstandingClaim:
+          type: number
+        surplusAmount:
+          type: number
+        authorityTransferDueDate:
+          type: string
+          format: date
+        authorityTransferStatus:
+          type: string

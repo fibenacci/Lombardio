@@ -1,0 +1,570 @@
+openapi: 3.0.1
+info:
+  title: Lombardio Pawn Ticket API
+  description: Pawn Ticket Lifecycle and Financial Calculation API.
+  version: v1.0.0
+servers:
+- url: http://localhost
+  description: Generated server url
+paths:
+  /api/v1/pawn-tickets/redeem:
+    post:
+      tags:
+      - pawn-ticket-controller
+      operationId: redeem
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RedeemPawnTicketRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SettlementResponse"
+  /api/v1/pawn-tickets/quote:
+    post:
+      tags:
+      - pawn-ticket-controller
+      operationId: quote
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PawnTicketQuoteRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PawnTicketResponse"
+  /api/v1/pawn-tickets/partial-repayment:
+    post:
+      tags:
+      - pawn-ticket-controller
+      operationId: partialRepayment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartialRepaymentRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SettlementResponse"
+  /api/v1/pawn-tickets/issue:
+    post:
+      tags:
+      - pawn-ticket-controller
+      operationId: issue
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IssuePawnTicketRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PawnTicketResponse"
+  /api/v1/pawn-tickets/extend:
+    post:
+      tags:
+      - pawn-ticket-controller
+      operationId: extend
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExtendPawnTicketRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PawnTicketResponse"
+  /api/v1/cash-transactions:
+    post:
+      tags:
+      - cash-transaction-controller
+      operationId: execute
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExecuteCashTransactionRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CashTransactionResponse"
+  /api/v1/tenants/{tenantId}/pawn-tickets:
+    get:
+      tags:
+      - pawn-ticket-overview-controller
+      operationId: listTickets
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PawnTicketOverviewResponse"
+  /api/v1/tenants/{tenantId}/cash-transactions:
+    get:
+      tags:
+      - cash-transaction-controller
+      operationId: list
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CashTransactionResponse"
+  /api/v1/pawn-tickets/{ticketNumber}/labels:
+    get:
+      tags:
+      - pawn-ticket-controller
+      operationId: labels
+      parameters:
+      - name: ticketNumber
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: byte
+  /api/v1/pawn-tickets/{ticketNumber}/document:
+    get:
+      tags:
+      - pawn-ticket-controller
+      operationId: document
+      parameters:
+      - name: ticketNumber
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: byte
+  /api/v1/pawn-tickets/health:
+    get:
+      tags:
+      - pawn-ticket-controller
+      operationId: health
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+  /api/internal/v1/customers/{tenantId}/{customerId}/pawn-tickets:
+    get:
+      tags:
+      - internal-pawn-ticket-controller
+      operationId: listCustomerTickets
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PawnTicketOverviewResponse"
+  /api/internal/v1/customers/{tenantId}/{customerId}/pawn-tickets/{ticketNumber}/document:
+    get:
+      tags:
+      - internal-pawn-ticket-controller
+      operationId: document_1
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: ticketNumber
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: byte
+components:
+  schemas:
+    RedeemPawnTicketRequest:
+      required:
+      - outstandingLoanAmount
+      - tenantId
+      type: object
+      properties:
+        tenantId:
+          type: string
+        outstandingLoanAmount:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+        remainingTermMonths:
+          type: integer
+          format: int32
+        manualMonthlyOperatingFee:
+          minimum: 0.00
+          exclusiveMinimum: false
+          type: number
+    SettlementResponse:
+      type: object
+      properties:
+        outstandingLoanAmount:
+          type: number
+        interestAmount:
+          type: number
+        operatingFeeAmount:
+          type: number
+        totalDueAmount:
+          type: number
+        legalText:
+          type: string
+    PawnTicketQuoteRequest:
+      required:
+      - loanAmount
+      - tenantId
+      type: object
+      properties:
+        tenantId:
+          type: string
+        loanAmount:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+        termMonths:
+          minimum: 3
+          type: integer
+          format: int32
+        manualMonthlyOperatingFee:
+          minimum: 0.00
+          exclusiveMinimum: false
+          type: number
+    PawnTicketPositionResponse:
+      type: object
+      properties:
+        itemNumber:
+          type: string
+        itemBarcode:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        pledgedValue:
+          type: number
+    PawnTicketResponse:
+      type: object
+      properties:
+        contractNumber:
+          type: string
+        contractBarcode:
+          type: string
+        ticketNumber:
+          type: string
+        termsVersion:
+          type: string
+        termsAndConditionsText:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        dueDate:
+          type: string
+          format: date
+        earliestAuctionDate:
+          type: string
+          format: date
+        termMonths:
+          type: integer
+          format: int32
+        totalLoanValue:
+          type: number
+        monthlyInterestRate:
+          type: number
+        monthlyOperatingFee:
+          type: number
+        manualMonthlyOperatingFeeRequired:
+          type: boolean
+        totalInterestAmount:
+          type: number
+        totalOperatingFeeAmount:
+          type: number
+        totalRepaymentAmount:
+          type: number
+        legalText:
+          type: string
+        positions:
+          type: array
+          items:
+            $ref: "#/components/schemas/PawnTicketPositionResponse"
+    PartialRepaymentRequest:
+      required:
+      - outstandingLoanAmount
+      - repaymentAmount
+      - tenantId
+      type: object
+      properties:
+        tenantId:
+          type: string
+        outstandingLoanAmount:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+        repaymentAmount:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+        remainingTermMonths:
+          type: integer
+          format: int32
+        manualMonthlyOperatingFee:
+          minimum: 0.00
+          exclusiveMinimum: false
+          type: number
+    IssuePawnTicketRequest:
+      required:
+      - customerDisplayName
+      - customerId
+      - customerNumber
+      - loanAmount
+      - tenantId
+      type: object
+      properties:
+        tenantId:
+          type: string
+        customerId:
+          type: string
+        customerNumber:
+          type: string
+        customerDisplayName:
+          type: string
+        customerPhone:
+          type: string
+        loanAmount:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+        termMonths:
+          minimum: 3
+          type: integer
+          format: int32
+        manualMonthlyOperatingFee:
+          minimum: 0.00
+          exclusiveMinimum: false
+          type: number
+        positions:
+          type: array
+          items:
+            $ref: "#/components/schemas/PawnTicketPositionPayload"
+    PawnTicketPositionPayload:
+      required:
+      - description
+      - label
+      - pledgedValue
+      type: object
+      properties:
+        label:
+          type: string
+        description:
+          type: string
+        pledgedValue:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+    ExtendPawnTicketRequest:
+      required:
+      - outstandingLoanAmount
+      - tenantId
+      type: object
+      properties:
+        tenantId:
+          type: string
+        outstandingLoanAmount:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+        extensionMonths:
+          minimum: 1
+          type: integer
+          format: int32
+        manualMonthlyOperatingFee:
+          minimum: 0.00
+          exclusiveMinimum: false
+          type: number
+    ExecuteCashTransactionRequest:
+      required:
+      - outstandingLoanAmount
+      - tenantId
+      - ticketNumber
+      - type
+      type: object
+      properties:
+        tenantId:
+          type: string
+        ticketNumber:
+          type: string
+        type:
+          type: string
+          enum:
+          - REDEEM
+          - EXTEND
+          - PARTIAL_REPAYMENT
+        outstandingLoanAmount:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+        extensionMonths:
+          type: integer
+          format: int32
+        repaymentAmount:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+        remainingTermMonths:
+          type: integer
+          format: int32
+        manualMonthlyOperatingFee:
+          minimum: 0.00
+          exclusiveMinimum: false
+          type: number
+        note:
+          type: string
+    CashTransactionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        ticketNumber:
+          type: string
+        customerNumber:
+          type: string
+        customerDisplayName:
+          type: string
+        type:
+          type: string
+          enum:
+          - REDEEM
+          - EXTEND
+          - PARTIAL_REPAYMENT
+        outstandingLoanAmount:
+          type: number
+        interestAmount:
+          type: number
+        operatingFeeAmount:
+          type: number
+        totalAmount:
+          type: number
+        legalText:
+          type: string
+        note:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    PawnTicketOverviewResponse:
+      type: object
+      properties:
+        contractNumber:
+          type: string
+        ticketNumber:
+          type: string
+        contractBarcode:
+          type: string
+        termsVersion:
+          type: string
+        customerNumber:
+          type: string
+        customerDisplayName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        dueDate:
+          type: string
+          format: date
+        earliestAuctionDate:
+          type: string
+          format: date
+        totalLoanValue:
+          type: number
+        totalRepaymentAmount:
+          type: number
+        positionCount:
+          type: integer
+          format: int32

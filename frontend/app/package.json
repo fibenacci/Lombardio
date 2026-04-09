@@ -10,6 +10,7 @@
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "test": "vitest run",
+    "api:generate": "openapi-typescript ./api-spec/platform-openapi.yaml -o ./src/shared/kernel/http/api-types.ts",
     "depcruise:customers": "dependency-cruiser -c dependency-cruiser.customers.mjs src/modules/customers",
     "test:watch": "vitest",
     "typecheck": "vue-tsc --noEmit"
@@ -35,6 +36,7 @@
     "eslint-plugin-vue": "^10.8.0",
     "globals": "^17.4.0",
     "jsdom": "~26.1.0",
+    "openapi-typescript": "^7.13.0",
     "sass": "~1.89.2",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.58.0",

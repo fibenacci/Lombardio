@@ -11,7 +11,6 @@
 package io.lombardio.platform.tenant.api;
 
 import io.lombardio.platform.security.AuthenticatedUser;
-import io.lombardio.platform.tenant.application.TenantAdministrationAuthorizationService;
 import io.lombardio.platform.tenant.application.BranchView;
 import io.lombardio.platform.tenant.application.CreateTenantBranchCommand;
 import io.lombardio.platform.tenant.application.CreateTenantUserCommand;

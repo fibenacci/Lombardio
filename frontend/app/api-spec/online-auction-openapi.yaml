@@ -1,0 +1,506 @@
+openapi: 3.0.1
+info:
+  title: Lombardio Online Auction API
+  description: Real-time Bidding and Online Auction Channel API.
+  version: v1.0.0
+servers:
+- url: http://localhost
+  description: Generated server url
+paths:
+  /api/v1/tenants/{tenantId}/online-auctions:
+    get:
+      tags:
+      - admin-online-auction-controller
+      operationId: list
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OnlineAuctionResponse"
+    post:
+      tags:
+      - admin-online-auction-controller
+      operationId: create
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOnlineAuctionRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OnlineAuctionResponse"
+  /api/v1/tenants/{tenantId}/online-auctions/{auctionId}/start:
+    post:
+      tags:
+      - admin-online-auction-controller
+      operationId: start
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: auctionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OnlineAuctionResponse"
+  /api/v1/tenants/{tenantId}/online-auctions/{auctionId}/registrations/{registrationId}/review:
+    post:
+      tags:
+      - admin-online-auction-controller
+      operationId: reviewRegistration
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: auctionId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: registrationId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BidderReviewRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OnlineAuctionResponse"
+  /api/v1/tenants/{tenantId}/online-auctions/{auctionId}/publish:
+    post:
+      tags:
+      - admin-online-auction-controller
+      operationId: publish
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: auctionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OnlineAuctionResponse"
+  /api/v1/tenants/{tenantId}/online-auctions/{auctionId}/close:
+    post:
+      tags:
+      - admin-online-auction-controller
+      operationId: close
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: auctionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OnlineAuctionResponse"
+  /api/public/tenants/{tenantId}/online-auctions/{auctionId}/registrations:
+    post:
+      tags:
+      - public-online-auction-controller
+      operationId: register
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: auctionId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterBidderRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BidderRegistrationResponse"
+  /api/public/tenants/{tenantId}/online-auctions/{auctionId}/realtime-session:
+    post:
+      tags:
+      - public-online-auction-controller
+      operationId: issueRealtimeSession
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: auctionId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RealtimeSessionRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RealtimeSessionResponse"
+  /api/public/tenants/{tenantId}/online-auctions/{auctionId}/bids:
+    post:
+      tags:
+      - public-online-auction-controller
+      operationId: placeBid
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: auctionId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlaceOnlineBidRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OnlineAuctionResponse"
+  /api/public/tenants/{tenantId}/online-auctions:
+    get:
+      tags:
+      - public-online-auction-controller
+      operationId: list_1
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OnlineAuctionResponse"
+  /api/public/tenants/{tenantId}/online-auctions/{auctionId}:
+    get:
+      tags:
+      - public-online-auction-controller
+      operationId: get
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: auctionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OnlineAuctionResponse"
+components:
+  schemas:
+    CreateOnlineAuctionRequest:
+      required:
+      - minimumIncrement
+      - slug
+      - title
+      type: object
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        minimumIncrement:
+          minimum: 1.00
+          exclusiveMinimum: false
+          type: number
+        countdownSeconds:
+          minimum: 30
+          type: integer
+          format: int32
+        lots:
+          type: array
+          items:
+            $ref: "#/components/schemas/OnlineAuctionLotRequest"
+    OnlineAuctionLotRequest:
+      required:
+      - description
+      - startingBid
+      - title
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        startingBid:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+    BidderRegistrationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+        legalName:
+          type: string
+        birthDate:
+          type: string
+        ibanMasked:
+          type: string
+        paddleNumber:
+          type: string
+        accessToken:
+          type: string
+        approvalStatus:
+          type: string
+          enum:
+          - PENDING
+          - APPROVED
+          - REJECTED
+        kycStatus:
+          type: string
+          enum:
+          - PENDING
+          - PASSED
+          - FAILED
+        accountCheckStatus:
+          type: string
+          enum:
+          - PENDING
+          - PASSED
+          - FAILED
+        reviewNote:
+          type: string
+        approvedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    OnlineAuctionLotResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        lotNumber:
+          type: integer
+          format: int32
+        title:
+          type: string
+        description:
+          type: string
+        startingBid:
+          type: number
+        currentBid:
+          type: number
+        highestBidderAlias:
+          type: string
+    OnlineAuctionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        tenantId:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - PUBLISHED
+          - LIVE
+          - CLOSED
+        channelName:
+          type: string
+        minimumIncrement:
+          type: number
+        countdownSeconds:
+          type: integer
+          format: int32
+        publishedAt:
+          type: string
+          format: date-time
+        liveStartedAt:
+          type: string
+          format: date-time
+        countdownEndsAt:
+          type: string
+          format: date-time
+        closedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        lots:
+          type: array
+          items:
+            $ref: "#/components/schemas/OnlineAuctionLotResponse"
+        registrations:
+          type: array
+          items:
+            $ref: "#/components/schemas/BidderRegistrationResponse"
+    BidderReviewRequest:
+      required:
+      - accountCheckStatus
+      - decision
+      - kycStatus
+      type: object
+      properties:
+        kycStatus:
+          type: string
+        accountCheckStatus:
+          type: string
+        decision:
+          type: string
+        reviewNote:
+          type: string
+    RegisterBidderRequest:
+      required:
+      - birthDate
+      - displayName
+      - email
+      - iban
+      - legalName
+      type: object
+      properties:
+        displayName:
+          type: string
+        email:
+          type: string
+        legalName:
+          type: string
+        birthDate:
+          type: string
+        iban:
+          type: string
+    RealtimeSessionRequest:
+      required:
+      - accessToken
+      type: object
+      properties:
+        accessToken:
+          type: string
+    RealtimeSessionResponse:
+      type: object
+      properties:
+        wsUrl:
+          type: string
+        channel:
+          type: string
+        connectionToken:
+          type: string
+        subscriptionToken:
+          type: string
+    PlaceOnlineBidRequest:
+      required:
+      - accessToken
+      - amount
+      - lotId
+      type: object
+      properties:
+        accessToken:
+          type: string
+        lotId:
+          type: string
+        amount:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number

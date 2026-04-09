@@ -59,8 +59,8 @@ public class AuditAspect {
               audited.action(),
               audited.targetType(),
               targetId,
-              status,
               MDC.get("traceId"),
+              status,
               error != null ? Map.of("error", error.getMessage()) : Map.of());
 
       auditService.record(event);

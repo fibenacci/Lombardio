@@ -20,7 +20,6 @@ import io.lombardio.platform.bootstrap.PlatformSeedFixtures;
 import io.lombardio.platform.iam.application.IdentityAdministration;
 import io.lombardio.platform.integration.application.PlatformOutboxService;
 import io.lombardio.platform.security.AuthenticatedUser;
-import io.lombardio.platform.tenant.application.TenantAdministrationAuthorizationService;
 import io.lombardio.platform.tenant.application.support.InMemoryTenantRepositories;
 import java.time.Clock;
 import java.time.Instant;

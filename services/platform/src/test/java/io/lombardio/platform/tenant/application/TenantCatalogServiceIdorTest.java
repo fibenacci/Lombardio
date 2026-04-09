@@ -15,7 +15,6 @@ import static org.mockito.Mockito.mock;
 
 import io.lombardio.platform.security.AuthenticatedUser;
 import io.lombardio.platform.security.ForbiddenException;
-import io.lombardio.platform.tenant.application.TenantAdministrationAuthorizationService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
