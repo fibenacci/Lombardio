@@ -1,27 +1,19 @@
 import { computed, reactive, ref } from "vue";
 import { getRequestErrorMessage } from "../../../../shared/kernel/errors/request-error";
 import { useAppToast } from "../../../../shared/ui/composables/use-app-toast";
-import { createHttpOnlineAuctionsAdapter } from "../../infrastructure/adapters/http-online-auctions.adapter";
+import { 
+  createHttpOnlineAuctionsAdapter, 
+  type OnlineAuction, 
+  type OnlineAuctionRegistration,
+  OnlineAuctionStatus,
+  BidderKycStatus,
+  BidderAccountStatus
+} from "../../infrastructure/adapters/http-online-auctions.adapter";
 
 type OnlineAuctionLotDraft = {
   title: string;
   description: string;
   startingBid: string;
-};
-
-type OnlineAuctionRegistration = {
-  id: string;
-  kycStatus?: string | null;
-  accountCheckStatus?: string | null;
-  reviewNote?: string | null;
-};
-
-type OnlineAuction = {
-  id: string;
-  tenantId: string;
-  title: string;
-  status?: string | null;
-  registrations?: OnlineAuctionRegistration[];
 };
 
 function emptyLot() {
@@ -119,8 +111,8 @@ export function useOnlineAuctionsPage({
       for (const registration of auction.registrations ?? []) {
         if (!reviewForms[registration.id]) {
           reviewForms[registration.id] = {
-            kycStatus: registration.kycStatus ?? "PENDING",
-            accountCheckStatus: registration.accountCheckStatus ?? "PENDING",
+            kycStatus: registration.kycStatus ?? BidderKycStatus.PENDING,
+            accountCheckStatus: registration.accountCheckStatus ?? BidderAccountStatus.PENDING,
             reviewNote: registration.reviewNote ?? ""
           };
         }
@@ -175,8 +167,8 @@ export function useOnlineAuctionsPage({
         selectedAuction.value.id,
         registrationId,
         {
-          kycStatus: reviewForms[registrationId]?.kycStatus ?? "PENDING",
-          accountCheckStatus: reviewForms[registrationId]?.accountCheckStatus ?? "PENDING",
+          kycStatus: reviewForms[registrationId]?.kycStatus ?? BidderKycStatus.PENDING,
+          accountCheckStatus: reviewForms[registrationId]?.accountCheckStatus ?? BidderAccountStatus.PENDING,
           reviewNote: reviewForms[registrationId]?.reviewNote ?? "",
           decision
         },

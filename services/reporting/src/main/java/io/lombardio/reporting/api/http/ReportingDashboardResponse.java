@@ -10,18 +10,31 @@
  */
 package io.lombardio.reporting.api.http;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
+@Schema(
+    requiredProperties = {
+      "rangeStart",
+      "rangeEnd",
+      "generatedAt",
+      "finance",
+      "financeTrend",
+      "inventoryByCategory",
+      "transactionMix"
+    })
 public record ReportingDashboardResponse(
-    LocalDate rangeStart,
-    LocalDate rangeEnd,
-    Instant generatedAt,
-    FinanceSummaryResponse finance,
-    List<FinanceTrendPointResponse> financeTrend,
-    List<InventoryCategoryResponse> inventoryByCategory,
-    List<TransactionMixResponse> transactionMix) {
+    @NotNull @Schema(required = true) LocalDate rangeStart,
+    @NotNull @Schema(required = true) LocalDate rangeEnd,
+    @NotNull @Schema(required = true) Instant generatedAt,
+    @NotNull @Schema(required = true) FinanceSummaryResponse finance,
+    @NotNull @Schema(required = true) List<FinanceTrendPointResponse> financeTrend,
+    @NotNull @Schema(required = true) List<InventoryCategoryResponse> inventoryByCategory,
+    @NotNull @Schema(required = true) List<TransactionMixResponse> transactionMix) {
 
   public ReportingDashboardResponse {
     financeTrend = List.copyOf(financeTrend == null ? List.of() : financeTrend);

@@ -130,6 +130,13 @@ components:
           exclusiveMinimum: false
           type: number
     CustomerView:
+      required:
+      - birthDate
+      - checkedDocumentType
+      - customerNumber
+      - displayName
+      - id
+      - phone
       type: object
       properties:
         id:
@@ -146,6 +153,12 @@ components:
         checkedDocumentType:
           type: string
     LoanCaseResponse:
+      required:
+      - customer
+      - id
+      - pawnTickets
+      - pledgeRecord
+      - positions
       type: object
       properties:
         id:
@@ -163,6 +176,14 @@ components:
           items:
             $ref: "#/components/schemas/PawnTicketResponse"
     LoanPositionResponse:
+      required:
+      - baseLoanValue
+      - description
+      - guidelineLabel
+      - id
+      - label
+      - pledgedValue
+      - ticketGroup
       type: object
       properties:
         id:
@@ -181,6 +202,12 @@ components:
         pledgedValue:
           type: number
     PawnTicketPositionResponse:
+      required:
+      - description
+      - itemBarcode
+      - itemNumber
+      - label
+      - pledgedValue
       type: object
       properties:
         itemNumber:
@@ -194,6 +221,25 @@ components:
         pledgedValue:
           type: number
     PawnTicketResponse:
+      required:
+      - contractBarcode
+      - contractNumber
+      - createdAt
+      - dueDate
+      - earliestAuctionDate
+      - legalText
+      - manualMonthlyOperatingFeeRequired
+      - monthlyInterestRate
+      - monthlyOperatingFee
+      - positions
+      - termMonths
+      - termsAndConditionsText
+      - termsVersion
+      - ticketNumber
+      - totalInterestAmount
+      - totalLoanValue
+      - totalOperatingFeeAmount
+      - totalRepaymentAmount
       type: object
       properties:
         contractNumber:
@@ -239,6 +285,22 @@ components:
           items:
             $ref: "#/components/schemas/PawnTicketPositionResponse"
     PledgeRecordResponse:
+      required:
+      - bearerCity
+      - bearerName
+      - bearerPostalCode
+      - bearerStreet
+      - checkedDocumentType
+      - id
+      - languageCode
+      - pledgorBirthDate
+      - pledgorCity
+      - pledgorName
+      - pledgorPostalCode
+      - pledgorStreet
+      - powerOfAttorneyRequired
+      - recordedAt
+      - retentionUntil
       type: object
       properties:
         id:
@@ -275,6 +337,13 @@ components:
         bearerCity:
           type: string
     ValuationGuidelineResponse:
+      required:
+      - baseLoanValue
+      - category
+      - description
+      - id
+      - label
+      - material
       type: object
       properties:
         id:

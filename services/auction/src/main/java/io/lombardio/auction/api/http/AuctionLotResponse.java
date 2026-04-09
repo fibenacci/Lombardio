@@ -11,21 +11,29 @@
 package io.lombardio.auction.api.http;
 
 import io.lombardio.auction.domain.model.AuctionLotStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Schema(requiredProperties = {
+    "id", "lotNumber", "contractNumber", "itemNumber", "description",
+    "estimatedValue", "outstandingClaim", "latestBidAmount", "leadingBidder",
+    "hammerPrice", "status", "surplusAmount", "authorityTransferDueDate",
+    "authorityTransferStatus"
+})
 public record AuctionLotResponse(
-    String id,
-    int lotNumber,
-    String contractNumber,
-    String itemNumber,
-    String description,
-    BigDecimal estimatedValue,
-    BigDecimal outstandingClaim,
-    BigDecimal latestBidAmount,
-    String leadingBidder,
-    BigDecimal hammerPrice,
-    AuctionLotStatus status,
-    BigDecimal surplusAmount,
-    LocalDate authorityTransferDueDate,
-    String authorityTransferStatus) {}
+    @NotNull String id,
+    @NotNull int lotNumber,
+    @NotNull String contractNumber,
+    @NotNull String itemNumber,
+    @NotNull String description,
+    @NotNull BigDecimal estimatedValue,
+    @NotNull BigDecimal outstandingClaim,
+    @NotNull BigDecimal latestBidAmount,
+    @NotNull String leadingBidder,
+    @NotNull BigDecimal hammerPrice,
+    @NotNull AuctionLotStatus status,
+    @NotNull BigDecimal surplusAmount,
+    @NotNull LocalDate authorityTransferDueDate,
+    @NotNull String authorityTransferStatus) {}

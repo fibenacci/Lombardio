@@ -10,7 +10,11 @@
  */
 package io.lombardio.reporting.api.http;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 public record TransactionMixResponse(
-    String type, Integer transactionCount, BigDecimal totalAmount) {}
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String type,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Integer transactionCount,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) BigDecimal totalAmount) {}

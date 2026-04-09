@@ -1,7 +1,14 @@
 import { computed, reactive, ref } from "vue";
 import { getRequestErrorMessage } from "../../../../shared/kernel/errors/request-error";
 import { useAppToast } from "../../../../shared/ui/composables/use-app-toast";
-import { createHttpAuctionsAdapter } from "../../infrastructure/adapters/http-auctions.adapter";
+import { 
+  createHttpAuctionsAdapter, 
+  type Auction, 
+  type AuctionLot, 
+  type SurplusCase,
+  AuctionStatus,
+  AuctionLotStatus
+} from "../../infrastructure/adapters/http-auctions.adapter";
 
 type AuctionLotDraft = {
   contractNumber: string;
@@ -9,24 +16,6 @@ type AuctionLotDraft = {
   description: string;
   estimatedValue: string;
   outstandingClaim: string;
-};
-
-type AuctionLot = {
-  id: string;
-  latestBidAmount?: number | string | null;
-  status?: string | null;
-};
-
-type Auction = {
-  id: string;
-  lots: AuctionLot[];
-  status?: string | null;
-  title?: string;
-};
-
-type SurplusCase = {
-  contractNumber?: string;
-  itemNumber?: string;
 };
 
 function emptyLot() {
@@ -98,7 +87,7 @@ export function useAuctionsPage({
   }
 
   function findSelectedLot(lotId: string) {
-    return selectedAuction.value?.lots?.find((lot: { id: string }) => lot.id === lotId) ?? null;
+    return selectedAuction.value?.lots?.find((lot) => lot.id === lotId) ?? null;
   }
 
   function canCreateAuction() {
@@ -111,8 +100,8 @@ export function useAuctionsPage({
 
   function canRecordBid(lotId: string) {
     const lot = findSelectedLot(lotId);
-    const isLiveAuction = selectedAuction.value?.status === "LIVE";
-    const isOpenLot = lot?.status === "OPEN";
+    const isLiveAuction = selectedAuction.value?.status === AuctionStatus.LIVE;
+    const isOpenLot = lot?.status === AuctionLotStatus.OPEN;
     const hasBidder = hasText(bidForms[lotId]?.bidderDisplayName ?? "");
     const hasPositiveBid = isPositiveAmount(bidForms[lotId]?.amount ?? 0);
     const exceedsCurrentBid = Number(bidForms[lotId]?.amount ?? 0) > Number(lot?.latestBidAmount ?? 0);
@@ -135,8 +124,10 @@ export function useAuctionsPage({
       selectedAuctionId.value = auctions.value[0].id;
     }
     for (const auction of auctions.value) {
-      for (const lot of auction.lots) {
-        ensureLotState(lot.id);
+      if (auction.lots) {
+        for (const lot of auction.lots) {
+          ensureLotState(lot.id);
+        }
       }
     }
   }
@@ -206,11 +197,11 @@ export function useAuctionsPage({
     try {
       errorMessage.value = "";
       const lot = findSelectedLot(lotId);
-      if (selectedAuction.value.status !== "LIVE") {
+      if (selectedAuction.value.status !== AuctionStatus.LIVE) {
         errorMessage.value = t("auctions.messages.auctionMustBeLive");
         return;
       }
-      if (!lot || lot.status !== "OPEN") {
+      if (!lot || lot.status !== AuctionLotStatus.OPEN) {
         errorMessage.value = t("auctions.messages.lotMustBeOpen");
         return;
       }

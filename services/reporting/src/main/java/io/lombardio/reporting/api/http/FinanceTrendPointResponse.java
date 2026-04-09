@@ -10,8 +10,13 @@
  */
 package io.lombardio.reporting.api.http;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record FinanceTrendPointResponse(
-    LocalDate date, BigDecimal cashInflow, BigDecimal cashOutflow, BigDecimal realizedRevenue) {}
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) LocalDate date,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) BigDecimal cashInflow,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) BigDecimal cashOutflow,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) BigDecimal realizedRevenue) {}

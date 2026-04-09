@@ -41,7 +41,7 @@ import { useTenantDashboardReporting } from "./sub-composables/use-tenant-dashbo
 import { useTenantDashboardCustomerLookup } from "./sub-composables/use-tenant-dashboard-customer-lookup";
 import { useTenantDashboardLoanForm } from "./sub-composables/use-tenant-dashboard-loan-form";
 import { useTenantDashboardCompliance } from "./sub-composables/use-tenant-dashboard-compliance";
-import type { TenantHomeCustomerModel } from "../../domain/model/tenant-dashboard";
+import { type TenantHomeCustomerModel, AmlStatus } from "../../domain/model/tenant-dashboard";
 import type { TenantHomeLoanDto } from "../../infrastructure/dto/tenant-dashboard.dto";
 import type { FieldError } from "../../../../shared/kernel/http/types";
 
@@ -101,18 +101,18 @@ export function useTenantDashboardService({
     customers: complianceCustomers
   });
 
-  const enrichCompliance = async (customer: TenantHomeCustomerModel) => {
+  const enrichCompliance = async (customer: TenantHomeCustomerModel): Promise<TenantHomeCustomerModel> => {
     try {
       const amlStatus = amlFeatureEnabled.value
         ? await fetchTenantHomeAmlStatus(selectedTenantId.value, String(customer.id))
         : null;
-      return amlStatus ? mergeAmlStatus(toCustomerModel(customer), amlStatus) : toCustomerModel(customer);
+      return amlStatus ? mergeAmlStatus(customer, amlStatus) : customer;
     } catch {
       return {
         ...customer,
-        amlStatus: "UNKNOWN",
-        amlOriginationAllowed: false
-      } as TenantHomeCustomerModel;
+        amlStatus: AmlStatus.NOT_REVIEWED,
+        originationAllowed: false
+      };
     }
   };
 
@@ -216,7 +216,7 @@ export function useTenantDashboardService({
           : null;
 
         customerId = createdCustomer.id;
-        const mergedCustomer = mergeKycDocuments(mergeKycStatus(createdCustomer, kycStatus), {
+        const mergedCustomer = mergeKycDocuments(mergeKycStatus(toCustomerModel(createdCustomer), kycStatus), {
           documentFrontImageDataUrl: customerLookup.newCustomerKyc.documentFrontImageDataUrl,
           documentBackImageDataUrl: customerLookup.newCustomerKyc.documentBackImageDataUrl
         });

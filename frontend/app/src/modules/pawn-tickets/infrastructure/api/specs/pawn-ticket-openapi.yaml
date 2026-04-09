@@ -283,6 +283,12 @@ components:
           exclusiveMinimum: false
           type: number
     SettlementResponse:
+      required:
+      - interestAmount
+      - legalText
+      - operatingFeeAmount
+      - outstandingLoanAmount
+      - totalDueAmount
       type: object
       properties:
         outstandingLoanAmount:
@@ -316,6 +322,12 @@ components:
           exclusiveMinimum: false
           type: number
     PawnTicketPositionResponse:
+      required:
+      - description
+      - itemBarcode
+      - itemNumber
+      - label
+      - pledgedValue
       type: object
       properties:
         itemNumber:
@@ -329,6 +341,25 @@ components:
         pledgedValue:
           type: number
     PawnTicketResponse:
+      required:
+      - contractBarcode
+      - contractNumber
+      - createdAt
+      - dueDate
+      - earliestAuctionDate
+      - legalText
+      - manualMonthlyOperatingFeeRequired
+      - monthlyInterestRate
+      - monthlyOperatingFee
+      - positions
+      - termMonths
+      - termsAndConditionsText
+      - termsVersion
+      - ticketNumber
+      - totalInterestAmount
+      - totalLoanValue
+      - totalOperatingFeeAmount
+      - totalRepaymentAmount
       type: object
       properties:
         contractNumber:
@@ -506,6 +537,19 @@ components:
         note:
           type: string
     CashTransactionResponse:
+      required:
+      - createdAt
+      - customerDisplayName
+      - customerNumber
+      - id
+      - interestAmount
+      - legalText
+      - note
+      - operatingFeeAmount
+      - outstandingLoanAmount
+      - ticketNumber
+      - totalAmount
+      - type
       type: object
       properties:
         id:
@@ -538,6 +582,19 @@ components:
           type: string
           format: date-time
     PawnTicketOverviewResponse:
+      required:
+      - contractBarcode
+      - contractNumber
+      - createdAt
+      - customerDisplayName
+      - customerNumber
+      - dueDate
+      - earliestAuctionDate
+      - positionCount
+      - termsVersion
+      - ticketNumber
+      - totalLoanValue
+      - totalRepaymentAmount
       type: object
       properties:
         contractNumber:

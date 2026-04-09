@@ -12,20 +12,39 @@ package io.lombardio.onlineauction.api;
 
 import io.lombardio.onlineauction.domain.BidderApprovalStatus;
 import io.lombardio.onlineauction.domain.ReviewCheckStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 
+@Schema(
+    requiredProperties = {
+      "id",
+      "displayName",
+      "email",
+      "legalName",
+      "birthDate",
+      "ibanMasked",
+      "paddleNumber",
+      "accessToken",
+      "approvalStatus",
+      "kycStatus",
+      "accountCheckStatus",
+      "reviewNote",
+      "approvedAt",
+      "createdAt"
+    })
 public record BidderRegistrationResponse(
-    String id,
-    String displayName,
-    String email,
-    String legalName,
-    String birthDate,
-    String ibanMasked,
-    String paddleNumber,
-    String accessToken,
-    BidderApprovalStatus approvalStatus,
-    ReviewCheckStatus kycStatus,
-    ReviewCheckStatus accountCheckStatus,
-    String reviewNote,
-    Instant approvedAt,
-    Instant createdAt) {}
+    @NotNull String id,
+    @NotNull String displayName,
+    @NotNull String email,
+    @NotNull String legalName,
+    @NotNull String birthDate,
+    @NotNull String ibanMasked,
+    @NotNull String paddleNumber,
+    @NotNull String accessToken,
+    @NotNull BidderApprovalStatus approvalStatus,
+    @NotNull ReviewCheckStatus kycStatus,
+    @NotNull ReviewCheckStatus accountCheckStatus,
+    @NotNull String reviewNote,
+    @NotNull Instant approvedAt,
+    @NotNull Instant createdAt) {}

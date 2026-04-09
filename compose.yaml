@@ -1,7 +1,7 @@
 x-java-core-env: &java-core-env
-  JAVA_TOOL_OPTIONS: "${JAVA_TOOL_OPTIONS:--XX:ActiveProcessorCount=2 -XX:InitialRAMPercentage=10 -XX:MaxRAMPercentage=60 -XX:+UseG1GC -XX:+UseStringDeduplication -Djava.security.egd=file:/dev/./urandom}"
+  JAVA_TOOL_OPTIONS: "${JAVA_TOOL_OPTIONS:--XX:ActiveProcessorCount=1 -XX:InitialRAMPercentage=5 -XX:MaxRAMPercentage=45 -XX:+UseG1GC -XX:+UseStringDeduplication -Djava.security.egd=file:/dev/./urandom}"
   INTEGRATION_RABBITMQ_PUBLISHER_BATCH_SIZE: 10
-  INTEGRATION_INTERNAL_SERVICE_TOKEN: ${INTEGRATION_INTERNAL_SERVICE_TOKEN:-change-me-integration-internal-token}
+  INTEGRATION_INTERNAL_SERVICE_TOKEN: ${INTEGRATION_INTERNAL_SERVICE_TOKEN:-dev-secret-token-for-lombardio-integration-123}
   SPRING_RABBITMQ_HOST: rabbitmq
   SPRING_RABBITMQ_PORT: 5672
   SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-lombardio}
@@ -11,15 +11,17 @@ x-java-core-env: &java-core-env
   APP_CORS_ALLOWED_METHODS: ${APP_CORS_ALLOWED_METHODS:-GET,POST,PUT,PATCH,DELETE,OPTIONS}
   APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS:-Authorization,Content-Type,Accept,X-Requested-With}
   APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS:-Content-Disposition,Location}
+  LOMBARDIO_SECURITY_JWK_SET_URI: http://keycloak:8080/realms/lombardio/protocol/openid-connect/certs
+  LOMBARDIO_SECURITY_OPERATOR_CLIENT_ID: ${KEYCLOAK_OPERATOR_CLIENT_ID:-lombardio-app}
   SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/lombardio/protocol/openid-connect/certs
   SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8080/realms/lombardio
   LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
   IDENTITY_SECURITY_ENCRYPTION_KEY: ${IDENTITY_SECURITY_ENCRYPTION_KEY:-dev-encryption-key-must-be-32-chars-!!!}
 
 x-java-default-env: &java-default-env
-  JAVA_TOOL_OPTIONS: "${JAVA_DEFAULT_TOOL_OPTIONS:--XX:ActiveProcessorCount=1 -XX:InitialRAMPercentage=10 -XX:MaxRAMPercentage=60 -XX:+UseG1GC -XX:+UseStringDeduplication -Djava.security.egd=file:/dev/./urandom}"
+  JAVA_TOOL_OPTIONS: "${JAVA_DEFAULT_TOOL_OPTIONS:--XX:ActiveProcessorCount=1 -XX:InitialRAMPercentage=5 -XX:MaxRAMPercentage=40 -XX:+UseG1GC -XX:+UseStringDeduplication -Djava.security.egd=file:/dev/./urandom}"
   INTEGRATION_RABBITMQ_PUBLISHER_BATCH_SIZE: 10
-  INTEGRATION_INTERNAL_SERVICE_TOKEN: ${INTEGRATION_INTERNAL_SERVICE_TOKEN:-change-me-integration-internal-token}
+  INTEGRATION_INTERNAL_SERVICE_TOKEN: ${INTEGRATION_INTERNAL_SERVICE_TOKEN:-dev-secret-token-for-lombardio-integration-123}
   SPRING_RABBITMQ_HOST: rabbitmq
   SPRING_RABBITMQ_PORT: 5672
   SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-lombardio}
@@ -29,15 +31,17 @@ x-java-default-env: &java-default-env
   APP_CORS_ALLOWED_METHODS: ${APP_CORS_ALLOWED_METHODS:-GET,POST,PUT,PATCH,DELETE,OPTIONS}
   APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS:-Authorization,Content-Type,Accept,X-Requested-With}
   APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS:-Content-Disposition,Location}
+  LOMBARDIO_SECURITY_JWK_SET_URI: http://keycloak:8080/realms/lombardio/protocol/openid-connect/certs
+  LOMBARDIO_SECURITY_OPERATOR_CLIENT_ID: ${KEYCLOAK_OPERATOR_CLIENT_ID:-lombardio-app}
   SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/lombardio/protocol/openid-connect/certs
   SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8080/realms/lombardio
   LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
   IDENTITY_SECURITY_ENCRYPTION_KEY: ${IDENTITY_SECURITY_ENCRYPTION_KEY:-dev-encryption-key-must-be-32-chars-!!!}
 
 x-java-light-env: &java-light-env
-  JAVA_TOOL_OPTIONS: "${JAVA_LIGHT_TOOL_OPTIONS:--XX:ActiveProcessorCount=1 -XX:InitialRAMPercentage=5 -XX:MaxRAMPercentage=50 -XX:+UseG1GC -Djava.security.egd=file:/dev/./urandom}"
+  JAVA_TOOL_OPTIONS: "${JAVA_LIGHT_TOOL_OPTIONS:--XX:ActiveProcessorCount=1 -XX:InitialRAMPercentage=5 -XX:MaxRAMPercentage=35 -XX:+UseG1GC -Djava.security.egd=file:/dev/./urandom}"
   INTEGRATION_RABBITMQ_PUBLISHER_BATCH_SIZE: 10
-  INTEGRATION_INTERNAL_SERVICE_TOKEN: ${INTEGRATION_INTERNAL_SERVICE_TOKEN:-change-me-integration-internal-token}
+  INTEGRATION_INTERNAL_SERVICE_TOKEN: ${INTEGRATION_INTERNAL_SERVICE_TOKEN:-dev-secret-token-for-lombardio-integration-123}
   SPRING_RABBITMQ_HOST: rabbitmq
   SPRING_RABBITMQ_PORT: 5672
   SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-lombardio}
@@ -47,30 +51,32 @@ x-java-light-env: &java-light-env
   APP_CORS_ALLOWED_METHODS: ${APP_CORS_ALLOWED_METHODS:-GET,POST,PUT,PATCH,DELETE,OPTIONS}
   APP_CORS_ALLOWED_HEADERS: ${APP_CORS_ALLOWED_HEADERS:-Authorization,Content-Type,Accept,X-Requested-With}
   APP_CORS_EXPOSED_HEADERS: ${APP_CORS_EXPOSED_HEADERS:-Content-Disposition,Location}
+  LOMBARDIO_SECURITY_JWK_SET_URI: http://keycloak:8080/realms/lombardio/protocol/openid-connect/certs
+  LOMBARDIO_SECURITY_OPERATOR_CLIENT_ID: ${KEYCLOAK_OPERATOR_CLIENT_ID:-lombardio-app}
   SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/lombardio/protocol/openid-connect/certs
   SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8080/realms/lombardio
   LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
   IDENTITY_SECURITY_ENCRYPTION_KEY: ${IDENTITY_SECURITY_ENCRYPTION_KEY:-dev-encryption-key-must-be-32-chars-!!!}
 
 x-java-core-limits: &java-core-limits
-  cpus: 2.0
-  mem_limit: 1536m
-
-x-java-default-limits: &java-default-limits
-  cpus: 1.25
-  mem_limit: 1280m
-
-x-java-light-limits: &java-light-limits
   cpus: 1.0
   mem_limit: 1024m
+
+x-java-default-limits: &java-default-limits
+  cpus: 0.75
+  mem_limit: 768m
+
+x-java-light-limits: &java-light-limits
+  cpus: 0.5
+  mem_limit: 640m
 
 services:
   postgres:
     image: postgres:16-alpine
     container_name: lombardio-postgres
     restart: unless-stopped
-    cpus: 1.5
-    mem_limit: 768m
+    cpus: 0.75
+    mem_limit: 512m
     environment:
       POSTGRES_DB: lombardio
       POSTGRES_USER: lombardio
@@ -89,8 +95,8 @@ services:
     image: rabbitmq:3.13-management
     container_name: lombardio-rabbitmq
     restart: unless-stopped
-    cpus: 1.0
-    mem_limit: 512m
+    cpus: 0.5
+    mem_limit: 384m
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-lombardio}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-lombardio}
@@ -110,8 +116,8 @@ services:
     image: redis:7-alpine
     container_name: lombardio-redis
     restart: unless-stopped
-    cpus: 0.5
-    mem_limit: 256m
+    cpus: 0.25
+    mem_limit: 128m
     ports:
       - "6379:6379"
     volumes:
@@ -140,6 +146,8 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:25.0.4
     container_name: lombardio-keycloak
+    cpus: 0.75
+    mem_limit: 768m
     command: start-dev --import-realm
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
@@ -159,11 +167,15 @@ services:
     volumes:
       - ./infra/keycloak/lombardio-realm.json:/opt/keycloak/data/import/lombardio-realm.json:ro
     healthcheck:
-      test: ["CMD-SHELL", "grep -q :1F90 /proc/net/tcp6"]
+      test:
+        [
+          "CMD-SHELL",
+          "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q '200' <&3",
+        ]
       interval: 5s
       timeout: 2s
       retries: 20
-      start_period: 10s
+      start_period: 90s
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -193,7 +205,7 @@ services:
       KEYCLOAK_OPERATOR_CLIENT_ID: ${KEYCLOAK_OPERATOR_CLIENT_ID:-lombardio-app}
       KEYCLOAK_ADMIN_USERNAME: platform@lombardio.local
       KEYCLOAK_ADMIN_PASSWORD: admin
-      PLATFORM_OUTBOX_ACCESS_TOKEN: ${PLATFORM_OUTBOX_ACCESS_TOKEN:-change-me-platform-outbox-token}
+      PLATFORM_OUTBOX_ACCESS_TOKEN: ${PLATFORM_OUTBOX_ACCESS_TOKEN:-dev-secret-token-for-platform-outbox-123}
       APP_OPERATOR_BFF_IDENTITY_BASE_URL: http://identity-intelligence:8084
       APP_OPERATOR_BFF_ORIGINATION_BASE_URL: http://loan-origination:8083
       APP_OPERATOR_BFF_PAWN_TICKET_BASE_URL: http://pawn-ticket:8085
@@ -442,6 +454,8 @@ services:
     image: regulaforensics/docreader:latest
     container_name: lombardio-regula
     restart: unless-stopped
+    cpus: 0.5
+    mem_limit: 512m
     entrypoint:
       - /bin/bash
       - -lc
@@ -464,8 +478,8 @@ services:
       target: ${COMPOSE_BUILD_TARGET:-runtime}
     container_name: lombardio-integration
     restart: unless-stopped
-    cpus: 0.75
-    mem_limit: 384m
+    cpus: 0.5
+    mem_limit: 256m
     environment:
       GOMAXPROCS: 1
       PORT: 8092
@@ -473,7 +487,7 @@ services:
       RABBITMQ_EXCHANGE: lombardio.events
       RABBITMQ_QUEUE: lombardio.integration
       RABBITMQ_BINDING_KEY: "#"
-      INTEGRATION_INTERNAL_SERVICE_TOKEN: ${INTEGRATION_INTERNAL_SERVICE_TOKEN:-change-me-integration-internal-token}
+      INTEGRATION_INTERNAL_SERVICE_TOKEN: ${INTEGRATION_INTERNAL_SERVICE_TOKEN:-dev-secret-token-for-lombardio-integration-123}
       INTEGRATION_EMAIL_DELIVERY_MODE: "log"
       INTEGRATION_WEBHOOK_DESTINATIONS: "[]"
     ports:
@@ -483,14 +497,15 @@ services:
         condition: service_healthy
 
   frontend:
+    profiles: ["frontend"]
     build:
       context: .
       dockerfile: frontend/app/build/package/Dockerfile
       target: ${FRONTEND_BUILD_TARGET:-development}
     container_name: lombardio-frontend
     restart: unless-stopped
-    cpus: 0.5
-    mem_limit: 256m
+    cpus: 0.25
+    mem_limit: 192m
     environment:
       CHOKIDAR_USEPOLLING: "true"
       VITE_API_BASE_URL: http://localhost:8081

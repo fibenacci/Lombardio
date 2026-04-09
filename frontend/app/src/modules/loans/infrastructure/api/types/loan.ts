@@ -62,89 +62,89 @@ export interface components {
             pledgedValue?: number;
         };
         CustomerView: {
-            id?: string;
-            customerNumber?: string;
-            displayName?: string;
+            id: string;
+            customerNumber: string;
+            displayName: string;
             /** Format: date */
-            birthDate?: string;
-            phone?: string;
-            checkedDocumentType?: string;
+            birthDate: string;
+            phone: string;
+            checkedDocumentType: string;
         };
         LoanCaseResponse: {
-            id?: string;
-            customer?: components["schemas"]["CustomerView"];
-            pledgeRecord?: components["schemas"]["PledgeRecordResponse"];
-            positions?: components["schemas"]["LoanPositionResponse"][];
-            pawnTickets?: components["schemas"]["PawnTicketResponse"][];
+            id: string;
+            customer: components["schemas"]["CustomerView"];
+            pledgeRecord: components["schemas"]["PledgeRecordResponse"];
+            positions: components["schemas"]["LoanPositionResponse"][];
+            pawnTickets: components["schemas"]["PawnTicketResponse"][];
         };
         LoanPositionResponse: {
-            id?: string;
+            id: string;
             /** Format: int32 */
-            ticketGroup?: number;
-            label?: string;
-            description?: string;
-            guidelineLabel?: string;
-            baseLoanValue?: number;
-            pledgedValue?: number;
+            ticketGroup: number;
+            label: string;
+            description: string;
+            guidelineLabel: string;
+            baseLoanValue: number;
+            pledgedValue: number;
         };
         PawnTicketPositionResponse: {
-            itemNumber?: string;
-            itemBarcode?: string;
-            label?: string;
-            description?: string;
-            pledgedValue?: number;
+            itemNumber: string;
+            itemBarcode: string;
+            label: string;
+            description: string;
+            pledgedValue: number;
         };
         PawnTicketResponse: {
-            contractNumber?: string;
-            contractBarcode?: string;
-            ticketNumber?: string;
-            termsVersion?: string;
-            termsAndConditionsText?: string;
+            contractNumber: string;
+            contractBarcode: string;
+            ticketNumber: string;
+            termsVersion: string;
+            termsAndConditionsText: string;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
             /** Format: date */
-            dueDate?: string;
+            dueDate: string;
             /** Format: date */
-            earliestAuctionDate?: string;
+            earliestAuctionDate: string;
             /** Format: int32 */
-            termMonths?: number;
-            totalLoanValue?: number;
-            monthlyInterestRate?: number;
-            monthlyOperatingFee?: number;
-            manualMonthlyOperatingFeeRequired?: boolean;
-            totalInterestAmount?: number;
-            totalOperatingFeeAmount?: number;
-            totalRepaymentAmount?: number;
-            legalText?: string;
-            positions?: components["schemas"]["PawnTicketPositionResponse"][];
+            termMonths: number;
+            totalLoanValue: number;
+            monthlyInterestRate: number;
+            monthlyOperatingFee: number;
+            manualMonthlyOperatingFeeRequired: boolean;
+            totalInterestAmount: number;
+            totalOperatingFeeAmount: number;
+            totalRepaymentAmount: number;
+            legalText: string;
+            positions: components["schemas"]["PawnTicketPositionResponse"][];
         };
         PledgeRecordResponse: {
-            id?: string;
+            id: string;
             /** Format: date-time */
-            recordedAt?: string;
-            languageCode?: string;
+            recordedAt: string;
+            languageCode: string;
             /** Format: date */
-            retentionUntil?: string;
-            pledgorName?: string;
-            pledgorStreet?: string;
-            pledgorPostalCode?: string;
-            pledgorCity?: string;
+            retentionUntil: string;
+            pledgorName: string;
+            pledgorStreet: string;
+            pledgorPostalCode: string;
+            pledgorCity: string;
             /** Format: date */
-            pledgorBirthDate?: string;
-            checkedDocumentType?: string;
-            powerOfAttorneyRequired?: boolean;
-            bearerName?: string;
-            bearerStreet?: string;
-            bearerPostalCode?: string;
-            bearerCity?: string;
+            pledgorBirthDate: string;
+            checkedDocumentType: string;
+            powerOfAttorneyRequired: boolean;
+            bearerName: string;
+            bearerStreet: string;
+            bearerPostalCode: string;
+            bearerCity: string;
         };
         ValuationGuidelineResponse: {
-            id?: string;
-            category?: string;
-            material?: string;
-            label?: string;
-            description?: string;
-            baseLoanValue?: number;
+            id: string;
+            category: string;
+            material: string;
+            label: string;
+            description: string;
+            baseLoanValue: number;
         };
     };
     responses: never;

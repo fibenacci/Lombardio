@@ -10,14 +10,17 @@
  */
 package io.lombardio.loanorigination.api.http;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
+@Schema(requiredProperties = {"id", "customer", "pledgeRecord", "positions", "pawnTickets"})
 public record LoanCaseResponse(
-    String id,
-    CustomerView customer,
-    PledgeRecordResponse pledgeRecord,
-    List<LoanPositionResponse> positions,
-    List<PawnTicketResponse> pawnTickets) {
+    @NotNull String id,
+    @NotNull CustomerView customer,
+    @NotNull PledgeRecordResponse pledgeRecord,
+    @NotNull List<LoanPositionResponse> positions,
+    @NotNull List<PawnTicketResponse> pawnTickets) {
 
   public LoanCaseResponse {
     positions = List.copyOf(positions == null ? List.of() : positions);

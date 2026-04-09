@@ -10,20 +10,37 @@
  */
 package io.lombardio.pawnticket.api.http;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
+@Schema(
+    requiredProperties = {
+      "contractNumber",
+      "ticketNumber",
+      "contractBarcode",
+      "termsVersion",
+      "customerNumber",
+      "customerDisplayName",
+      "createdAt",
+      "dueDate",
+      "earliestAuctionDate",
+      "totalLoanValue",
+      "totalRepaymentAmount",
+      "positionCount"
+    })
 public record PawnTicketOverviewResponse(
-    String contractNumber,
-    String ticketNumber,
-    String contractBarcode,
-    String termsVersion,
-    String customerNumber,
-    String customerDisplayName,
-    Instant createdAt,
-    LocalDate dueDate,
-    LocalDate earliestAuctionDate,
-    BigDecimal totalLoanValue,
-    BigDecimal totalRepaymentAmount,
-    Integer positionCount) {}
+    @NotNull String contractNumber,
+    @NotNull String ticketNumber,
+    @NotNull String contractBarcode,
+    @NotNull String termsVersion,
+    @NotNull String customerNumber,
+    @NotNull String customerDisplayName,
+    @NotNull Instant createdAt,
+    @NotNull LocalDate dueDate,
+    @NotNull LocalDate earliestAuctionDate,
+    @NotNull BigDecimal totalLoanValue,
+    @NotNull BigDecimal totalRepaymentAmount,
+    @NotNull Integer positionCount) {}

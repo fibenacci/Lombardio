@@ -133,40 +133,40 @@ export interface components {
             lots?: components["schemas"]["AuctionLotRequest"][];
         };
         AuctionLotResponse: {
-            id?: string;
+            id: string;
             /** Format: int32 */
-            lotNumber?: number;
-            contractNumber?: string;
-            itemNumber?: string;
-            description?: string;
-            estimatedValue?: number;
-            outstandingClaim?: number;
-            latestBidAmount?: number;
-            leadingBidder?: string;
-            hammerPrice?: number;
+            lotNumber: number;
+            contractNumber: string;
+            itemNumber: string;
+            description: string;
+            estimatedValue: number;
+            outstandingClaim: number;
+            latestBidAmount: number;
+            leadingBidder: string;
+            hammerPrice: number;
             /** @enum {string} */
-            status?: "PENDING" | "OPEN" | "SOLD" | "UNSOLD";
-            surplusAmount?: number;
+            status: AuctionLotResponseStatus;
+            surplusAmount: number;
             /** Format: date */
-            authorityTransferDueDate?: string;
-            authorityTransferStatus?: string;
+            authorityTransferDueDate: string;
+            authorityTransferStatus: string;
         };
         AuctionResponse: {
-            id?: string;
-            title?: string;
-            location?: string;
+            id: string;
+            title: string;
+            location: string;
             /** @enum {string} */
-            status?: "DRAFT" | "ANNOUNCED" | "LIVE" | "CLOSED" | "SETTLED";
+            status: AuctionResponseStatus;
             /** Format: date */
-            publicAnnouncementDate?: string;
+            publicAnnouncementDate: string;
             /** Format: date */
-            auctionDate?: string;
+            auctionDate: string;
             /** Format: date-time */
-            liveStartedAt?: string;
+            liveStartedAt: string;
             /** Format: date-time */
-            closedAt?: string;
-            announcementReference?: string;
-            lots?: components["schemas"]["AuctionLotResponse"][];
+            closedAt: string;
+            announcementReference: string;
+            lots: components["schemas"]["AuctionLotResponse"][];
         };
         AuctionSettlementRequest: {
             hammerPrice: number;
@@ -181,17 +181,17 @@ export interface components {
             announcementReference: string;
         };
         SurplusCaseResponse: {
-            auctionId?: string;
-            lotId?: string;
+            auctionId: string;
+            lotId: string;
             /** Format: int32 */
-            lotNumber?: number;
-            contractNumber?: string;
-            hammerPrice?: number;
-            outstandingClaim?: number;
-            surplusAmount?: number;
+            lotNumber: number;
+            contractNumber: string;
+            hammerPrice: number;
+            outstandingClaim: number;
+            surplusAmount: number;
             /** Format: date */
-            authorityTransferDueDate?: string;
-            authorityTransferStatus?: string;
+            authorityTransferDueDate: string;
+            authorityTransferStatus: string;
         };
     };
     responses: never;
@@ -401,4 +401,17 @@ export interface operations {
             };
         };
     };
+}
+export enum AuctionLotResponseStatus {
+    PENDING = "PENDING",
+    OPEN = "OPEN",
+    SOLD = "SOLD",
+    UNSOLD = "UNSOLD"
+}
+export enum AuctionResponseStatus {
+    DRAFT = "DRAFT",
+    ANNOUNCED = "ANNOUNCED",
+    LIVE = "LIVE",
+    CLOSED = "CLOSED",
+    SETTLED = "SETTLED"
 }

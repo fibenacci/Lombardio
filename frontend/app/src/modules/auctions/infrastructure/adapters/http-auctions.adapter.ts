@@ -1,22 +1,15 @@
 import * as auctionApi from "../api/auction.api";
+import type { components } from "../api/types/auction";
+import { 
+  AuctionResponseStatus as AuctionStatus,
+  AuctionLotResponseStatus as AuctionLotStatus
+} from "../api/types/auction";
 
-type AuctionLot = {
-  id: string;
-  latestBidAmount?: number | string | null;
-  status?: string | null;
-};
+export type Auction = components["schemas"]["AuctionResponse"];
+export type SurplusCase = components["schemas"]["SurplusCaseResponse"];
+export type AuctionLot = components["schemas"]["AuctionLotResponse"];
 
-type Auction = {
-  id: string;
-  lots: AuctionLot[];
-  status?: string | null;
-  title?: string;
-};
-
-type SurplusCase = {
-  contractNumber?: string;
-  itemNumber?: string;
-};
+export { AuctionStatus, AuctionLotStatus };
 
 export function createHttpAuctionsAdapter() {
   return {

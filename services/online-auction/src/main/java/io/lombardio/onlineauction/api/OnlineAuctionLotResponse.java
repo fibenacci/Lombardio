@@ -10,13 +10,25 @@
  */
 package io.lombardio.onlineauction.api;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
+@Schema(
+    requiredProperties = {
+      "id",
+      "lotNumber",
+      "title",
+      "description",
+      "startingBid",
+      "currentBid",
+      "highestBidderAlias"
+    })
 public record OnlineAuctionLotResponse(
-    String id,
-    int lotNumber,
-    String title,
-    String description,
-    BigDecimal startingBid,
-    BigDecimal currentBid,
-    String highestBidderAlias) {}
+    @NotNull String id,
+    @NotNull int lotNumber,
+    @NotNull String title,
+    @NotNull String description,
+    @NotNull BigDecimal startingBid,
+    @NotNull BigDecimal currentBid,
+    @NotNull String highestBidderAlias) {}

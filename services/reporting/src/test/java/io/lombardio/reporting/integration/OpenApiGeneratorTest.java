@@ -26,7 +26,7 @@ class OpenApiGeneratorTest extends AbstractOpenApiGenerator {
   @Autowired private MockMvc mockMvc;
 
   @Test
-  void generateOpenApiSpec() throws Exception {
-    generateSpec(mockMvc, "reporting");
+  void generateSpec() throws Exception {
+    generateSpec(mockMvc, "reporting", "../../frontend/app/src/modules/tenant-dashboard/infrastructure/api/specs");
   }
 }

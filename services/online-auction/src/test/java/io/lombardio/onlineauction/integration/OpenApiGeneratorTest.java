@@ -30,7 +30,7 @@ class OpenApiGeneratorTest extends AbstractOpenApiGenerator {
   @MockBean private OnlineAuctionMetrics metrics;
 
   @Test
-  void generateOpenApiSpec() throws Exception {
-    generateSpec(mockMvc, "online-auction");
+  void generateSpec() throws Exception {
+    generateSpec(mockMvc, "online-auction", "../../frontend/app/src/modules/online-auctions/infrastructure/api/specs");
   }
 }

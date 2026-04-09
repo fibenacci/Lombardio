@@ -56,6 +56,14 @@ paths:
 components:
   schemas:
     FinanceSummaryResponse:
+      required:
+      - activeLoanExposure
+      - activeTicketCount
+      - averageTicketValue
+      - cashInflow
+      - cashOutflow
+      - netCashflow
+      - realizedRevenue
       type: object
       properties:
         cashInflow:
@@ -74,6 +82,11 @@ components:
         averageTicketValue:
           type: number
     FinanceTrendPointResponse:
+      required:
+      - cashInflow
+      - cashOutflow
+      - date
+      - realizedRevenue
       type: object
       properties:
         date:
@@ -86,6 +99,10 @@ components:
         realizedRevenue:
           type: number
     InventoryCategoryResponse:
+      required:
+      - category
+      - itemCount
+      - pledgedValue
       type: object
       properties:
         category:
@@ -96,6 +113,14 @@ components:
         pledgedValue:
           type: number
     ReportingDashboardResponse:
+      required:
+      - finance
+      - financeTrend
+      - generatedAt
+      - inventoryByCategory
+      - rangeEnd
+      - rangeStart
+      - transactionMix
       type: object
       properties:
         rangeStart:
@@ -122,6 +147,10 @@ components:
           items:
             $ref: "#/components/schemas/TransactionMixResponse"
     TransactionMixResponse:
+      required:
+      - totalAmount
+      - transactionCount
+      - type
       type: object
       properties:
         type:

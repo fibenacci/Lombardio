@@ -5,7 +5,7 @@ import {
   mapAmlDomainToUpdatePayload,
   mapAmlToDomain
 } from "../../../infrastructure/mappers/customer-api.mapper";
-import { AmlRiskLevel, AmlStatus } from "../../../domain/model/customer-enums";
+import { AmlRiskLevel, AmlStatus } from "../../../domain/model/customer";
 
 export function useCustomerAmlForm({
   tenantId,
@@ -31,12 +31,12 @@ export function useCustomerAmlForm({
     unusualTransactionFlag: false,
     sourceOfFundsChecked: false,
     suspiciousActivityReported: false,
-    goamlReference: null as string | null,
-    decisionNote: null as string | null,
-    lastScreenedAt: null as string | null,
-    reviewedAt: null as string | null,
+    goamlReference: "",
+    decisionNote: "",
+    lastScreenedAt: "",
+    reviewedAt: "",
     originationAllowed: false,
-    decisionReason: null as string | null,
+    decisionReason: "",
     featureAvailable: false
   });
 
@@ -53,6 +53,7 @@ export function useCustomerAmlForm({
     { label: t("customerDetail.riskLevels.MEDIUM"), value: AmlRiskLevel.MEDIUM },
     { label: t("customerDetail.riskLevels.HIGH"), value: AmlRiskLevel.HIGH }
   ]);
+
 
   async function save() {
     if (!tenantId.value || !customerId.value || !amlFeatureEnabled.value) return;

@@ -30,10 +30,11 @@ public abstract class AbstractOpenApiGenerator {
    *
    * @param mockMvc The MockMvc instance of the concrete service.
    * @param serviceName The name of the service (used for the filename).
+   * @param relativeOutputPath The path relative to the monorepo root (default: frontend/app/api-spec).
    * @throws Exception If generation or file writing fails.
    */
   @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Build-time tool using controlled properties")
-  protected void generateSpec(MockMvc mockMvc, String serviceName) throws Exception {
+  protected void generateSpec(MockMvc mockMvc, String serviceName, String relativeOutputPath) throws Exception {
     byte[] response =
         mockMvc
             .perform(get("/v3/api-docs.yaml"))
@@ -42,14 +43,16 @@ public abstract class AbstractOpenApiGenerator {
             .getResponse()
             .getContentAsByteArray();
 
-    // Default to a relative path that works for most services in the monorepo structure
-    String outputDir = System.getProperty("lombardio.openapi.output.dir", "../../frontend/app/api-spec");
-    Path outputPath = Paths.get(outputDir, serviceName + "-openapi.yaml");
+    Path outputPath = Paths.get(relativeOutputPath, serviceName + "-openapi.yaml");
     
     Path parentDir = outputPath.getParent();
     if (parentDir != null) {
       Files.createDirectories(parentDir);
     }
     Files.write(outputPath, response);
+  }
+
+  protected void generateSpec(MockMvc mockMvc, String serviceName) throws Exception {
+    generateSpec(mockMvc, serviceName, System.getProperty("lombardio.openapi.output.dir", "../../frontend/app/api-spec"));
   }
 }

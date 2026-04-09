@@ -2,21 +2,18 @@ import * as amlApi from "../api/aml.api";
 import * as customerApi from "../api/customer.api";
 import * as kycApi from "../api/kyc.api";
 import * as originationApi from "../../../loans/infrastructure/api/origination.api";
-import type { AmlStatusDto, CustomerDto, KycDocumentsDto, KycStatusDto, LoanDto } from "../dto/customer-response.dto";
+import type { components } from "../api/types/identity";
 
-type KycPrefillResult = {
-  available?: boolean;
-  matched?: boolean;
-  documentType?: string | null;
-  documentNumber?: string | null;
-  documentValidUntil?: string | null;
-  portraitImageDataUrl?: string | null;
-};
+export type CustomerDto = components["schemas"]["CustomerView"];
+export type KycStatusDto = components["schemas"]["KycStatusView"];
+export type KycDocumentsDto = components["schemas"]["KycDocumentImagesView"];
+export type AmlStatusDto = components["schemas"]["AmlStatusView"];
+export type KycPrefillDto = components["schemas"]["DocumentPrefillView"];
 
 export function createHttpCustomerAdapter() {
   return {
-    fetchAmlStatus(tenantId: string, customerId: string): Promise<Record<string, unknown>> {
-      return amlApi.fetchAmlStatus(tenantId, customerId) as Promise<Record<string, unknown>>;
+    fetchAmlStatus(tenantId: string, customerId: string): Promise<AmlStatusDto> {
+      return amlApi.fetchAmlStatus(tenantId, customerId) as Promise<AmlStatusDto>;
     },
     async loadCustomerDetailData(tenantId: string, customerId: string, amlEnabled: boolean) {
       const [customerResponse, kycResponse, kycDocumentsResponse] = await Promise.all([
@@ -36,7 +33,7 @@ export function createHttpCustomerAdapter() {
       const loanResponse = await (originationApi.fetchLoans as (
         tenantId: string,
         customerId?: string | null
-      ) => Promise<LoanDto[]>)(tenantId, customerId);
+      ) => Promise<any[]>)(tenantId, customerId);
       const amlResponse = amlEnabled
         ? await (amlApi.fetchAmlStatus as (tenantId: string, customerId: string) => Promise<AmlStatusDto>)(
           tenantId,
@@ -52,11 +49,11 @@ export function createHttpCustomerAdapter() {
         loans: loanResponse
       };
     },
-    prefillKycDocument(tenantId: string, customerId: string, payload: object): Promise<KycPrefillResult> {
-      return kycApi.prefillKycDocument(tenantId, customerId, payload) as Promise<KycPrefillResult>;
+    prefillKycDocument(tenantId: string, customerId: string, payload: object): Promise<KycPrefillDto> {
+      return kycApi.prefillKycDocument(tenantId, customerId, payload) as Promise<KycPrefillDto>;
     },
-    searchCustomers(tenantId: string, query: string): Promise<Record<string, unknown>[]> {
-      return customerApi.searchCustomers(tenantId, query) as Promise<Record<string, unknown>[]>;
+    searchCustomers(tenantId: string, query: string): Promise<CustomerDto[]> {
+      return customerApi.searchCustomers(tenantId, query) as Promise<CustomerDto[]>;
     },
     saveAml(tenantId: string, customerId: string, payload: object) {
       return (amlApi.updateAmlStatus as (

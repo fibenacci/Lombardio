@@ -182,61 +182,61 @@ export interface components {
             startingBid: number;
         };
         BidderRegistrationResponse: {
-            id?: string;
-            displayName?: string;
-            email?: string;
-            legalName?: string;
-            birthDate?: string;
-            ibanMasked?: string;
-            paddleNumber?: string;
-            accessToken?: string;
+            id: string;
+            displayName: string;
+            email: string;
+            legalName: string;
+            birthDate: string;
+            ibanMasked: string;
+            paddleNumber: string;
+            accessToken: string;
             /** @enum {string} */
-            approvalStatus?: "PENDING" | "APPROVED" | "REJECTED";
+            approvalStatus: BidderRegistrationResponseApprovalStatus;
             /** @enum {string} */
-            kycStatus?: "PENDING" | "PASSED" | "FAILED";
+            kycStatus: BidderRegistrationResponseKycStatus;
             /** @enum {string} */
-            accountCheckStatus?: "PENDING" | "PASSED" | "FAILED";
-            reviewNote?: string;
+            accountCheckStatus: BidderRegistrationResponseAccountCheckStatus;
+            reviewNote: string;
             /** Format: date-time */
-            approvedAt?: string;
+            approvedAt: string;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
         };
         OnlineAuctionLotResponse: {
-            id?: string;
+            id: string;
             /** Format: int32 */
-            lotNumber?: number;
-            title?: string;
-            description?: string;
-            startingBid?: number;
-            currentBid?: number;
-            highestBidderAlias?: string;
+            lotNumber: number;
+            title: string;
+            description: string;
+            startingBid: number;
+            currentBid: number;
+            highestBidderAlias: string;
         };
         OnlineAuctionResponse: {
-            id?: string;
-            tenantId?: string;
-            title?: string;
-            slug?: string;
+            id: string;
+            tenantId: string;
+            title: string;
+            slug: string;
             /** @enum {string} */
-            status?: "DRAFT" | "PUBLISHED" | "LIVE" | "CLOSED";
-            channelName?: string;
-            minimumIncrement?: number;
+            status: OnlineAuctionResponseStatus;
+            channelName: string;
+            minimumIncrement: number;
             /** Format: int32 */
-            countdownSeconds?: number;
+            countdownSeconds: number;
             /** Format: date-time */
-            publishedAt?: string;
+            publishedAt: string;
             /** Format: date-time */
-            liveStartedAt?: string;
+            liveStartedAt: string;
             /** Format: date-time */
-            countdownEndsAt?: string;
+            countdownEndsAt: string;
             /** Format: date-time */
-            closedAt?: string;
+            closedAt: string;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
             /** Format: date-time */
-            updatedAt?: string;
-            lots?: components["schemas"]["OnlineAuctionLotResponse"][];
-            registrations?: components["schemas"]["BidderRegistrationResponse"][];
+            updatedAt: string;
+            lots: components["schemas"]["OnlineAuctionLotResponse"][];
+            registrations: components["schemas"]["BidderRegistrationResponse"][];
         };
         BidderReviewRequest: {
             kycStatus: string;
@@ -255,10 +255,10 @@ export interface components {
             accessToken: string;
         };
         RealtimeSessionResponse: {
-            wsUrl?: string;
-            channel?: string;
-            connectionToken?: string;
-            subscriptionToken?: string;
+            wsUrl: string;
+            channel: string;
+            connectionToken: string;
+            subscriptionToken: string;
         };
         PlaceOnlineBidRequest: {
             accessToken: string;
@@ -545,4 +545,25 @@ export interface operations {
             };
         };
     };
+}
+export enum BidderRegistrationResponseApprovalStatus {
+    PENDING = "PENDING",
+    APPROVED = "APPROVED",
+    REJECTED = "REJECTED"
+}
+export enum BidderRegistrationResponseKycStatus {
+    PENDING = "PENDING",
+    PASSED = "PASSED",
+    FAILED = "FAILED"
+}
+export enum BidderRegistrationResponseAccountCheckStatus {
+    PENDING = "PENDING",
+    PASSED = "PASSED",
+    FAILED = "FAILED"
+}
+export enum OnlineAuctionResponseStatus {
+    DRAFT = "DRAFT",
+    PUBLISHED = "PUBLISHED",
+    LIVE = "LIVE",
+    CLOSED = "CLOSED"
 }

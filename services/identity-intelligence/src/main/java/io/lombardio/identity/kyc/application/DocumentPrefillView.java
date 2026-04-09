@@ -10,17 +10,33 @@
  */
 package io.lombardio.identity.kyc.application;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
+@Schema(
+    requiredProperties = {
+      "available",
+      "matched",
+      "firstName",
+      "lastName",
+      "birthDate",
+      "documentType",
+      "documentNumber",
+      "documentValidUntil",
+      "portraitImageDataUrl",
+      "providerName",
+      "confidence"
+    })
 public record DocumentPrefillView(
-    boolean available,
-    boolean matched,
-    String firstName,
-    String lastName,
-    LocalDate birthDate,
-    String documentType,
-    String documentNumber,
-    LocalDate documentValidUntil,
-    String portraitImageDataUrl,
-    String providerName,
-    double confidence) {}
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean available,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean matched,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String firstName,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String lastName,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) LocalDate birthDate,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String documentType,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String documentNumber,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) LocalDate documentValidUntil,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String portraitImageDataUrl,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String providerName,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) double confidence) {}

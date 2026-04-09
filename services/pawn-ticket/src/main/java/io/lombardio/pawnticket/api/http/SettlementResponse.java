@@ -10,11 +10,21 @@
  */
 package io.lombardio.pawnticket.api.http;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
+@Schema(
+    requiredProperties = {
+      "outstandingLoanAmount",
+      "interestAmount",
+      "operatingFeeAmount",
+      "totalDueAmount",
+      "legalText"
+    })
 public record SettlementResponse(
-    BigDecimal outstandingLoanAmount,
-    BigDecimal interestAmount,
-    BigDecimal operatingFeeAmount,
-    BigDecimal totalDueAmount,
-    String legalText) {}
+    @NotNull BigDecimal outstandingLoanAmount,
+    @NotNull BigDecimal interestAmount,
+    @NotNull BigDecimal operatingFeeAmount,
+    @NotNull BigDecimal totalDueAmount,
+    @NotNull String legalText) {}

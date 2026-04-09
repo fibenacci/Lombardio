@@ -41,45 +41,45 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         FinanceSummaryResponse: {
-            cashInflow?: number;
-            cashOutflow?: number;
-            netCashflow?: number;
-            realizedRevenue?: number;
-            activeLoanExposure?: number;
+            cashInflow: number;
+            cashOutflow: number;
+            netCashflow: number;
+            realizedRevenue: number;
+            activeLoanExposure: number;
             /** Format: int32 */
-            activeTicketCount?: number;
-            averageTicketValue?: number;
+            activeTicketCount: number;
+            averageTicketValue: number;
         };
         FinanceTrendPointResponse: {
             /** Format: date */
-            date?: string;
-            cashInflow?: number;
-            cashOutflow?: number;
-            realizedRevenue?: number;
+            date: string;
+            cashInflow: number;
+            cashOutflow: number;
+            realizedRevenue: number;
         };
         InventoryCategoryResponse: {
-            category?: string;
+            category: string;
             /** Format: int32 */
-            itemCount?: number;
-            pledgedValue?: number;
+            itemCount: number;
+            pledgedValue: number;
         };
         ReportingDashboardResponse: {
             /** Format: date */
-            rangeStart?: string;
+            rangeStart: string;
             /** Format: date */
-            rangeEnd?: string;
+            rangeEnd: string;
             /** Format: date-time */
-            generatedAt?: string;
-            finance?: components["schemas"]["FinanceSummaryResponse"];
-            financeTrend?: components["schemas"]["FinanceTrendPointResponse"][];
-            inventoryByCategory?: components["schemas"]["InventoryCategoryResponse"][];
-            transactionMix?: components["schemas"]["TransactionMixResponse"][];
+            generatedAt: string;
+            finance: components["schemas"]["FinanceSummaryResponse"];
+            financeTrend: components["schemas"]["FinanceTrendPointResponse"][];
+            inventoryByCategory: components["schemas"]["InventoryCategoryResponse"][];
+            transactionMix: components["schemas"]["TransactionMixResponse"][];
         };
         TransactionMixResponse: {
-            type?: string;
+            type: string;
             /** Format: int32 */
-            transactionCount?: number;
-            totalAmount?: number;
+            transactionCount: number;
+            totalAmount: number;
         };
     };
     responses: never;

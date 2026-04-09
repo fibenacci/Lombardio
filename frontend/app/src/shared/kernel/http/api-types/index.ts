@@ -9,13 +9,25 @@
  * For partnership or cooperation inquiries, please contact the author.
  */
 
-import type { paths as PlatformPaths, components as PlatformComponents } from './platform';
-import type { paths as AuctionPaths, components as AuctionComponents } from './auction';
-import type { paths as IdentityPaths, components as IdentityComponents } from './identity';
-import type { paths as LoanPaths, components as LoanComponents } from './loan';
-import type { paths as OnlineAuctionPaths, components as OnlineAuctionComponents } from './online-auction';
-import type { paths as PawnTicketPaths, components as PawnTicketComponents } from './pawn-ticket';
-import type { paths as ReportingPaths, components as ReportingComponents } from './reporting';
+import type { paths as PlatformPaths, components as PlatformComponents } from '../../../infrastructure/api/types/platform';
+import type { paths as AuctionPaths, components as AuctionComponents } from '../../../../modules/auctions/infrastructure/api/types/auction';
+import type { paths as IdentityPaths, components as IdentityComponents } from '../../../../modules/customers/infrastructure/api/types/identity';
+import type { paths as LoanPaths, components as LoanComponents } from '../../../../modules/loans/infrastructure/api/types/loan';
+import type { paths as OnlineAuctionPaths, components as OnlineAuctionComponents } from '../../../../modules/online-auctions/infrastructure/api/types/online-auction';
+import type { paths as PawnTicketPaths, components as PawnTicketComponents } from '../../../../modules/pawn-tickets/infrastructure/api/types/pawn-ticket';
+import type { paths as ReportingPaths, components as ReportingComponents } from '../../../../modules/tenant-dashboard/infrastructure/api/types/reporting';
+
+// Export Enums from Identity
+export { 
+  AmlStatusViewStatus, 
+  AmlStatusViewRiskLevel, 
+  KycStatusViewStatus, 
+  KycStatusViewVerificationMode,
+  UpdateAmlStatusRequestStatus,
+  UpdateAmlStatusRequestRiskLevel,
+  UpdateKycStatusRequestStatus,
+  UpdateKycStatusRequestVerificationMode
+} from '../../../../modules/customers/infrastructure/api/types/identity';
 
 /**
  * Consolidated paths from all microservices.

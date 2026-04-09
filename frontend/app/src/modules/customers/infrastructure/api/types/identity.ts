@@ -310,23 +310,23 @@ export interface components {
             city?: string;
         };
         CustomerView: {
-            id?: string;
-            customerNumber?: string;
-            firstName?: string;
-            lastName?: string;
+            id: string;
+            customerNumber: string;
+            firstName: string;
+            lastName: string;
             /** Format: date */
-            birthDate?: string;
-            displayName?: string;
-            phone?: string;
-            email?: string;
-            wantsDigitalPawnTicket?: boolean;
-            onlineAccessStatus?: string;
-            kycStatus?: string;
-            kycApproved?: boolean;
-            kycDocumentType?: string;
-            street?: string;
-            postalCode?: string;
-            city?: string;
+            birthDate: string;
+            displayName: string;
+            phone: string;
+            email: string;
+            wantsDigitalPawnTicket: boolean;
+            onlineAccessStatus: string;
+            kycStatus: string;
+            kycApproved: boolean;
+            kycDocumentType: string;
+            street: string;
+            postalCode: string;
+            city: string;
         };
         CreateCustomerRequest: {
             customerNumber: string;
@@ -343,9 +343,9 @@ export interface components {
         };
         UpdateKycStatusRequest: {
             /** @enum {string} */
-            status: "NOT_STARTED" | "IN_PROGRESS" | "APPROVED" | "REJECTED";
+            status: UpdateKycStatusRequestStatus;
             /** @enum {string} */
-            verificationMode?: "MANUAL" | "PROVIDER";
+            verificationMode?: UpdateKycStatusRequestVerificationMode;
             /** Format: date */
             verifiedUntil?: string;
             documentType?: string;
@@ -360,48 +360,48 @@ export interface components {
             providerStatus?: string;
         };
         KycStatusView: {
-            customerId?: string;
+            customerId: string;
             /** @enum {string} */
-            verificationMode?: "MANUAL" | "PROVIDER";
+            verificationMode: KycStatusViewVerificationMode;
             /** @enum {string} */
-            status?: "NOT_STARTED" | "IN_PROGRESS" | "APPROVED" | "REJECTED";
+            status: KycStatusViewStatus;
             /** Format: date */
-            verifiedUntil?: string;
-            documentType?: string;
-            documentNumber?: string;
+            verifiedUntil: string;
+            documentType: string;
+            documentNumber: string;
             /** Format: date */
-            documentValidUntil?: string;
-            decisionNote?: string;
-            providerName?: string;
-            providerReference?: string;
-            providerStatus?: string;
-            providerVerificationAvailable?: boolean;
+            documentValidUntil: string;
+            decisionNote: string;
+            providerName: string;
+            providerReference: string;
+            providerStatus: string;
+            providerVerificationAvailable: boolean;
         };
         DocumentPrefillRequest: {
             documentFrontImageDataUrl: string;
             documentBackImageDataUrl?: string;
         };
         DocumentPrefillView: {
-            available?: boolean;
-            matched?: boolean;
-            firstName?: string;
-            lastName?: string;
+            available: boolean;
+            matched: boolean;
+            firstName: string;
+            lastName: string;
             /** Format: date */
-            birthDate?: string;
-            documentType?: string;
-            documentNumber?: string;
+            birthDate: string;
+            documentType: string;
+            documentNumber: string;
             /** Format: date */
-            documentValidUntil?: string;
-            portraitImageDataUrl?: string;
-            providerName?: string;
+            documentValidUntil: string;
+            portraitImageDataUrl: string;
+            providerName: string;
             /** Format: double */
-            confidence?: number;
+            confidence: number;
         };
         UpdateAmlStatusRequest: {
             /** @enum {string} */
-            status: "NOT_REVIEWED" | "CLEAR" | "REVIEW_REQUIRED" | "BLOCKED" | "REPORTED";
+            status: UpdateAmlStatusRequestStatus;
             /** @enum {string} */
-            riskLevel: "LOW" | "MEDIUM" | "HIGH";
+            riskLevel: UpdateAmlStatusRequestRiskLevel;
             pepFlag?: boolean;
             sanctionsHit?: boolean;
             unusualTransactionFlag?: boolean;
@@ -415,25 +415,25 @@ export interface components {
             reviewedAt?: string;
         };
         AmlStatusView: {
-            customerId?: string;
+            customerId: string;
             /** @enum {string} */
-            status?: "NOT_REVIEWED" | "CLEAR" | "REVIEW_REQUIRED" | "BLOCKED" | "REPORTED";
+            status: AmlStatusViewStatus;
             /** @enum {string} */
-            riskLevel?: "LOW" | "MEDIUM" | "HIGH";
-            pepFlag?: boolean;
-            sanctionsHit?: boolean;
-            unusualTransactionFlag?: boolean;
-            sourceOfFundsChecked?: boolean;
-            suspiciousActivityReported?: boolean;
-            goamlReference?: string;
-            decisionNote?: string;
+            riskLevel: AmlStatusViewRiskLevel;
+            pepFlag: boolean;
+            sanctionsHit: boolean;
+            unusualTransactionFlag: boolean;
+            sourceOfFundsChecked: boolean;
+            suspiciousActivityReported: boolean;
+            goamlReference: string;
+            decisionNote: string;
             /** Format: date-time */
-            lastScreenedAt?: string;
+            lastScreenedAt: string;
             /** Format: date-time */
-            reviewedAt?: string;
-            featureAvailable?: boolean;
-            originationAllowed?: boolean;
-            decisionReason?: string;
+            reviewedAt: string;
+            featureAvailable: boolean;
+            originationAllowed: boolean;
+            decisionReason: string;
         };
         OriginationAssessmentRequest: {
             loanAmount: number;
@@ -442,48 +442,48 @@ export interface components {
             token: string;
         };
         CustomerPortalInvitationView: {
-            customerDisplayName?: string;
-            email?: string;
-            status?: string;
+            customerDisplayName: string;
+            email: string;
+            status: string;
         };
         CustomerPortalAcceptInvitationRequest: {
             token: string;
             password: string;
         };
         CustomerPortalCustomerView: {
-            customerId?: string;
-            tenantId?: string;
-            displayName?: string;
-            email?: string;
-            onlineAccessStatus?: string;
+            customerId: string;
+            tenantId: string;
+            displayName: string;
+            email: string;
+            onlineAccessStatus: string;
         };
         CustomerPortalLoginView: {
-            accessToken?: string;
-            customer?: components["schemas"]["CustomerPortalCustomerView"];
+            accessToken: string;
+            customer: components["schemas"]["CustomerPortalCustomerView"];
         };
         CustomerPortalLoginRequest: {
             email: string;
             password: string;
         };
         KycDocumentImagesView: {
-            customerId?: string;
-            documentFrontImageDataUrl?: string;
-            documentBackImageDataUrl?: string;
+            customerId: string;
+            documentFrontImageDataUrl: string;
+            documentBackImageDataUrl: string;
         };
         CustomerPortalPawnTicketView: {
-            contractNumber?: string;
-            ticketNumber?: string;
-            contractBarcode?: string;
+            contractNumber: string;
+            ticketNumber: string;
+            contractBarcode: string;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
             /** Format: date */
-            dueDate?: string;
+            dueDate: string;
             /** Format: date */
-            earliestAuctionDate?: string;
-            loanAmount?: number;
-            totalRepaymentAmount?: number;
+            earliestAuctionDate: string;
+            loanAmount: number;
+            totalRepaymentAmount: number;
             /** Format: int32 */
-            positionCount?: number;
+            positionCount: number;
         };
     };
     responses: never;
@@ -1012,4 +1012,48 @@ export interface operations {
             };
         };
     };
+}
+export enum UpdateKycStatusRequestStatus {
+    NOT_STARTED = "NOT_STARTED",
+    IN_PROGRESS = "IN_PROGRESS",
+    APPROVED = "APPROVED",
+    REJECTED = "REJECTED"
+}
+export enum UpdateKycStatusRequestVerificationMode {
+    MANUAL = "MANUAL",
+    PROVIDER = "PROVIDER"
+}
+export enum KycStatusViewVerificationMode {
+    MANUAL = "MANUAL",
+    PROVIDER = "PROVIDER"
+}
+export enum KycStatusViewStatus {
+    NOT_STARTED = "NOT_STARTED",
+    IN_PROGRESS = "IN_PROGRESS",
+    APPROVED = "APPROVED",
+    REJECTED = "REJECTED"
+}
+export enum UpdateAmlStatusRequestStatus {
+    NOT_REVIEWED = "NOT_REVIEWED",
+    CLEAR = "CLEAR",
+    REVIEW_REQUIRED = "REVIEW_REQUIRED",
+    BLOCKED = "BLOCKED",
+    REPORTED = "REPORTED"
+}
+export enum UpdateAmlStatusRequestRiskLevel {
+    LOW = "LOW",
+    MEDIUM = "MEDIUM",
+    HIGH = "HIGH"
+}
+export enum AmlStatusViewStatus {
+    NOT_REVIEWED = "NOT_REVIEWED",
+    CLEAR = "CLEAR",
+    REVIEW_REQUIRED = "REVIEW_REQUIRED",
+    BLOCKED = "BLOCKED",
+    REPORTED = "REPORTED"
+}
+export enum AmlStatusViewRiskLevel {
+    LOW = "LOW",
+    MEDIUM = "MEDIUM",
+    HIGH = "HIGH"
 }

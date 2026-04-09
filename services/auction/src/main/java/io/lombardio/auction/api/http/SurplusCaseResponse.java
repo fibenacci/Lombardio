@@ -10,16 +10,23 @@
  */
 package io.lombardio.auction.api.http;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Schema(requiredProperties = {
+    "auctionId", "lotId", "lotNumber", "contractNumber", "hammerPrice",
+    "outstandingClaim", "surplusAmount", "authorityTransferDueDate",
+    "authorityTransferStatus"
+})
 public record SurplusCaseResponse(
-    String auctionId,
-    String lotId,
-    int lotNumber,
-    String contractNumber,
-    BigDecimal hammerPrice,
-    BigDecimal outstandingClaim,
-    BigDecimal surplusAmount,
-    LocalDate authorityTransferDueDate,
-    String authorityTransferStatus) {}
+    @NotNull String auctionId,
+    @NotNull String lotId,
+    @NotNull int lotNumber,
+    @NotNull String contractNumber,
+    @NotNull BigDecimal hammerPrice,
+    @NotNull BigDecimal outstandingClaim,
+    @NotNull BigDecimal surplusAmount,
+    @NotNull LocalDate authorityTransferDueDate,
+    @NotNull String authorityTransferStatus) {}

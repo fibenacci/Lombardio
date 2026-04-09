@@ -10,11 +10,21 @@
  */
 package io.lombardio.pawnticket.api.http;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
+@Schema(
+    requiredProperties = {
+      "itemNumber",
+      "itemBarcode",
+      "label",
+      "description",
+      "pledgedValue"
+    })
 public record PawnTicketPositionResponse(
-    String itemNumber,
-    String itemBarcode,
-    String label,
-    String description,
-    BigDecimal pledgedValue) {}
+    @NotNull String itemNumber,
+    @NotNull String itemBarcode,
+    @NotNull String label,
+    @NotNull String description,
+    @NotNull BigDecimal pledgedValue) {}

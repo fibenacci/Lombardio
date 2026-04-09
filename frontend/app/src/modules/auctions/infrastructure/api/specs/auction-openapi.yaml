@@ -253,6 +253,21 @@ components:
           items:
             $ref: "#/components/schemas/AuctionLotRequest"
     AuctionLotResponse:
+      required:
+      - authorityTransferDueDate
+      - authorityTransferStatus
+      - contractNumber
+      - description
+      - estimatedValue
+      - hammerPrice
+      - id
+      - itemNumber
+      - latestBidAmount
+      - leadingBidder
+      - lotNumber
+      - outstandingClaim
+      - status
+      - surplusAmount
       type: object
       properties:
         id:
@@ -291,6 +306,17 @@ components:
         authorityTransferStatus:
           type: string
     AuctionResponse:
+      required:
+      - announcementReference
+      - auctionDate
+      - closedAt
+      - id
+      - liveStartedAt
+      - location
+      - lots
+      - publicAnnouncementDate
+      - status
+      - title
       type: object
       properties:
         id:
@@ -357,6 +383,16 @@ components:
         announcementReference:
           type: string
     SurplusCaseResponse:
+      required:
+      - auctionId
+      - authorityTransferDueDate
+      - authorityTransferStatus
+      - contractNumber
+      - hammerPrice
+      - lotId
+      - lotNumber
+      - outstandingClaim
+      - surplusAmount
       type: object
       properties:
         auctionId:

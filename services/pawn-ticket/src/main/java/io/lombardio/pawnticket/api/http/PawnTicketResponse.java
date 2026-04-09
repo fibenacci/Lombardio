@@ -10,30 +10,53 @@
  */
 package io.lombardio.pawnticket.api.http;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
+@Schema(
+    requiredProperties = {
+      "contractNumber",
+      "contractBarcode",
+      "ticketNumber",
+      "termsVersion",
+      "termsAndConditionsText",
+      "createdAt",
+      "dueDate",
+      "earliestAuctionDate",
+      "termMonths",
+      "totalLoanValue",
+      "monthlyInterestRate",
+      "monthlyOperatingFee",
+      "manualMonthlyOperatingFeeRequired",
+      "totalInterestAmount",
+      "totalOperatingFeeAmount",
+      "totalRepaymentAmount",
+      "legalText",
+      "positions"
+    })
 public record PawnTicketResponse(
-    String contractNumber,
-    String contractBarcode,
-    String ticketNumber,
-    String termsVersion,
-    String termsAndConditionsText,
-    Instant createdAt,
-    LocalDate dueDate,
-    LocalDate earliestAuctionDate,
-    Integer termMonths,
-    BigDecimal totalLoanValue,
-    BigDecimal monthlyInterestRate,
-    BigDecimal monthlyOperatingFee,
-    boolean manualMonthlyOperatingFeeRequired,
-    BigDecimal totalInterestAmount,
-    BigDecimal totalOperatingFeeAmount,
-    BigDecimal totalRepaymentAmount,
-    String legalText,
-    List<PawnTicketPositionResponse> positions) {
+    @NotNull String contractNumber,
+    @NotNull String contractBarcode,
+    @NotNull String ticketNumber,
+    @NotNull String termsVersion,
+    @NotNull String termsAndConditionsText,
+    @NotNull Instant createdAt,
+    @NotNull LocalDate dueDate,
+    @NotNull LocalDate earliestAuctionDate,
+    @NotNull Integer termMonths,
+    @NotNull BigDecimal totalLoanValue,
+    @NotNull BigDecimal monthlyInterestRate,
+    @NotNull BigDecimal monthlyOperatingFee,
+    @NotNull boolean manualMonthlyOperatingFeeRequired,
+    @NotNull BigDecimal totalInterestAmount,
+    @NotNull BigDecimal totalOperatingFeeAmount,
+    @NotNull BigDecimal totalRepaymentAmount,
+    @NotNull String legalText,
+    @NotNull List<PawnTicketPositionResponse> positions) {
 
   public PawnTicketResponse {
     positions = List.copyOf(positions == null ? List.of() : positions);

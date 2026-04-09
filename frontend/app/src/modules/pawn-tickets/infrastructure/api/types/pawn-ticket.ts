@@ -224,11 +224,11 @@ export interface components {
             manualMonthlyOperatingFee?: number;
         };
         SettlementResponse: {
-            outstandingLoanAmount?: number;
-            interestAmount?: number;
-            operatingFeeAmount?: number;
-            totalDueAmount?: number;
-            legalText?: string;
+            outstandingLoanAmount: number;
+            interestAmount: number;
+            operatingFeeAmount: number;
+            totalDueAmount: number;
+            legalText: string;
         };
         PawnTicketQuoteRequest: {
             tenantId: string;
@@ -238,35 +238,35 @@ export interface components {
             manualMonthlyOperatingFee?: number;
         };
         PawnTicketPositionResponse: {
-            itemNumber?: string;
-            itemBarcode?: string;
-            label?: string;
-            description?: string;
-            pledgedValue?: number;
+            itemNumber: string;
+            itemBarcode: string;
+            label: string;
+            description: string;
+            pledgedValue: number;
         };
         PawnTicketResponse: {
-            contractNumber?: string;
-            contractBarcode?: string;
-            ticketNumber?: string;
-            termsVersion?: string;
-            termsAndConditionsText?: string;
+            contractNumber: string;
+            contractBarcode: string;
+            ticketNumber: string;
+            termsVersion: string;
+            termsAndConditionsText: string;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
             /** Format: date */
-            dueDate?: string;
+            dueDate: string;
             /** Format: date */
-            earliestAuctionDate?: string;
+            earliestAuctionDate: string;
             /** Format: int32 */
-            termMonths?: number;
-            totalLoanValue?: number;
-            monthlyInterestRate?: number;
-            monthlyOperatingFee?: number;
-            manualMonthlyOperatingFeeRequired?: boolean;
-            totalInterestAmount?: number;
-            totalOperatingFeeAmount?: number;
-            totalRepaymentAmount?: number;
-            legalText?: string;
-            positions?: components["schemas"]["PawnTicketPositionResponse"][];
+            termMonths: number;
+            totalLoanValue: number;
+            monthlyInterestRate: number;
+            monthlyOperatingFee: number;
+            manualMonthlyOperatingFeeRequired: boolean;
+            totalInterestAmount: number;
+            totalOperatingFeeAmount: number;
+            totalRepaymentAmount: number;
+            legalText: string;
+            positions: components["schemas"]["PawnTicketPositionResponse"][];
         };
         PartialRepaymentRequest: {
             tenantId: string;
@@ -304,7 +304,7 @@ export interface components {
             tenantId: string;
             ticketNumber: string;
             /** @enum {string} */
-            type: "REDEEM" | "EXTEND" | "PARTIAL_REPAYMENT";
+            type: ExecuteCashTransactionRequestType;
             outstandingLoanAmount: number;
             /** Format: int32 */
             extensionMonths?: number;
@@ -315,38 +315,38 @@ export interface components {
             note?: string;
         };
         CashTransactionResponse: {
-            id?: string;
-            ticketNumber?: string;
-            customerNumber?: string;
-            customerDisplayName?: string;
+            id: string;
+            ticketNumber: string;
+            customerNumber: string;
+            customerDisplayName: string;
             /** @enum {string} */
-            type?: "REDEEM" | "EXTEND" | "PARTIAL_REPAYMENT";
-            outstandingLoanAmount?: number;
-            interestAmount?: number;
-            operatingFeeAmount?: number;
-            totalAmount?: number;
-            legalText?: string;
-            note?: string;
+            type: CashTransactionResponseType;
+            outstandingLoanAmount: number;
+            interestAmount: number;
+            operatingFeeAmount: number;
+            totalAmount: number;
+            legalText: string;
+            note: string;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
         };
         PawnTicketOverviewResponse: {
-            contractNumber?: string;
-            ticketNumber?: string;
-            contractBarcode?: string;
-            termsVersion?: string;
-            customerNumber?: string;
-            customerDisplayName?: string;
+            contractNumber: string;
+            ticketNumber: string;
+            contractBarcode: string;
+            termsVersion: string;
+            customerNumber: string;
+            customerDisplayName: string;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
             /** Format: date */
-            dueDate?: string;
+            dueDate: string;
             /** Format: date */
-            earliestAuctionDate?: string;
-            totalLoanValue?: number;
-            totalRepaymentAmount?: number;
+            earliestAuctionDate: string;
+            totalLoanValue: number;
+            totalRepaymentAmount: number;
             /** Format: int32 */
-            positionCount?: number;
+            positionCount: number;
         };
     };
     responses: never;
@@ -658,4 +658,14 @@ export interface operations {
             };
         };
     };
+}
+export enum ExecuteCashTransactionRequestType {
+    REDEEM = "REDEEM",
+    EXTEND = "EXTEND",
+    PARTIAL_REPAYMENT = "PARTIAL_REPAYMENT"
+}
+export enum CashTransactionResponseType {
+    REDEEM = "REDEEM",
+    EXTEND = "EXTEND",
+    PARTIAL_REPAYMENT = "PARTIAL_REPAYMENT"
 }
