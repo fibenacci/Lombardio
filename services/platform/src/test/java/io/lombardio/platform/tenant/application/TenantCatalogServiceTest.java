@@ -19,6 +19,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lombardio.platform.bootstrap.PlatformSeedFixtures;
 import io.lombardio.platform.iam.application.IdentityAdministration;
 import io.lombardio.platform.integration.application.PlatformOutboxService;
+import io.lombardio.platform.security.AuthenticatedUser;
+import io.lombardio.platform.tenant.application.TenantAdministrationAuthorizationService;
 import io.lombardio.platform.tenant.application.support.InMemoryTenantRepositories;
 import java.time.Clock;
 import java.time.Instant;
@@ -39,6 +41,25 @@ class TenantCatalogServiceTest {
       new InMemoryTenantRepositories.OutboxEvents();
   private final Clock clock = Clock.fixed(Instant.parse("2026-03-18T12:00:00Z"), ZoneOffset.UTC);
   private final IdentityAdministration identityAdministration = mock(IdentityAdministration.class);
+  private final TenantAdministrationAuthorizationService authorizationService =
+      mock(TenantAdministrationAuthorizationService.class);
+
+  private final AuthenticatedUser dummyUser =
+      new AuthenticatedUser(
+          "test-user",
+          "test-user",
+          "tenant-default",
+          false,
+          "test@test.com",
+          "Test User",
+          List.of(
+              "platform.tenants.read",
+              "platform.tenants.write",
+              "users.read",
+              "users.write",
+              "roles.read",
+              "branches.read",
+              "branches.write"));
 
   private TenantCatalogService tenantCatalogService;
 
@@ -67,17 +88,21 @@ class TenantCatalogServiceTest {
 
     tenantCatalogService =
         new TenantCatalogService(
-            tenantLifecycleService, tenantFeatureService, tenantBranchService, tenantUserService);
+            tenantLifecycleService,
+            tenantFeatureService,
+            tenantBranchService,
+            tenantUserService,
+            authorizationService);
   }
 
   @Test
   void shouldCreateTenant() {
     var created =
         tenantCatalogService.createTenant(
-            new CreateTenantCommand("alpha", "Pfandhaus Alpha", "ACTIVE"));
+            dummyUser, new CreateTenantCommand("alpha", "Pfandhaus Alpha", "ACTIVE"));
 
     assertEquals("alpha", created.key());
-    assertEquals(2, tenantCatalogService.listTenants().size());
+    assertEquals(2, tenantCatalogService.listTenants(dummyUser).size());
     assertEquals(1, outboxEvents.findAll().size());
   }
 
@@ -87,7 +112,10 @@ class TenantCatalogServiceTest {
         IllegalArgumentException.class,
         () ->
             tenantCatalogService.upsertFeature(
-                "tenant-default", "unsupported-module", new UpsertTenantFeatureCommand(true)));
+                dummyUser,
+                "tenant-default",
+                "unsupported-module",
+                new UpsertTenantFeatureCommand(true)));
   }
 
   @Test
@@ -104,7 +132,7 @@ class TenantCatalogServiceTest {
                     List.of("users.write", "roles.write"),
                     List.of())));
 
-    List<TenantUserView> users = tenantCatalogService.listTenantUsers("tenant-default");
+    List<TenantUserView> users = tenantCatalogService.listTenantUsers(dummyUser, "tenant-default");
 
     assertEquals(1, users.size());
     assertEquals("Tenant Admin", users.getFirst().displayName());
@@ -131,6 +159,7 @@ class TenantCatalogServiceTest {
 
     TenantUserView created =
         tenantCatalogService.createTenantUser(
+            dummyUser,
             "tenant-default",
             new CreateTenantUserCommand(
                 "ops@lombardio.local",
@@ -166,6 +195,7 @@ class TenantCatalogServiceTest {
 
     TenantUserView updated =
         tenantCatalogService.updateTenantUser(
+            dummyUser,
             "tenant-default",
             "user-2",
             new UpdateTenantUserCommand(
@@ -182,7 +212,8 @@ class TenantCatalogServiceTest {
 
   @Test
   void shouldListBranchesForTenant() {
-    List<BranchView> branchResponses = tenantCatalogService.listBranches("tenant-default");
+    List<BranchView> branchResponses =
+        tenantCatalogService.listBranches(dummyUser, "tenant-default");
 
     assertEquals(2, branchResponses.size());
     assertEquals("Headquarters", branchResponses.getFirst().displayName());
@@ -201,7 +232,8 @@ class TenantCatalogServiceTest {
                 "offline_access",
                 "uma_authorization"));
 
-    List<String> roles = tenantCatalogService.listAvailableRolesForTenant("tenant-default");
+    List<String> roles =
+        tenantCatalogService.listAvailableRolesForTenant(dummyUser, "tenant-default");
 
     assertEquals(List.of("users.read", "roles.write", "branches.read"), roles);
   }

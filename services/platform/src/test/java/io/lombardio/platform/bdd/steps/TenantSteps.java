@@ -19,6 +19,8 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.lombardio.platform.iam.application.IdentityAdministration;
 import io.lombardio.platform.integration.application.PlatformOutboxService;
+import io.lombardio.platform.security.AuthenticatedUser;
+import io.lombardio.platform.tenant.application.TenantAdministrationAuthorizationService;
 import io.lombardio.platform.tenant.application.CreateTenantCommand;
 import io.lombardio.platform.tenant.application.TenantBranchService;
 import io.lombardio.platform.tenant.application.TenantCatalogService;
@@ -42,6 +44,25 @@ public class TenantSteps {
   private final InMemoryTenantRepositories.OutboxEvents outboxEvents =
       new InMemoryTenantRepositories.OutboxEvents();
   private final IdentityAdministration identityAdministration = mock(IdentityAdministration.class);
+  private final TenantAdministrationAuthorizationService authorizationService =
+      mock(TenantAdministrationAuthorizationService.class);
+
+  private final AuthenticatedUser dummyUser =
+      new AuthenticatedUser(
+          "test-user",
+          "test-user",
+          "tenant-default",
+          false,
+          "test@test.com",
+          "Test User",
+          List.of(
+              "platform.tenants.read",
+              "platform.tenants.write",
+              "users.read",
+              "users.write",
+              "roles.read",
+              "branches.read",
+              "branches.write"));
 
   private TenantCatalogService tenantCatalogService;
   private TenantView lastResponse;
@@ -68,7 +89,11 @@ public class TenantSteps {
 
     tenantCatalogService =
         new TenantCatalogService(
-            tenantLifecycleService, tenantFeatureService, tenantBranchService, tenantUserService);
+            tenantLifecycleService,
+            tenantFeatureService,
+            tenantBranchService,
+            tenantUserService,
+            authorizationService);
   }
 
   @Given("the platform service is running")
@@ -79,7 +104,8 @@ public class TenantSteps {
 
   @When("I request to register a new tenant with name {string} and slug {string}")
   public void i_request_to_register_a_new_tenant_with_name_and_slug(String name, String slug) {
-    lastResponse = tenantCatalogService.createTenant(new CreateTenantCommand(slug, name, "ACTIVE"));
+    lastResponse =
+        tenantCatalogService.createTenant(dummyUser, new CreateTenantCommand(slug, name, "ACTIVE"));
   }
 
   @Then("the tenant should be successfully created")
@@ -89,7 +115,7 @@ public class TenantSteps {
 
   @Then("the tenant {string} should be available in the system")
   public void the_tenant_should_be_available_in_the_system(String expectedName) {
-    List<TenantView> allTenants = tenantCatalogService.listTenants();
+    List<TenantView> allTenants = tenantCatalogService.listTenants(dummyUser);
     boolean exists = allTenants.stream().anyMatch(t -> t.displayName().equals(expectedName));
     Assertions.assertTrue(exists, "Tenant with name " + expectedName + " should exist");
   }

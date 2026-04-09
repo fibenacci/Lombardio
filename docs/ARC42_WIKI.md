@@ -76,9 +76,9 @@ Damit die beschriebene Hexagonale Vision nicht nur ein Wunsch bleibt, gelten fol
 2.  **Ports an der Grenze:** Keycloak, Persistence, Messaging, externe Services, Scheduler, Clock und UUID werden als Ports modelliert. Adapter implementieren diese Ports und leben ausschließlich in der Infrastruktur- oder App-BFF-Schicht.
 3.  **DTO- und Entity-Grenze:** Requests/Responses, JPA-Entities, API-Mapping und DTOs bleiben auf Adapter- bzw. API-Ebene und gelangen nicht ungefiltert ins Fachmodell. Mapper leben direkt an der Adaptergrenze.
 4.  **Use Cases explizit:** Jeder fachliche Ablauf (`CreateTenant`, `IssuePawnTicket`, `InviteCustomerPortalUser`, etc.) erhält Input-/Output-DTOs sowie explizite Ports zur Tenant-/Auth-Kontext-Quelle. Policy-Entscheidungen werden im Use Case transparent dokumentiert und getestet.
-5.  **Tenant- und Auth-Kontext als Parameter:** `tenantId`, `actorId`, Berechtigungen, Transaktions-ID und Zeitstempel sind Use-Case-Inputs oder werden über explizite Context-Ports geliefert, nicht als globaler Static-Zugriff.
+5.  **Tenant- und Auth-Kontext als Parameter:** `tenantId`, `actorId`, Berechtigungen, Transaktions-ID und Zeitstempel sind Use-Case-Inputs oder werden über explizite Context-Ports geliefert, nicht als globaler Static-Zugriff. **Wichtig:** Autorisierungsprüfungen (z.B. Mandantenisolierung) finden zwingend in der Service-Schicht (Application) statt, nicht nur im Controller.
 6.  **Service-übergreifende Verträge:** Grenzüberschreitende Kommunikation erfolgt einzig über definierte APIs, Events oder dedizierte Client-Ports; keine internen Domain-Modelle werden extern reexportiert.
-7.  **Frontend-Adapterhärte:** Frontend-Module rufen nur eigene Application Services an, die wiederum gegen Ports sprechen; Shared-Adapter dürfen keine direkten `fetch`-Aufrufe zwischen Modulen erlauben.
+7.  **Frontend-Adapterhärte:** Frontend-Module rufen nur eigene Application Services an, die wiederum gegen Ports sprechen; Shared-Adapter dürfen keine direkten `fetch`-Aufrufe zwischen Modulen erlauben. **CSRF:** Der zentrale Fetch-Wrapper handhabt automatisch den `X-XSRF-TOKEN` Header für mutierende Requests.
 8.  **Architekturtests:** ArchUnit-Regeln (Backend) und Dep-Cruiser/ESLint-Lint-Regeln (Frontend) prüfen Import- und Layer-Verstöße. Die Regeln melden Verstöße bereits in der Buildphase und dienen als Gatekeeper für neue Module.
 9.  **Referenzmodule:** Ein Service oder Modul wird als Referenz-Härtung ausgebaut (z. B. `identity-intelligence` oder das `customers`-Frontend), bevor das Muster auf weitere Bereiche übertragen wird.
 
@@ -108,7 +108,7 @@ Für die Aufteilung zwischen `services/auction` und `services/online-auction` ge
 Für das Back-Office-Frontend gelten ergänzend folgende Strukturregeln:
 
 *   **`app / shared / modules` als Einstiegsschnitt:** `app` enthält Bootstrapping, Router, Provider und Session-/Security-Flows. `shared` enthält technische Kernel-Bausteine und UI-Grundbausteine. `modules` enthält die fachlichen Features.
-*   **Feature-basierte Ordnerstruktur innerhalb von `modules`:** Nicht-triviale Frontend-Funktionalität wird pro Modul unter `domain`, `application`, `infrastructure`, `state` und `ui` organisiert.
+*   **Feature-based Ordnerstruktur innerhalb von `modules`:** Nicht-triviale Frontend-Funktionalität wird pro Modul unter `domain`, `application`, `infrastructure`, `state` und `ui` organisiert.
 *   **Hexagonal inside:** Jedes Frontend-Feature trennt fachliche Modelle, Use Cases und technische Adapter. Views und Komponenten sprechen nicht direkt mit Transport- oder Persistenzdetails.
 *   **Views als Composition Roots:** Routen-Views koordinieren Datenfluss und Bereichskomposition, sollen aber keine großen Mischdateien für Stammdaten, Compliance, Reporting, Upload-Logik und Styling sein.
 *   **Render-Komponenten bleiben schmal:** Komponenten rendern Daten und emittieren Benutzerintentionen. Sie führen keine direkten HTTP-Calls aus, importieren keine rohen DTOs und enthalten keine komplexen Business-Regeln.
@@ -281,29 +281,16 @@ Die Operator-Oberfläche ist sicherheitskritisch, weil sie tenant-weite Verwaltu
 
 *   **Zielarchitektur:** Für Operatoren wird eine BFF-orientierte Session-Architektur angestrebt. Der Browser hält keine fachlich nutzbaren Bearer-Tokens und verteilt sie nicht an einzelne Services.
 *   **Browser-Vertrauensgrenze:** Operator-Sessions werden über `HttpOnly`-Cookies getragen. Tokens dürfen weder in `localStorage`/`sessionStorage` noch als reguläre UI-Datenstrukturen für Feature-Code vorausgesetzt werden.
+*   **CSRF-Schutz:** Da Cookies genutzt werden, erzwingt die Plattform einen CSRF-Schutz via `XSRF-TOKEN` Cookie (withHttpOnly=false) und erwartet bei mutierenden Requests den `X-XSRF-TOKEN` Header.
 *   **Migrationsschritt:** Solange noch kein vollständiger BFF-/Proxy-Schnitt für alle Operator-Use-Cases existiert, kapselt die Plattform die Operator-Tokens bereits in einer verschlüsselten serverseitigen Session und nutzt für Operator-Flows nur noch ein opaques `HttpOnly`-Cookie zum Browser. Das reduziert die JS-Angriffsfläche sofort, ohne den laufenden Mehrservice-Betrieb zu zerbrechen.
 *   **Folgeschritte:** Fachliche Backend-Aufrufe der Operator-Oberfläche werden schrittweise hinter serverseitig kontrollierten BFF-Endpunkten oder einer äquivalenten Gateway-Schicht konsolidiert. Customer/KYC/AML, Loan-Origination/Pawn-Ticket sowie Auction/Online-Auction/Reporting laufen bereits über explizite Operator-Fassaden; der generische Operator-Proxy gehört nicht mehr zur Zielarchitektur.
 *   **Implementierungsregel:** Neue Operator-Use-Cases werden nur noch über explizite Platform-Fassaden ergänzt. Transport- und Forwarding-Logik bleibt in gemeinsamen BFF-Bausteinen; neue Controller sollen keine ad-hoc Header- oder Proxy-Implementierungen einführen.
 *   **Nicht-Ziel:** Ein dauerhaft browserseitig verteilter Bearer-Ansatz über mehrere Fachservices ist nicht das Zielbild von Lombardio.
 
-### 8.5 Intelligente Rechtsautomatisierung (Legal Automation)
-Lombardio nutzt Software-Logik, um die Einhaltung komplexer Fristen und Gebührenstrukturen der Pfandleiherverordnung (PfandlV) sicherzustellen.
-
-#### 8.4.1 Automatisierte Gebührenkontrolle (§ 10 PfandlV)
-*   **Zinsdeckelung:** Das System erzwingt die gesetzliche Obergrenze von **1 % pro Monat**.
-*   **Gebührenstaffelung:** Die Kostenvergütung wird automatisch basierend auf der aktuellen PfandlV-Anlage berechnet (z. B. gestaffelte Gebühren bis 300 €, freie Vereinbarkeit darüber mit Angemessenheitsprüfung).
-*   **Rundungslogik:** Korrekte Berechnung von angebrochenen Monaten gemäß den kaufmännischen Gepflogenheiten der Branche.
-
-#### 8.4.2 Fristen- & Verwertungswächter (§ 9 PfandlV)
-*   **Auktionsreife (Grace Period):** Automatische Markierung von Pfandscheinen, die frühestens einen Monat nach Fälligkeit versteigert werden dürfen.
-*   **Verwertungszwang:** Überwachung der 6-Monats-Frist zur Versteigerung nach Eintritt der Verwertungsberechtigung, um Haftungsrisiken für den Mandanten zu minimieren.
-*   **Karenzzeiten:** Systemseitige Sperre von Einlösungen/Verlängerungen am Tag der Auktion ("Zuschlagsschutz").
-
-#### 8.4.3 Automatisierte Überschussverwaltung (§ 11 PfandlV)
-*   **Überschuss-Tracking:** Automatische Berechnung des Mehrerlöses nach Abzug von Darlehen, Zinsen und Kosten.
-*   **Abführungs-Automatik:** Überwachung der 2-Jahres-Frist (nach dem Jahr der Verwertung). Wenn der Überschuss nicht abgeholt wird, generiert das System einen Export für die **Abführung an das zuständige Finanzamt** (Fiskus).
-
-#### 8.4.4 Revisionssicherheit & Aufbewahrung (§ 3 PfandlV)
+#### 8.4.4 Revisionssicherheit & Audit-Logging
+*   **Framework:** Nutzung des `@Audited`-Frameworks (AOP-basiert) zur automatischen Protokollierung geschäftskritischer Aktionen.
+*   **Umfang:** Erfassung von Actor, Mandant, Aktion (z.B. `CREATE_TENANT`), Ziel-Typ, Status (SUCCESS/FAILURE) und Metadaten.
+*   **Implementierung:** Deklarative Markierung von Service-Methoden; Trennung von Domänenlogik und Protokollierungs-Infrastruktur.
 *   **4-Jahres-Frist:** Sicherstellung, dass alle Buchungsbelege und Pfandregister mindestens 4 Jahre (Spezialfrist PfandlV) bzw. 10 Jahre (GoBD) im System erhalten bleiben.
 *   **Unveränderbarkeit:** Nutzung des Outbox-Patterns und eines Event-Logs, um die Unveränderbarkeit der ursprünglichen Buchungen nachzuweisen.
 

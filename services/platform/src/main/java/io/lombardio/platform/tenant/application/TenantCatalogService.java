@@ -10,6 +10,9 @@
  */
 package io.lombardio.platform.tenant.application;
 
+import io.lombardio.platform.security.Audited;
+import io.lombardio.platform.security.AuthenticatedUser;
+import io.lombardio.platform.tenant.application.TenantAdministrationAuthorizationService;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -20,27 +23,36 @@ public class TenantCatalogService {
   private final TenantFeatureService tenantFeatureService;
   private final TenantBranchService tenantBranchService;
   private final TenantUserService tenantUserService;
+  private final TenantAdministrationAuthorizationService authorizationService;
 
   public TenantCatalogService(
       TenantLifecycleService tenantLifecycleService,
       TenantFeatureService tenantFeatureService,
       TenantBranchService tenantBranchService,
-      TenantUserService tenantUserService) {
+      TenantUserService tenantUserService,
+      TenantAdministrationAuthorizationService authorizationService) {
     this.tenantLifecycleService = tenantLifecycleService;
     this.tenantFeatureService = tenantFeatureService;
     this.tenantBranchService = tenantBranchService;
     this.tenantUserService = tenantUserService;
+    this.authorizationService = authorizationService;
   }
 
-  public List<TenantView> listTenants() {
+  public List<TenantView> listTenants(AuthenticatedUser user) {
+    authorizationService.requirePermission(user, "platform.tenants.read");
     return tenantLifecycleService.listTenants();
   }
 
-  public TenantView createTenant(CreateTenantCommand request) {
+  @Audited(action = "CREATE_TENANT", targetType = "TENANT")
+  public TenantView createTenant(AuthenticatedUser user, CreateTenantCommand request) {
+    authorizationService.requirePermission(user, "platform.tenants.write");
     return tenantLifecycleService.createTenant(request);
   }
 
-  public TenantUserView createTenantUser(String tenantId, CreateTenantUserCommand request) {
+  @Audited(action = "CREATE_TENANT_USER", targetType = "TENANT_USER")
+  public TenantUserView createTenantUser(
+      AuthenticatedUser user, String tenantId, CreateTenantUserCommand request) {
+    authorizationService.requireTenantUserWrite(user, tenantId);
     return tenantUserService.createTenantUser(tenantId, request);
   }
 
@@ -48,37 +60,54 @@ public class TenantCatalogService {
     return tenantUserService.listAvailableRoles();
   }
 
-  public List<TenantUserView> listTenantUsers(String tenantId) {
+  public List<TenantUserView> listTenantUsers(AuthenticatedUser user, String tenantId) {
+    authorizationService.requireTenantUserRead(user, tenantId);
     return tenantUserService.listTenantUsers(tenantId);
   }
 
+  @Audited(action = "UPDATE_TENANT_USER", targetType = "TENANT_USER")
   public TenantUserView updateTenantUser(
-      String tenantId, String userId, UpdateTenantUserCommand request) {
+      AuthenticatedUser user, String tenantId, String userId, UpdateTenantUserCommand request) {
+    authorizationService.requireTenantUserWrite(user, tenantId);
     return tenantUserService.updateTenantUser(tenantId, userId, request);
   }
 
-  public List<String> listAvailableRolesForTenant(String tenantId) {
+  public List<String> listAvailableRolesForTenant(AuthenticatedUser user, String tenantId) {
+    authorizationService.requireTenantRoleRead(user, tenantId);
     return tenantUserService.listAvailableRolesForTenant(tenantId);
   }
 
-  public List<BranchView> listBranches(String tenantId) {
+  public List<BranchView> listBranches(AuthenticatedUser user, String tenantId) {
+    authorizationService.requireTenantBranchRead(user, tenantId);
     return tenantBranchService.listBranches(tenantId);
   }
 
-  public BranchView createBranch(String tenantId, CreateTenantBranchCommand request) {
+  @Audited(action = "CREATE_BRANCH", targetType = "BRANCH")
+  public BranchView createBranch(
+      AuthenticatedUser user, String tenantId, CreateTenantBranchCommand request) {
+    authorizationService.requireTenantBranchWrite(user, tenantId);
     return tenantBranchService.createBranch(tenantId, request);
   }
 
-  public TenantView updateTenant(String tenantId, UpdateTenantCommand request) {
+  @Audited(action = "UPDATE_TENANT", targetType = "TENANT")
+  public TenantView updateTenant(
+      AuthenticatedUser user, String tenantId, UpdateTenantCommand request) {
+    authorizationService.requireTenantMatchOrPermission(user, tenantId, "platform.tenants.write");
     return tenantLifecycleService.updateTenant(tenantId, request);
   }
 
-  public List<TenantFeatureView> listFeatures(String tenantId) {
+  public List<TenantFeatureView> listFeatures(AuthenticatedUser user, String tenantId) {
+    authorizationService.requireTenantFeatureRead(user, tenantId);
     return tenantFeatureService.listFeatures(tenantId);
   }
 
+  @Audited(action = "UPSERT_FEATURE", targetType = "FEATURE")
   public TenantFeatureView upsertFeature(
-      String tenantId, String featureKey, UpsertTenantFeatureCommand request) {
+      AuthenticatedUser user,
+      String tenantId,
+      String featureKey,
+      UpsertTenantFeatureCommand request) {
+    authorizationService.requirePermission(user, "platform.tenants.write");
     return tenantFeatureService.upsertFeature(tenantId, featureKey, request);
   }
 }

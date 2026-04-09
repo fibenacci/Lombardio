@@ -29,6 +29,9 @@ public class StoredOperatorSessionService {
   private final OperatorSessionProperties properties;
   private final SecureRandom secureRandom = new SecureRandom();
 
+  private static final org.slf4j.Logger log =
+      org.slf4j.LoggerFactory.getLogger(StoredOperatorSessionService.class);
+
   @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring managed repository proxy")
   public StoredOperatorSessionService(
       OperatorSessionStore repository,
@@ -39,6 +42,11 @@ public class StoredOperatorSessionService {
     this.crypto = crypto;
     this.operatorAuthService = operatorAuthService;
     this.properties = properties;
+
+    if (properties.encryptionKey().contains("dev-operator-session")) {
+      log.warn(
+          "CRITICAL: Application is using a DEFAULT encryption key. This is only acceptable for development!");
+    }
   }
 
   @Transactional

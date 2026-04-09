@@ -50,8 +50,20 @@ public record OperatorSessionProperties(
 
   private static void requireReasonableEncryptionKey(String value) {
     requireNonBlank(value, "encryptionKey");
-    if (value.length() < 16) {
-      throw new IllegalArgumentException("encryptionKey must be at least 16 characters long");
+    if (value.length() != 16 && value.length() != 32) {
+      throw new IllegalArgumentException(
+          "encryptionKey must be exactly 16 (AES-128) or 32 (AES-256) characters long");
     }
+    if (isTrivialKey(value)) {
+      throw new IllegalArgumentException(
+          "encryptionKey must not be a trivial sequence of characters");
+    }
+  }
+
+  private static boolean isTrivialKey(String value) {
+    String normalized = value.toLowerCase(java.util.Locale.ROOT);
+    return normalized.contains("123456")
+        || normalized.contains("abcdef")
+        || normalized.matches("^(.)\\1+$"); // All same characters
   }
 }

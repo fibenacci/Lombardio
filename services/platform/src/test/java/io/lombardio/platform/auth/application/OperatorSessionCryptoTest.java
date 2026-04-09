@@ -20,10 +20,15 @@ class OperatorSessionCryptoTest {
 
   @Test
   void encryptsAndDecryptsValue() {
-    OperatorSessionCrypto crypto =
-        new OperatorSessionCrypto(
-            new OperatorSessionProperties(
-                "lombardio_operator_session", "/", false, "Lax", 2_592_000L, "0123456789abcdef"));
+    OperatorSessionProperties properties =
+        new OperatorSessionProperties(
+            "lombardio_operator_session",
+            "/",
+            false,
+            "Lax",
+            2_592_000L,
+            "9p4w3v-v3ry-s3cr3t-t3st-k3y-32ch");
+    OperatorSessionCrypto crypto = new OperatorSessionCrypto(properties);
 
     String ciphertext = crypto.encrypt("access-token");
 

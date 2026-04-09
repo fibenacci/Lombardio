@@ -12,12 +12,12 @@ package io.lombardio.platform.security;
 
 public abstract class BaseAuthorizationService {
 
-  protected void requireTenantAccess(
+  public void requireTenantAccess(
       AuthenticatedUser user, String tenantId, String permission, String crossTenantPermission) {
     requireTenantAccessAny(user, tenantId, crossTenantPermission, permission);
   }
 
-  protected void requireTenantAccessAny(
+  public void requireTenantAccessAny(
       AuthenticatedUser user,
       String tenantId,
       String crossTenantPermission,
@@ -38,7 +38,7 @@ public abstract class BaseAuthorizationService {
     }
   }
 
-  protected void requirePermission(AuthenticatedUser user, String permission) {
+  public void requirePermission(AuthenticatedUser user, String permission) {
     if (user == null) {
       throw new UnauthorizedException("Authentication required");
     }
@@ -47,7 +47,7 @@ public abstract class BaseAuthorizationService {
     }
   }
 
-  protected void requireTenantMatchOrPermission(
+  public void requireTenantMatchOrPermission(
       AuthenticatedUser user, String tenantId, String permission) {
     if (user == null) {
       throw new UnauthorizedException("Authentication required");

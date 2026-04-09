@@ -15,6 +15,7 @@ import io.lombardio.identity.domain.port.CustomerRepository;
 import io.lombardio.identity.domain.port.ExternalCrmConnector;
 import io.lombardio.identity.domain.port.KycDirectory;
 import io.lombardio.identity.portal.application.CustomerPortalService;
+import io.lombardio.platform.security.Audited;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -51,6 +52,7 @@ public class CustomerService {
     return result.stream().map(customer -> toResponse(customer, accessToken)).toList();
   }
 
+  @Audited(action = "CREATE_CUSTOMER", targetType = "CUSTOMER")
   public CustomerView create(
       String tenantId, CreateCustomerCommand request, Optional<String> accessToken) {
     Customer customer =
@@ -88,6 +90,7 @@ public class CustomerService {
     return toResponse(customer, accessToken);
   }
 
+  @Audited(action = "UPDATE_CUSTOMER", targetType = "CUSTOMER")
   public CustomerView update(
       String tenantId,
       String customerId,

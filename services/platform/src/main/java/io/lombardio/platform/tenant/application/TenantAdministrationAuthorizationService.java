@@ -8,7 +8,7 @@
  *
  * For partnership or cooperation inquiries, please contact the author.
  */
-package io.lombardio.platform.tenant.api;
+package io.lombardio.platform.tenant.application;
 
 import io.lombardio.platform.security.AuthenticatedUser;
 import io.lombardio.platform.security.BaseAuthorizationService;

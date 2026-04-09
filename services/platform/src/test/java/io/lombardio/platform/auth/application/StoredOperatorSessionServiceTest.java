@@ -34,7 +34,7 @@ class StoredOperatorSessionServiceTest {
     operatorAuthService = mock(OperatorAuthService.class);
     properties =
         new OperatorSessionProperties(
-            "lombardio-session", "/", false, "Lax", 3600, "very-secret-encryption-key-123");
+            "lombardio-session", "/", false, "Lax", 3600, "9p4w3v-v3ry-s3cr3t-t3st-k3y-32ch");
     crypto = new OperatorSessionCrypto(properties);
     service = new StoredOperatorSessionService(repository, crypto, operatorAuthService, properties);
   }
