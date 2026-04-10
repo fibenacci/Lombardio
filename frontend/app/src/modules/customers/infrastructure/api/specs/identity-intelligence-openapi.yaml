@@ -1,0 +1,946 @@
+openapi: 3.0.1
+info:
+  title: Lombardio Identity Intelligence API
+  description: "KYC, AML and Customer Management API."
+  version: v1.0.0
+servers:
+- url: http://localhost
+  description: Generated server url
+paths:
+  /api/v1/tenants/{tenantId}/customers/{customerId}:
+    get:
+      tags:
+      - customer-controller
+      operationId: getById
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerView"
+    put:
+      tags:
+      - customer-controller
+      operationId: update
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCustomerRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerView"
+  /api/v1/tenants/{tenantId}/customers:
+    get:
+      tags:
+      - customer-controller
+      operationId: search
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: query
+        in: query
+        required: false
+        schema:
+          type: string
+          default: ""
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomerView"
+    post:
+      tags:
+      - customer-controller
+      operationId: create
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCustomerRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerView"
+  /api/v1/tenants/{tenantId}/customers/{customerId}/kyc:
+    get:
+      tags:
+      - kyc-controller
+      operationId: getStatus
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/KycStatusView"
+    post:
+      tags:
+      - kyc-controller
+      operationId: updateStatus
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateKycStatusRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/KycStatusView"
+  /api/v1/tenants/{tenantId}/customers/{customerId}/kyc/document-prefill:
+    post:
+      tags:
+      - kyc-controller
+      operationId: prefillDocument
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentPrefillRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DocumentPrefillView"
+  /api/v1/tenants/{tenantId}/customers/{customerId}/aml:
+    get:
+      tags:
+      - aml-controller
+      operationId: getStatus_1
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AmlStatusView"
+    post:
+      tags:
+      - aml-controller
+      operationId: updateStatus_1
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAmlStatusRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AmlStatusView"
+  /api/v1/tenants/{tenantId}/customers/{customerId}/aml/origination-check:
+    post:
+      tags:
+      - aml-controller
+      operationId: assessForOrigination
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OriginationAssessmentRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AmlStatusView"
+  /api/v1/customer-portal/invitations/lookup:
+    post:
+      tags:
+      - customer-portal-controller
+      operationId: invitation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerPortalInvitationLookupRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerPortalInvitationView"
+  /api/v1/customer-portal/invitations/accept:
+    post:
+      tags:
+      - customer-portal-controller
+      operationId: acceptInvitation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerPortalAcceptInvitationRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerPortalLoginView"
+  /api/v1/customer-portal/auth/refresh:
+    post:
+      tags:
+      - customer-portal-controller
+      operationId: refresh
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerPortalLoginView"
+  /api/v1/customer-portal/auth/logout:
+    post:
+      tags:
+      - customer-portal-controller
+      operationId: logout
+      responses:
+        "200":
+          description: OK
+  /api/v1/customer-portal/auth/login:
+    post:
+      tags:
+      - customer-portal-controller
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerPortalLoginRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerPortalLoginView"
+  /api/v1/tenants/{tenantId}/health:
+    get:
+      tags:
+      - customer-controller
+      operationId: health
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+  /api/v1/tenants/{tenantId}/customers/{customerId}/kyc/documents:
+    get:
+      tags:
+      - kyc-controller
+      operationId: getDocuments
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/KycDocumentImagesView"
+  /api/v1/tenants/{tenantId}/customers/{customerId}/kyc/approval:
+    get:
+      tags:
+      - kyc-controller
+      operationId: approval
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: boolean
+  /api/v1/tenants/{tenantId}/customers/{customerId}/aml/health:
+    get:
+      tags:
+      - aml-controller
+      operationId: health_1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+  /api/v1/customer-portal/pawn-tickets:
+    get:
+      tags:
+      - customer-portal-controller
+      operationId: pawnTickets
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomerPortalPawnTicketView"
+  /api/v1/customer-portal/pawn-tickets/{ticketNumber}/document:
+    get:
+      tags:
+      - customer-portal-controller
+      operationId: document
+      parameters:
+      - name: ticketNumber
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: byte
+  /api/v1/customer-portal/auth/me:
+    get:
+      tags:
+      - customer-portal-controller
+      operationId: me
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerPortalCustomerView"
+components:
+  schemas:
+    UpdateCustomerRequest:
+      required:
+      - birthDate
+      - customerNumber
+      - firstName
+      - lastName
+      - phone
+      type: object
+      properties:
+        customerNumber:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        phone:
+          type: string
+        email:
+          type: string
+        wantsDigitalPawnTicket:
+          type: boolean
+        street:
+          type: string
+        postalCode:
+          type: string
+        city:
+          type: string
+    CustomerView:
+      required:
+      - birthDate
+      - city
+      - customerNumber
+      - displayName
+      - email
+      - firstName
+      - id
+      - kycApproved
+      - kycDocumentType
+      - kycStatus
+      - lastName
+      - onlineAccessStatus
+      - phone
+      - postalCode
+      - street
+      - wantsDigitalPawnTicket
+      type: object
+      properties:
+        id:
+          type: string
+        customerNumber:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        displayName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        wantsDigitalPawnTicket:
+          type: boolean
+        onlineAccessStatus:
+          type: string
+        kycStatus:
+          type: string
+        kycApproved:
+          type: boolean
+        kycDocumentType:
+          type: string
+        street:
+          type: string
+        postalCode:
+          type: string
+        city:
+          type: string
+    CreateCustomerRequest:
+      required:
+      - birthDate
+      - customerNumber
+      - firstName
+      - lastName
+      - phone
+      type: object
+      properties:
+        customerNumber:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        phone:
+          type: string
+        email:
+          type: string
+        wantsDigitalPawnTicket:
+          type: boolean
+        street:
+          type: string
+        postalCode:
+          type: string
+        city:
+          type: string
+    UpdateKycStatusRequest:
+      required:
+      - status
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - NOT_STARTED
+          - IN_PROGRESS
+          - APPROVED
+          - REJECTED
+        verificationMode:
+          type: string
+          enum:
+          - MANUAL
+          - PROVIDER
+        verifiedUntil:
+          type: string
+          format: date
+        documentType:
+          type: string
+        documentNumber:
+          type: string
+        documentValidUntil:
+          type: string
+          format: date
+        documentFrontImageDataUrl:
+          type: string
+        documentBackImageDataUrl:
+          type: string
+        decisionNote:
+          type: string
+        providerName:
+          type: string
+        providerReference:
+          type: string
+        providerStatus:
+          type: string
+    KycStatusView:
+      required:
+      - customerId
+      - decisionNote
+      - documentNumber
+      - documentType
+      - documentValidUntil
+      - providerName
+      - providerReference
+      - providerStatus
+      - providerVerificationAvailable
+      - status
+      - verificationMode
+      - verifiedUntil
+      type: object
+      properties:
+        customerId:
+          type: string
+        verificationMode:
+          type: string
+          enum:
+          - MANUAL
+          - PROVIDER
+        status:
+          type: string
+          enum:
+          - NOT_STARTED
+          - IN_PROGRESS
+          - APPROVED
+          - REJECTED
+        verifiedUntil:
+          type: string
+          format: date
+        documentType:
+          type: string
+        documentNumber:
+          type: string
+        documentValidUntil:
+          type: string
+          format: date
+        decisionNote:
+          type: string
+        providerName:
+          type: string
+        providerReference:
+          type: string
+        providerStatus:
+          type: string
+        providerVerificationAvailable:
+          type: boolean
+    DocumentPrefillRequest:
+      required:
+      - documentFrontImageDataUrl
+      type: object
+      properties:
+        documentFrontImageDataUrl:
+          type: string
+        documentBackImageDataUrl:
+          type: string
+    DocumentPrefillView:
+      required:
+      - available
+      - birthDate
+      - confidence
+      - documentNumber
+      - documentType
+      - documentValidUntil
+      - firstName
+      - lastName
+      - matched
+      - portraitImageDataUrl
+      - providerName
+      type: object
+      properties:
+        available:
+          type: boolean
+        matched:
+          type: boolean
+        firstName:
+          type: string
+        lastName:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        documentType:
+          type: string
+        documentNumber:
+          type: string
+        documentValidUntil:
+          type: string
+          format: date
+        portraitImageDataUrl:
+          type: string
+        providerName:
+          type: string
+        confidence:
+          type: number
+          format: double
+    UpdateAmlStatusRequest:
+      required:
+      - riskLevel
+      - status
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - NOT_REVIEWED
+          - CLEAR
+          - REVIEW_REQUIRED
+          - BLOCKED
+          - REPORTED
+        riskLevel:
+          type: string
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+        pepFlag:
+          type: boolean
+        sanctionsHit:
+          type: boolean
+        unusualTransactionFlag:
+          type: boolean
+        sourceOfFundsChecked:
+          type: boolean
+        suspiciousActivityReported:
+          type: boolean
+        goamlReference:
+          type: string
+        decisionNote:
+          type: string
+        lastScreenedAt:
+          type: string
+          format: date-time
+        reviewedAt:
+          type: string
+          format: date-time
+    AmlStatusView:
+      required:
+      - customerId
+      - decisionNote
+      - decisionReason
+      - featureAvailable
+      - goamlReference
+      - lastScreenedAt
+      - originationAllowed
+      - pepFlag
+      - reviewedAt
+      - riskLevel
+      - sanctionsHit
+      - sourceOfFundsChecked
+      - status
+      - suspiciousActivityReported
+      - unusualTransactionFlag
+      type: object
+      properties:
+        customerId:
+          type: string
+        status:
+          type: string
+          enum:
+          - NOT_REVIEWED
+          - CLEAR
+          - REVIEW_REQUIRED
+          - BLOCKED
+          - REPORTED
+        riskLevel:
+          type: string
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+        pepFlag:
+          type: boolean
+        sanctionsHit:
+          type: boolean
+        unusualTransactionFlag:
+          type: boolean
+        sourceOfFundsChecked:
+          type: boolean
+        suspiciousActivityReported:
+          type: boolean
+        goamlReference:
+          type: string
+        decisionNote:
+          type: string
+        lastScreenedAt:
+          type: string
+          format: date-time
+        reviewedAt:
+          type: string
+          format: date-time
+        featureAvailable:
+          type: boolean
+        originationAllowed:
+          type: boolean
+        decisionReason:
+          type: string
+    OriginationAssessmentRequest:
+      required:
+      - loanAmount
+      type: object
+      properties:
+        loanAmount:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+    CustomerPortalInvitationLookupRequest:
+      required:
+      - token
+      type: object
+      properties:
+        token:
+          type: string
+    CustomerPortalInvitationView:
+      required:
+      - customerDisplayName
+      - email
+      - status
+      type: object
+      properties:
+        customerDisplayName:
+          type: string
+        email:
+          type: string
+        status:
+          type: string
+    CustomerPortalAcceptInvitationRequest:
+      required:
+      - password
+      - token
+      type: object
+      properties:
+        token:
+          type: string
+        password:
+          maxLength: 120
+          minLength: 8
+          type: string
+    CustomerPortalCustomerView:
+      required:
+      - customerId
+      - displayName
+      - email
+      - onlineAccessStatus
+      - tenantId
+      type: object
+      properties:
+        customerId:
+          type: string
+        tenantId:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+        onlineAccessStatus:
+          type: string
+    CustomerPortalLoginView:
+      required:
+      - accessToken
+      - customer
+      type: object
+      properties:
+        accessToken:
+          type: string
+        customer:
+          $ref: "#/components/schemas/CustomerPortalCustomerView"
+    CustomerPortalLoginRequest:
+      required:
+      - email
+      - password
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    KycDocumentImagesView:
+      required:
+      - customerId
+      - documentBackImageDataUrl
+      - documentFrontImageDataUrl
+      type: object
+      properties:
+        customerId:
+          type: string
+        documentFrontImageDataUrl:
+          type: string
+        documentBackImageDataUrl:
+          type: string
+    CustomerPortalPawnTicketView:
+      required:
+      - contractBarcode
+      - contractNumber
+      - createdAt
+      - dueDate
+      - earliestAuctionDate
+      - loanAmount
+      - positionCount
+      - ticketNumber
+      - totalRepaymentAmount
+      type: object
+      properties:
+        contractNumber:
+          type: string
+        ticketNumber:
+          type: string
+        contractBarcode:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        dueDate:
+          type: string
+          format: date
+        earliestAuctionDate:
+          type: string
+          format: date
+        loanAmount:
+          type: number
+        totalRepaymentAmount:
+          type: number
+        positionCount:
+          type: integer
+          format: int32

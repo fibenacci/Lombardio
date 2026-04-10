@@ -10,7 +10,11 @@
  */
 package io.lombardio.reporting.api.http;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 public record InventoryCategoryResponse(
-    String category, Integer itemCount, BigDecimal pledgedValue) {}
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String category,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Integer itemCount,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) BigDecimal pledgedValue) {}

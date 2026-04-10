@@ -1,0 +1,360 @@
+openapi: 3.0.1
+info:
+  title: Lombardio Loan Origination API
+  description: Loan Case Creation and Valuation API.
+  version: v1.0.0
+servers:
+- url: http://localhost
+  description: Generated server url
+paths:
+  /api/v1/tenants/{tenantId}/loan-origination/cases:
+    get:
+      tags:
+      - loan-origination-controller
+      operationId: list
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: customerId
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LoanCaseResponse"
+    post:
+      tags:
+      - loan-origination-controller
+      operationId: create
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLoanRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/LoanCaseResponse"
+  /api/v1/tenants/{tenantId}/loan-origination/valuation-guidelines:
+    get:
+      tags:
+      - loan-origination-controller
+      operationId: listGuidelines
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ValuationGuidelineResponse"
+components:
+  schemas:
+    CreateLoanRequest:
+      required:
+      - customerId
+      type: object
+      properties:
+        customerId:
+          type: string
+        positions:
+          type: array
+          items:
+            $ref: "#/components/schemas/PositionPayload"
+        termMonths:
+          type: integer
+          format: int32
+        manualMonthlyOperatingFee:
+          minimum: 0.00
+          exclusiveMinimum: false
+          type: number
+        thirdPartyPledgorPresentation:
+          type: boolean
+        bearerName:
+          type: string
+        bearerStreet:
+          type: string
+        bearerPostalCode:
+          type: string
+        bearerCity:
+          type: string
+        powerOfAttorneyDocumentDataUrl:
+          type: string
+    PositionPayload:
+      required:
+      - description
+      - guidelineId
+      - label
+      - ticketGroup
+      type: object
+      properties:
+        ticketGroup:
+          minimum: 1
+          type: integer
+          format: int32
+        label:
+          type: string
+        description:
+          type: string
+        guidelineId:
+          type: string
+        pledgedValue:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+    CustomerView:
+      required:
+      - birthDate
+      - checkedDocumentType
+      - customerNumber
+      - displayName
+      - id
+      - phone
+      type: object
+      properties:
+        id:
+          type: string
+        customerNumber:
+          type: string
+        displayName:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        phone:
+          type: string
+        checkedDocumentType:
+          type: string
+    LoanCaseResponse:
+      required:
+      - customer
+      - id
+      - pawnTickets
+      - pledgeRecord
+      - positions
+      type: object
+      properties:
+        id:
+          type: string
+        customer:
+          $ref: "#/components/schemas/CustomerView"
+        pledgeRecord:
+          $ref: "#/components/schemas/PledgeRecordResponse"
+        positions:
+          type: array
+          items:
+            $ref: "#/components/schemas/LoanPositionResponse"
+        pawnTickets:
+          type: array
+          items:
+            $ref: "#/components/schemas/PawnTicketResponse"
+    LoanPositionResponse:
+      required:
+      - baseLoanValue
+      - description
+      - guidelineLabel
+      - id
+      - label
+      - pledgedValue
+      - ticketGroup
+      type: object
+      properties:
+        id:
+          type: string
+        ticketGroup:
+          type: integer
+          format: int32
+        label:
+          type: string
+        description:
+          type: string
+        guidelineLabel:
+          type: string
+        baseLoanValue:
+          type: number
+        pledgedValue:
+          type: number
+    PawnTicketPositionResponse:
+      required:
+      - description
+      - itemBarcode
+      - itemNumber
+      - label
+      - pledgedValue
+      type: object
+      properties:
+        itemNumber:
+          type: string
+        itemBarcode:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        pledgedValue:
+          type: number
+    PawnTicketResponse:
+      required:
+      - contractBarcode
+      - contractNumber
+      - createdAt
+      - dueDate
+      - earliestAuctionDate
+      - legalText
+      - manualMonthlyOperatingFeeRequired
+      - monthlyInterestRate
+      - monthlyOperatingFee
+      - positions
+      - termMonths
+      - termsAndConditionsText
+      - termsVersion
+      - ticketNumber
+      - totalInterestAmount
+      - totalLoanValue
+      - totalOperatingFeeAmount
+      - totalRepaymentAmount
+      type: object
+      properties:
+        contractNumber:
+          type: string
+        contractBarcode:
+          type: string
+        ticketNumber:
+          type: string
+        termsVersion:
+          type: string
+        termsAndConditionsText:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        dueDate:
+          type: string
+          format: date
+        earliestAuctionDate:
+          type: string
+          format: date
+        termMonths:
+          type: integer
+          format: int32
+        totalLoanValue:
+          type: number
+        monthlyInterestRate:
+          type: number
+        monthlyOperatingFee:
+          type: number
+        manualMonthlyOperatingFeeRequired:
+          type: boolean
+        totalInterestAmount:
+          type: number
+        totalOperatingFeeAmount:
+          type: number
+        totalRepaymentAmount:
+          type: number
+        legalText:
+          type: string
+        positions:
+          type: array
+          items:
+            $ref: "#/components/schemas/PawnTicketPositionResponse"
+    PledgeRecordResponse:
+      required:
+      - bearerCity
+      - bearerName
+      - bearerPostalCode
+      - bearerStreet
+      - checkedDocumentType
+      - id
+      - languageCode
+      - pledgorBirthDate
+      - pledgorCity
+      - pledgorName
+      - pledgorPostalCode
+      - pledgorStreet
+      - powerOfAttorneyRequired
+      - recordedAt
+      - retentionUntil
+      type: object
+      properties:
+        id:
+          type: string
+        recordedAt:
+          type: string
+          format: date-time
+        languageCode:
+          type: string
+        retentionUntil:
+          type: string
+          format: date
+        pledgorName:
+          type: string
+        pledgorStreet:
+          type: string
+        pledgorPostalCode:
+          type: string
+        pledgorCity:
+          type: string
+        pledgorBirthDate:
+          type: string
+          format: date
+        checkedDocumentType:
+          type: string
+        powerOfAttorneyRequired:
+          type: boolean
+        bearerName:
+          type: string
+        bearerStreet:
+          type: string
+        bearerPostalCode:
+          type: string
+        bearerCity:
+          type: string
+    ValuationGuidelineResponse:
+      required:
+      - baseLoanValue
+      - category
+      - description
+      - id
+      - label
+      - material
+      type: object
+      properties:
+        id:
+          type: string
+        category:
+          type: string
+        material:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        baseLoanValue:
+          type: number

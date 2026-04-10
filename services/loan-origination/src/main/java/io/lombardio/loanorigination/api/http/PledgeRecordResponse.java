@@ -10,22 +10,29 @@
  */
 package io.lombardio.loanorigination.api.http;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.LocalDate;
 
+@Schema(requiredProperties = {
+    "id", "recordedAt", "languageCode", "retentionUntil", "pledgorName", "pledgorStreet",
+    "pledgorPostalCode", "pledgorCity", "pledgorBirthDate", "checkedDocumentType",
+    "powerOfAttorneyRequired", "bearerName", "bearerStreet", "bearerPostalCode", "bearerCity"
+})
 public record PledgeRecordResponse(
-    String id,
-    Instant recordedAt,
-    String languageCode,
-    LocalDate retentionUntil,
-    String pledgorName,
-    String pledgorStreet,
-    String pledgorPostalCode,
-    String pledgorCity,
-    LocalDate pledgorBirthDate,
-    String checkedDocumentType,
-    boolean powerOfAttorneyRequired,
-    String bearerName,
-    String bearerStreet,
-    String bearerPostalCode,
-    String bearerCity) {}
+    @NotNull String id,
+    @NotNull Instant recordedAt,
+    @NotNull String languageCode,
+    @NotNull LocalDate retentionUntil,
+    @NotNull String pledgorName,
+    @NotNull String pledgorStreet,
+    @NotNull String pledgorPostalCode,
+    @NotNull String pledgorCity,
+    @NotNull LocalDate pledgorBirthDate,
+    @NotNull String checkedDocumentType,
+    @NotNull boolean powerOfAttorneyRequired,
+    @NotNull String bearerName,
+    @NotNull String bearerStreet,
+    @NotNull String bearerPostalCode,
+    @NotNull String bearerCity) {}

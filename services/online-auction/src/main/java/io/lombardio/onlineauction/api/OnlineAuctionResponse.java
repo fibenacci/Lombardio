@@ -11,27 +11,48 @@
 package io.lombardio.onlineauction.api;
 
 import io.lombardio.onlineauction.domain.OnlineAuctionStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+@Schema(
+    requiredProperties = {
+      "id",
+      "tenantId",
+      "title",
+      "slug",
+      "status",
+      "channelName",
+      "minimumIncrement",
+      "countdownSeconds",
+      "publishedAt",
+      "liveStartedAt",
+      "countdownEndsAt",
+      "closedAt",
+      "createdAt",
+      "updatedAt",
+      "lots",
+      "registrations"
+    })
 public record OnlineAuctionResponse(
-    String id,
-    String tenantId,
-    String title,
-    String slug,
-    OnlineAuctionStatus status,
-    String channelName,
-    BigDecimal minimumIncrement,
-    int countdownSeconds,
-    Instant publishedAt,
-    Instant liveStartedAt,
-    Instant countdownEndsAt,
-    Instant closedAt,
-    Instant createdAt,
-    Instant updatedAt,
-    List<OnlineAuctionLotResponse> lots,
-    List<BidderRegistrationResponse> registrations) {
+    @NotNull String id,
+    @NotNull String tenantId,
+    @NotNull String title,
+    @NotNull String slug,
+    @NotNull OnlineAuctionStatus status,
+    @NotNull String channelName,
+    @NotNull BigDecimal minimumIncrement,
+    @NotNull int countdownSeconds,
+    @NotNull Instant publishedAt,
+    @NotNull Instant liveStartedAt,
+    @NotNull Instant countdownEndsAt,
+    @NotNull Instant closedAt,
+    @NotNull Instant createdAt,
+    @NotNull Instant updatedAt,
+    @NotNull List<OnlineAuctionLotResponse> lots,
+    @NotNull List<BidderRegistrationResponse> registrations) {
 
   public OnlineAuctionResponse {
     lots = List.copyOf(lots == null ? List.of() : lots);

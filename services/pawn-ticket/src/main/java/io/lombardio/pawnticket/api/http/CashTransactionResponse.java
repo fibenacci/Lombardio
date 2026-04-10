@@ -11,19 +11,36 @@
 package io.lombardio.pawnticket.api.http;
 
 import io.lombardio.pawnticket.domain.model.CashTransactionType;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+@Schema(
+    requiredProperties = {
+      "id",
+      "ticketNumber",
+      "customerNumber",
+      "customerDisplayName",
+      "type",
+      "outstandingLoanAmount",
+      "interestAmount",
+      "operatingFeeAmount",
+      "totalAmount",
+      "legalText",
+      "note",
+      "createdAt"
+    })
 public record CashTransactionResponse(
-    String id,
-    String ticketNumber,
-    String customerNumber,
-    String customerDisplayName,
-    CashTransactionType type,
-    BigDecimal outstandingLoanAmount,
-    BigDecimal interestAmount,
-    BigDecimal operatingFeeAmount,
-    BigDecimal totalAmount,
-    String legalText,
-    String note,
-    Instant createdAt) {}
+    @NotNull String id,
+    @NotNull String ticketNumber,
+    @NotNull String customerNumber,
+    @NotNull String customerDisplayName,
+    @NotNull CashTransactionType type,
+    @NotNull BigDecimal outstandingLoanAmount,
+    @NotNull BigDecimal interestAmount,
+    @NotNull BigDecimal operatingFeeAmount,
+    @NotNull BigDecimal totalAmount,
+    @NotNull String legalText,
+    @NotNull String note,
+    @NotNull Instant createdAt) {}

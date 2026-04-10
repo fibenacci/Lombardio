@@ -10,22 +10,43 @@
  */
 package io.lombardio.identity.application.service;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
+@Schema(
+    requiredProperties = {
+      "id",
+      "customerNumber",
+      "firstName",
+      "lastName",
+      "birthDate",
+      "displayName",
+      "phone",
+      "email",
+      "wantsDigitalPawnTicket",
+      "onlineAccessStatus",
+      "kycStatus",
+      "kycApproved",
+      "kycDocumentType",
+      "street",
+      "postalCode",
+      "city"
+    })
 public record CustomerView(
-    String id,
-    String customerNumber,
-    String firstName,
-    String lastName,
-    LocalDate birthDate,
-    String displayName,
-    String phone,
-    String email,
-    boolean wantsDigitalPawnTicket,
-    String onlineAccessStatus,
-    String kycStatus,
-    boolean kycApproved,
-    String kycDocumentType,
-    String street,
-    String postalCode,
-    String city) {}
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String id,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String customerNumber,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String firstName,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String lastName,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) LocalDate birthDate,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String displayName,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String phone,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String email,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean wantsDigitalPawnTicket,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String onlineAccessStatus,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String kycStatus,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean kycApproved,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String kycDocumentType,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String street,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String postalCode,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String city) {}

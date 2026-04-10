@@ -10,4 +10,9 @@
  */
 package io.lombardio.identity.portal.api;
 
-public record CustomerPortalLoginResponse(String accessToken, CustomerPortalMeResponse customer) {}
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
+
+public record CustomerPortalLoginResponse(
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String accessToken,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) CustomerPortalMeResponse customer) {}

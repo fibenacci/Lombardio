@@ -3,7 +3,7 @@ import { useRequestFeedback } from "../../../../../shared/ui/composables/use-req
 import { createHttpCustomerAdapter } from "../../../infrastructure/adapters/http-customer.adapter";
 import { mapKycDomainToUpdatePayload } from "../../../infrastructure/mappers/customer-api.mapper";
 import { readFileAsDataUrl, firstSelectedFile } from "../../../../../shared/kernel/files/data-url";
-import { KycStatus, KycVerificationMode } from "../../../domain/model/customer-enums";
+import { KycStatus, KycVerificationMode } from "../../../domain/model/customer";
 
 export function useCustomerKycForm({
   tenantId,
@@ -25,16 +25,16 @@ export function useCustomerKycForm({
     customerId: "",
     status: KycStatus.NOT_STARTED,
     verificationMode: KycVerificationMode.MANUAL,
-    verifiedUntil: null as string | null,
-    documentType: null as string | null,
-    documentNumber: null as string | null,
-    documentValidUntil: null as string | null,
+    verifiedUntil: "",
+    documentType: "",
+    documentNumber: "",
+    documentValidUntil: "",
     documentFrontImageDataUrl: "",
     documentBackImageDataUrl: "",
-    decisionNote: null as string | null,
-    providerName: null as string | null,
-    providerReference: null as string | null,
-    providerStatus: null as string | null,
+    decisionNote: "",
+    providerName: "",
+    providerReference: "",
+    providerStatus: "",
     providerVerificationAvailable: false
   });
 
@@ -68,6 +68,7 @@ export function useCustomerKycForm({
         tenantId.value,
         customerId.value,
         mapKycDomainToUpdatePayload(state, {
+          customerId: customerId.value,
           documentFrontImageDataUrl: state.documentFrontImageDataUrl,
           documentBackImageDataUrl: state.documentBackImageDataUrl
         })

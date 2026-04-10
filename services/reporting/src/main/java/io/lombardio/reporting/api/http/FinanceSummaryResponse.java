@@ -10,13 +10,15 @@
  */
 package io.lombardio.reporting.api.http;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 public record FinanceSummaryResponse(
-    BigDecimal cashInflow,
-    BigDecimal cashOutflow,
-    BigDecimal netCashflow,
-    BigDecimal realizedRevenue,
-    BigDecimal activeLoanExposure,
-    Integer activeTicketCount,
-    BigDecimal averageTicketValue) {}
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) BigDecimal cashInflow,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) BigDecimal cashOutflow,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) BigDecimal netCashflow,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) BigDecimal realizedRevenue,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) BigDecimal activeLoanExposure,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Integer activeTicketCount,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) BigDecimal averageTicketValue) {}

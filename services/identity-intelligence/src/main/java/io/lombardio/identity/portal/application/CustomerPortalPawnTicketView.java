@@ -10,17 +10,19 @@
  */
 package io.lombardio.identity.portal.application;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
 public record CustomerPortalPawnTicketView(
-    String contractNumber,
-    String ticketNumber,
-    String contractBarcode,
-    Instant createdAt,
-    LocalDate dueDate,
-    LocalDate earliestAuctionDate,
-    BigDecimal loanAmount,
-    BigDecimal totalRepaymentAmount,
-    Integer positionCount) {}
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String contractNumber,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String ticketNumber,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String contractBarcode,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant createdAt,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) LocalDate dueDate,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) LocalDate earliestAuctionDate,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) BigDecimal loanAmount,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) BigDecimal totalRepaymentAmount,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Integer positionCount) {}

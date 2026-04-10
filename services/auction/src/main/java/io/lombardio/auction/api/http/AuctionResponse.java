@@ -11,21 +11,27 @@
 package io.lombardio.auction.api.http;
 
 import io.lombardio.auction.domain.model.AuctionStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
+@Schema(requiredProperties = {
+    "id", "title", "location", "status", "publicAnnouncementDate",
+    "auctionDate", "liveStartedAt", "closedAt", "announcementReference", "lots"
+})
 public record AuctionResponse(
-    String id,
-    String title,
-    String location,
-    AuctionStatus status,
-    LocalDate publicAnnouncementDate,
-    LocalDate auctionDate,
-    Instant liveStartedAt,
-    Instant closedAt,
-    String announcementReference,
-    List<AuctionLotResponse> lots) {
+    @NotNull String id,
+    @NotNull String title,
+    @NotNull String location,
+    @NotNull AuctionStatus status,
+    @NotNull LocalDate publicAnnouncementDate,
+    @NotNull LocalDate auctionDate,
+    @NotNull Instant liveStartedAt,
+    @NotNull Instant closedAt,
+    @NotNull String announcementReference,
+    @NotNull List<AuctionLotResponse> lots) {
 
   public AuctionResponse {
     lots = List.copyOf(lots == null ? List.of() : lots);

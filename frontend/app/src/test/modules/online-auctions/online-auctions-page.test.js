@@ -5,6 +5,7 @@ import { useAuthStore } from "../../../app/session/state";
 import { useTenantStore } from "../../../app/tenant-context/state";
 import * as onlineAuctionApi from "../../../modules/online-auctions/infrastructure/api/online-auction.api";
 import router from "../../../app/router";
+import { OnlineAuctionStatus } from "../../../modules/online-auctions/infrastructure/adapters/http-online-auctions.adapter";
 
 describe("OnlineAuctionsView", () => {
   let authStore;
@@ -27,11 +28,23 @@ describe("OnlineAuctionsView", () => {
         tenantId: "tenant-default",
         title: "Live Gold Auction",
         slug: "live-gold-auction",
-        status: "LIVE",
+        status: OnlineAuctionStatus.LIVE,
         minimumIncrement: 10,
         countdownSeconds: 180,
+        channelName: "ch-1",
         lots: [
-          { id: "lot-1", lotNumber: 1, title: "Goldring", startingBid: 100, currentBid: 150, highestBidderAlias: "P1001" }
+          { 
+            id: "lot-1", 
+            lotNumber: 1, 
+            title: "Goldring", 
+            description: "D", 
+            startingBid: 100, 
+            currentBid: 150, 
+            highestBidderAlias: "P1001",
+            winnerBidderId: null,
+            hammerPrice: null,
+            status: "OPEN"
+          }
         ],
         registrations: []
       }

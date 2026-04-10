@@ -4,11 +4,15 @@ import type {
   TenantHomeKycStatusDto,
   TenantHomeReportingOverviewDto
 } from "../infrastructure/dto/tenant-dashboard.dto";
-import type {
-  TenantHomeAmlDraftModel,
-  TenantHomeCustomerModel,
-  TenantHomeKycDraftModel,
-  TenantHomePositionModel
+import {
+  type TenantHomeAmlDraftModel,
+  type TenantHomeCustomerModel,
+  type TenantHomeKycDraftModel,
+  type TenantHomePositionModel,
+  KycStatus,
+  KycVerificationMode,
+  AmlStatus,
+  AmlRiskLevel
 } from "./model/tenant-dashboard";
 
 export function createEmptyNewCustomerKyc(): TenantHomeKycDraftModel {
@@ -52,17 +56,16 @@ export function mergeKycStatus(
 ): TenantHomeCustomerModel {
   return {
     ...customer,
-    verificationMode: kycStatus.verificationMode,
     kycStatus: kycStatus.status,
+    verificationMode: kycStatus.verificationMode,
     verifiedUntil: kycStatus.verifiedUntil,
     documentType: kycStatus.documentType,
     documentNumber: kycStatus.documentNumber,
     documentValidUntil: kycStatus.documentValidUntil,
-    decisionNote: kycStatus.decisionNote,
+    providerStatus: kycStatus.providerStatus,
     providerName: kycStatus.providerName,
     providerReference: kycStatus.providerReference,
-    providerStatus: kycStatus.providerStatus,
-    kycApproved: kycStatus.status === "APPROVED"
+    kycApproved: kycStatus.status === KycStatus.APPROVED
   };
 }
 
@@ -85,21 +88,17 @@ export function mergeAmlStatus(
     ...customer,
     amlStatus: amlStatus.status,
     amlRiskLevel: amlStatus.riskLevel,
-    amlOriginationAllowed: amlStatus.originationAllowed,
-    amlDecisionReason: amlStatus.decisionReason,
-    sourceOfFundsChecked: amlStatus.sourceOfFundsChecked,
-    suspiciousActivityReported: amlStatus.suspiciousActivityReported,
-    goamlReference: amlStatus.goamlReference
+    originationAllowed: amlStatus.originationAllowed
   };
 }
 
 export function formatCustomerOption(customer: TenantHomeCustomerModel, t: (key: string, params?: Record<string, unknown>) => string) {
-  const kycStatus = customer.kycStatus ?? "NOT_STARTED";
+  const kycStatus = customer.kycStatus ?? KycStatus.NOT_STARTED;
   return {
     value: customer.id,
     label: t("tenantHome.customerOption", {
-      customerNumber: customer.customerNumber ?? "",
-      displayName: customer.displayName ?? `${customer.firstName ?? ""} ${customer.lastName ?? ""}`.trim(),
+      customerNumber: customer.customerNumber,
+      displayName: customer.displayName,
       kycStatus: t(`customerDetail.statusOptions.kyc.${kycStatus}`)
     })
   };
@@ -119,7 +118,6 @@ export function matchesCustomerQuery(customer: TenantHomeCustomerModel, query: s
     customer.lastName,
     customer.phone
   ]
-    .filter((value) => String(value ?? "").trim().length > 0)
     .some((value) => String(value).toLowerCase().includes(normalizedQuery));
 }
 
@@ -137,19 +135,19 @@ export function createDocumentTypeOptions(t: (key: string) => string) {
 
 export function createAmlStatusOptions(t: (key: string) => string) {
   return [
-    { value: "NOT_REVIEWED", label: t("customerDetail.statusOptions.aml.NOT_REVIEWED") },
-    { value: "CLEAR", label: t("customerDetail.statusOptions.aml.CLEAR") },
-    { value: "REVIEW_REQUIRED", label: t("customerDetail.statusOptions.aml.REVIEW_REQUIRED") },
-    { value: "BLOCKED", label: t("customerDetail.statusOptions.aml.BLOCKED") },
-    { value: "REPORTED", label: t("customerDetail.statusOptions.aml.REPORTED") }
+    { value: AmlStatus.NOT_REVIEWED, label: t("customerDetail.statusOptions.aml.NOT_REVIEWED") },
+    { value: AmlStatus.CLEAR, label: t("customerDetail.statusOptions.aml.CLEAR") },
+    { value: AmlStatus.REVIEW_REQUIRED, label: t("customerDetail.statusOptions.aml.REVIEW_REQUIRED") },
+    { value: AmlStatus.BLOCKED, label: t("customerDetail.statusOptions.aml.BLOCKED") },
+    { value: AmlStatus.REPORTED, label: t("customerDetail.statusOptions.aml.REPORTED") }
   ];
 }
 
 export function createAmlRiskLevelOptions(t: (key: string) => string) {
   return [
-    { value: "LOW", label: t("customerDetail.riskLevels.LOW") },
-    { value: "MEDIUM", label: t("customerDetail.riskLevels.MEDIUM") },
-    { value: "HIGH", label: t("customerDetail.riskLevels.HIGH") }
+    { value: AmlRiskLevel.LOW, label: t("customerDetail.riskLevels.LOW") },
+    { value: AmlRiskLevel.MEDIUM, label: t("customerDetail.riskLevels.MEDIUM") },
+    { value: AmlRiskLevel.HIGH, label: t("customerDetail.riskLevels.HIGH") }
   ];
 }
 
@@ -169,35 +167,52 @@ export function getTransactionTypeLabel(t: (key: string) => string, type: string
 }
 
 export function getKycStatusLabel(t: (key: string) => string, status: string | null | undefined) {
-  return t(`customerDetail.statusOptions.kyc.${status ?? "NOT_STARTED"}`);
+  return t(`customerDetail.statusOptions.kyc.${status ?? KycStatus.NOT_STARTED}`);
 }
 
 export function getAmlStatusLabel(t: (key: string) => string, status: string | null | undefined) {
-  return t(`customerDetail.statusOptions.aml.${status ?? "NOT_REVIEWED"}`);
+  return t(`customerDetail.statusOptions.aml.${status ?? AmlStatus.NOT_REVIEWED}`);
 }
 
 export function getRiskLevelLabel(t: (key: string) => string, level: string | null | undefined) {
-  return t(`customerDetail.riskLevels.${level ?? "MEDIUM"}`);
+  return t(`customerDetail.riskLevels.${level ?? AmlRiskLevel.MEDIUM}`);
 }
 
 export function calculateFinanceTrendMax(reportingOverview: TenantHomeReportingOverviewDto | null) {
-  const values = reportingOverview?.financeTrend?.flatMap((point) => [
-    Number(point.cashInflow ?? 0),
-    Number(point.cashOutflow ?? 0),
-    Number(point.realizedRevenue ?? 0)
-  ]) ?? [];
+  if (!reportingOverview) return 1;
+  const values = reportingOverview.financeTrend.flatMap((point) => [
+    point.cashInflow,
+    point.cashOutflow,
+    point.realizedRevenue
+  ]);
 
   return Math.max(1, ...values);
 }
 
 export function calculateInventoryMax(reportingOverview: TenantHomeReportingOverviewDto | null) {
-  const values = reportingOverview?.inventoryByCategory?.map((category) => Number(category.pledgedValue ?? 0)) ?? [];
+  if (!reportingOverview) return 1;
+  const values = reportingOverview.inventoryByCategory.map((category) => category.pledgedValue);
   return Math.max(1, ...values);
 }
 
 export function toCustomerModel(customer: TenantHomeCustomerDto): TenantHomeCustomerModel {
   return {
-    ...customer
+    ...customer,
+    kycStatus: KycStatus.NOT_STARTED,
+    verificationMode: KycVerificationMode.MANUAL,
+    amlStatus: AmlStatus.NOT_REVIEWED,
+    amlRiskLevel: AmlRiskLevel.MEDIUM,
+    originationAllowed: false,
+    verifiedUntil: "",
+    documentType: "",
+    documentNumber: "",
+    documentValidUntil: "",
+    providerStatus: "",
+    providerName: "",
+    providerReference: "",
+    kycApproved: false,
+    documentFrontImageDataUrl: "",
+    documentBackImageDataUrl: ""
   };
 }
 

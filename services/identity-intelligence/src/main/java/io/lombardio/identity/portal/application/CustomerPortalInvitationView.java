@@ -10,5 +10,10 @@
  */
 package io.lombardio.identity.portal.application;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
+
 public record CustomerPortalInvitationView(
-    String customerDisplayName, String email, String status) {}
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String customerDisplayName,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String email,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String status) {}

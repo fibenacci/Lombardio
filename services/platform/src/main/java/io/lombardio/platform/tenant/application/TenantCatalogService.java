@@ -12,7 +12,6 @@ package io.lombardio.platform.tenant.application;
 
 import io.lombardio.platform.security.Audited;
 import io.lombardio.platform.security.AuthenticatedUser;
-import io.lombardio.platform.tenant.application.TenantAdministrationAuthorizationService;
 import java.util.List;
 import org.springframework.stereotype.Service;
 

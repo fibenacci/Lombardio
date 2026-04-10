@@ -1,88 +1,17 @@
-import type { AmlRiskLevel, AmlStatus, KycStatus, KycVerificationMode } from "./customer-enums";
+import type { components } from "../../infrastructure/api/types/identity";
+import { 
+  AmlStatusViewStatus as AmlStatus, 
+  AmlStatusViewRiskLevel as AmlRiskLevel,
+  KycStatusViewStatus as KycStatus,
+  KycStatusViewVerificationMode as KycVerificationMode
+} from "../../infrastructure/api/types/identity";
+import type { LoanModel as CustomerLoanModel } from "../../../loans/domain/model/loan";
 
-export interface CustomerModel {
-  id: string;
-  customerNumber: string;
-  firstName: string;
-  lastName: string;
-  birthDate: string;
-  displayName: string;
-  phone: string;
-  email: string;
-  wantsDigitalPawnTicket: boolean;
-  onlineAccessStatus: string;
-  kycStatus: KycStatus;
-  kycApproved: boolean;
-  kycDocumentType: string | null;
-  street: string;
-  postalCode: string;
-  city: string;
-}
+export type CustomerModel = components["schemas"]["CustomerView"];
+export type CustomerKycModel = components["schemas"]["KycStatusView"];
+export type CustomerAmlModel = components["schemas"]["AmlStatusView"];
 
-export interface CustomerLoanModel {
-  id: string;
-  pledgeRecord: {
-    recordedAt: string;
-    languageCode: string;
-    retentionUntil: string;
-    checkedDocumentType: string | null;
-    powerOfAttorneyRequired: boolean;
-    bearerName: string | null;
-  };
-  positions: Array<{
-    positionNumber: number;
-    description: string;
-    weightGram: number | null;
-    purity: string | null;
-    estimatedValue: number;
-    loanAmount: number;
-  }>;
-  pawnTickets: Array<{
-    contractNumber: string;
-    ticketNumber: string;
-    contractBarcode: string;
-    createdAt: string;
-    dueDate: string;
-    earliestAuctionDate: string | null;
-    loanAmount: number;
-    totalRepaymentAmount: number;
-    positionCount: number;
-  }>;
-}
+// Re-export generated Enums with cleaner names
+export { AmlStatus, AmlRiskLevel, KycStatus, KycVerificationMode };
 
-export interface CustomerKycModel {
-  customerId: string;
-  status: KycStatus;
-  verificationMode: KycVerificationMode;
-  verifiedUntil: string | null;
-  documentType: string | null;
-  documentNumber: string | null;
-  documentValidUntil: string | null;
-  documentFrontImageDataUrl?: string | null;
-  documentBackImageDataUrl?: string | null;
-  decisionNote: string | null;
-  providerName: string | null;
-  providerReference: string | null;
-  providerStatus: string | null;
-  providerVerificationAvailable: boolean;
-}
-
-export interface CustomerAmlModel {
-  customerId: string;
-  status: AmlStatus;
-  riskLevel: AmlRiskLevel;
-  pepFlag: boolean;
-  sanctionsHit: boolean;
-  unusualTransactionFlag: boolean;
-  sourceOfFundsChecked: boolean;
-  suspiciousActivityReported: boolean;
-  goamlReference: string | null;
-  decisionNote: string | null;
-  lastScreenedAt: string | null;
-  reviewedAt: string | null;
-  featureAvailable: boolean;
-  originationAllowed: boolean;
-  decisionReason: string | null;
-}
-
-
+export type { CustomerLoanModel };

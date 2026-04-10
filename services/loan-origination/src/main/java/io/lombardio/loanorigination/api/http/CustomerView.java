@@ -10,12 +10,15 @@
  */
 package io.lombardio.loanorigination.api.http;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
+@Schema(requiredProperties = {"id", "customerNumber", "displayName", "birthDate", "phone", "checkedDocumentType"})
 public record CustomerView(
-    String id,
-    String customerNumber,
-    String displayName,
-    LocalDate birthDate,
-    String phone,
-    String checkedDocumentType) {}
+    @NotNull String id,
+    @NotNull String customerNumber,
+    @NotNull String displayName,
+    @NotNull LocalDate birthDate,
+    @NotNull String phone,
+    @NotNull String checkedDocumentType) {}

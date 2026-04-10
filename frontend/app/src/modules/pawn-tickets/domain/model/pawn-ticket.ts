@@ -1,15 +1,4 @@
-export interface PawnTicketModel {
-  contractNumber: string;
-  ticketNumber: string;
-  contractBarcode: string;
-  termsVersion: string;
-  customerNumber: string;
-  customerDisplayName: string;
-  createdAt: string;
-  dueDate: string;
-  earliestAuctionDate: string;
-  totalLoanValue: number;
-  totalRepaymentAmount: number;
-  positionCount: number;
-  status?: string;
-}
+import type { components } from "../../infrastructure/api/types/pawn-ticket";
+
+export type PawnTicketModel = components["schemas"]["PawnTicketOverviewResponse"];
+export type PawnTicketDto = PawnTicketModel;

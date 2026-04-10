@@ -1,55 +1,42 @@
-import type { AmlStatusDto, CustomerDto, KycDocumentsDto, KycStatusDto, LoanDto } from "../dto/customer-response.dto";
-import type { CustomerAmlModel, CustomerKycModel, CustomerLoanModel, CustomerModel } from "../../domain/model/customer";
+import type { 
+  CustomerModel, 
+  CustomerKycModel, 
+  CustomerAmlModel, 
+  CustomerLoanModel 
+} from "../../domain/model/customer";
+import type { components } from "../api/types/identity";
 
-export function mapCustomerDtoToDomain(dto: CustomerDto): CustomerModel {
-  return { ...dto };
+export type KycDocumentsDto = components["schemas"]["KycDocumentImagesView"];
+
+/**
+ * Since Backend DTOs are now hardened and mandatory, 
+ * we can use them directly as Models in many cases.
+ * Transformations are only needed for specific UI formats (like Date strings).
+ */
+
+export function mapCustomerDtoToDomain(dto: components["schemas"]["CustomerView"]): CustomerModel {
+  return dto;
 }
 
-export function mapLoanDtosToDomain(dtos: LoanDto[]): CustomerLoanModel[] {
-  return dtos.map((dto) => ({ ...dto }));
+export function mapLoanDtosToDomain(dtos: CustomerLoanModel[]): CustomerLoanModel[] {
+  return dtos;
 }
 
-export function mapKycToDomain(statusDto: KycStatusDto, documentsDto: KycDocumentsDto): CustomerKycModel {
+export function mapKycToDomain(statusDto: CustomerKycModel, documentsDto: KycDocumentsDto): CustomerKycModel & { documentFrontImageDataUrl?: string | null, documentBackImageDataUrl?: string | null } {
   return {
-    customerId: statusDto.customerId,
-    status: statusDto.status,
-    verificationMode: statusDto.verificationMode,
-    verifiedUntil: statusDto.verifiedUntil,
-    documentType: statusDto.documentType,
-    documentNumber: statusDto.documentNumber,
-    documentValidUntil: statusDto.documentValidUntil,
+    ...statusDto,
     documentFrontImageDataUrl: documentsDto.documentFrontImageDataUrl,
-    documentBackImageDataUrl: documentsDto.documentBackImageDataUrl,
-    decisionNote: statusDto.decisionNote,
-    providerName: statusDto.providerName,
-    providerReference: statusDto.providerReference,
-    providerStatus: statusDto.providerStatus,
-    providerVerificationAvailable: statusDto.providerVerificationAvailable
+    documentBackImageDataUrl: documentsDto.documentBackImageDataUrl
   };
 }
 
-export function mapAmlToDomain(dto: AmlStatusDto): CustomerAmlModel {
+export function mapAmlToDomain(dto: CustomerAmlModel): CustomerAmlModel {
   return {
-    customerId: dto.customerId,
-    status: dto.status,
-    riskLevel: dto.riskLevel,
-    pepFlag: dto.pepFlag,
-    sanctionsHit: dto.sanctionsHit,
-    unusualTransactionFlag: dto.unusualTransactionFlag,
-    sourceOfFundsChecked: dto.sourceOfFundsChecked,
-    suspiciousActivityReported: dto.suspiciousActivityReported,
-    goamlReference: dto.goamlReference,
-    decisionNote: dto.decisionNote,
+    ...dto,
     lastScreenedAt: toDateTimeLocal(dto.lastScreenedAt),
-    reviewedAt: toDateTimeLocal(dto.reviewedAt),
-    originationAllowed: dto.originationAllowed,
-    decisionReason: dto.decisionReason,
-    featureAvailable: dto.featureAvailable
+    reviewedAt: toDateTimeLocal(dto.reviewedAt)
   };
 }
-
-
-
 
 export function mapCustomerDomainToUpdatePayload(model: CustomerModel) {
   return {
@@ -62,15 +49,17 @@ export function mapCustomerDomainToUpdatePayload(model: CustomerModel) {
     wantsDigitalPawnTicket: model.wantsDigitalPawnTicket,
     street: model.street,
     postalCode: model.postalCode,
-    city: model.city
+    city: model.city,
+    kycDocumentType: model.kycDocumentType || null
   };
 }
 
 export function mapKycDomainToUpdatePayload(model: CustomerKycModel, images: KycDocumentsDto) {
   return {
+    customerId: model.customerId,
     status: model.status,
     verificationMode: model.verificationMode,
-    verifiedUntil: model.verifiedUntil || model.documentValidUntil,
+    verifiedUntil: model.verifiedUntil,
     documentType: model.documentType,
     documentNumber: model.documentNumber,
     documentValidUntil: model.documentValidUntil,
@@ -83,10 +72,9 @@ export function mapKycDomainToUpdatePayload(model: CustomerKycModel, images: Kyc
   };
 }
 
-
-
 export function mapAmlDomainToUpdatePayload(model: CustomerAmlModel) {
   return {
+    customerId: model.customerId,
     status: model.status,
     riskLevel: model.riskLevel,
     pepFlag: model.pepFlag,
@@ -94,10 +82,13 @@ export function mapAmlDomainToUpdatePayload(model: CustomerAmlModel) {
     unusualTransactionFlag: model.unusualTransactionFlag,
     sourceOfFundsChecked: model.sourceOfFundsChecked,
     suspiciousActivityReported: model.suspiciousActivityReported,
-    goamlReference: model.goamlReference || null,
-    decisionNote: model.decisionNote || null,
+    goamlReference: model.goamlReference || "",
+    decisionNote: model.decisionNote || "",
     lastScreenedAt: toInstant(model.lastScreenedAt),
-    reviewedAt: toInstant(model.reviewedAt)
+    reviewedAt: toInstant(model.reviewedAt),
+    featureAvailable: model.featureAvailable,
+    originationAllowed: model.originationAllowed,
+    decisionReason: model.decisionReason || ""
   };
 }
 
@@ -124,4 +115,3 @@ function toInstant(value: string | null) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
-

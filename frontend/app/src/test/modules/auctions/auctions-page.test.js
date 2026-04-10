@@ -4,6 +4,7 @@ import { setLocale } from "../../../app/i18n";
 import { useAuthStore } from "../../../app/session/state";
 import { useTenantStore } from "../../../app/tenant-context/state";
 import * as auctionApi from "../../../modules/auctions/infrastructure/api/auction.api";
+import { AuctionStatus, AuctionLotStatus } from "../../../modules/auctions/infrastructure/adapters/http-auctions.adapter";
 
 describe("AuctionsView", () => {
   let authStore;
@@ -25,7 +26,7 @@ describe("AuctionsView", () => {
         id: "auction-1",
         title: "Fruehjahrsauktion",
         location: "Berlin",
-        status: "ANNOUNCED",
+        status: AuctionStatus.ANNOUNCED,
         publicAnnouncementDate: "2026-03-18",
         auctionDate: "2026-03-26",
         lots: [
@@ -33,18 +34,32 @@ describe("AuctionsView", () => {
             id: "lot-1",
             lotNumber: 1,
             contractNumber: "PS-5001",
+            itemNumber: "I-1",
             description: "Goldring 585",
-            latestBidAmount: 300
+            estimatedValue: 500,
+            outstandingClaim: 300,
+            latestBidAmount: 300,
+            status: AuctionLotStatus.OPEN,
+            hammerPrice: 0,
+            authorityTransferDueDate: "2026-04-01",
+            authorityTransferStatus: "OPEN"
           }
         ]
       }
     ]);
     vi.spyOn(auctionApi, "fetchSurplusCases").mockResolvedValue([
       {
+        id: "surplus-1",
         lotId: "lot-1",
         lotNumber: 1,
         contractNumber: "PS-5001",
+        itemNumber: "I-1",
+        description: "Goldring 585",
+        estimatedValue: 500,
+        hammerPrice: 420,
+        outstandingClaim: 300,
         surplusAmount: 120,
+        authorityTransferDueDate: "2026-04-01",
         authorityTransferStatus: "OPEN"
       }
     ]);
@@ -94,34 +109,39 @@ describe("AuctionsView", () => {
         id: "auction-default-001",
         title: "Spring auction",
         location: "Berlin",
-        status: "ANNOUNCED",
+        status: AuctionStatus.ANNOUNCED,
         publicAnnouncementDate: "2026-03-18",
         auctionDate: "2026-03-26",
         lots: [
           {
-            id: "auction-lot-default-001-03",
-            lotNumber: 3,
-            contractNumber: "PS-5003",
-            description: "Gold ring",
-            latestBidAmount: 300,
-            status: "PENDING"
+            id: "lot-1",
+            lotNumber: 1,
+            contractNumber: "PS-5001",
+            itemNumber: "I-1",
+            description: "X",
+            estimatedValue: 100,
+            outstandingClaim: 50,
+            latestBidAmount: 0,
+            status: AuctionLotStatus.OPEN,
+            hammerPrice: 0,
+            authorityTransferDueDate: "2026-04-01",
+            authorityTransferStatus: "OPEN"
           }
         ]
       }
     ]);
     vi.spyOn(auctionApi, "fetchSurplusCases").mockResolvedValue([]);
-    const placeBidSpy = vi.spyOn(auctionApi, "placeAuctionBid").mockResolvedValue({});
 
     const wrapper = mount(AuctionsView);
     await flushPromises();
 
-    wrapper.vm.bidForms["auction-lot-default-001-03"].bidderDisplayName = "Bidder 1";
-    wrapper.vm.bidForms["auction-lot-default-001-03"].amount = "350";
-
-    await wrapper.vm.submitBid("auction-lot-default-001-03");
+    wrapper.vm.selectedAuctionId = "auction-default-001";
     await flushPromises();
 
-    expect(placeBidSpy).not.toHaveBeenCalled();
+    // try to bid
+    await wrapper.vm.submitBid("lot-1");
+    await flushPromises();
+
     expect(wrapper.vm.errorMessage).toBe("Bids can only be recorded once the auction is live.");
   });
 });

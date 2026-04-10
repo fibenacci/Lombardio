@@ -29,15 +29,15 @@ public class Slf4jAuditService implements AuditService {
   public void record(AuditEvent event) {
     // Structured log format for easy parsing (JSON-like or key-value)
     auditLogger.info(
-        "AUDIT | [{}] | Actor: {} | Tenant: {} | Action: {} | Target: {}:{} | Status: {} | TraceId: {} | Metadata: {}",
+        "AUDIT | [{}] | Actor: {} | Tenant: {} | Action: {} | Target: {}:{} | TraceId: {} | Status: {} | Metadata: {}",
         event.timestamp(),
         event.actorUserId(),
         event.tenantId(),
         event.action(),
         event.targetType(),
         event.targetId(),
-        event.status(),
         event.traceId(),
+        event.status(),
         event.metadata());
   }
 }

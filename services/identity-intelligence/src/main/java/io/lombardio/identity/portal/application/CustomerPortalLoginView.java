@@ -10,4 +10,9 @@
  */
 package io.lombardio.identity.portal.application;
 
-public record CustomerPortalLoginView(String accessToken, CustomerPortalCustomerView customer) {}
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
+
+public record CustomerPortalLoginView(
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String accessToken,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) CustomerPortalCustomerView customer) {}

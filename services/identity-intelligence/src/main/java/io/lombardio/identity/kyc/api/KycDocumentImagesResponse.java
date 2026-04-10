@@ -10,5 +10,10 @@
  */
 package io.lombardio.identity.kyc.api;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
+
 public record KycDocumentImagesResponse(
-    String customerId, String documentFrontImageDataUrl, String documentBackImageDataUrl) {}
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String customerId,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String documentFrontImageDataUrl,
+    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String documentBackImageDataUrl) {}

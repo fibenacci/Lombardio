@@ -1,0 +1,786 @@
+openapi: 3.0.1
+info:
+  title: Lombardio Platform API
+  description: Operator and Administration API for the Lombardio platform.
+  version: v1.0.0
+servers:
+- url: http://localhost
+  description: Generated server url
+paths:
+  /api/v1/platform/operator/tenants/{tenantId}/{serviceKey}/**:
+    get:
+      tags:
+      - generic-operator-facade-controller
+      operationId: forwardGet
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: serviceKey
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StreamingResponseBody"
+    put:
+      tags:
+      - generic-operator-facade-controller
+      operationId: forwardPut
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: serviceKey
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              format: byte
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StreamingResponseBody"
+    post:
+      tags:
+      - generic-operator-facade-controller
+      operationId: forwardPost
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: serviceKey
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              format: byte
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StreamingResponseBody"
+    delete:
+      tags:
+      - generic-operator-facade-controller
+      operationId: forwardDelete
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: serviceKey
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StreamingResponseBody"
+  /api/v1/platform/operator/tenants/{id}/features/{featureKey}:
+    put:
+      tags:
+      - tenant-controller
+      operationId: upsertFeature
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: featureKey
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertTenantFeatureRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TenantFeatureResponse"
+  /internal/v1/outbox-events/{id}/fail:
+    post:
+      tags:
+      - internal-outbox-controller
+      operationId: fail
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FailOutboxEventRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+  /internal/v1/outbox-events/{id}/complete:
+    post:
+      tags:
+      - internal-outbox-controller
+      operationId: complete
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompleteOutboxEventRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+  /internal/v1/outbox-events/claim:
+    post:
+      tags:
+      - internal-outbox-controller
+      operationId: claim
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClaimOutboxEventsRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OutboxEventResponse"
+  /api/v1/platform/operator/tenants:
+    get:
+      tags:
+      - tenant-controller
+      operationId: listTenants
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TenantResponse"
+    post:
+      tags:
+      - tenant-controller
+      operationId: createTenant
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTenantRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TenantResponse"
+  /api/v1/platform/operator/tenants/{tenantId}/users:
+    get:
+      tags:
+      - tenant-administration-controller
+      operationId: listUsers
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TenantUserResponse"
+    post:
+      tags:
+      - tenant-administration-controller
+      operationId: createUser
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTenantUserRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TenantUserResponse"
+  /api/v1/platform/operator/tenants/{tenantId}/branches:
+    get:
+      tags:
+      - tenant-administration-controller
+      operationId: listBranches
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BranchResponse"
+    post:
+      tags:
+      - tenant-administration-controller
+      operationId: createBranch
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTenantBranchRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BranchResponse"
+  /api/v1/platform/operator/tenants/{id}/users:
+    post:
+      tags:
+      - tenant-controller
+      operationId: createTenantUser
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTenantUserRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TenantUserResponse"
+  /api/v1/platform/auth/refresh:
+    post:
+      tags:
+      - operator-auth-controller
+      operationId: refresh
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OperatorSessionResponse"
+  /api/v1/platform/auth/logout:
+    post:
+      tags:
+      - operator-auth-controller
+      operationId: logout
+      responses:
+        "200":
+          description: OK
+  /api/v1/platform/auth/login:
+    post:
+      tags:
+      - operator-auth-controller
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperatorLoginRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OperatorSessionResponse"
+  /api/v1/platform/operator/tenants/{tenantId}/users/{userId}:
+    patch:
+      tags:
+      - tenant-administration-controller
+      operationId: updateUser
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTenantUserRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TenantUserResponse"
+  /api/v1/platform/operator/tenants/{id}:
+    patch:
+      tags:
+      - tenant-controller
+      operationId: updateTenant
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTenantRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TenantResponse"
+  /api/v1/platform/operator/tenants/{tenantId}/roles:
+    get:
+      tags:
+      - tenant-administration-controller
+      operationId: listRoles
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+  /api/v1/platform/operator/tenants/{tenantId}/features:
+    get:
+      tags:
+      - tenant-administration-controller
+      operationId: listFeatures
+      parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TenantFeatureResponse"
+  /api/v1/platform/operator/tenants/{id}/features:
+    get:
+      tags:
+      - tenant-controller
+      operationId: listFeatures_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TenantFeatureResponse"
+  /api/v1/platform/operator/tenants/roles:
+    get:
+      tags:
+      - tenant-controller
+      operationId: listAvailableRoles
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+  /api/v1/platform/operator/permissions/roles:
+    get:
+      tags:
+      - role-permission-controller
+      operationId: listRoles_1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+  /api/v1/platform/auth/me:
+    get:
+      tags:
+      - operator-auth-controller
+      operationId: me
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OperatorSessionUserView"
+components:
+  schemas:
+    StreamingResponseBody:
+      type: object
+    UpsertTenantFeatureRequest:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+    TenantFeatureResponse:
+      type: object
+      properties:
+        tenantId:
+          type: string
+        featureKey:
+          type: string
+        enabled:
+          type: boolean
+        updatedAt:
+          type: string
+          format: date-time
+    FailOutboxEventRequest:
+      required:
+      - consumer
+      - errorMessage
+      type: object
+      properties:
+        consumer:
+          type: string
+        errorMessage:
+          type: string
+    CompleteOutboxEventRequest:
+      required:
+      - consumer
+      type: object
+      properties:
+        consumer:
+          type: string
+    ClaimOutboxEventsRequest:
+      required:
+      - consumer
+      type: object
+      properties:
+        consumer:
+          type: string
+        limit:
+          maximum: 100
+          minimum: 1
+          type: integer
+          format: int32
+    OutboxEventResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        aggregateType:
+          type: string
+        aggregateId:
+          type: string
+        eventType:
+          type: string
+        tenantId:
+          type: string
+        payload:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+    CreateTenantRequest:
+      required:
+      - displayName
+      - key
+      - status
+      type: object
+      properties:
+        key:
+          type: string
+        displayName:
+          type: string
+        status:
+          type: string
+    TenantResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        key:
+          type: string
+        displayName:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateTenantUserRequest:
+      required:
+      - displayName
+      - email
+      - password
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        displayName:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        branchIds:
+          type: array
+          items:
+            type: string
+    TenantUserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        displayName:
+          type: string
+        status:
+          type: string
+        roleIds:
+          type: array
+          items:
+            type: string
+        branchIds:
+          type: array
+          items:
+            type: string
+    CreateTenantBranchRequest:
+      required:
+      - displayName
+      - key
+      type: object
+      properties:
+        key:
+          type: string
+        displayName:
+          type: string
+        status:
+          type: string
+    BranchResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        key:
+          type: string
+        displayName:
+          type: string
+        status:
+          type: string
+    OperatorSessionResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        sessionId:
+          type: string
+        user:
+          $ref: "#/components/schemas/OperatorSessionUserView"
+    OperatorSessionUserView:
+      type: object
+      properties:
+        id:
+          type: string
+        actorUserId:
+          type: string
+        tenantId:
+          type: string
+        email:
+          type: string
+        displayName:
+          type: string
+        impersonating:
+          type: boolean
+        roles:
+          type: array
+          items:
+            type: string
+        permissions:
+          type: array
+          items:
+            type: string
+    OperatorLoginRequest:
+      required:
+      - email
+      - password
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    UpdateTenantUserRequest:
+      required:
+      - displayName
+      - email
+      type: object
+      properties:
+        email:
+          type: string
+        displayName:
+          type: string
+        status:
+          pattern: ACTIVE|INACTIVE
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        branchIds:
+          type: array
+          items:
+            type: string
+    UpdateTenantRequest:
+      required:
+      - displayName
+      - key
+      - status
+      type: object
+      properties:
+        key:
+          type: string
+        displayName:
+          type: string
+        status:
+          type: string

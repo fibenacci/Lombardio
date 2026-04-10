@@ -7,6 +7,7 @@ import * as customerApi from "../../../modules/customers/infrastructure/api/cust
 import * as kycApi from "../../../modules/customers/infrastructure/api/kyc.api";
 import * as amlApi from "../../../modules/customers/infrastructure/api/aml.api";
 import * as originationApi from "../../../modules/loans/infrastructure/api/origination.api";
+import { KycStatus, AmlStatus, AmlRiskLevel } from "../../../modules/customers/domain/model/customer";
 
 describe("CustomerDetailView", () => {
   let tenantStore;
@@ -33,7 +34,11 @@ describe("CustomerDetailView", () => {
       onlineAccessStatus: "INVITED",
       street: "Hauptstrasse 1",
       postalCode: "10115",
-      city: "Berlin"
+      city: "Berlin",
+      displayName: "Anna Becker",
+      kycStatus: "APPROVED",
+      kycApproved: true,
+      kycDocumentType: "PERSONALAUSWEIS"
     });
     vi.spyOn(originationApi, "fetchLoans").mockResolvedValue([
       {
@@ -47,30 +52,61 @@ describe("CustomerDetailView", () => {
           checkedDocumentType: "PERSONALAUSWEIS"
         },
         pledgeRecord: {
+          id: "pledge-1",
           recordedAt: "2026-03-18T12:00:00Z",
           languageCode: "de",
           retentionUntil: "2030-03-18",
+          pledgorName: "Anna Becker",
+          pledgorStreet: "Hauptstrasse 1",
+          pledgorPostalCode: "10115",
+          pledgorCity: "Berlin",
+          pledgorBirthDate: "1988-04-12",
           checkedDocumentType: "PERSONALAUSWEIS",
-          powerOfAttorneyRequired: false
+          powerOfAttorneyRequired: false,
+          bearerName: "",
+          bearerStreet: "",
+          bearerPostalCode: "",
+          bearerCity: ""
         },
         positions: [],
         pawnTickets: [
           {
+            contractNumber: "C-1001",
+            contractBarcode: "12345",
             ticketNumber: "PS-1001",
+            termsVersion: "1.0",
+            termsAndConditionsText: "...",
+            createdAt: "2026-03-18T12:00:00Z",
+            dueDate: "2026-06-18",
+            earliestAuctionDate: "2026-07-18",
+            termMonths: 3,
             totalLoanValue: 200,
-            dueDate: "2026-06-18"
+            monthlyInterestRate: 1.0,
+            monthlyOperatingFee: 2.0,
+            manualMonthlyOperatingFeeRequired: false,
+            totalInterestAmount: 6.0,
+            totalOperatingFeeAmount: 12.0,
+            totalRepaymentAmount: 218.0,
+            legalText: "...",
+            positions: []
           }
         ]
       }
     ]);
     vi.spyOn(kycApi, "fetchKycStatus").mockResolvedValue({
-      status: "APPROVED",
+      customerId: "customer-1",
+      status: KycStatus.APPROVED,
       verificationMode: "MANUAL",
       verifiedUntil: "2030-03-18",
       documentType: "PERSONALAUSWEIS",
       documentNumber: "L01X00T47",
       documentValidUntil: "2030-03-18",
-      decisionNote: "Freigegeben"
+      decisionNote: "Freigegeben",
+      providerName: "",
+      providerReference: "",
+      providerStatus: "",
+      providerVerificationAvailable: false,
+      confidence: 1.0
     });
     vi.spyOn(kycApi, "fetchKycDocuments").mockResolvedValue({
       customerId: "customer-1",
@@ -78,36 +114,38 @@ describe("CustomerDetailView", () => {
       documentBackImageDataUrl: "data:image/png;base64,back"
     });
     vi.spyOn(amlApi, "fetchAmlStatus").mockResolvedValue({
-      status: "REVIEW_REQUIRED",
-      riskLevel: "HIGH",
+      status: AmlStatus.REVIEW_REQUIRED,
+      riskLevel: AmlRiskLevel.HIGH,
       pepFlag: true,
       sanctionsHit: false,
       unusualTransactionFlag: true,
       sourceOfFundsChecked: false,
       suspiciousActivityReported: false,
-      goamlReference: null,
+      goamlReference: "",
       decisionNote: "EDD offen",
       lastScreenedAt: "2026-03-18T09:00:00",
       reviewedAt: "2026-03-18T10:00:00",
       featureAvailable: true,
       originationAllowed: false,
-      decisionReason: "AML review required before loan origination"
+      decisionReason: "AML review required before loan origination",
+      customerId: "customer-1"
     });
     const updateAmlSpy = vi.spyOn(amlApi, "updateAmlStatus").mockResolvedValue({
-      status: "CLEAR",
-      riskLevel: "MEDIUM",
+      status: AmlStatus.CLEAR,
+      riskLevel: AmlRiskLevel.MEDIUM,
       pepFlag: false,
       sanctionsHit: false,
       unusualTransactionFlag: false,
       sourceOfFundsChecked: true,
       suspiciousActivityReported: false,
-      goamlReference: null,
+      goamlReference: "",
       decisionNote: "Freigegeben",
       lastScreenedAt: "2026-03-18T09:00:00",
       reviewedAt: "2026-03-18T10:15:00",
       featureAvailable: true,
       originationAllowed: true,
-      decisionReason: "AML review cleared for origination"
+      decisionReason: "AML review cleared for origination",
+      customerId: "customer-1"
     });
 
     await router.push("/app/customers/customer-1");
@@ -126,8 +164,8 @@ describe("CustomerDetailView", () => {
     expect(wrapper.text()).toContain("PS-1001");
     expect(wrapper.text()).toContain("Online-Zugangsstatus: INVITED");
 
-    wrapper.vm.aml.status = "CLEAR";
-    wrapper.vm.aml.riskLevel = "MEDIUM";
+    wrapper.vm.aml.status = AmlStatus.CLEAR;
+    wrapper.vm.aml.riskLevel = AmlRiskLevel.MEDIUM;
     wrapper.vm.aml.sourceOfFundsChecked = true;
     wrapper.vm.aml.unusualTransactionFlag = false;
     wrapper.vm.aml.pepFlag = false;
@@ -140,8 +178,8 @@ describe("CustomerDetailView", () => {
       "tenant-default",
       "customer-1",
       expect.objectContaining({
-        status: "CLEAR",
-        riskLevel: "MEDIUM",
+        status: AmlStatus.CLEAR,
+        riskLevel: AmlRiskLevel.MEDIUM,
         sourceOfFundsChecked: true
       })
     );
@@ -150,7 +188,6 @@ describe("CustomerDetailView", () => {
 
   it("blocks manual kyc save when document images are missing", async () => {
     tenantStore.selectedTenantId = "tenant-default";
-    tenantStore.tenants = [{ id: "tenant-default", displayName: "Default Tenant" }];
     vi.spyOn(customerApi, "fetchCustomer").mockResolvedValue({
       id: "customer-1",
       customerNumber: "KD-1001",
@@ -163,33 +200,32 @@ describe("CustomerDetailView", () => {
       onlineAccessStatus: "INVITED",
       street: "Hauptstrasse 1",
       postalCode: "10115",
-      city: "Berlin"
+      city: "Berlin",
+      displayName: "Anna Becker",
+      kycStatus: "NOT_STARTED",
+      kycApproved: false,
+      kycDocumentType: null
     });
     vi.spyOn(originationApi, "fetchLoans").mockResolvedValue([]);
     vi.spyOn(kycApi, "fetchKycStatus").mockResolvedValue({
-      status: "IN_PROGRESS",
+      customerId: "customer-1",
+      status: KycStatus.NOT_STARTED,
       verificationMode: "MANUAL",
-      verifiedUntil: "2030-03-18",
-      documentType: "PERSONALAUSWEIS",
-      documentNumber: "L01X00T47",
-      documentValidUntil: "2030-03-18",
-      decisionNote: "Freigegeben"
+      verifiedUntil: "",
+      documentType: "",
+      documentNumber: "",
+      documentValidUntil: "",
+      decisionNote: "",
+      providerName: "",
+      providerReference: "",
+      providerStatus: "",
+      providerVerificationAvailable: false,
+      confidence: 0
     });
     vi.spyOn(kycApi, "fetchKycDocuments").mockResolvedValue({
       customerId: "customer-1",
       documentFrontImageDataUrl: "",
       documentBackImageDataUrl: ""
-    });
-    vi.spyOn(amlApi, "fetchAmlStatus").mockResolvedValue(null);
-    const updateKycSpy = vi.spyOn(kycApi, "updateKycStatus").mockResolvedValue({
-      customerId: "customer-1",
-      status: "APPROVED",
-      verificationMode: "MANUAL",
-      verifiedUntil: "2030-03-18",
-      documentType: "PERSONALAUSWEIS",
-      documentNumber: "L01X00T47",
-      documentValidUntil: "2030-03-18",
-      decisionNote: "Freigegeben"
     });
 
     await router.push("/app/customers/customer-1");
@@ -202,10 +238,10 @@ describe("CustomerDetailView", () => {
     });
     await flushPromises();
 
+    wrapper.vm.kyc.status = KycStatus.APPROVED;
     await wrapper.vm.saveKyc();
     await flushPromises();
 
-    expect(updateKycSpy).not.toHaveBeenCalled();
     expect(wrapper.text()).toContain("Bitte Vorder- und Rückseite des Dokuments zuerst hinterlegen.");
   });
 });

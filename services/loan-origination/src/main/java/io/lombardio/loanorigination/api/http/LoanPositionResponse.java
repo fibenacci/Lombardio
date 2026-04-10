@@ -10,13 +10,16 @@
  */
 package io.lombardio.loanorigination.api.http;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
+@Schema(requiredProperties = {"id", "ticketGroup", "label", "description", "guidelineLabel", "baseLoanValue", "pledgedValue"})
 public record LoanPositionResponse(
-    String id,
-    Integer ticketGroup,
-    String label,
-    String description,
-    String guidelineLabel,
-    BigDecimal baseLoanValue,
-    BigDecimal pledgedValue) {}
+    @NotNull String id,
+    @NotNull Integer ticketGroup,
+    @NotNull String label,
+    @NotNull String description,
+    @NotNull String guidelineLabel,
+    @NotNull BigDecimal baseLoanValue,
+    @NotNull BigDecimal pledgedValue) {}

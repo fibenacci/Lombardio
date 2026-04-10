@@ -5,6 +5,7 @@ import {
 } from "../../../infrastructure/adapters/http-tenant-dashboard.adapter";
 import { createEmptyPosition } from "../../../domain/mappers";
 import type { TenantHomePositionModel } from "../../../domain/model/tenant-dashboard";
+import type { TenantHomeGuidelineDto } from "../../../infrastructure/dto/tenant-dashboard.dto";
 import { readFileAsDataUrl, firstSelectedFile } from "../tenant-dashboard-file.utils";
 
 export function useTenantDashboardLoanForm({
@@ -14,7 +15,7 @@ export function useTenantDashboardLoanForm({
   tenantId: Ref<string>;
   t: (key: string, params?: Record<string, unknown>) => string;
 }) {
-  const guidelines = ref<Array<{ id: string; label: string; description: string; baseLoanValue: number }>>([]);
+  const guidelines = ref<TenantHomeGuidelineDto[]>([]);
   const loanQuotes = ref<Array<Record<string, unknown>>>([]);
   
   const terms = reactive({
@@ -35,8 +36,8 @@ export function useTenantDashboardLoanForm({
 
   const guidelineOptions = computed(() =>
     guidelines.value.map((g) => ({
-      value: g.id,
-      label: g.label
+      value: g.id || "",
+      label: g.label || ""
     }))
   );
 
@@ -119,9 +120,9 @@ export function useTenantDashboardLoanForm({
     if (!g) return;
 
     positions.value[index].guidelineId = guidelineId;
-    if (!positions.value[index].label) positions.value[index].label = g.label;
-    if (!positions.value[index].description) positions.value[index].description = g.description;
-    if (!positions.value[index].pledgedValue) positions.value[index].pledgedValue = g.baseLoanValue;
+    if (!positions.value[index].label) positions.value[index].label = g.label || "";
+    if (!positions.value[index].description) positions.value[index].description = g.description || "";
+    if (!positions.value[index].pledgedValue) positions.value[index].pledgedValue = String(g.baseLoanValue || "");
   }
 
   async function updatePowerOfAttorney(event: unknown) {

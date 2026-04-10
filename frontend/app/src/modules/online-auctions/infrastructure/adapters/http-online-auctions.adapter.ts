@@ -1,19 +1,15 @@
 import * as onlineAuctionApi from "../api/online-auction.api";
+import type { components } from "../api/types/online-auction";
+import {
+  OnlineAuctionResponseStatus as OnlineAuctionStatus,
+  BidderRegistrationResponseKycStatus as BidderKycStatus,
+  BidderRegistrationResponseAccountCheckStatus as BidderAccountStatus
+} from "../api/types/online-auction";
 
-type OnlineAuctionRegistration = {
-  id: string;
-  kycStatus?: string | null;
-  accountCheckStatus?: string | null;
-  reviewNote?: string | null;
-};
+export type OnlineAuctionRegistration = components["schemas"]["BidderRegistrationResponse"];
+export type OnlineAuction = components["schemas"]["OnlineAuctionResponse"];
 
-type OnlineAuction = {
-  id: string;
-  tenantId: string;
-  title: string;
-  status?: string | null;
-  registrations?: OnlineAuctionRegistration[];
-};
+export { OnlineAuctionStatus, BidderKycStatus, BidderAccountStatus };
 
 export function createHttpOnlineAuctionsAdapter() {
   return {

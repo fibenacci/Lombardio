@@ -10,5 +10,12 @@
  */
 package io.lombardio.onlineauction.api;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
+
+@Schema(requiredProperties = {"wsUrl", "channel", "connectionToken", "subscriptionToken"})
 public record RealtimeSessionResponse(
-    String wsUrl, String channel, String connectionToken, String subscriptionToken) {}
+    @NotNull String wsUrl,
+    @NotNull String channel,
+    @NotNull String connectionToken,
+    @NotNull String subscriptionToken) {}

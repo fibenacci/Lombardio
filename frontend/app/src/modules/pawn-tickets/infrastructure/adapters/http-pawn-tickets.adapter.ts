@@ -1,5 +1,8 @@
 import * as pawnTicketApi from "../api/pawn-ticket.api";
-import type { PawnTicketModel } from "../../domain/model/pawn-ticket";
+import type { PawnTicketModel, PawnTicketDto } from "../../domain/model/pawn-ticket";
+import { CashTransactionResponseType as CashTransactionType } from "../api/types/pawn-ticket";
+
+export { CashTransactionType };
 
 export function createHttpPawnTicketsAdapter() {
   return {
@@ -9,8 +12,8 @@ export function createHttpPawnTicketsAdapter() {
     fetchPawnTicketLabels(ticketNumber: string) {
       return pawnTicketApi.fetchPawnTicketLabels(ticketNumber);
     },
-    fetchPawnTickets(tenantId: string) {
-      return (pawnTicketApi.fetchPawnTickets as (tenantId: string) => Promise<PawnTicketModel[]>)(tenantId);
+    async fetchPawnTickets(tenantId: string): Promise<PawnTicketModel[]> {
+      return (pawnTicketApi.fetchPawnTickets(tenantId) as Promise<PawnTicketDto[]>);
     }
   };
 }

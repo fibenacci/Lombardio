@@ -1,37 +1,43 @@
-export interface TenantHomeCustomerModel {
-  id: string;
-  customerNumber?: string | null;
-  displayName?: string | null;
-  firstName?: string | null;
-  lastName?: string | null;
-  birthDate?: string | null;
-  phone?: string | null;
-  email?: string | null;
-  wantsDigitalPawnTicket?: boolean | null;
-  street?: string | null;
-  postalCode?: string | null;
-  city?: string | null;
-  kycStatus?: string | null;
-  kycApproved?: boolean | null;
-  verificationMode?: string | null;
-  verifiedUntil?: string | null;
-  documentType?: string | null;
-  documentNumber?: string | null;
-  documentValidUntil?: string | null;
-  documentFrontImageDataUrl?: string;
-  documentBackImageDataUrl?: string;
-  decisionNote?: string | null;
-  providerName?: string | null;
-  providerReference?: string | null;
-  providerStatus?: string | null;
-  amlStatus?: string | null;
-  amlRiskLevel?: string | null;
-  amlOriginationAllowed?: boolean | null;
-  amlDecisionReason?: string | null;
-  sourceOfFundsChecked?: boolean | null;
-  suspiciousActivityReported?: boolean | null;
-  goamlReference?: string | null;
-}
+import type { IdentityComponents } from "../../../../shared/kernel/http/api-types/index";
+import { 
+  AmlStatusViewStatus as AmlStatus, 
+  AmlStatusViewRiskLevel as AmlRiskLevel,
+  KycStatusViewStatus as KycStatus,
+  KycStatusViewVerificationMode as KycVerificationMode
+} from "../../../../shared/kernel/http/api-types/index";
+
+type CustomerView = IdentityComponents["schemas"]["CustomerView"];
+type KycStatusView = IdentityComponents["schemas"]["KycStatusView"];
+type AmlStatusView = IdentityComponents["schemas"]["AmlStatusView"];
+
+export type TenantHomeCustomerModel = CustomerView & {
+  // Use original field names from previous model to avoid breaking UI and tests
+  kycStatus: KycStatus;
+  verificationMode: KycVerificationMode;
+  amlStatus: AmlStatus;
+  amlRiskLevel: AmlRiskLevel;
+  originationAllowed: AmlStatusView["originationAllowed"];
+  
+  // Explicitly add other needed fields
+  verifiedUntil: KycStatusView["verifiedUntil"];
+  documentType: KycStatusView["documentType"];
+  documentNumber: KycStatusView["documentNumber"];
+  documentValidUntil: KycStatusView["documentValidUntil"];
+  
+  // Fields needed by UI/Tests that might be in StatusView but naming varies
+  providerStatus: string;
+  providerName: string;
+  providerReference: string;
+  
+  // Legacy status mapping needed for some components/tests
+  kycApproved: boolean;
+  
+  documentFrontImageDataUrl: string;
+  documentBackImageDataUrl: string;
+};
+
+// Re-export for module use
+export { AmlStatus, AmlRiskLevel, KycStatus, KycVerificationMode };
 
 export interface TenantHomePositionModel {
   ticketGroup: number;
