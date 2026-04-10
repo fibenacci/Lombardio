@@ -26,7 +26,7 @@ export function useCustomerKycForm({
     status: KycStatus.NOT_STARTED,
     verificationMode: KycVerificationMode.MANUAL,
     verifiedUntil: "",
-    documentType: "" as any,
+    documentType: "",
     documentNumber: "",
     documentValidUntil: "",
     documentFrontImageDataUrl: "",

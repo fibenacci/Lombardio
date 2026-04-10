@@ -5,6 +5,7 @@ import type {
   AmlStatusDto,
   KycPrefillDto 
 } from "../../infrastructure/adapters/http-customer.adapter";
+import type { LoanModel } from "../../../loans/domain/model/loan";
 
 export interface CustomerQueryPort {
   loadCustomerDetailData(tenantId: string, customerId: string, amlEnabled: boolean): Promise<{
@@ -12,7 +13,7 @@ export interface CustomerQueryPort {
     kycStatus: KycStatusDto;
     kycDocuments: KycDocumentsDto;
     aml: AmlStatusDto | null;
-    loans: any[];
+    loans: LoanModel[];
   }>;
   searchCustomers(tenantId: string, query: string): Promise<CustomerDto[]>;
   fetchAmlStatus(tenantId: string, customerId: string): Promise<AmlStatusDto>;

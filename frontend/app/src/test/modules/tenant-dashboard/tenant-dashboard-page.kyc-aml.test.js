@@ -20,13 +20,12 @@ function mountView() {
 }
 
 describe("TenantHomeView - KYC & AML", () => {
-  let authStore;
   let tenantStore;
 
   beforeEach(() => {
     setLocale("de");
     vi.restoreAllMocks();
-    authStore = useAuthStore();
+    useAuthStore();
     tenantStore = useTenantStore();
     tenantStore.selectedTenantId = "tenant-default";
     tenantStore.tenants = [{ id: "tenant-default", displayName: "Default Tenant" }];

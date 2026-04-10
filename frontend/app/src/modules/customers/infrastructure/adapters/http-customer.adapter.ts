@@ -2,6 +2,7 @@ import * as amlApi from "../api/aml.api";
 import * as customerApi from "../api/customer.api";
 import * as kycApi from "../api/kyc.api";
 import * as originationApi from "../../../loans/infrastructure/api/origination.api";
+import type { LoanModel } from "../../../loans/domain/model/loan";
 import type { components } from "../api/types/identity";
 
 export type CustomerDto = components["schemas"]["CustomerView"];
@@ -33,7 +34,7 @@ export function createHttpCustomerAdapter() {
       const loanResponse = await (originationApi.fetchLoans as (
         tenantId: string,
         customerId?: string | null
-      ) => Promise<any[]>)(tenantId, customerId);
+      ) => Promise<LoanModel[]>)(tenantId, customerId);
       const amlResponse = amlEnabled
         ? await (amlApi.fetchAmlStatus as (tenantId: string, customerId: string) => Promise<AmlStatusDto>)(
           tenantId,

@@ -5,7 +5,6 @@ import {
   createHttpOnlineAuctionsAdapter, 
   type OnlineAuction, 
   type OnlineAuctionRegistration,
-  OnlineAuctionStatus,
   BidderKycStatus,
   BidderAccountStatus
 } from "../../infrastructure/adapters/http-online-auctions.adapter";

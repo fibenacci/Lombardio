@@ -5,7 +5,6 @@ import { useTenantStore } from "../../../app/tenant-context/state";
 import { useAuthStore } from "../../../app/session/state";
 import * as originationApi from "../../../modules/loans/infrastructure/api/origination.api";
 import * as customerApi from "../../../modules/customers/infrastructure/api/customer.api";
-import * as kycApi from "../../../modules/customers/infrastructure/api/kyc.api";
 import * as pawnTicketApi from "../../../modules/pawn-tickets/infrastructure/api/pawn-ticket.api";
 import * as reportingApi from "../../../modules/tenant-dashboard/infrastructure/api/reporting.api";
 import router from "../../../app/router";

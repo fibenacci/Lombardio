@@ -4,7 +4,6 @@ import { useAppToast } from "../../../../shared/ui/composables/use-app-toast";
 import { 
   createHttpAuctionsAdapter, 
   type Auction, 
-  type AuctionLot, 
   type SurplusCase,
   AuctionStatus,
   AuctionLotStatus

@@ -18,8 +18,7 @@ export function mapCustomerDtoToDomain(dto: components["schemas"]["CustomerView"
   return dto;
 }
 
-export function mapLoanDtosToDomain(dtos: any[]): CustomerLoanModel[] {
-  // Keeping this as is for now as LoanDto is still loose/composite
+export function mapLoanDtosToDomain(dtos: CustomerLoanModel[]): CustomerLoanModel[] {
   return dtos;
 }
 
