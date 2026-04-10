@@ -27,7 +27,8 @@ describe("PawnTicketsView", () => {
         earliestAuctionDate: "2099-07-18",
         totalLoanValue: 180,
         totalRepaymentAmount: 196.5,
-        positionCount: 1
+        positionCount: 1,
+        status: "ACTIVE"
       }
     ]);
 

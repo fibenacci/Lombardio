@@ -284,6 +284,12 @@ export function useTenantDashboardService({
   );
 
   return {
+    // Provide explicit objects for tests
+    reporting,
+    customerLookup,
+    loanForm,
+    compliance,
+    // Flatten for template convenience
     ...reporting,
     ...customerLookup,
     ...loanForm,
