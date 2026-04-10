@@ -33,33 +33,52 @@ We build according to the **Lombardio Way**:
 ## 🗺️ Architecture Overview
 
 ```text
-                +----------------------+
-                |   Frontend Admin UI  | (Vue.js 3 + PrimeVue)
-                |   /frontend/app      |
-                +----------+-----------+
-                           |
-                    [ Traefik Gateway ]
-                           |
-     +---------------------+----------------------+
-     |                Core Services               |
-     |  identity-access (Keycloak) | platform     |
-     |  auth, users, roles         | tenants      |
-     +---------------------+----------------------+
-                           |
-          +----------------+------------------------------+
-          |                |              |               |
-          v                v              v               v
-   [ Identity ]      [ Origination ] [ Pawn Ticket ] [ Reporting ]
-   Identity Intel    Loan Case       Documents       Read Models
-   KYC / AML         Calculations    Cash Flows      Dashboards
-          |
-          +----------------+------------------------------+
-                           |
-                           v
-              [ Auctions & Realtime ]
-              Local & Online Auction Flows
-              (Centrifugo / RabbitMQ)
+                      +-----------------------------+
+                      |      Frontend Admin UI      | (Vue.js 3 / PrimeVue)
+                      |       /frontend/app         |
+                      +--------------+--------------+
+                                     |
+                                     v
+                          +-----------------------+
+                          |    Traefik Gateway    | (Ingress / TLS)
+                          +----------+------------+
+                                     |
+           +-------------------------+-------------------------+
+           |                         |                         |
+           v                         v                         v
+  +-----------------+      +-----------------------+      +------------+
+  | Identity Access |<---->|    Platform (BFF)     |<---->| Monitoring |
+  |   (Keycloak)    |      | tenants, users, auth  |      | (Grafana)  |
+  +-----------------+      +-----------+-----------+      +------------+
+                                     |
+           +-------------------------+-------------------------+
+           |                         |                         |
+           v                         v                         v
+  +-----------------------+  +-----------------------+  +--------------+
+  | Identity Intelligence |  |   Loan Origination    |  | Pawn Ticket  |
+  |  Identity, KYC, AML   |  | cases, checks, values |  | financials   |
+  +-----------------------+  +-----------+-----------+  +--------------+
+           |                         |                         |
+           +-------------------------+-------------------------+
+                                     |
+           +-------------------------+-------------------------+
+           |                         |                         |
+           v                         v                         v
+  +-----------------------+  +-----------------------+  +--------------+
+  |  Auctions & Bidding   |  |      Reporting        |  | Integration  |
+  |  Local & Realtime     |  | (Read Models / BI)    |  |  (Go Worker) |
+  +-----------+-----------+  +-----------------------+  +--------------+
+              |
+              v
+       [ Message Broker ]
+    (RabbitMQ / Centrifugo)
 ```
+
+### 📚 Further Reading
+For a deeper dive into our architectural decisions and future roadmap, refer to:
+- [Hexagonal Analysis & Strategy](docs/hexagon-analysis-and-strategy.md) – Detailed look at our port/adapter implementation.
+- [Developer Experience Refactoring Plan](docs/developer-experience-refactoring-plan.md) – Our roadmap for optimizing local workflows.
+- [Security Audit Report](docs/security-audit-report.md) – Recent findings and hardening measures.
 
 ---
 
