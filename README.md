@@ -74,12 +74,6 @@ We build according to the **Lombardio Way**:
     (RabbitMQ / Centrifugo)
 ```
 
-### 📚 Further Reading
-For a deeper dive into our architectural decisions and future roadmap, refer to:
-- [Hexagonal Analysis & Strategy](docs/hexagon-analysis-and-strategy.md) – Detailed look at our port/adapter implementation.
-- [Developer Experience Refactoring Plan](docs/developer-experience-refactoring-plan.md) – Our roadmap for optimizing local workflows.
-- [Security Audit Report](docs/security-audit-report.md) – Recent findings and hardening measures.
-
 ---
 
 ## 🧩 Service Map
