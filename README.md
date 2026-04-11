@@ -1,7 +1,15 @@
 # 💎 Lombardio
 
+> [!WARNING]
+> **Lombardio's concept and architecture are currently undergoing a major overhaul.**
+> Active development and the new architectural direction have moved to the new repository: **[lombard.io-clean-arch](https://github.com/fibenacci/lombard.io-clean-arch)**.
+>
+> Our mission is the **digital transformation of the pawnshop industry**. We are building "the Linux of pawnshops" (*das Linux der Pfandleihe*) to eliminate industry stigma through radical transparency and open standards.
+>
+> **Note:** In the new repository, all source code will be released under the **MIT License** to foster true open-source collaboration and trust.
+
 > [!IMPORTANT]
-> **Development Status:** Lombardio is currently in the active implementation phase following its architectural and conceptual design. It is **not yet a production-ready product**. This repository serves to demonstrate the current progress, architectural patterns, and technical direction.
+> **Development Status:** This repository represents the legacy state. Lombardio is currently in the active implementation phase following its architectural and conceptual design. It is **not yet a production-ready product**. This repository serves to demonstrate the current progress, architectural patterns, and technical direction.
 
 **Lombardio** is a modular, high-security cloud platform specifically engineered for modern pawnshops (*Pfandleiher*). It transforms complex regulated workflows—from customer identity and pawn-ticket issuance to realtime auctions and multi-channel sales—into a seamless, auditable, and tenant-aware digital experience.
 
