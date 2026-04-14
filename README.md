@@ -214,24 +214,6 @@ We maintain a high quality bar through automated gates:
 | **Infrastructure** | Traefik, Keycloak, Docker, Kubernetes, Terraform |
 | **Ops** | Prometheus, Grafana, Alertmanager |
 
----
-
-## 📜 License
-
-This repository is **source-available**. See the [LICENSE](./LICENSE) file for custom terms. Redistribution or commercial use of protected parts is not permitted without prior written permission.
-
-Additional legal and collaboration documents:
-
-- [TRADEMARKS.md](./TRADEMARKS.md) for name, logo, and branding restrictions
-- [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution workflow expectations
-- [CLA.md](./CLA.md) for contributor-rights policy
-- [Corporate-CLA-EN.md](./Corporate-CLA-EN.md) for the English corporate CLA template
-- [Corporate-CLA-DE.md](./Corporate-CLA-DE.md) for the German corporate CLA template
-- [COMMERCIAL.md](./COMMERCIAL.md) for OEM, partner, reseller, and commercial-use paths
-- [NOTICE](./NOTICE) for repository notices
-
----
-
 ## 📈 Status
 
 Lombardio is currently focused on the **Secure Administration Core**. While domain services for pawn and auctions are active, we are prioritizing the robustness of identity, tenant isolation, and auditability.
