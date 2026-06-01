@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@primeuix/themes": "~2.0.3",
-    "js-cookie": "^3.0.5",
+    "js-cookie": "^3.0.8",
     "keycloak-js": "~26.2.3",
     "pinia": "~3.0.4",
     "primeicons": "~7.0.0",
